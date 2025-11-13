@@ -13,11 +13,11 @@ export type NextApiResponseServerIO = NextApiResponse & {
     };
 };
 
-const redis = new Redis({
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD,
-});
+// const redis = new Redis({
+//     host: process.env.REDIS_HOST || 'localhost',
+//     port: parseInt(process.env.REDIS_PORT || '6379'),
+//     password: process.env.REDIS_PASSWORD,
+// });
 
 const SocketHandler = (req: NextApiRequest, res: NextApiResponseServerIO) => {
     if (res.socket.server.io) {
@@ -33,11 +33,11 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseServerIO) => {
             },
         });
 
-        // Redis adapter for scaling
-        io.adapter(require('socket.io-redis')({
-            pubClient: redis,
-            subClient: redis.duplicate(),
-        }));
+        // Redis adapter for scaling (temporarily disabled)
+        // io.adapter(require('socket.io-redis')({
+        //     pubClient: redis,
+        //     subClient: redis.duplicate(),
+        // }));
 
         // Authentication middleware
         io.use(async (socket, next) => {
