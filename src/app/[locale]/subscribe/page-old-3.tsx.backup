@@ -1,0 +1,492 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter, useParams } from 'next/navigation'
+import { PaymentInterface } from '@/components/payments/PaymentInterface'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+    CheckCircle,
+    Shield,
+    Star,
+    Users,
+    BookOpen,
+    Award,
+    CreditCard,
+    Smartphone,
+    Lock,
+    Headphones,
+    TrendingUp,
+    Clock,
+    X
+} from 'lucide-react'
+import { useTranslations } from 'next-intl'
+
+interface FAQItem {
+    question: string
+    answer: string
+}
+
+interface Testimonial {
+    name: string
+    role: string
+    content: string
+    rating: number
+}
+
+export default function SubscribePage() {
+    const { data: session, status } = useSession()
+    const router = useRouter()
+    const params = useParams()
+    const locale = params.locale as string || 'en'
+    const t = useTranslations('subscribe')
+    const tCommon = useTranslations('common')
+    
+    const [showPayment, setShowPayment] = useState(false)
+    const [selectedPlan, setSelectedPlan] = useState<'CATEGORY_A' | 'CATEGORY_B' | 'CATEGORY_C' | 'BUNDLE_AB' | 'BUNDLE_ABC'>('CATEGORY_A')
+    const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly')
+    const [openFAQ, setOpenFAQ] = useState<number | null>(null)
+    const [courseCounts, setCourseCounts] = useState({ categoryA: 500, categoryB: 87, categoryC: 142 })
+
+    const isArabic = locale === 'ar'
+
+    // Fetch actual course counts
+    useEffect(() => {
+        async function fetchCourseCounts() {
+            try {
+                const response = await fetch('/api/subscriptions/status')
+                if (response.ok) {
+                    const data = await response.json()
+                    if (data.availableCourseCounts) {
+                        setCourseCounts(data.availableCourseCounts)
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch course counts:', error)
+            }
+        }
+        fetchCourseCounts()
+    }, [])
+
+    const faqItems: FAQItem[] = [
+        {
+            question: isArabic ? "ما هو المحتوى المتاح في المكتبة الشاملة؟" : "What's included in the All-Access Library?",
+            answer: isArabic 
+                ? "المكتبة الشاملة تمنحك وصولاً غير محدود لجميع دورات الفئة أ، بما في ذلك المحتوى المميز، الموارد القابلة للتحميل، شهادات الإتمام، والدورات الجديدة التي تضاف شهرياً."
+                : "The All-Access Library gives you unlimited access to all Category A courses, including premium content, downloadable resources, certificates of completion, and new courses added monthly."
+        },
+        {
+            question: isArabic ? "كيف تعمل اشتراكات قنوات المنشئين؟" : "How do Creator Channel subscriptions work?",
+            answer: isArabic
+                ? "اشتراكات قنوات المنشئين تتيح لك دعم المعلمين الأفراد مع الحصول على محتوى حصري، تفاعل مباشر، وصول مبكر للمواد الجديدة، وتجارب تعليمية مخصصة."
+                : "Creator Channel subscriptions allow you to support individual educators while getting exclusive content, direct interaction, early access to new materials, and personalized learning experiences."
+        },
+        {
+            question: isArabic ? "ما هي طرق الدفع المتاحة؟" : "What payment methods do you accept?",
+            answer: isArabic
+                ? "نقبل جميع طرق الدفع المصرية الرئيسية بما في ذلك البطاقات الائتمانية/المدينة عبر Paymob، دفعات Fawry، ومحفظة Meeza الرقمية."
+                : "We accept all major Egyptian payment methods including credit/debit cards through Paymob, Fawry payments, and Meeza digital wallet."
+        },
+        {
+            question: isArabic ? "هل يمكنني إلغاء الاشتراك في أي وقت؟" : "Can I cancel my subscription anytime?",
+            answer: isArabic
+                ? "نعم، يمكنك إلغاء اشتراكك في أي وقت. ستستمر في الوصول حتى نهاية فترة الفوترة الحالية."
+                : "Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your current billing period."
+        },
+        {
+            question: isArabic ? "هل هناك ضمان لاسترداد الأموال؟" : "Is there a money-back guarantee?",
+            answer: isArabic
+                ? "نعم، نقدم ضمان استرداد الأموال لمدة 7 أيام. إذا لم تكن راضياً عن اشتراكك، تواصل معنا في غضون 7 أيام للحصول على استرداد كامل."
+                : "Yes, we offer a 7-day money-back guarantee. If you're not satisfied with your subscription, contact us within 7 days for a full refund."
+        },
+        {
+            question: isArabic ? "هل تقدمون خصومات للطلاب؟" : "Do you offer student discounts?",
+            answer: isArabic
+                ? "نعم، نقدم أسعار خاصة للطلاب الذين لديهم عناوين بريد إلكتروني .edu صالحة. تواصل مع فريق الدعم لتفعيل خصم الطلاب."
+                : "Yes, we offer special pricing for students with valid .edu email addresses. Contact our support team to activate your student discount."
+        }
+    ]
+
+    const testimonials: Testimonial[] = [
+        {
+            name: isArabic ? "أحمد محمد" : "Ahmed Mohamed",
+            role: isArabic ? "طالب هندسة" : "Engineering Student",
+            content: isArabic 
+                ? "المكتبة الشاملة غيرت تجربة التعلم الخاصة بي. أكملت 12 دورة في 6 أشهر وحصلت على التدريب الذي أحلم به!"
+                : "The All-Access Library transformed my learning experience. I've completed 12 courses in 6 months and landed my dream internship!",
+            rating: 5
+        },
+        {
+            name: isArabic ? "سارة حسن" : "Sarah Hassan",
+            role: isArabic ? "مطورة محترفة" : "Professional Developer",
+            content: isArabic
+                ? "قنوات المنشئين توفر بالضبط ما أحتاجه - محتوى متخصص من خبراء أثق بهم. يستحق كل قرش!"
+                : "Creator Channels provide exactly what I need - specialized content from experts I trust. Worth every pound!",
+            rating: 5
+        },
+        {
+            name: isArabic ? "محمد علي" : "Mohamed Ali",
+            role: isArabic ? "طالب ثانوية عامة" : "High School Student",
+            content: isArabic
+                ? "ساعدتني المنصة في التحضير لامتحانات الثانوية العامة. المحتوى شامل وسهل الفهم."
+                : "The platform helped me prepare for Thanaweya Amma exams. The content is comprehensive and easy to understand.",
+            rating: 4
+        }
+    ]
+
+    useEffect(() => {
+        if (status === 'unauthenticated') {
+            router.push(`/${locale}/auth/login?callbackUrl=/${locale}/subscribe`)
+            return
+        }
+    }, [status, router, locale])
+
+    const handleSubscribe = (plan: 'CATEGORY_A' | 'CATEGORY_B' | 'CATEGORY_C' | 'BUNDLE_AB' | 'BUNDLE_ABC') => {
+        setSelectedPlan(plan)
+        setShowPayment(true)
+    }
+
+    const toggleFAQ = (index: number) => {
+        setOpenFAQ(openFAQ === index ? null : index)
+    }
+
+    const getPlanPrice = (planType: string) => {
+        const monthlyPrices: Record<string, number> = {
+            'CATEGORY_A': 199,
+            'CATEGORY_B': 149,
+            'CATEGORY_C': 79,
+            'BUNDLE_AB': 299,
+            'BUNDLE_ABC': 399
+        }
+        const basePrice = monthlyPrices[planType] || 199
+        return billingCycle === 'monthly' ? basePrice : Math.round(basePrice * 12 * 0.8) // 20% discount for yearly
+    }
+
+    const getSavingsAmount = (planType: string) => {
+        if (planType === 'BUNDLE_AB') {
+            return billingCycle === 'monthly' ? 49 : 590
+        }
+        if (planType === 'BUNDLE_ABC') {
+            return billingCycle === 'monthly' ? 128 : 1536
+        }
+        return 0
+    }
+
+    if (showPayment) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                <PaymentInterface
+                    onSuccess={() => {
+                        setShowPayment(false)
+                        // Refresh page to show updated subscription status
+                        window.location.reload()
+                    }}
+                    onError={(error: string) => {
+                        console.error('Payment error:', error)
+                        setShowPayment(false)
+                    }}
+                />
+            </div>
+        )
+    }
+
+    if (status === 'loading') {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p>{tCommon('loading')}</p>
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-950 relative overflow-hidden" dir={isArabic ? 'rtl' : 'ltr'}>
+            {/* Animated Background */}
+            <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-600/20 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-blue-400/20 to-cyan-600/20 rounded-full blur-3xl animate-pulse delay-700"></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-indigo-400/10 to-purple-600/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            </div>
+            
+            {/* Hero Section */}
+            <div className="relative z-10">
+                <div className="backdrop-blur-sm bg-gradient-to-r from-purple-900/80 to-blue-900/80 py-24 px-6 border-b border-white/10">
+                    <div className="max-w-7xl mx-auto text-center">
+                        <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent mb-6 tracking-tight">
+                            {isArabic ? 'أطلق العنان لإمكانياتك التعليمية' : 'Unlock Your Learning Potential'}
+                        </h1>
+                        <p className="text-xl md:text-2xl mb-12 text-purple-100/80 leading-relaxed max-w-3xl mx-auto">
+                            {isArabic ? 'اختر الخطة المثالية لرحلتك التعليمية' : 'Choose the perfect plan for your educational journey'}
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                            <div className="flex items-center gap-3 backdrop-blur-md bg-white/10 border border-white/20 rounded-full px-6 py-3 hover:bg-white/20 transition-all duration-300">
+                                <Shield className="w-5 h-5 text-green-400" />
+                                <span className="text-purple-100">{isArabic ? 'دفع آمن' : 'Secure Payment'}</span>
+                            </div>
+                            <div className="flex items-center gap-3 backdrop-blur-md bg-white/10 border border-white/20 rounded-full px-6 py-3 hover:bg-white/20 transition-all duration-300">
+                                <Clock className="w-5 h-5 text-blue-400" />
+                                <span className="text-purple-100">{isArabic ? 'استرداد خلال 7 أيام' : '7-Day Money Back'}</span>
+                            </div>
+                            <div className="flex items-center gap-3 backdrop-blur-md bg-white/10 border border-white/20 rounded-full px-6 py-3 hover:bg-white/20 transition-all duration-300">
+                                <Headphones className="w-5 h-5 text-purple-400" />
+                                <span className="text-purple-100">{isArabic ? 'دعم 24/7' : '24/7 Support'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Billing Cycle Toggle */}
+            <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
+                <div className="flex items-center justify-center gap-6 mb-12">
+                    <span className={`text-lg font-semibold transition-colors ${billingCycle === 'monthly' ? 'text-purple-300' : 'text-gray-400'}`}>
+                        {isArabic ? 'شهري' : 'Monthly'}
+                    </span>
+                    <button
+                        onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
+                        className="relative inline-flex h-8 w-14 items-center rounded-full bg-gradient-to-r from-purple-600 to-blue-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-950 shadow-lg hover:shadow-xl"
+                    >
+                        <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-md ${billingCycle === 'yearly' ? 'translate-x-7' : 'translate-x-1'}`} />
+                    </button>
+                    <span className={`text-lg font-semibold transition-colors ${billingCycle === 'yearly' ? 'text-blue-300' : 'text-gray-400'}`}>
+                        {isArabic ? 'سنوي' : 'Yearly'} <Badge className="ml-2 bg-gradient-to-r from-green-500 to-emerald-600 border-none shadow-lg">{isArabic ? 'وفر 20%' : 'Save 20%'}</Badge>
+                    </span>
+                </div>
+
+                {/* Pricing Tiers */}
+                <div className="grid gap-8 lg:grid-cols-2 mb-16">
+                    {/* Category A - All-Access Library */}
+                    <div className="relative overflow-hidden backdrop-blur-md bg-white/10 border border-white/20 rounded-3xl hover:bg-white/15 hover:border-purple-400/50 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/30 group">
+                        {/* Decorative Elements */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/30 to-blue-500/30 rounded-full blur-3xl"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 rounded-full blur-2xl"></div>
+                        
+                        <div className={`absolute top-0 ${isArabic ? 'left-0 rounded-br-2xl' : 'right-0 rounded-bl-2xl'} bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 shadow-lg`}>
+                            <Badge className="bg-transparent border-none text-white font-semibold">{isArabic ? 'الأكثر شعبية' : 'Most Popular'}</Badge>
+                        </div>
+                        <div className="relative text-center pb-8 pt-12 px-8">
+                            <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition-transform duration-300">
+                                <BookOpen className="w-10 h-10 text-white" />
+                            </div>
+                            <h3 className="text-3xl font-bold text-white mb-3">
+                                {isArabic ? 'المكتبة الشاملة' : 'All-Access Library'}
+                            </h3>
+                            <p className="text-purple-200">
+                                {isArabic ? 'وصول كامل للمحتوى التعليمي المميز' : 'Complete access to premium learning content'}
+                            </p>
+                            <div className="mt-6">
+                                <span className="text-5xl font-bold text-white">{getPlanPrice('CATEGORY_A')}</span>
+                                <span className="text-2xl text-purple-300 mx-2">{isArabic ? 'ج.م' : 'EGP'}</span>
+                                <span className="text-purple-300">/{billingCycle === 'monthly' ? (isArabic ? 'شهر' : 'month') : (isArabic ? 'سنة' : 'year')}</span>
+                            </div>
+                        </div>
+                        <div className="relative space-y-4 px-8 pb-8">
+                            <ul className="space-y-4 mb-8">
+                                <li className="flex items-center gap-3 text-white">
+                                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                                    <span>{isArabic ? 'وصول غير محدود لأكثر من 500 دورة' : 'Unlimited access to 500+ courses'}</span>
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                                    <span>{isArabic ? 'شهادات إتمام مميزة' : 'Premium certificates of completion'}</span>
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                                    <span>{isArabic ? 'موارد ومواد قابلة للتحميل' : 'Downloadable resources & materials'}</span>
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                                    <span>{isArabic ? 'دورات جديدة تضاف شهرياً' : 'New courses added monthly'}</span>
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                                    <span>{isArabic ? 'وصول عبر تطبيق الموبايل' : 'Mobile app access'}</span>
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                                    <span>{isArabic ? 'دعم العملاء الأولوي' : 'Priority customer support'}</span>
+                                </li>
+                            </ul>
+                            <Button
+                                onClick={() => handleSubscribe('CATEGORY_A')}
+                                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 text-lg"
+                            >
+                                {isArabic ? 'اشترك الآن' : 'Subscribe Now'}
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Category C - Creator Channels */}
+                    <div className="relative overflow-hidden backdrop-blur-md bg-white/10 border border-white/20 rounded-3xl hover:bg-white/15 hover:border-green-400/50 transition-all duration-500 hover:shadow-2xl hover:shadow-green-500/30 group">
+                        {/* Decorative Elements */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/30 to-emerald-500/30 rounded-full blur-3xl"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-500/20 to-green-500/20 rounded-full blur-2xl"></div>
+                        
+                        <div className="relative text-center pb-8 pt-12 px-8">
+                            <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition-transform duration-300">
+                                <Users className="w-10 h-10 text-white" />
+                            </div>
+                            <h3 className="text-3xl font-bold text-white mb-3">
+                                {isArabic ? 'قنوات المنشئين' : 'Creator Channels'}
+                            </h3>
+                            <p className="text-green-200">
+                                {isArabic ? 'ادعم المنشئين واحصل على محتوى حصري' : 'Support creators, get exclusive content'}
+                            </p>
+                            <div className="mt-6">
+                                <span className="text-5xl font-bold text-white">{getPlanPrice('CATEGORY_C')}</span>
+                                <span className="text-2xl text-green-300 mx-2">{isArabic ? 'ج.م' : 'EGP'}</span>
+                                <span className="text-green-300">/{billingCycle === 'monthly' ? (isArabic ? 'شهر' : 'month') : (isArabic ? 'سنة' : 'year')}</span>
+                            </div>
+                        </div>
+                        <div className="relative space-y-4 px-8 pb-8">
+                            <ul className="space-y-4 mb-8">
+                                <li className="flex items-center gap-3 text-white">
+                                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                                    <span>{isArabic ? 'محتوى حصري من المنشئين' : 'Exclusive creator content'}</span>
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                                    <span>{isArabic ? 'تفاعل مباشر مع المنشئين' : 'Direct creator interaction'}</span>
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                                    <span>{isArabic ? 'وصول مبكر للمحتوى الجديد' : 'Early access to new content'}</span>
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                                    <span>{isArabic ? 'جلسات أسئلة وأجوبة مباشرة' : 'Live Q&A sessions'}</span>
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                                    <span>{isArabic ? 'وصول للمجتمع' : 'Community access'}</span>
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                                    <span>{isArabic ? 'دعم المعلمين المستقلين' : 'Support independent educators'}</span>
+                                </li>
+                            </ul>
+                            <Button
+                                onClick={() => handleSubscribe('CATEGORY_C')}
+                                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 text-lg"
+                            >
+                                {isArabic ? 'اشترك الآن' : 'Subscribe Now'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Trust Indicators */}
+                <div className="mb-16">
+                    <h2 className="text-4xl font-bold text-center mb-12 text-white">
+                        {isArabic ? 'موثوق به من قبل المتعلمين المصريين' : 'Trusted by Egyptian Learners'}
+                    </h2>
+                    <div className="grid gap-8 md:grid-cols-3 mb-12">
+                        {testimonials.map((testimonial, index) => (
+                            <div key={index} className="backdrop-blur-md bg-white/10 border border-white/20 rounded-3xl p-8 text-center hover:bg-white/15 hover:border-purple-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/20">
+                                <div className="flex justify-center mb-6">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star
+                                            key={i}
+                                            className={`w-5 h-5 ${i < testimonial.rating ? 'text-yellow-400 fill-current' : 'text-gray-600'}`}
+                                        />
+                                    ))}
+                                </div>
+                                <p className="text-purple-100 mb-6 italic leading-relaxed">"{testimonial.content}"</p>
+                                <div>
+                                    <p className="font-bold text-white text-lg">{testimonial.name}</p>
+                                    <p className="text-sm text-purple-300">{testimonial.role}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* FAQ Section */}
+                <div className="mb-16">
+                    <h2 className="text-4xl font-bold text-center mb-12 text-white">
+                        {isArabic ? 'الأسئلة الشائعة' : 'Frequently Asked Questions'}
+                    </h2>
+                    <div className="max-w-3xl mx-auto space-y-4">
+                        {faqItems.map((faq, index) => (
+                            <div 
+                                key={index} 
+                                className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl hover:bg-white/15 hover:border-blue-400/50 transition-all duration-300 cursor-pointer"
+                            >
+                                <div
+                                    className="p-6"
+                                    onClick={() => toggleFAQ(index)}
+                                >
+                                    <div className="flex items-center justify-between gap-4">
+                                        <h3 className="text-lg font-semibold flex-1 text-white">{faq.question}</h3>
+                                        <button className="text-purple-300 hover:text-white transition-colors flex-shrink-0">
+                                            {openFAQ === index ? (
+                                                <X className="w-5 h-5" />
+                                            ) : (
+                                                <TrendingUp className="w-5 h-5" />
+                                            )}
+                                        </button>
+                                    </div>
+                                    {openFAQ === index && (
+                                        <p className="text-purple-200 mt-4 leading-relaxed">{faq.answer}</p>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Final CTA */}
+                <div className="relative text-center backdrop-blur-md bg-gradient-to-r from-purple-900/80 to-blue-900/80 border border-white/20 text-white rounded-3xl p-16 mb-16 overflow-hidden">
+                    {/* Decorative Elements */}
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-purple-500/30 to-blue-500/30 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 rounded-full blur-2xl"></div>
+                    
+                    <div className="relative z-10">
+                        <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent">
+                            {isArabic ? 'جاهز لبدء التعلم؟' : 'Ready to Start Learning?'}
+                        </h2>
+                        <p className="text-xl md:text-2xl mb-10 text-purple-100 max-w-2xl mx-auto">
+                            {isArabic ? 'انضم لآلاف الطلاب المصريين في تطوير تعليمهم' : 'Join thousands of Egyptian students advancing their education'}
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-6 justify-center">
+                            <Button
+                                onClick={() => handleSubscribe('CATEGORY_A')}
+                                size="lg"
+                                className="bg-white text-purple-600 hover:bg-gray-100 font-semibold px-8 py-6 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
+                            >
+                                {isArabic ? 'احصل على المكتبة الشاملة' : 'Get All-Access Library'}
+                            </Button>
+                            <Button
+                                onClick={() => handleSubscribe('CATEGORY_C')}
+                                size="lg"
+                                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-purple-600 font-semibold px-8 py-6 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
+                            >
+                                {isArabic ? 'استكشف قنوات المنشئين' : 'Explore Creator Channels'}
+                            </Button>
+                        </div>
+                        <p className="mt-8 text-sm text-purple-200 flex items-center justify-center gap-2 flex-wrap">
+                            <span className="flex items-center gap-1">
+                                <CheckCircle className="w-4 h-4 text-green-400" />
+                                {isArabic ? 'ضمان استرداد لمدة 7 أيام' : '7-day money-back guarantee'}
+                            </span>
+                            <span className="text-purple-400">•</span>
+                            <span className="flex items-center gap-1">
+                                <CheckCircle className="w-4 h-4 text-green-400" />
+                                {isArabic ? 'إلغاء في أي وقت' : 'Cancel anytime'}
+                            </span>
+                            <span className="text-purple-400">•</span>
+                            <span className="flex items-center gap-1">
+                                <CheckCircle className="w-4 h-4 text-green-400" />
+                                {isArabic ? 'دفع آمن' : 'Secure payment'}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}

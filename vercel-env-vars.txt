@@ -1,0 +1,14 @@
+# Copy these to Vercel Environment Variables
+
+# Required
+NEXTAUTH_SECRET=your-secret-key-min-32-chars-random
+NEXTAUTH_URL=https://your-app-name.vercel.app
+NEXT_PUBLIC_APP_URL=https://your-app-name.vercel.app
+NODE_ENV=production
+
+# Database (get from Neon.tech)
+DATABASE_URL=postgresql://username:password@host:5432/database
+
+# Optional - for email functionality
+RESEND_API_KEY=your-resend-api-key
+EMAIL_FROM=noreply@yourdomain.com

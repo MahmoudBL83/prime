@@ -1,0 +1,379 @@
+{
+    "common": {
+        "hello": "Hallo",
+        "myLearning": "Mein Lernen",
+        "loading": "Wird geladen...",
+        "error": "Ein Fehler ist aufgetreten",
+        "save": "Speichern",
+        "cancel": "Abbrechen",
+        "edit": "Bearbeiten",
+        "delete": "Löschen",
+        "search": "Suchen",
+        "next": "Weiter",
+        "previous": "Zurück",
+        "close": "Schließen",
+        "back": "Zurück",
+        "submit": "Senden",
+        "confirm": "Bestätigen",
+        "retry": "Wiederholen",
+        "refresh": "Aktualisieren",
+        "viewMore": "Mehr anzeigen",
+        "viewLess": "Weniger anzeigen",
+        "viewAll": "Alle anzeigen",
+        "new": "Neu",
+        "moreInfo": "Mehr Infos"
+    },
+    "navigation": {
+        "home": "Home",
+        "courses": "Kurse",
+        "mentors": "Mentoren",
+        "dashboard": "Dashboard",
+        "profile": "Profil",
+        "settings": "Einstellungen",
+        "logout": "Abmelden",
+        "login": "Anmelden",
+        "register": "Registrieren",
+        "admin": "Admin",
+        "creators": "Ersteller",
+        "studyBuddy": "Lernpartner",
+        "subscribe": "Abonnieren",
+        "messaging": "Nachrichten"
+    },
+    "auth": {
+        "login": "Anmelden",
+        "register": "Registrieren",
+        "email": "E-Mail",
+        "password": "Passwort",
+        "confirmPassword": "Passwort bestätigen",
+        "forgotPassword": "Passwort vergessen?",
+        "rememberMe": "Angemeldet bleiben",
+        "welcomeBack": "Willkommen zurück",
+        "createAccount": "Neues Konto erstellen",
+        "alreadyHaveAccount": "Bereits ein Konto?",
+        "dontHaveAccount": "Noch kein Konto?"
+    },
+    "courses": {
+        "title": "Kurse",
+        "description": "Entdecke unser breites Angebot an Bildungskursen",
+        "mentor": "Mentor",
+        "instructor": "Dozent",
+        "duration": "Dauer",
+        "level": "Niveau",
+        "enroll": "Einschreiben",
+        "enrolled": "Eingeschrieben",
+        "startLearning": "Lernen beginnen",
+        "continueLearning": "Lernen fortsetzen",
+        "viewDetails": "Details anzeigen",
+        "allCourses": "Alle Kurse",
+        "myCourses": "Meine Kurse",
+        "featuredCourses": "Empfohlene Kurse",
+        "progress": "Fortschritt",
+        "certificate": "Zertifikat",
+        "price": "Preis",
+        "free": "Kostenlos",
+        "paid": "Bezahlt",
+        "rating": "Bewertung",
+        "students": "Studenten",
+        "lessons": "Lektionen",
+        "contentTypes": {
+            "movie": "Film",
+            "series": "Serie",
+            "podcast": "Podcast",
+            "all": "Alle Inhalte"
+        },
+        "contentTypeLabels": {
+            "MOVIE": "Film",
+            "SERIES": "Serie",
+            "PODCAST": "Podcast"
+        },
+        "episodes": "Episoden",
+        "seasons": "Staffeln",
+        "runtime": "Laufzeit",
+        "releaseYear": "Erscheinungsjahr",
+        "maturityRating": "Altersfreigabe",
+        "genres": "Genres",
+        "cast": "Besetzung",
+        "episode": "Episode",
+        "season": "Staffel",
+        "trailer": "Trailer",
+        "playNow": "Jetzt abspielen",
+        "watchNow": "Jetzt ansehen",
+        "listenNow": "Jetzt anhören",
+        "episodesList": "Episodenliste",
+        "seasonNumber": "Staffel {number}",
+        "episodeNumber": "Episode {number}",
+        "totalEpisodes": "{count} Episoden",
+        "totalSeasons": "{count} Staffeln",
+        "avgEpisodeLength": "Ø {minutes}min Episoden",
+        "movieLength": "{minutes}min",
+        "podcastFrequency": "{frequency} Veröffentlichung",
+        "hostedBy": "Moderiert von {name}",
+        "newReleases": "Neuerscheinungen",
+        "advancedSkills": "Fortgeschrittene Fähigkeiten",
+        "featuredToday": "Heute Vorgestellt",
+        "mostViewed": "Meistgesehen",
+        "sampleCourses": {
+            "featuredToday": {
+                "reactMastery": {
+                    "title": "React-Programmierbeherrschung",
+                    "instructor": "Ahmed Mohamed"
+                },
+                "graphicDesign": {
+                    "title": "Grundlagen des Grafikdesigns",
+                    "instructor": "Sara Ahmed"
+                },
+                "businessManagement": {
+                    "title": "Modernes Business-Management",
+                    "instructor": "Mohamed Ali"
+                },
+                "digitalMarketing": {
+                    "title": "Fortgeschrittenes Digitalmarketing",
+                    "instructor": "Fatma Hassan"
+                }
+            },
+            "mostViewed": {
+                "unityGameDev": {
+                    "title": "Spieleentwicklung mit Unity",
+                    "instructor": "Khaled Abdallah"
+                },
+                "dataScience": {
+                    "title": "Datenwissenschaft und Künstliche Intelligenz",
+                    "instructor": "Dr. Ahmed Salem"
+                },
+                "entrepreneurship": {
+                    "title": "Erfolgreiches Unternehmertum",
+                    "instructor": "Mona Abdelrahman"
+                }
+            }
+        }
+    },
+    "coursePage": {
+        "courseNotFound": "Kurs nicht gefunden",
+        "discountBanner": "Bis zum 20. genießen Sie 70% Rabatt auf das Jahresabonnement mit Code 60",
+        "getDiscount": "Rabatt erhalten",
+        "aboutCourse": "Über den Kurs",
+        "showMore": "Mehr anzeigen",
+        "showLess": "Weniger anzeigen",
+        "instructor": "Kursleiter",
+        "courseInstructor": "Instruktor",
+        "lessonsCount": "Anzahl der Lektionen",
+        "lessons": "Lektionen",
+        "courseDuration": "Kursdauer",
+        "hours": "Stunden",
+        "minutes": "Minuten",
+        "rating": "Bewertung",
+        "stars": "Sterne",
+        "subscribeNow": "Jetzt abonnieren",
+        "addToFavorites": "Zu Favoriten hinzufügen",
+        "removeFromFavorites": "Aus Favoriten entfernen",
+        "share": "Teilen",
+        "whatYouGet": "Was Sie erhalten:",
+        "lifetimeAccess": "Lebenslanger Zugang zum Kurs",
+        "certificate": "Zertifiziertes Abschlusszertifikat",
+        "directSupport": "Direkter technischer Support",
+        "practicalProjects": "Praktische Projekte",
+        "skillsYouLearn": "Fähigkeiten, die Sie lernen:",
+        "relatedCourses": "Verwandte Kurse",
+        "loadingPlayer": "Kurs-Player wird geladen...",
+        "courseLoadError": "Fehler beim Laden des Kurses",
+        "multiLanguage": "Mehrsprachig",
+        "like": "Gefällt mir",
+        "bookmark": "Lesezeichen",
+        "totalHours": "Stunden",
+        "languages": "Sprachen",
+        "available": "Verfügbar in",
+        "offerEndsIn": "Angebot endet in",
+        "seconds": "Sekunden",
+        "save": "Sparen",
+        "limitedSeats": "Begrenzte Plätze",
+        "unlike": "Gefällt mir nicht mehr",
+        "thisIncludes": "Dies beinhaltet",
+        "videoLessons": "Video-Lektionen",
+        "certificateOfCompletion": "Abschlusszertifikat",
+        "mobileTabletAccess": "Mobil- & Tablet-Zugriff",
+        "30DayRefund": "30-Tage-Geld-zurück-Garantie",
+        "moneyBackGuarantee": "Geld-zurück-Garantie",
+        "moreLikeThis": "Mehr davon",
+        "sampleRelatedCourses": {
+            "socialMedia": {
+                "title": "Grundlagen des Social Media Managements",
+                "instructor": "Mariam Hisham"
+            },
+            "marketingBasics": {
+                "title": "Marketing-Grundlagen für Anfänger",
+                "instructor": "Islam Al-Sadiq"
+            },
+            "marketeerAtoZ": {
+                "title": "Marketeer A bis Z",
+                "instructor": "Islam Al-Sadiq"
+            }
+        }
+    },
+    "dashboard": {
+        "welcome": "Willkommen, {name}",
+        "myCourses": "Meine Kurse",
+        "progress": "Fortschritt",
+        "recent": "Kürzlich",
+        "statistics": "Statistiken",
+        "achievements": "Erfolge",
+        "activity": "Aktivität",
+        "profile": "Profil",
+        "settings": "Einstellungen",
+        "overview": "Übersicht"
+    },
+    "admin": {
+        "title": "Admin Dashboard",
+        "users": "Benutzer",
+        "courses": "Kurse",
+        "analytics": "Analytics",
+        "settings": "Einstellungen",
+        "reports": "Berichte"
+    },
+    "payment": {
+        "title": "Zahlung",
+        "subscribe": "Jetzt abonnieren",
+        "choosePlan": "Plan wählen",
+        "paymentMethod": "Zahlungsmethode",
+        "paymentMethods": "Zahlungsmethoden",
+        "monthly": "Monatlich",
+        "yearly": "Jährlich",
+        "premium": "Premium",
+        "basic": "Basic",
+        "features": "Funktionen",
+        "price": "Preis",
+        "currency": "EGP",
+        "flexiblePlans": "Flexible Pläne für Ihre Bedürfnisse",
+        "mostPopular": "Am beliebtesten",
+        "checkEligibility": "Berechtigung prüfen",
+        "getStarted": "Loslegen",
+        "subscribeNow": "Prime abonnieren",
+        "moneyBackGuarantee": "Geld-zurück-Garantie",
+        "cancelAnytime": "Jederzeit kündbar",
+        "securePayment": "Sichere Zahlung"
+    },
+    "footer": {
+        "about": "Über uns",
+        "help": "Hilfe",
+        "terms": "AGB",
+        "privacy": "Datenschutz",
+        "contact": "Kontakt",
+        "allRightsReserved": "Alle Rechte vorbehalten"
+    },
+    "mentors": {
+        "title": "Mentoren",
+        "learnFromTopMentors": "Von Top-Mentoren lernen",
+        "exclusiveChannels": "Exklusive Kanäle von Experten in ihren Bereichen",
+        "viewChannel": "Kanal ansehen",
+        "followers": "Follower",
+        "viewAllMentors": "Alle Mentoren anzeigen",
+        "specialty": "Spezialgebiet",
+        "rating": "Bewertung",
+        "subscribers": "Abonnenten",
+        "channelPrice": "Kanalpreis",
+        "subscribe": "Abonnieren",
+        "description": "Beschreibung",
+        "mentorData": {
+            "ahmed_mahmoud": {
+                "name": "Dr. Ahmed Mahmoud",
+                "specialty": "Architektur-Professor",
+                "description": "Experte für Architektur und Stadtplanung mit über 20 Jahren Erfahrung"
+            },
+            "mohamed_hassan": {
+                "name": "Ing. Mohamed Hassan",
+                "specialty": "Software-Entwickler",
+                "description": "Experte für Web- und Mobile-App-Entwicklung mit modernen Technologien"
+            },
+            "aya_ibrahim": {
+                "name": "Dr. Aya Ibrahim",
+                "specialty": "Psychiatrie-Expertin",
+                "description": "Psychiaterin spezialisiert auf kognitive Verhaltenstherapie und psychische Gesundheit"
+            },
+            "youssef_khaled": {
+                "name": "Hr. Youssef Khaled",
+                "specialty": "Entrepreneurship-Coach",
+                "description": "Startup-Gründer und Trainer für Unternehmertum und Investment"
+            },
+            "nadia_hassan": {
+                "name": "Dr. Nadia Hassan",
+                "specialty": "Arabisch-Professorin",
+                "description": "PhD in arabischer Literatur, spezialisiert auf Arabischunterricht für Muttersprachler"
+            }
+        }
+    },
+    "mentorProfile": {
+        "loading": "Mentor-Profil wird geladen...",
+        "notFound": "Mentor nicht gefunden",
+        "back": "Zurück zu Mentoren",
+        "verifiedExpert": "Verifizierter Experte",
+        "topRatedMentor": "Top bewerteter Mentor",
+        "students": "Studenten",
+        "courses": "Kurse",
+        "rating": "Bewertung",
+        "followers": "Follower",
+        "following": "Folge ich",
+        "follow": "Folgen",
+        "unfollow": "Nicht mehr folgen",
+        "message": "Nachricht",
+        "bookSession": "Sitzung buchen",
+        "perHour": "/Std",
+        "tabs": {
+            "overview": "Übersicht",
+            "courses": "Kurse",
+            "reviews": "Bewertungen",
+            "about": "Über"
+        },
+        "popularCourses": "Beliebte Kurse",
+        "recentReviews": "Neueste Bewertungen",
+        "certificationsTitle": "Zertifikate & Qualifikationen",
+        "connectTitle": "Verbinden & Folgen",
+        "mentoringPhilosophy": "Mentoring-Philosophie",
+        "experience": "Erfahrung",
+        "yearsOfExperience": "Jahre",
+        "sessionsCompleted": "Abgeschlossene Sitzungen",
+        "languages": "Sprachen",
+        "timezone": "Zeitzone",
+        "forCourse": "Für:",
+        "loadingCourse": "Kurs wird geladen...",
+        "loadingBooking": "Buchung wird geladen...",
+        "openingMessages": "Nachrichten werden geöffnet...",
+        "goingBack": "Gehe zurück..."
+    },
+    "subscribe": {
+        "title": "Entfalte dein Lernpotenzial",
+        "subtitle": "Wähle den perfekten Plan für deine Bildungsreise",
+        "securePayment": "Sichere Zahlung",
+        "moneyBack": "7-Tage Geld-zurück",
+        "support": "24/7 Support",
+        "monthly": "Monatlich",
+        "yearly": "Jährlich",
+        "savePercent": "20% sparen",
+        "mostPopular": "Am beliebtesten",
+        "allAccessLibrary": "Vollzugriff-Bibliothek",
+        "creatorChannels": "Creator-Kanäle",
+        "subscribeNow": "Jetzt abonnieren",
+        "trustedBy": "Vertraut von ägyptischen Lernenden",
+        "faq": "Häufig gestellte Fragen",
+        "readyToLearn": "Bereit zum Lernen?",
+        "joinThousands": "Schließe dich Tausenden ägyptischer Studenten an",
+        "getAllAccess": "Vollzugriff-Bibliothek erhalten",
+        "exploreCreators": "Creator-Kanäle erkunden",
+        "guarantee": "7-Tage Geld-zurück-Garantie",
+        "cancelAnytime": "Jederzeit kündbar",
+        "securePaymentShort": "Sichere Zahlung"
+    },
+    "landing": {
+        "hero": {
+            "title": "Ägyptische Digitale Lernplattform",
+            "subtitle": "Entdecke eine Welt des Wissens mit den besten Bildungskursen aus Ägypten",
+            "cta": "Starte deine Lernreise heute",
+            "exploreCourses": "Kurse erkunden"
+        },
+        "features": {
+            "title": "Warum unsere Plattform wählen?",
+            "expertInstructors": "Experten-Instruktoren",
+            "flexibleLearning": "Flexibles Lernen",
+            "certifiedCourses": "Zertifizierte Kurse",
+            "affordablePricing": "Erschwingliche Preise"
+        }
+    }
+}
