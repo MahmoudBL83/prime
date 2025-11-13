@@ -12,13 +12,7 @@ const nextConfig: NextConfig = {
       'next-auth',
       '@prisma/client',
     ],
-    turbotrace: {
-      logLevel: 'error',
-    },
   },
-  
-  // Reduce bundle size
-  swcMinify: true,
   
   // Compiler optimizations
   compiler: {
