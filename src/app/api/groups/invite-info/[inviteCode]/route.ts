@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { inviteCode: string } }
+    { params }: { params: Promise<{ inviteCode: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions)
@@ -16,7 +16,7 @@ export async function GET(
             )
         }
 
-        const { inviteCode } = params
+        const { inviteCode } = await params
 
         // For now, since we're generating codes dynamically without storing them,
         // we'll need to check if the code format is valid and return demo group info

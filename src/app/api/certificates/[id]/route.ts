@@ -10,7 +10,7 @@ import { getCertificateByNumber } from '@/services/certificateService';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { certificateNumber: string } }
+  { params }: { params: Promise<{ certificateNumber: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -22,7 +22,8 @@ export async function GET(
       );
     }
 
-    const certificate = await getCertificateByNumber(params.certificateNumber);
+    const { certificateNumber } = await params;
+    const certificate = await getCertificateByNumber(certificateNumber);
 
     if (!certificate) {
       return NextResponse.json(

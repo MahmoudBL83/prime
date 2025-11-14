@@ -10,7 +10,7 @@ import { recordShare } from '@/services/certificateService';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { certificateNumber: string } }
+  { params }: { params: Promise<{ certificateNumber: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -22,6 +22,7 @@ export async function POST(
       );
     }
 
+    const { certificateNumber } = await params;
     const body = await request.json();
     const { platform } = body;
 
