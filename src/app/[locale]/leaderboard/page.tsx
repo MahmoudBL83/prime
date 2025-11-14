@@ -40,17 +40,18 @@ interface UserPosition {
   totalParticipants: number
 }
 
-export default function LeaderboardPage({
+export default async function LeaderboardPage({
   searchParams
 }: {
-  searchParams: { courseId?: string }
+  searchParams: Promise<{ courseId?: string }>
 }) {
+  const resolvedSearchParams = await searchParams
   const { data: session } = useSession()
   const t = useTranslations('Leaderboard')
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [userPosition, setUserPosition] = useState<UserPosition | null>(null)
   const [loading, setLoading] = useState(true)
-  const [selectedCourse, setSelectedCourse] = useState(searchParams.courseId || '')
+  const [selectedCourse, setSelectedCourse] = useState(resolvedSearchParams.courseId || '')
 
   useEffect(() => {
     if (selectedCourse && session?.user?.id) {
