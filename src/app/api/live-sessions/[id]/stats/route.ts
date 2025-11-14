@@ -5,12 +5,13 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const attendeesCount = await prisma.sessionAttendee.count({
       where: {
-        sessionId: params.id,
+        sessionId: id,
         leftAt: null, // Only count active viewers
       },
     });

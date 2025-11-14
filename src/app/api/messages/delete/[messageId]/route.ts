@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { messageId: string } }
+  { params }: { params: Promise<{ messageId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -13,8 +13,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { messageId } = await params;
     const userId = session.user.id
-    const messageId = params.messageId
 
     // Get message
     const message = await prisma.message.findUnique({

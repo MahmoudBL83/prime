@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 // GET /api/lessons/[id]/bookmarks - Get all bookmarks for a lesson
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
@@ -15,7 +15,8 @@ export async function GET(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const lessonId = params.id;
+        const { id } = await params;
+        const lessonId = id;
 
         const bookmarks = await prisma.videoBookmark.findMany({
             where: {
@@ -40,7 +41,7 @@ export async function GET(
 // POST /api/lessons/[id]/bookmarks - Create a new bookmark
 export async function POST(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
@@ -49,7 +50,8 @@ export async function POST(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const lessonId = params.id;
+        const { id } = await params;
+        const lessonId = id;
         const body = await req.json();
         const { timestamp, title } = body;
 
@@ -82,7 +84,7 @@ export async function POST(
 // DELETE /api/lessons/[id]/bookmarks - Delete a bookmark
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
@@ -91,6 +93,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const { id } = await params;
         const { searchParams } = new URL(req.url);
         const bookmarkId = searchParams.get('bookmarkId');
 

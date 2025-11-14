@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 // GET /api/mentor-subscriptions/[id] - Get subscription details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -18,6 +18,7 @@ export async function GET(
       );
     }
 
+    const { id } = await params;
     const subscription = await prisma.mentorSubscription.findFirst({
       where: {
         id: params.id,
@@ -83,7 +84,7 @@ export async function GET(
 // PUT /api/mentor-subscriptions/[id] - Upgrade/downgrade subscription
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -94,6 +95,8 @@ export async function PUT(
         { status: 401 }
       );
     }
+
+    const { id } = await params;
 
     const body = await request.json();
     const { tier, billingPeriod, autoRenew } = body;
@@ -241,7 +244,7 @@ export async function PUT(
 // DELETE /api/mentor-subscriptions/[id] - Cancel subscription
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -253,10 +256,11 @@ export async function DELETE(
       );
     }
 
+    const { id } = await params;
     // Verify ownership
     const subscription = await prisma.mentorSubscription.findFirst({
       where: {
-        id: params.id,
+        id: id,
         studentId: session.user.id,
       },
     });
