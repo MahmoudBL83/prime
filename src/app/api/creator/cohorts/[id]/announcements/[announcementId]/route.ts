@@ -31,8 +31,6 @@ export async function GET(
       );
     }
 
-    const { id: cohortId, announcementId } = params;
-
     // Fetch announcement with cohort info for ownership verification
     const announcement = await prisma.cohortAnnouncement.findUnique({
       where: { id: announcementId },
