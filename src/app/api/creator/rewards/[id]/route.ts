@@ -26,7 +26,7 @@ export async function GET(
 
         const reward = await prisma.reward.findFirst({
             where: {
-                id: params.id,
+                id: id,
                 OR: [
                     {
                         course: {
