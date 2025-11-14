@@ -14,12 +14,13 @@ import { prisma } from '@/lib/prisma'
 // GET - Get replies for a discussion
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const replies = await prisma.discussionReply.findMany({
             where: {
-                discussionId: params.id,
+                discussionId: id,
                 isDeleted: false
             },
             orderBy: [
@@ -60,7 +61,7 @@ export async function GET(
 // POST - Create a reply
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions)
@@ -71,6 +72,8 @@ export async function POST(
                 { status: 401 }
             )
         }
+
+        const { id } = await params;
 
         const body = await request.json()
         const { content, parentReplyId } = body
