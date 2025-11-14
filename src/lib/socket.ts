@@ -2,7 +2,7 @@ import { Server as NetServer } from 'http';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Server as ServerIO } from 'socket.io';
 import Redis from 'ioredis';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from './auth';
 
 export type NextApiResponseServerIO = NextApiResponse & {

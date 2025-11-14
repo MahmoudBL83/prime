@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { stripe, STRIPE_CONFIG, SUBSCRIPTION_PRICE_IDS } from '@/config/stripe';
 import { prisma } from '@/lib/prisma';
