@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await params;
     const session = await getServerSession(authOptions);
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -45,7 +46,7 @@ export async function PUT(
 
     // Update reward
     const reward = await prisma.reward.update({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       data: {
         ...(title && { title }),
         ...(description && { description }),
@@ -79,9 +80,10 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await params;
     const session = await getServerSession(authOptions);
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -89,7 +91,7 @@ export async function DELETE(
 
     // Check if reward has winners
     const winnersCount = await prisma.rewardWinner.count({
-      where: { rewardId: params.id },
+      where: { rewardId: resolvedParams.id },
     });
 
     if (winnersCount > 0) {
@@ -101,7 +103,7 @@ export async function DELETE(
 
     // Delete reward
     await prisma.reward.delete({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
     });
 
     return NextResponse.json({ success: true });
