@@ -9,7 +9,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string; announcementId: string } }
+  { params }: { params: Promise<{ id: string; announcementId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -18,6 +18,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id, announcementId } = await params;
     // Verify creator status
     const creator = await prisma.creator.findUnique({
       where: { userId: session.user.id },

@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 // PATCH /api/creator/courses/[id]/submissions/[submissionId] - Grade a submission
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string; submissionId: string } }
+    { params }: { params: Promise<{ id: string; submissionId: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions)
