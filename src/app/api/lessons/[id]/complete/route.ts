@@ -7,7 +7,7 @@ import { checkAndGenerateCertificate } from '@/services/certificateService';
 // POST /api/lessons/[id]/complete - Mark lesson as complete
 export async function POST(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
@@ -16,7 +16,8 @@ export async function POST(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const lessonId = params.id;
+        const { id } = await params;
+        const lessonId = id;
 
         // Mark lesson as complete
         const progress = await prisma.lessonProgress.upsert({
