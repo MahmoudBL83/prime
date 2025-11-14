@@ -144,7 +144,6 @@ export async function GET(
     const { id } = await params;
     const cohortId = id;
 
-    const cohortId = params.id;
     const userId = session.user.id;
 
     // Fetch cohort with details
