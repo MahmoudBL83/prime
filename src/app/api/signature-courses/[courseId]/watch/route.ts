@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
     const demo = request.nextUrl.searchParams.get('demo') === 'true';
@@ -17,7 +17,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { courseId } = params;
+    const { courseId } = await params;
 
     // Get user if available (may be null in demo mode)
     const user = session?.user?.email ? await prisma.user.findUnique({ where: { email: session.user.email } }) : null;

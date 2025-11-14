@@ -9,7 +9,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         // Get authenticated session
@@ -22,7 +22,8 @@ export async function GET(
             );
         }
 
-        const sessionId = params.id;
+        const { id } = await params;
+        const sessionId = id;
         const userId = session.user.id;
 
         // Fetch the live session

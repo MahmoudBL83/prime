@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 // GET /api/study-buddy/matches/[id] - Get a specific match by ID
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions)
@@ -14,7 +14,8 @@ export async function GET(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const matchId = params.id
+        const { id } = await params;
+        const matchId = id
 
         // Get the match
         const match = await prisma.studyBuddyMatch.findFirst({

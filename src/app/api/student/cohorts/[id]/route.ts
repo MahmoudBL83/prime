@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 // POST /api/student/cohorts/[id]/apply - Apply to join a cohort
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -18,7 +18,8 @@ export async function POST(
       );
     }
 
-    const cohortId = params.id;
+    const { id } = await params;
+    const cohortId = id;
     const userId = session.user.id;
 
     // Check if cohort exists and is open
@@ -128,7 +129,7 @@ export async function POST(
 // GET /api/student/cohorts/[id] - Get cohort details for student
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -139,6 +140,9 @@ export async function GET(
         { status: 401 }
       );
     }
+
+    const { id } = await params;
+    const cohortId = id;
 
     const cohortId = params.id;
     const userId = session.user.id;
