@@ -62,7 +62,12 @@ async function createCreator() {
         data: {
             creatorId: creator.id,
             name: `${user.name}'s Channel`,
-            description: 'My educational content channel'
+            description: 'My educational content channel',
+            tiers: {
+                bronze: { price: 49, benefits: ['Access to all posts', 'Weekly updates'] },
+                silver: { price: 99, benefits: ['All Bronze benefits', 'Priority support', '1-on-1 sessions'] },
+                gold: { price: 199, benefits: ['All Silver benefits', 'Exclusive content', 'Direct messaging'] }
+            }
         }
     })
     

@@ -52,7 +52,12 @@ async function createCreatorForAdmin() {
         data: {
             creatorId: creator.id,
             name: "Omar Hassan's Channel",
-            description: 'Educational content and platform tutorials'
+            description: 'Educational content and platform tutorials',
+            tiers: {
+                bronze: { price: 49, benefits: ['Access to all posts', 'Weekly updates'] },
+                silver: { price: 99, benefits: ['All Bronze benefits', 'Priority support', '1-on-1 sessions'] },
+                gold: { price: 199, benefits: ['All Silver benefits', 'Exclusive content', 'Direct messaging'] }
+            }
         }
     })
     
