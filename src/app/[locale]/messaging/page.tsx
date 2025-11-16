@@ -2405,7 +2405,7 @@ export default function MessengerPage() {
                                 {/* Message Requests */}
                                 <button
                                     onClick={() => {
-                                        toast.info(isArabic ? 'لا توجد طلبات رسائل' : 'No message requests')
+                                        toast(isArabic ? 'لا توجد طلبات رسائل' : 'No message requests')
                                     }}
                                     className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
                                         isDarkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-gray-100 hover:bg-gray-200'
@@ -2452,7 +2452,7 @@ export default function MessengerPage() {
                                 {/* Muted Conversations */}
                                 <button
                                     onClick={() => {
-                                        toast.info(isArabic ? 'لا توجد محادثات مكتومة' : 'No muted conversations')
+                                        toast(isArabic ? 'لا توجد محادثات مكتومة' : 'No muted conversations')
                                     }}
                                     className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
                                         isDarkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-gray-100 hover:bg-gray-200'
