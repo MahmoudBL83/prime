@@ -29,10 +29,11 @@ export async function PATCH(
             )
         }
 
+        const { id, submissionId } = await params;
         // Verify course ownership
         const course = await prisma.course.findFirst({
             where: {
-                id: params.id,
+                id: id,
                 creatorId: creator.id
             }
         })
@@ -58,9 +59,9 @@ export async function PATCH(
         // Get the submission to check max points
         const submission = await prisma.assignmentSubmission.findFirst({
             where: {
-                id: params.submissionId,
+                id: submissionId,
                 assignment: {
-                    courseId: params.id
+                    courseId: id
                 }
             },
             include: {
@@ -90,7 +91,7 @@ export async function PATCH(
         // Update submission with grade
         const gradedSubmission = await prisma.assignmentSubmission.update({
             where: {
-                id: params.submissionId
+                id: submissionId
             },
             data: {
                 score: score,
@@ -133,7 +134,7 @@ export async function PATCH(
 // GET /api/creator/courses/[id]/submissions/[submissionId] - Get single submission details
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string; submissionId: string } }
+    { params }: { params: Promise<{ id: string; submissionId: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions)
@@ -144,6 +145,7 @@ export async function GET(
             )
         }
 
+        const { id, submissionId } = await params;
         // Get creator profile
         const creator = await prisma.creator.findUnique({
             where: { userId: session.user.id }
@@ -159,9 +161,9 @@ export async function GET(
         // Verify course ownership and get submission
         const submission = await prisma.assignmentSubmission.findFirst({
             where: {
-                id: params.submissionId,
+                id: submissionId,
                 assignment: {
-                    courseId: params.id,
+                    courseId: id,
                     course: {
                         creatorId: creator.id
                     }

@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma'
 // GET /api/creator/courses/[id]/students - Get all enrolled students with their progress
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.id) {
             return NextResponse.json(
@@ -32,7 +33,7 @@ export async function GET(
         // Verify course ownership
         const course = await prisma.course.findFirst({
             where: {
-                id: params.id,
+                id: id,
                 creatorId: creator.id
             }
         })
@@ -47,7 +48,7 @@ export async function GET(
         // Get all enrollments with user details and progress
         const enrollments = await prisma.enrollment.findMany({
             where: {
-                courseId: params.id
+                courseId: id
             },
             include: {
                 user: {
@@ -69,7 +70,7 @@ export async function GET(
         const quizAttempts = await prisma.quizAttempt.findMany({
             where: {
                 quiz: {
-                    courseId: params.id
+                    courseId: id
                 }
             },
             include: {
@@ -87,7 +88,7 @@ export async function GET(
         // Get assignment submissions for all enrolled students
         const assignments = await prisma.assignment.findMany({
             where: {
-                courseId: params.id
+                courseId: id
             },
             include: {
                 submissions: {
@@ -103,7 +104,7 @@ export async function GET(
         })
 
         // Get total quizzes and assignments count
-        const totalQuizzes = await prisma.quiz.count({ where: { courseId: params.id } })
+        const totalQuizzes = await prisma.quiz.count({ where: { courseId: id } })
         const totalAssignments = assignments.length
 
         // Aggregate progress data per student

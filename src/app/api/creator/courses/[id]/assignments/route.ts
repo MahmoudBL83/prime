@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma'
 // GET /api/creator/courses/[id]/assignments - List all assignments for a course
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.id) {
             return NextResponse.json(
@@ -32,7 +33,7 @@ export async function GET(
         // Verify course ownership
         const course = await prisma.course.findFirst({
             where: {
-                id: params.id,
+                id,
                 creatorId: creator.id
             }
         })
@@ -47,7 +48,7 @@ export async function GET(
         // Fetch all assignments for this course
         const assignments = await prisma.assignment.findMany({
             where: {
-                courseId: params.id
+                courseId: id
             },
             include: {
                 lesson: {
@@ -84,9 +85,10 @@ export async function GET(
 // POST /api/creator/courses/[id]/assignments - Create a new assignment
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.id) {
             return NextResponse.json(
@@ -110,7 +112,7 @@ export async function POST(
         // Verify course ownership
         const course = await prisma.course.findFirst({
             where: {
-                id: params.id,
+                id,
                 creatorId: creator.id
             }
         })
@@ -160,7 +162,7 @@ export async function POST(
                 dueDate: dueDate ? new Date(dueDate) : null,
                 maxPoints: maxScore || 100,
                 allowLateSubmission: allowLateSubmission ?? false,
-                courseId: params.id,
+                courseId: id,
                 lessonId: lessonId || null
             },
             include: {

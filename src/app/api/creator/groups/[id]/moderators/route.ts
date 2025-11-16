@@ -12,9 +12,10 @@ const moderatorSchema = z.object({
 // POST /api/creator/groups/[id]/moderators - Add moderator
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -28,7 +29,7 @@ export async function POST(
             return NextResponse.json({ error: 'Creator profile not found' }, { status: 404 })
         }
 
-        const groupId = params.id
+        const groupId = id
         const body = await request.json()
         const { userId, role } = moderatorSchema.parse(body)
 
@@ -115,9 +116,10 @@ export async function POST(
 // GET /api/creator/groups/[id]/moderators - List moderators
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -131,7 +133,7 @@ export async function GET(
             return NextResponse.json({ error: 'Creator profile not found' }, { status: 404 })
         }
 
-        const groupId = params.id
+        const groupId = id
 
         // Verify group ownership
         const group = await prisma.memberGroup.findFirst({
@@ -182,9 +184,10 @@ export async function GET(
 // DELETE /api/creator/groups/[id]/moderators - Remove moderator
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -198,7 +201,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Creator profile not found' }, { status: 404 })
         }
 
-        const groupId = params.id
+        const groupId = id
         const searchParams = request.nextUrl.searchParams
         const moderatorId = searchParams.get('moderatorId')
 

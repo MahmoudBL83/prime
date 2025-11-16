@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma'
 // POST /api/creator/rewards/[id]/select-winners - Select winners for a reward
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.id || session.user.role !== 'CREATOR') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -26,7 +27,7 @@ export async function POST(
         // Get reward with ownership verification
         const reward = await prisma.reward.findFirst({
             where: {
-                id: params.id,
+                id,
                 course: {
                     creatorId: creator.id
                 }
@@ -105,7 +106,7 @@ export async function POST(
                 userIds.map((userId, index) =>
                     prisma.rewardWinner.create({
                         data: {
-                            rewardId: params.id,
+                            rewardId: id,
                             userId,
                             rank: currentRank + index,
                             status: 'PENDING'
@@ -172,7 +173,7 @@ export async function POST(
             // Check for existing winners
             const existingWinners = await prisma.rewardWinner.findMany({
                 where: {
-                    rewardId: params.id
+                    rewardId: id
                 },
                 select: {
                     userId: true
@@ -194,7 +195,7 @@ export async function POST(
                 newWinners.map((entry, index) =>
                     prisma.rewardWinner.create({
                         data: {
-                            rewardId: params.id,
+                            rewardId: id,
                             userId: entry.userId,
                             rank: index + 1,
                             status: 'PENDING'

@@ -13,12 +13,13 @@ export async function POST(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
+        const { id } = await params;
         // Check if user is already enrolled
         const existingEnrollment = await prisma.enrollment.findUnique({
             where: {
                 userId_courseId: {
                     userId: session.user.id,
-                    courseId: params.id,
+                    courseId: id,
                 },
             },
         })
@@ -32,7 +33,7 @@ export async function POST(
 
         // Check if course exists and is published
         const course = await prisma.course.findUnique({
-            where: { id: params.id },
+            where: { id: id },
         })
 
         if (!course || course.status !== 'PUBLISHED') {
@@ -71,7 +72,7 @@ export async function POST(
         const enrollment = await prisma.enrollment.create({
             data: {
                 userId: session.user.id,
-                courseId: params.id,
+                courseId: id,
                 progress: 0,
                 completedLessons: JSON.stringify([]),
             },
@@ -79,7 +80,7 @@ export async function POST(
 
         // Update course enrollment count
         await prisma.course.update({
-            where: { id: params.id },
+            where: { id: id },
             data: {
                 totalEnrollments: {
                     increment: 1,

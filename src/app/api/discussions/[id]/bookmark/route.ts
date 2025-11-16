@@ -14,9 +14,10 @@ import { prisma } from '@/lib/prisma'
 // POST - Bookmark discussion
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
 
         if (!session?.user) {
@@ -29,7 +30,7 @@ export async function POST(
         // Check if already bookmarked
         const existing = await prisma.discussionBookmark.findFirst({
             where: {
-                discussionId: params.id,
+                discussionId: id,
                 userId: session.user.id
             }
         })
@@ -44,7 +45,7 @@ export async function POST(
         // Create bookmark
         const bookmark = await prisma.discussionBookmark.create({
             data: {
-                discussionId: params.id,
+                discussionId: id,
                 userId: session.user.id
             }
         })
@@ -66,9 +67,10 @@ export async function POST(
 // DELETE - Remove bookmark
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
 
         if (!session?.user) {
@@ -81,7 +83,7 @@ export async function DELETE(
         // Find and delete bookmark
         const bookmark = await prisma.discussionBookmark.findFirst({
             where: {
-                discussionId: params.id,
+                discussionId: id,
                 userId: session.user.id
             }
         })

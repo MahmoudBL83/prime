@@ -12,9 +12,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
 
         if (!session?.user) {
@@ -36,7 +37,7 @@ export async function POST(
 
         // Get discussion
         const discussion = await prisma.courseDiscussion.findUnique({
-            where: { id: params.id },
+            where: { id },
             include: {
                 course: {
                     select: {
@@ -68,7 +69,7 @@ export async function POST(
         const reply = await prisma.discussionReply.findFirst({
             where: {
                 id: replyId,
-                discussionId: params.id
+                discussionId: id
             }
         })
 
@@ -82,7 +83,7 @@ export async function POST(
         // Remove previous best answer (if any)
         await prisma.discussionReply.updateMany({
             where: {
-                discussionId: params.id,
+                discussionId: id,
                 isBestAnswer: true
             },
             data: {
@@ -101,14 +102,14 @@ export async function POST(
 
         // Mark discussion as solved
         await prisma.courseDiscussion.update({
-            where: { id: params.id },
+            where: { id },
             data: {
                 isSolved: true
             }
         })
 
         // Send notification to reply author
-        await fetch(`${process.env.NEXTAUTH_URL}/api/discussions/${params.id}/notifications`, {
+        await fetch(`${process.env.NEXTAUTH_URL}/api/discussions/${id}/notifications`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -134,9 +135,10 @@ export async function POST(
 // DELETE - Remove best answer
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
 
         if (!session?.user) {
@@ -147,7 +149,7 @@ export async function DELETE(
         }
 
         const discussion = await prisma.courseDiscussion.findUnique({
-            where: { id: params.id },
+            where: { id },
             include: {
                 course: {
                     select: {
@@ -178,7 +180,7 @@ export async function DELETE(
         // Remove best answer
         await prisma.discussionReply.updateMany({
             where: {
-                discussionId: params.id,
+                discussionId: id,
                 isBestAnswer: true
             },
             data: {

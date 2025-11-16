@@ -5,9 +5,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions);
     if (!session?.user || session.user.role !== 'CREATOR') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -15,7 +16,7 @@ export async function GET(
 
     // Get session and verify ownership
     const liveSession = await prisma.liveSession.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         channel: true,
       },
@@ -35,7 +36,7 @@ export async function GET(
     // Get current active viewers
     const currentViewers = await prisma.sessionAttendee.count({
       where: {
-        sessionId: params.id,
+        sessionId: id,
         leftAt: null,
       },
     });
@@ -43,14 +44,14 @@ export async function GET(
     // Get total unique viewers
     const totalViewers = await prisma.sessionAttendee.count({
       where: {
-        sessionId: params.id,
+        sessionId: id,
       },
     });
 
     // Get average watch time
     const attendees = await prisma.sessionAttendee.findMany({
       where: {
-        sessionId: params.id,
+        sessionId: id,
         duration: {
           not: null,
         },

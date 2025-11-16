@@ -21,7 +21,7 @@ export async function GET(
     const { id } = await params;
     const subscription = await prisma.mentorSubscription.findFirst({
       where: {
-        id: params.id,
+        id: id,
         studentId: session.user.id,
       },
       include: {
@@ -104,7 +104,7 @@ export async function PUT(
     // Verify ownership
     const subscription = await prisma.mentorSubscription.findFirst({
       where: {
-        id: params.id,
+        id: id,
         studentId: session.user.id,
       },
     });
@@ -212,7 +212,7 @@ export async function PUT(
 
     // Apply updates
     const updatedSubscription = await prisma.mentorSubscription.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
     });
 
@@ -274,7 +274,7 @@ export async function DELETE(
 
     // Cancel subscription
     const cancelledSubscription = await prisma.mentorSubscription.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         status: 'CANCELLED',
         autoRenew: false,

@@ -22,6 +22,8 @@ const IconComponents = {
     ChevronDown: lazy(() => import('lucide-react').then(mod => ({ default: mod.ChevronDown }))),
     ChevronUp: lazy(() => import('lucide-react').then(mod => ({ default: mod.ChevronUp }))),
     Star: lazy(() => import('lucide-react').then(mod => ({ default: mod.Star }))),
+    CheckCircle: lazy(() => import('lucide-react').then(mod => ({ default: mod.CheckCircle }))),
+    LockIcon: lazy(() => import('lucide-react').then(mod => ({ default: mod.Lock }))),
     Clock: lazy(() => import('lucide-react').then(mod => ({ default: mod.Clock }))),
     Calendar: lazy(() => import('lucide-react').then(mod => ({ default: mod.Calendar }))),
     Film: lazy(() => import('lucide-react').then(mod => ({ default: mod.Film }))),

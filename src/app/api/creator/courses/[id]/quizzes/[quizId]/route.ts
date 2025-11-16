@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma'
 // GET - Fetch a single quiz
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string; quizId: string } }
+    { params }: { params: Promise<{ id: string; quizId: string }> }
 ) {
     try {
+        const { id, quizId } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.email) {
             return NextResponse.json(
@@ -16,8 +17,6 @@ export async function GET(
                 { status: 401 }
             )
         }
-
-        const { quizId } = params
 
         const quiz = await prisma.quiz.findUnique({
             where: { id: quizId },
@@ -65,9 +64,10 @@ export async function GET(
 // PATCH - Update a quiz
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string; quizId: string } }
+    { params }: { params: Promise<{ id: string; quizId: string }> }
 ) {
     try {
+        const { id, quizId } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.email) {
             return NextResponse.json(
@@ -76,7 +76,6 @@ export async function PATCH(
             )
         }
 
-        const { quizId } = params
         const body = await request.json()
 
         const {
@@ -188,9 +187,10 @@ export async function PATCH(
 // DELETE - Delete a quiz
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string; quizId: string } }
+    { params }: { params: Promise<{ id: string; quizId: string }> }
 ) {
     try {
+        const { id, quizId } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.email) {
             return NextResponse.json(
@@ -198,8 +198,6 @@ export async function DELETE(
                 { status: 401 }
             )
         }
-
-        const { quizId } = params
 
         // Verify ownership
         const user = await prisma.user.findUnique({

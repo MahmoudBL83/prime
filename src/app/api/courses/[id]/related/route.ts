@@ -6,7 +6,8 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const courseId = params.id
+        const { id } = await params;
+        const courseId = id
 
         // Get the current course to find similar courses
         const currentCourse = await prisma.course.findUnique({

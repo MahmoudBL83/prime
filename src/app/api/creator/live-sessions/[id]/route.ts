@@ -23,9 +23,10 @@ const startSessionSchema = z.object({
 // GET /api/creator/live-sessions/[id] - Get single session
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -42,7 +43,7 @@ export async function GET(
       );
     }
 
-    const sessionId = params.id;
+    const sessionId = id;
     const creatorId = session.user.id;
 
     // Fetch session with ownership verification
@@ -129,9 +130,10 @@ export async function GET(
 // PATCH /api/creator/live-sessions/[id] - Update or cancel session
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -162,7 +164,7 @@ export async function PATCH(
     }
 
     const data = validation.data;
-    const sessionId = params.id;
+    const sessionId = id;
     const creatorId = session.user.id;
 
     // Verify ownership
@@ -259,9 +261,10 @@ export async function PATCH(
 // DELETE /api/creator/live-sessions/[id] - Delete session
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -278,7 +281,7 @@ export async function DELETE(
       );
     }
 
-    const sessionId = params.id;
+    const sessionId = id;
     const creatorId = session.user.id;
 
     // Verify ownership

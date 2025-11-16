@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 // GET /api/lessons/[id]/notes - Get all notes for a lesson
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
@@ -15,7 +15,8 @@ export async function GET(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const lessonId = params.id;
+        const { id } = await params;
+        const lessonId = id;
 
         const notes = await prisma.videoNote.findMany({
             where: {
@@ -40,7 +41,7 @@ export async function GET(
 // POST /api/lessons/[id]/notes - Create a new note
 export async function POST(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
@@ -49,7 +50,8 @@ export async function POST(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const lessonId = params.id;
+        const { id } = await params;
+        const lessonId = id;
         const body = await req.json();
         const { timestamp, content } = body;
 
@@ -82,7 +84,7 @@ export async function POST(
 // PUT /api/lessons/[id]/notes - Update a note
 export async function PUT(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
@@ -131,7 +133,7 @@ export async function PUT(
 // DELETE /api/lessons/[id]/notes - Delete a note
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);

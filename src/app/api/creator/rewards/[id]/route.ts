@@ -112,9 +112,10 @@ export async function GET(
 // PATCH /api/creator/rewards/[id] - Update reward
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.id || session.user.role !== 'CREATOR') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -132,7 +133,7 @@ export async function PATCH(
         // Verify ownership
         const existingReward = await prisma.reward.findFirst({
             where: {
-                id: params.id,
+                id,
                 course: {
                     creatorId: creator.id
                 }
@@ -157,7 +158,7 @@ export async function PATCH(
         } = body
 
         const reward = await prisma.reward.update({
-            where: { id: params.id },
+            where: { id },
             data: {
                 ...(title && { title }),
                 ...(titleAr !== undefined && { titleAr }),
@@ -188,9 +189,10 @@ export async function PATCH(
 // DELETE /api/creator/rewards/[id] - Delete reward
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.id || session.user.role !== 'CREATOR') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -208,7 +210,7 @@ export async function DELETE(
         // Verify ownership
         const reward = await prisma.reward.findFirst({
             where: {
-                id: params.id,
+                id,
                 course: {
                     creatorId: creator.id
                 }
@@ -235,7 +237,7 @@ export async function DELETE(
         }
 
         await prisma.reward.delete({
-            where: { id: params.id }
+            where: { id }
         })
 
         return NextResponse.json({

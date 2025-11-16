@@ -8,7 +8,8 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const courseId = params.id
+        const { id } = await params;
+        const courseId = id
         const isDemoAccess = request.nextUrl.searchParams.get('demo') === 'true'
 
         // For demo access, we don't require authentication

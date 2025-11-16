@@ -304,7 +304,8 @@ export default function OnlyFansMentorProfilePage() {
                     setChannelId(mentorData.channelId)
                 } else {
                     // Fallback to using mentor ID as channel ID
-                    setChannelId(params.id)
+                    const mentorId = Array.isArray(params.id) ? params.id[0] : params.id
+                    setChannelId(mentorId)
                 }
                 
                 // Set posts if available

@@ -198,9 +198,10 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -219,7 +220,7 @@ export async function PATCH(
       );
     }
 
-    const cohortId = params.id;
+    const cohortId = id;
 
     // Verify cohort exists and ownership
     const existingCohort = await prisma.cohort.findUnique({
@@ -339,9 +340,10 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -360,7 +362,7 @@ export async function DELETE(
       );
     }
 
-    const cohortId = params.id;
+    const cohortId = id;
 
     // Verify cohort exists and ownership
     const cohort = await prisma.cohort.findUnique({

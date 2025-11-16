@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma';
 // POST /api/creator/live-sessions/[id]/start - Start a live session
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -25,7 +26,7 @@ export async function POST(
       );
     }
 
-    const sessionId = params.id;
+    const sessionId = id;
     const creatorId = session.user.id;
 
     // Verify ownership and session exists

@@ -9,6 +9,7 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         // Verify admin authentication
         const session = await getServerSession(authOptions)
 
@@ -33,7 +34,7 @@ export async function GET(
 
         // Get user details
         const user = await prisma.user.findUnique({
-            where: { id: params.id },
+            where: { id: id },
             include: {
                 _count: {
                     select: {
@@ -88,6 +89,7 @@ export async function PATCH(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         // Verify admin authentication
         const session = await getServerSession(authOptions)
 
@@ -114,7 +116,7 @@ export async function PATCH(
         const { action, ...updateData } = body
 
         // Prevent admin from changing their own role or deleting themselves
-        if (params.id === currentUser.id) {
+        if (id === currentUser.id) {
             if (action === 'delete' || (updateData.role && updateData.role !== UserRole.ADMIN)) {
                 return NextResponse.json(
                     { error: 'Cannot modify your own admin account' },
@@ -135,14 +137,14 @@ export async function PATCH(
                 }
 
                 updatedUser = await prisma.user.update({
-                    where: { id: params.id },
+                    where: { id: id },
                     data: { role: updateData.role }
                 })
                 break
 
             case 'updateProfile':
                 updatedUser = await prisma.user.update({
-                    where: { id: params.id },
+                    where: { id: id },
                     data: {
                         name: updateData.name,
                         arabicName: updateData.arabicName,
@@ -154,21 +156,21 @@ export async function PATCH(
 
             case 'verifyEmail':
                 updatedUser = await prisma.user.update({
-                    where: { id: params.id },
+                    where: { id: id },
                     data: { emailVerified: new Date() }
                 })
                 break
 
             case 'unverifyEmail':
                 updatedUser = await prisma.user.update({
-                    where: { id: params.id },
+                    where: { id: id },
                     data: { emailVerified: null }
                 })
                 break
 
             case 'completeOnboarding':
                 updatedUser = await prisma.user.update({
-                    where: { id: params.id },
+                    where: { id: id },
                     data: { onboardingCompleted: true } as any
                 })
                 break
@@ -199,6 +201,7 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         // Verify admin authentication
         const session = await getServerSession(authOptions)
 
@@ -222,7 +225,7 @@ export async function DELETE(
         }
 
         // Prevent admin from deleting themselves
-        if (params.id === currentUser.id) {
+        if (id === currentUser.id) {
             return NextResponse.json(
                 { error: 'Cannot delete your own admin account' },
                 { status: 400 }
@@ -231,7 +234,7 @@ export async function DELETE(
 
         // Check if user exists
         const userToDelete = await prisma.user.findUnique({
-            where: { id: params.id }
+            where: { id: id }
         })
 
         if (!userToDelete) {
@@ -243,7 +246,7 @@ export async function DELETE(
 
         // Delete user and related data (this will cascade due to foreign key constraints)
         await prisma.user.delete({
-            where: { id: params.id }
+            where: { id: id }
         })
 
         return NextResponse.json({

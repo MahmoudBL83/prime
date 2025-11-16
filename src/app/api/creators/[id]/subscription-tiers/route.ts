@@ -4,11 +4,12 @@ import { prisma } from '@/lib/prisma';
 // GET /api/creators/[id]/subscription-tiers - Get creator's subscription pricing
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const creator = await prisma.creator.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         basicMonthlyPrice: true,

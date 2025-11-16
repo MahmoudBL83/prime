@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma'
 // GET /api/creator/courses/[id]/submissions - Get all pending submissions for grading
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.id) {
             return NextResponse.json(
@@ -35,7 +36,7 @@ export async function GET(
         // Verify course ownership
         const course = await prisma.course.findFirst({
             where: {
-                id: params.id,
+                id,
                 creatorId: creator.id
             }
         })
@@ -58,7 +59,7 @@ export async function GET(
         const submissions = await prisma.assignmentSubmission.findMany({
             where: {
                 assignment: {
-                    courseId: params.id
+                    courseId: id
                 },
                 ...filterCondition
             },

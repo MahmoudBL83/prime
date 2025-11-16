@@ -122,9 +122,9 @@ export async function PATCH(
     }
 
     // Verify the session exists and user has permission
-    const existingSession = await prisma.studySession.findFirst({
+    const studySession = await prisma.studySession.findFirst({
       where: {
-        id: params.id,
+        id: id,
         match: {
           OR: [
             { user1Id: session.user.id },
@@ -171,7 +171,7 @@ export async function PATCH(
 
     // Update the session
     const updatedSession = await prisma.studySession.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
     })
 
@@ -184,31 +184,31 @@ export async function PATCH(
 
       // Delete old reminders
       await prisma.studySessionReminder.deleteMany({
-        where: { sessionId: params.id }
+        where: { sessionId: id }
       })
 
       // Create new reminders
       const reminders = [
         {
-          sessionId: params.id,
+          sessionId: id,
           userId: session.user.id,
           reminderTime: new Date(newSessionTime.getTime() - 60 * 60 * 1000),
           reminderType: 'ONE_HOUR_BEFORE',
         },
         {
-          sessionId: params.id,
+          sessionId: id,
           userId: otherUserId,
           reminderTime: new Date(newSessionTime.getTime() - 60 * 60 * 1000),
           reminderType: 'ONE_HOUR_BEFORE',
         },
         {
-          sessionId: params.id,
+          sessionId: id,
           userId: session.user.id,
           reminderTime: new Date(newSessionTime.getTime() - 15 * 60 * 1000),
           reminderType: 'FIFTEEN_MINUTES_BEFORE',
         },
         {
-          sessionId: params.id,
+          sessionId: id,
           userId: otherUserId,
           reminderTime: new Date(newSessionTime.getTime() - 15 * 60 * 1000),
           reminderType: 'FIFTEEN_MINUTES_BEFORE',
@@ -254,7 +254,7 @@ export async function DELETE(
     // Verify the session exists and user has permission
     const existingSession = await prisma.studySession.findFirst({
       where: {
-        id: params.id,
+        id: id,
         match: {
           OR: [
             { user1Id: session.user.id },
@@ -270,12 +270,12 @@ export async function DELETE(
 
     // Delete reminders first
     await prisma.studySessionReminder.deleteMany({
-      where: { sessionId: params.id }
+      where: { sessionId: id }
     })
 
     // Delete the session
     await prisma.studySession.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     return NextResponse.json({ message: 'Study session deleted successfully' })

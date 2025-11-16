@@ -12,9 +12,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
 
         if (!session?.user) {
@@ -45,7 +46,7 @@ export async function POST(
             // Check if already voted
             const existingVote = await prisma.discussionVote.findFirst({
                 where: {
-                    discussionId: params.id,
+                    discussionId: id,
                     userId: session.user.id
                 }
             })
@@ -62,12 +63,12 @@ export async function POST(
                 await prisma.$transaction([
                     prisma.discussionVote.create({
                         data: {
-                            discussionId: params.id,
+                            discussionId: id,
                             userId: session.user.id
                         }
                     }),
                     prisma.courseDiscussion.update({
-                        where: { id: params.id },
+                        where: { id },
                         data: {
                             upvotes: {
                                 increment: 1
@@ -89,7 +90,7 @@ export async function POST(
                         where: { id: existingVote.id }
                     }),
                     prisma.courseDiscussion.update({
-                        where: { id: params.id },
+                        where: { id },
                         data: {
                             upvotes: {
                                 decrement: 1
@@ -102,7 +103,7 @@ export async function POST(
             // Reply voting
             const existingVote = await prisma.replyVote.findFirst({
                 where: {
-                    replyId: params.id,
+                    replyId: id,
                     userId: session.user.id
                 }
             })
@@ -118,12 +119,12 @@ export async function POST(
                 await prisma.$transaction([
                     prisma.replyVote.create({
                         data: {
-                            replyId: params.id,
+                            replyId: id,
                             userId: session.user.id
                         }
                     }),
                     prisma.discussionReply.update({
-                        where: { id: params.id },
+                        where: { id },
                         data: {
                             upvotes: {
                                 increment: 1
@@ -144,7 +145,7 @@ export async function POST(
                         where: { id: existingVote.id }
                     }),
                     prisma.discussionReply.update({
-                        where: { id: params.id },
+                        where: { id },
                         data: {
                             upvotes: {
                                 decrement: 1

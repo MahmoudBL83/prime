@@ -42,7 +42,7 @@ export async function POST(
     }
 
     // Record the share
-    const certificate = await recordShare(params.certificateNumber, platform);
+    const certificate = await recordShare(certificateNumber, platform);
 
     return NextResponse.json({
       success: true,

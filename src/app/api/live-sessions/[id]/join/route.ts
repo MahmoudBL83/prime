@@ -37,7 +37,7 @@ export async function POST(
     const existing = await prisma.sessionAttendee.findUnique({
       where: {
         sessionId_userId: {
-          sessionId: params.id,
+          sessionId: id,
           userId: session.user.id,
         },
       },
@@ -54,12 +54,12 @@ export async function POST(
     const attendee = await prisma.sessionAttendee.upsert({
       where: {
         sessionId_userId: {
-          sessionId: params.id,
+          sessionId: id,
           userId: session.user.id,
         },
       },
       create: {
-        sessionId: params.id,
+        sessionId: id,
         userId: session.user.id,
         joinedAt: new Date(),
       },
@@ -71,7 +71,7 @@ export async function POST(
 
     // Increment view count
     await prisma.liveSession.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         viewCount: {
           increment: 1,

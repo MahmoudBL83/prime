@@ -86,9 +86,10 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -107,7 +108,7 @@ export async function POST(
       );
     }
 
-    const cohortId = params.id;
+    const cohortId = id;
 
     // Verify cohort exists and ownership
     const cohort = await prisma.cohort.findUnique({

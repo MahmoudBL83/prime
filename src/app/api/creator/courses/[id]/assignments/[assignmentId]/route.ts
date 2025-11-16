@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma'
 // GET /api/creator/courses/[id]/assignments/[assignmentId] - Get single assignment with submissions
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string; assignmentId: string } }
+    { params }: { params: Promise<{ id: string; assignmentId: string }> }
 ) {
     try {
+        const { id, assignmentId } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.id) {
             return NextResponse.json(
@@ -32,7 +33,7 @@ export async function GET(
         // Verify course ownership
         const course = await prisma.course.findFirst({
             where: {
-                id: params.id,
+                id,
                 creatorId: creator.id
             }
         })
@@ -47,8 +48,8 @@ export async function GET(
         // Fetch assignment with submissions
         const assignment = await prisma.assignment.findFirst({
             where: {
-                id: params.assignmentId,
-                courseId: params.id
+                id: assignmentId,
+                courseId: id
             },
             include: {
                 course: {
@@ -110,9 +111,10 @@ export async function GET(
 // PATCH /api/creator/courses/[id]/assignments/[assignmentId] - Update assignment
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string; assignmentId: string } }
+    { params }: { params: Promise<{ id: string; assignmentId: string }> }
 ) {
     try {
+        const { id, assignmentId } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.id) {
             return NextResponse.json(
@@ -136,7 +138,7 @@ export async function PATCH(
         // Verify course ownership
         const course = await prisma.course.findFirst({
             where: {
-                id: params.id,
+                id,
                 creatorId: creator.id
             }
         })
@@ -151,8 +153,8 @@ export async function PATCH(
         // Verify assignment exists
         const existingAssignment = await prisma.assignment.findFirst({
             where: {
-                id: params.assignmentId,
-                courseId: params.id
+                id: assignmentId,
+                courseId: id
             }
         })
 
@@ -183,7 +185,7 @@ export async function PATCH(
         // Update assignment
         const assignment = await prisma.assignment.update({
             where: {
-                id: params.assignmentId
+                id: assignmentId
             },
             data: {
                 title: title || existingAssignment.title,
@@ -229,9 +231,10 @@ export async function PATCH(
 // DELETE /api/creator/courses/[id]/assignments/[assignmentId] - Delete assignment
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string; assignmentId: string } }
+    { params }: { params: Promise<{ id: string; assignmentId: string }> }
 ) {
     try {
+        const { id, assignmentId } = await params
         const session = await getServerSession(authOptions)
         if (!session?.user?.id) {
             return NextResponse.json(
@@ -255,7 +258,7 @@ export async function DELETE(
         // Verify course ownership
         const course = await prisma.course.findFirst({
             where: {
-                id: params.id,
+                id,
                 creatorId: creator.id
             }
         })
@@ -270,8 +273,8 @@ export async function DELETE(
         // Verify assignment exists
         const assignment = await prisma.assignment.findFirst({
             where: {
-                id: params.assignmentId,
-                courseId: params.id
+                id: assignmentId,
+                courseId: id
             }
         })
 
@@ -285,7 +288,7 @@ export async function DELETE(
         // Delete assignment (cascade will delete submissions)
         await prisma.assignment.delete({
             where: {
-                id: params.assignmentId
+                id: assignmentId
             }
         })
 

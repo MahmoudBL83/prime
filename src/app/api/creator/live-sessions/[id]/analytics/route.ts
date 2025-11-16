@@ -18,9 +18,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions);
 
         if (!session?.user?.id) {
@@ -30,7 +31,7 @@ export async function GET(
             );
         }
 
-        const sessionId = params.id;
+        const sessionId = id;
 
         // 1. Fetch the session with channel info
         const liveSession = await prisma.liveSession.findUnique({

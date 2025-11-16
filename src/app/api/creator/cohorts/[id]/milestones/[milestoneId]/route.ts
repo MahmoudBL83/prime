@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma';
 // GET /api/creator/cohorts/[id]/milestones/[milestoneId] - Get a specific milestone
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string; milestoneId: string } }
+  { params }: { params: Promise<{ id: string; milestoneId: string }> }
 ) {
   try {
+    const { id, milestoneId } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -18,7 +19,7 @@ export async function GET(
       );
     }
 
-    const { id: cohortId, milestoneId } = params;
+    const cohortId = id;
 
     // Verify user is a creator
     const creator = await prisma.creator.findUnique({
@@ -106,9 +107,10 @@ export async function GET(
 // PATCH /api/creator/cohorts/[id]/milestones/[milestoneId] - Update a milestone
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string; milestoneId: string } }
+  { params }: { params: Promise<{ id: string; milestoneId: string }> }
 ) {
   try {
+    const { id, milestoneId } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -118,7 +120,7 @@ export async function PATCH(
       );
     }
 
-    const { id: cohortId, milestoneId } = params;
+    const cohortId = id;
 
     // Verify user is a creator
     const creator = await prisma.creator.findUnique({
@@ -250,9 +252,10 @@ export async function PATCH(
 // DELETE /api/creator/cohorts/[id]/milestones/[milestoneId] - Delete a milestone
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; milestoneId: string } }
+  { params }: { params: Promise<{ id: string; milestoneId: string }> }
 ) {
   try {
+    const { id, milestoneId } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -262,7 +265,7 @@ export async function DELETE(
       );
     }
 
-    const { id: cohortId, milestoneId } = params;
+    const cohortId = id;
 
     // Verify user is a creator
     const creator = await prisma.creator.findUnique({

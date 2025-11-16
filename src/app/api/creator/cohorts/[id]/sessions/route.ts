@@ -136,9 +136,10 @@ export async function GET(
 // POST /api/creator/cohorts/[id]/sessions - Create a new session
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -155,7 +156,7 @@ export async function POST(
       );
     }
 
-    const cohortId = params.id;
+    const cohortId = id;
 
     // Verify cohort exists and user owns the course
     const cohort = await prisma.cohort.findUnique({

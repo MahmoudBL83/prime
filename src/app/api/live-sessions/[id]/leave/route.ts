@@ -20,7 +20,7 @@ export async function POST(
     // Update attendee record with leave time and duration
     const attendee = await prisma.sessionAttendee.updateMany({
       where: {
-        sessionId: params.id,
+        sessionId: id,
         userId: session.user.id,
         leftAt: null,
       },

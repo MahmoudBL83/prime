@@ -17,9 +17,10 @@ const transcriptSchema = z.object({
  */
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
         
         if (!session?.user) {
@@ -35,7 +36,7 @@ export async function POST(
             return NextResponse.json({ error: 'Creator profile not found' }, { status: 404 })
         }
 
-        const courseId = params.id
+        const courseId = id
         const body = await request.json()
         const { videoUrl, language } = transcriptSchema.parse(body)
 
@@ -113,9 +114,10 @@ Let's start with the first point...`
  */
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
         
         if (!session?.user) {
@@ -184,9 +186,10 @@ export async function GET(
  */
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
         
         if (!session?.user) {

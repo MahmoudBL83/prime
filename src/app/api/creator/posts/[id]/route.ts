@@ -18,9 +18,10 @@ const updatePostSchema = z.object({
 // GET - Fetch a single post
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions);
 
         if (!session || session.user.role !== 'CREATOR') {
@@ -37,7 +38,7 @@ export async function GET(
 
         const post = await prisma.channelPost.findFirst({
             where: {
-                id: params.id,
+                id,
                 channel: {
                     creatorId: creator.id
                 }
@@ -96,9 +97,10 @@ export async function GET(
 // PATCH - Update a post
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions);
 
         if (!session || session.user.role !== 'CREATOR') {
@@ -126,7 +128,7 @@ export async function PATCH(
         // Verify post ownership
         const existingPost = await prisma.channelPost.findFirst({
             where: {
-                id: params.id,
+                id,
                 creatorId: creator.id
             }
         });
@@ -155,7 +157,7 @@ export async function PATCH(
         }
 
         const updatedPost = await prisma.channelPost.update({
-            where: { id: params.id },
+            where: { id },
             data: updateObject,
             include: {
                 channel: {
@@ -192,9 +194,10 @@ export async function PATCH(
 // DELETE - Delete a post
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions);
 
         if (!session || session.user.role !== 'CREATOR') {
@@ -212,7 +215,7 @@ export async function DELETE(
         // Verify post ownership
         const existingPost = await prisma.channelPost.findFirst({
             where: {
-                id: params.id,
+                id,
                 creatorId: creator.id
             }
         });
@@ -223,16 +226,16 @@ export async function DELETE(
 
         // Delete related data first
         await prisma.postComment.deleteMany({
-            where: { postId: params.id }
+            where: { postId: id }
         });
 
         await prisma.postLike.deleteMany({
-            where: { postId: params.id }
+            where: { postId: id }
         });
 
         // Delete the post
         await prisma.channelPost.delete({
-            where: { id: params.id }
+            where: { id }
         });
 
         return NextResponse.json({

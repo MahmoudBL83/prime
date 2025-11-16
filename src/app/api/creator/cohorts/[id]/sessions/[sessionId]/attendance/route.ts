@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma';
 // GET /api/creator/cohorts/[id]/sessions/[sessionId]/attendance - Get attendance for a session
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string; sessionId: string } }
+  { params }: { params: Promise<{ id: string; sessionId: string }> }
 ) {
   try {
+    const { id, sessionId } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -25,7 +26,7 @@ export async function GET(
       );
     }
 
-    const { id: cohortId, sessionId } = params;
+    const cohortId = id;
 
     // Verify session exists and user owns the cohort
     const cohortSession = await prisma.cohortSession.findUnique({
@@ -123,9 +124,10 @@ export async function GET(
 // POST /api/creator/cohorts/[id]/sessions/[sessionId]/attendance - Mark attendance
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string; sessionId: string } }
+  { params }: { params: Promise<{ id: string; sessionId: string }> }
 ) {
   try {
+    const { id, sessionId } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -142,7 +144,7 @@ export async function POST(
       );
     }
 
-    const { id: cohortId, sessionId } = params;
+    const cohortId = id;
 
     // Verify session exists and user owns the cohort
     const cohortSession = await prisma.cohortSession.findUnique({

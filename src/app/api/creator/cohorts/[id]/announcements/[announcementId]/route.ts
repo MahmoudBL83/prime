@@ -63,7 +63,7 @@ export async function GET(
     }
 
     // Verify announcement belongs to the cohort
-    if (announcement.cohortId !== cohortId) {
+    if (announcement.cohortId !== id) {
       return NextResponse.json(
         { error: 'Announcement does not belong to this cohort' },
         { status: 400 }
@@ -86,7 +86,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string; announcementId: string } }
+  { params }: { params: Promise<{ id: string; announcementId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -107,7 +107,7 @@ export async function PATCH(
       );
     }
 
-    const { id: cohortId, announcementId } = params;
+    const { id: cohortId, announcementId } = await params;
 
     // Verify announcement exists and ownership
     const existingAnnouncement = await prisma.cohortAnnouncement.findUnique({
@@ -203,7 +203,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; announcementId: string } }
+  { params }: { params: Promise<{ id: string; announcementId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -224,7 +224,7 @@ export async function DELETE(
       );
     }
 
-    const { id: cohortId, announcementId } = params;
+    const { id: cohortId, announcementId } = await params;
 
     // Verify announcement exists and ownership
     const announcement = await prisma.cohortAnnouncement.findUnique({

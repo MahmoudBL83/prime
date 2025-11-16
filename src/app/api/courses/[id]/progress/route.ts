@@ -14,7 +14,8 @@ export async function POST(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const courseId = params.id
+        const { id } = await params;
+        const courseId = id
         const body = await request.json()
         const { lessonId, currentTime, progress } = body
 

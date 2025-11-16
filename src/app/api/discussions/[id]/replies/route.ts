@@ -88,7 +88,7 @@ export async function POST(
 
         // Verify discussion exists
         const discussion = await prisma.courseDiscussion.findUnique({
-            where: { id: params.id },
+            where: { id: id },
             include: {
                 course: {
                     select: {
@@ -129,7 +129,7 @@ export async function POST(
             const parentReply = await prisma.discussionReply.findFirst({
                 where: {
                     id: parentReplyId,
-                    discussionId: params.id
+                    discussionId: id
                 }
             })
 
@@ -145,7 +145,7 @@ export async function POST(
         const reply = await prisma.discussionReply.create({
             data: {
                 content,
-                discussionId: params.id,
+                discussionId: id,
                 authorId: session.user.id,
                 parentReplyId: parentReplyId || null,
                 upvotes: 0,
@@ -167,7 +167,7 @@ export async function POST(
         // Mark discussion as solved if instructor replies and marks it
         if (isCreator && body.markAsSolved) {
             await prisma.courseDiscussion.update({
-                where: { id: params.id },
+                where: { id: id },
                 data: { isSolved: true }
             })
         }

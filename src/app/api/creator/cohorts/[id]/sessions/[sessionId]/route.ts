@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma';
 // GET /api/creator/cohorts/[id]/sessions/[sessionId] - Get a specific session
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string; sessionId: string } }
+  { params }: { params: Promise<{ id: string; sessionId: string }> }
 ) {
   try {
+    const { id, sessionId } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -20,12 +21,12 @@ export async function GET(
 
     if (session.user.role !== 'CREATOR') {
       return NextResponse.json(
-        { error: 'Only creators can access sessions', errorAr: 'المنشئون فقط يمكنهم الوصول إلى الجلسات' },
+        { error: 'Only creators can access sessions', errorAr: 'المبدعون فقط يمكنهم الوصول للجلسات' },
         { status: 403 }
       );
     }
 
-    const { id: cohortId, sessionId } = params;
+    const cohortId = id;
 
     // Fetch session with cohort and attendance details
     const cohortSession = await prisma.cohortSession.findUnique({
@@ -115,9 +116,10 @@ export async function GET(
 // PATCH /api/creator/cohorts/[id]/sessions/[sessionId] - Update a session
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string; sessionId: string } }
+  { params }: { params: Promise<{ id: string; sessionId: string }> }
 ) {
   try {
+    const { id, sessionId } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -134,7 +136,7 @@ export async function PATCH(
       );
     }
 
-    const { id: cohortId, sessionId } = params;
+    const cohortId = id;
 
     // Fetch session with cohort
     const cohortSession = await prisma.cohortSession.findUnique({
@@ -309,9 +311,10 @@ export async function PATCH(
 // DELETE /api/creator/cohorts/[id]/sessions/[sessionId] - Delete a session
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string; sessionId: string } }
+  { params }: { params: Promise<{ id: string; sessionId: string }> }
 ) {
   try {
+    const { id, sessionId } = await params
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -328,7 +331,7 @@ export async function DELETE(
       );
     }
 
-    const { id: cohortId, sessionId } = params;
+    const cohortId = id;
 
     // Fetch session with cohort
     const cohortSession = await prisma.cohortSession.findUnique({

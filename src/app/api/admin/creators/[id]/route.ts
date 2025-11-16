@@ -9,6 +9,7 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         // Verify admin authentication
         const session = await getServerSession(authOptions)
 
@@ -33,7 +34,7 @@ export async function GET(
 
         // Get creator details with all related data
         const creator = await prisma.creator.findUnique({
-            where: { id: params.id },
+            where: { id: id },
             include: {
                 user: true,
                 courses: {
@@ -86,6 +87,7 @@ export async function PATCH(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         // Verify admin authentication
         const session = await getServerSession(authOptions)
 
@@ -116,7 +118,7 @@ export async function PATCH(
         switch (action) {
             case 'kyc_approve':
                 updatedCreator = await prisma.creator.update({
-                    where: { id: params.id },
+                    where: { id: id },
                     data: {
                         kycStatus: KYCStatus.VERIFIED,
                         updatedAt: new Date()
@@ -128,7 +130,7 @@ export async function PATCH(
 
             case 'kyc_reject':
                 updatedCreator = await prisma.creator.update({
-                    where: { id: params.id },
+                    where: { id: id },
                     data: {
                         kycStatus: KYCStatus.REJECTED,
                         updatedAt: new Date()
@@ -140,7 +142,7 @@ export async function PATCH(
 
             case 'updateProfile':
                 updatedCreator = await prisma.creator.update({
-                    where: { id: params.id },
+                    where: { id: id },
                     data: {
                         expertise: updateData.expertise,
                         teachingGoals: updateData.teachingGoals,
@@ -153,7 +155,7 @@ export async function PATCH(
 
             case 'signContract':
                 updatedCreator = await prisma.creator.update({
-                    where: { id: params.id },
+                    where: { id: id },
                     data: {
                         contractSigned: true,
                         contractSignedAt: new Date(),
@@ -171,7 +173,7 @@ export async function PATCH(
                 }
 
                 updatedCreator = await prisma.creator.update({
-                    where: { id: params.id },
+                    where: { id: id },
                     data: {
                         totalEarnings: updateData.totalEarnings,
                         updatedAt: new Date()
@@ -188,7 +190,7 @@ export async function PATCH(
                 }
 
                 updatedCreator = await prisma.creator.update({
-                    where: { id: params.id },
+                    where: { id: id },
                     data: {
                         totalSubscribers: updateData.totalSubscribers,
                         updatedAt: new Date()
@@ -222,6 +224,7 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         // Verify admin authentication
         const session = await getServerSession(authOptions)
 
@@ -246,7 +249,7 @@ export async function DELETE(
 
         // Check if creator exists
         const creatorToDelete = await prisma.creator.findUnique({
-            where: { id: params.id },
+            where: { id: id },
             include: {
                 user: true,
                 courses: true
@@ -270,7 +273,7 @@ export async function DELETE(
 
         // Delete creator record (this will not delete the user, just the creator profile)
         await prisma.creator.delete({
-            where: { id: params.id }
+            where: { id: id }
         })
 
         // Optionally, update the user role back to LEARNER
