@@ -1,28 +1,61 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useParams, useRouter } from 'next/navigation'
 import { animated, to as interpolate, useSpring } from '@react-spring/web'
 import { useDrag } from '@use-gesture/react'
-import {
-  Heart,
-  X,
-  Sparkles,
-  BookOpen,
-  Clock,
-  MessageCircle,
-  TrendingUp,
-  Trophy,
-  Users,
-  ArrowLeft
-} from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
+
+// Dynamic icon imports for better performance
+const IconComponents = {
+  Heart: dynamic(() => import('lucide-react').then(mod => ({ default: mod.Heart })), {
+    ssr: false,
+    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
+  }),
+  X: dynamic(() => import('lucide-react').then(mod => ({ default: mod.X })), {
+    ssr: false,
+    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
+  }),
+  Sparkles: dynamic(() => import('lucide-react').then(mod => ({ default: mod.Sparkles })), {
+    ssr: false,
+    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
+  }),
+  BookOpen: dynamic(() => import('lucide-react').then(mod => ({ default: mod.BookOpen })), {
+    ssr: false,
+    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
+  }),
+  Clock: dynamic(() => import('lucide-react').then(mod => ({ default: mod.Clock })), {
+    ssr: false,
+    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
+  }),
+  MessageCircle: dynamic(() => import('lucide-react').then(mod => ({ default: mod.MessageCircle })), {
+    ssr: false,
+    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
+  }),
+  TrendingUp: dynamic(() => import('lucide-react').then(mod => ({ default: mod.TrendingUp })), {
+    ssr: false,
+    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
+  }),
+  Trophy: dynamic(() => import('lucide-react').then(mod => ({ default: mod.Trophy })), {
+    ssr: false,
+    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
+  }),
+  Users: dynamic(() => import('lucide-react').then(mod => ({ default: mod.Users })), {
+    ssr: false,
+    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
+  }),
+  ArrowLeft: dynamic(() => import('lucide-react').then(mod => ({ default: mod.ArrowLeft })), {
+    ssr: false,
+    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
+  }),
+}
 
 interface SwipeCandidate {
   id: string
@@ -197,7 +230,9 @@ export default function StudyBuddySwipePage() {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 py-20 px-6">
         <div className="max-w-2xl mx-auto text-center">
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center mx-auto mb-8">
-            <Sparkles className="w-12 h-12 text-white" />
+            <Suspense fallback={<div className="w-12 h-12 animate-pulse bg-gray-300 rounded" />}>
+              <IconComponents.Sparkles className="w-12 h-12 text-white" />
+            </Suspense>
           </div>
           <h1 className="text-4xl font-bold text-white mb-4">
             {isArabic ? 'لا يوجد المزيد من المرشحين' : 'No More Candidates'}
@@ -219,7 +254,9 @@ export default function StudyBuddySwipePage() {
             </Button>
             <Link href={`/${locale}/dashboard`}>
               <Button variant="outline" className="ml-4">
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                <Suspense fallback={<div className="w-4 h-4 animate-pulse bg-gray-300 rounded mr-2" />}>
+                  <IconComponents.ArrowLeft className="w-4 h-4 mr-2" />
+                </Suspense>
                 {isArabic ? 'العودة إلى لوحة التحكم' : 'Back to Dashboard'}
               </Button>
             </Link>
@@ -250,11 +287,15 @@ export default function StudyBuddySwipePage() {
         <div className="flex items-center justify-between mb-8">
           <Link href={`/${locale}/dashboard`}>
             <Button variant="ghost" className="text-white">
-              <ArrowLeft className={`w-5 h-5 ${isArabic ? 'rotate-180' : ''}`} />
+              <Suspense fallback={<div className="w-5 h-5 animate-pulse bg-gray-300 rounded" />}>
+                <IconComponents.ArrowLeft className={`w-5 h-5 ${isArabic ? 'rotate-180' : ''}`} />
+              </Suspense>
             </Button>
           </Link>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Heart className="w-6 h-6 text-pink-400" />
+            <Suspense fallback={<div className="w-6 h-6 animate-pulse bg-gray-300 rounded" />}>
+              <IconComponents.Heart className="w-6 h-6 text-pink-400" />
+            </Suspense>
             {isArabic ? 'البحث عن شريك دراسة' : 'Find Study Buddy'}
           </h1>
           <div className="w-10"></div>
@@ -298,7 +339,9 @@ export default function StudyBuddySwipePage() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Users className="w-24 h-24 text-white/30" />
+                    <Suspense fallback={<div className="w-24 h-24 animate-pulse bg-gray-300 rounded" />}>
+                      <IconComponents.Users className="w-24 h-24 text-white/30" />
+                    </Suspense>
                   </div>
                 )}
                 
@@ -331,7 +374,9 @@ export default function StudyBuddySwipePage() {
                 {currentCandidate.enrolledCourses.length > 0 && (
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <BookOpen className="w-4 h-4 text-purple-400" />
+                      <Suspense fallback={<div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />}>
+                        <IconComponents.BookOpen className="w-4 h-4 text-purple-400" />
+                      </Suspense>
                       <span className="text-sm font-semibold text-white">
                         {isArabic ? 'الدورات المسجل فيها' : 'Enrolled Courses'}
                       </span>
@@ -358,7 +403,9 @@ export default function StudyBuddySwipePage() {
                 {currentCandidate.interests && currentCandidate.interests.length > 0 && (
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <Sparkles className="w-4 h-4 text-pink-400" />
+                      <Suspense fallback={<div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />}>
+                        <IconComponents.Sparkles className="w-4 h-4 text-pink-400" />
+                      </Suspense>
                       <span className="text-sm font-semibold text-white">
                         {isArabic ? 'الاهتمامات' : 'Interests'}
                       </span>
@@ -381,13 +428,17 @@ export default function StudyBuddySwipePage() {
                   <div className="grid grid-cols-2 gap-3">
                     {currentCandidate.studyPreferences.timezone && (
                       <div className="flex items-center gap-2 text-sm">
-                        <Clock className="w-4 h-4 text-cyan-400" />
+                        <Suspense fallback={<div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />}>
+                          <IconComponents.Clock className="w-4 h-4 text-cyan-400" />
+                        </Suspense>
                         <span className="text-gray-300">{currentCandidate.studyPreferences.timezone}</span>
                       </div>
                     )}
                     {currentCandidate.studyPreferences.communicationStyle && (
                       <div className="flex items-center gap-2 text-sm">
-                        <MessageCircle className="w-4 h-4 text-green-400" />
+                        <Suspense fallback={<div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />}>
+                          <IconComponents.MessageCircle className="w-4 h-4 text-green-400" />
+                        </Suspense>
                         <span className="text-gray-300 capitalize">{currentCandidate.studyPreferences.communicationStyle}</span>
                       </div>
                     )}
@@ -405,7 +456,9 @@ export default function StudyBuddySwipePage() {
             disabled={swiping}
             className="w-16 h-16 rounded-full bg-red-500/20 border-2 border-red-500 hover:bg-red-500/30 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <X className="w-8 h-8 text-red-500" />
+            <Suspense fallback={<div className="w-8 h-8 animate-pulse bg-gray-300 rounded" />}>
+              <IconComponents.X className="w-8 h-8 text-red-500" />
+            </Suspense>
           </button>
 
           <button
@@ -413,7 +466,9 @@ export default function StudyBuddySwipePage() {
             disabled={swiping}
             className="w-20 h-20 rounded-full bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/50"
           >
-            <Heart className="w-10 h-10 text-white fill-white" />
+            <Suspense fallback={<div className="w-10 h-10 animate-pulse bg-gray-300 rounded" />}>
+              <IconComponents.Heart className="w-10 h-10 text-white fill-white" />
+            </Suspense>
           </button>
         </div>
 
@@ -443,9 +498,9 @@ export default function StudyBuddySwipePage() {
 
             <div className="flex justify-center gap-4 mb-6">
               <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-purple-500">
-                {session?.user?.image ? (
+                {session?.user && (session.user as any)?.image ? (
                   <Image
-                    src={session.user.image}
+                    src={(session.user as any).image}
                     alt={session.user.name || 'You'}
                     width={96}
                     height={96}
@@ -453,7 +508,9 @@ export default function StudyBuddySwipePage() {
                   />
                 ) : (
                   <div className="w-full h-full bg-purple-900 flex items-center justify-center">
-                    <Users className="w-12 h-12 text-white" />
+                    <Suspense fallback={<div className="w-12 h-12 animate-pulse bg-gray-300 rounded" />}>
+                      <IconComponents.Users className="w-12 h-12 text-white" />
+                    </Suspense>
                   </div>
                 )}
               </div>
@@ -468,7 +525,9 @@ export default function StudyBuddySwipePage() {
                   />
                 ) : (
                   <div className="w-full h-full bg-pink-900 flex items-center justify-center">
-                    <Users className="w-12 h-12 text-white" />
+                    <Suspense fallback={<div className="w-12 h-12 animate-pulse bg-gray-300 rounded" />}>
+                      <IconComponents.Users className="w-12 h-12 text-white" />
+                    </Suspense>
                   </div>
                 )}
               </div>
@@ -482,7 +541,9 @@ export default function StudyBuddySwipePage() {
                   router.push(`/${locale}/study-buddy/matches`)
                 }}
               >
-                <MessageCircle className="w-4 h-4 mr-2" />
+                <Suspense fallback={<div className="w-4 h-4 animate-pulse bg-gray-300 rounded mr-2" />}>
+                  <IconComponents.MessageCircle className="w-4 h-4 mr-2" />
+                </Suspense>
                 {isArabic ? 'ابدأ الدردشة' : 'Start Chatting'}
               </Button>
               <Button
