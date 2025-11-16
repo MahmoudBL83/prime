@@ -21,30 +21,34 @@ export async function GET(
         const { id } = await params
 
         const application = await prisma.creatorApplication.findUnique({
-            where: { id },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        arabicName: true,
-                        profileImage: true,
-                        bio: true,
-                        phone: true,
-                        createdAt: true
-                    }
-                }
-            }
+            where: { id }
         })
 
         if (!application) {
             return NextResponse.json({ error: 'Application not found' }, { status: 404 })
         }
 
+        // Fetch user data separately
+        const user = await prisma.user.findUnique({
+            where: { id: application.userId },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                arabicName: true,
+                profileImage: true,
+                bio: true,
+                phone: true,
+                createdAt: true
+            }
+        })
+
         return NextResponse.json({
             success: true,
-            application
+            application: {
+                ...application,
+                user
+            }
         })
     } catch (error) {
         console.error('Error fetching application:', error)
@@ -80,15 +84,17 @@ export async function PUT(
         }
 
         const application = await prisma.creatorApplication.findUnique({
-            where: { id },
-            include: {
-                user: true
-            }
+            where: { id }
         })
 
         if (!application) {
             return NextResponse.json({ error: 'Application not found' }, { status: 404 })
         }
+
+        // Fetch user data separately
+        const user = await prisma.user.findUnique({
+            where: { id: application.userId }
+        })
 
         let newStatus: string
         let updateData: any = {

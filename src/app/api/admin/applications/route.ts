@@ -27,28 +27,36 @@ export async function GET(request: NextRequest) {
             where.status = status.toUpperCase()
         }
 
-        // Fetch applications with user data
+        // Fetch applications and total count
         const [applications, total] = await Promise.all([
             prisma.creatorApplication.findMany({
                 where,
-                include: {
-                    user: {
-                        select: {
-                            id: true,
-                            name: true,
-                            email: true,
-                            arabicName: true,
-                            profileImage: true,
-                            createdAt: true
-                        }
-                    }
-                },
                 orderBy: { createdAt: 'desc' },
                 skip,
                 take: limit
             }),
             prisma.creatorApplication.count({ where })
         ])
+
+        // Fetch user data for each application
+        const userIds = applications.map(app => app.userId)
+        const users = await prisma.user.findMany({
+            where: { id: { in: userIds } },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                arabicName: true,
+                profileImage: true,
+                createdAt: true
+            }
+        })
+
+        // Map users to applications
+        const applicationsWithUsers = applications.map(application => ({
+            ...application,
+            user: users.find(user => user.id === application.userId)
+        }))
 
         // Get statistics
         const stats = await prisma.creatorApplication.groupBy({
@@ -64,7 +72,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
             success: true,
             data: {
-                applications,
+                applications: applicationsWithUsers,
                 pagination: {
                     page,
                     limit,
