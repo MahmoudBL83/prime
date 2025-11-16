@@ -11,7 +11,7 @@ import { generateCertificatePDF } from '@/services/pdfCertificateService';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ certificateNumber: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -23,8 +23,8 @@ export async function GET(
       );
     }
 
-    const { certificateNumber } = await params;
-    const certificate = await getCertificateByNumber(certificateNumber);
+    const { id } = await params;
+    const certificate = await getCertificateByNumber(id);
 
     if (!certificate) {
       return NextResponse.json(
