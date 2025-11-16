@@ -852,7 +852,7 @@ export default function AnalyticsDashboard() {
                                                         (value as number) >= 30 ? 'bg-yellow-100 text-yellow-700' :
                                                         'bg-red-100 text-red-700'
                                                     }`}>
-                                                        {value}%
+                                                        {value as number}%
                                                     </span>
                                                 </td>
                                             ))}
