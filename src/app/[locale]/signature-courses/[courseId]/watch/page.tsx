@@ -1,27 +1,40 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
-import {
-  ArrowLeft,
-  Volume2,
-  VolumeX,
-  Play,
-  Pause,
-  Maximize,
-  Minimize,
-  Settings,
-  SkipForward,
-  SkipBack,
-  ChevronDown,
-  MessageSquare,
-  ThumbsUp,
-  ThumbsDown,
-  Share2,
-  Download,
-} from 'lucide-react';
+
+// Icon Components with lazy loading
+const IconComponents = {
+  ArrowLeft: lazy(() => import('lucide-react').then(mod => ({ default: mod.ArrowLeft }))),
+  Volume2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Volume2 }))),
+  VolumeX: lazy(() => import('lucide-react').then(mod => ({ default: mod.VolumeX }))),
+  Play: lazy(() => import('lucide-react').then(mod => ({ default: mod.Play }))),
+  Pause: lazy(() => import('lucide-react').then(mod => ({ default: mod.Pause }))),
+  Maximize: lazy(() => import('lucide-react').then(mod => ({ default: mod.Maximize }))),
+  Minimize: lazy(() => import('lucide-react').then(mod => ({ default: mod.Minimize }))),
+  Settings: lazy(() => import('lucide-react').then(mod => ({ default: mod.Settings }))),
+  SkipForward: lazy(() => import('lucide-react').then(mod => ({ default: mod.SkipForward }))),
+  SkipBack: lazy(() => import('lucide-react').then(mod => ({ default: mod.SkipBack }))),
+  ChevronDown: lazy(() => import('lucide-react').then(mod => ({ default: mod.ChevronDown }))),
+  MessageSquare: lazy(() => import('lucide-react').then(mod => ({ default: mod.MessageSquare }))),
+  ThumbsUp: lazy(() => import('lucide-react').then(mod => ({ default: mod.ThumbsUp }))),
+  ThumbsDown: lazy(() => import('lucide-react').then(mod => ({ default: mod.ThumbsDown }))),
+  Share2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Share2 }))),
+  Download: lazy(() => import('lucide-react').then(mod => ({ default: mod.Download })))
+}
+
+// Dynamic Icon Component
+const DynamicIcon = ({ name, className, ...props }: { name: keyof typeof IconComponents; className?: string; [key: string]: any }) => {
+  const IconComponent = IconComponents[name]
+  
+  return (
+    <Suspense fallback={<div className={className} />}>
+      <IconComponent className={className} {...props} />
+    </Suspense>
+  )
+}
 
 interface Episode {
   id: string;
@@ -57,7 +70,7 @@ export default function WatchCoursePage() {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const controlsTimeoutRef = useRef<NodeJS.Timeout>();
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [course, setCourse] = useState<Course | null>(null);
   const [currentEpisode, setCurrentEpisode] = useState<Episode | null>(null);
@@ -396,13 +409,13 @@ export default function WatchCoursePage() {
           <div className="absolute top-24 right-8 z-40 bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2 text-white text-sm">
             {audioTrack !== 'English' && (
               <div className="flex items-center gap-2">
-                <Volume2 className="w-4 h-4" />
+                <DynamicIcon name="Volume2" className="w-4 h-4" />
                 <span>Audio: {audioTrack}</span>
               </div>
             )}
             {subtitle !== 'Off' && (
               <div className="flex items-center gap-2 mt-1">
-                <MessageSquare className="w-4 h-4" />
+                <DynamicIcon name="MessageSquare" className="w-4 h-4" />
                 <span>Subtitles: {subtitle}</span>
               </div>
             )}
@@ -416,7 +429,7 @@ export default function WatchCoursePage() {
             showControls ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          <ArrowLeft className="w-6 h-6 text-white" />
+          <DynamicIcon name="ArrowLeft" className="w-6 h-6 text-white" />
         </button>
 
         {/* Course Info - Top Right */}
@@ -439,7 +452,7 @@ export default function WatchCoursePage() {
             onClick={togglePlay}
             className="absolute inset-0 m-auto w-20 h-20 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center transition-all"
           >
-            <Play className="w-10 h-10 text-white ml-2" fill="white" />
+            <DynamicIcon name="Play" className="w-10 h-10 text-white ml-2" fill="white" />
           </button>
         )}
 
@@ -490,9 +503,9 @@ export default function WatchCoursePage() {
                 className="text-white hover:text-gray-300 transition-colors"
               >
                 {playing ? (
-                  <Pause className="w-8 h-8" fill="white" />
+                  <DynamicIcon name="Pause" className="w-8 h-8" fill="white" />
                 ) : (
-                  <Play className="w-8 h-8" fill="white" />
+                  <DynamicIcon name="Play" className="w-8 h-8" fill="white" />
                 )}
               </button>
 
@@ -501,7 +514,7 @@ export default function WatchCoursePage() {
                 onClick={playPreviousEpisode}
                 className="text-white hover:text-gray-300 transition-colors"
               >
-                <SkipBack className="w-6 h-6" />
+                <DynamicIcon name="SkipBack" className="w-6 h-6" />
               </button>
 
               {/* Next Episode */}
@@ -509,7 +522,7 @@ export default function WatchCoursePage() {
                 onClick={playNextEpisode}
                 className="text-white hover:text-gray-300 transition-colors"
               >
-                <SkipForward className="w-6 h-6" />
+                <DynamicIcon name="SkipForward" className="w-6 h-6" />
               </button>
 
               {/* Volume */}
@@ -519,9 +532,9 @@ export default function WatchCoursePage() {
                   className="text-white hover:text-gray-300 transition-colors"
                 >
                   {muted || volume === 0 ? (
-                    <VolumeX className="w-6 h-6" />
+                    <DynamicIcon name="VolumeX" className="w-6 h-6" />
                   ) : (
-                    <Volume2 className="w-6 h-6" />
+                    <DynamicIcon name="Volume2" className="w-6 h-6" />
                   )}
                 </button>
                 <input
@@ -553,7 +566,7 @@ export default function WatchCoursePage() {
                   className="text-white hover:text-gray-300 transition-colors"
                   title="Audio & Subtitles"
                 >
-                  <MessageSquare className="w-6 h-6" />
+                  <DynamicIcon name="MessageSquare" className="w-6 h-6" />
                 </button>
 
                 {/* Audio/Subtitle Menu */}
@@ -607,7 +620,7 @@ export default function WatchCoursePage() {
                 onClick={() => setShowEpisodes(!showEpisodes)}
                 className="text-white hover:text-gray-300 transition-colors flex items-center gap-2 bg-black/60 hover:bg-black/80 px-4 py-2 rounded"
               >
-                <MessageSquare className="w-5 h-5" />
+                <DynamicIcon name="MessageSquare" className="w-5 h-5" />
                 <span className="text-sm">Episodes</span>
               </button>
 
@@ -620,7 +633,7 @@ export default function WatchCoursePage() {
                   }}
                   className="text-white hover:text-gray-300 transition-colors"
                 >
-                  <Settings className="w-6 h-6" />
+                  <DynamicIcon name="Settings" className="w-6 h-6" />
                 </button>
 
                 {/* Settings Menu */}
@@ -667,9 +680,9 @@ export default function WatchCoursePage() {
                 className="text-white hover:text-gray-300 transition-colors"
               >
                 {fullscreen ? (
-                  <Minimize className="w-6 h-6" />
+                  <DynamicIcon name="Minimize" className="w-6 h-6" />
                 ) : (
-                  <Maximize className="w-6 h-6" />
+                  <DynamicIcon name="Maximize" className="w-6 h-6" />
                 )}
               </button>
             </div>
@@ -686,7 +699,7 @@ export default function WatchCoursePage() {
                   onClick={() => setShowEpisodes(false)}
                   className="text-white hover:text-gray-300"
                 >
-                  <ChevronDown className="w-6 h-6" />
+                  <DynamicIcon name="ChevronDown" className="w-6 h-6" />
                 </button>
               </div>
 
@@ -716,7 +729,7 @@ export default function WatchCoursePage() {
                         )}
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="w-10 h-10 bg-black/60 rounded-full flex items-center justify-center">
-                            <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                            <DynamicIcon name="Play" className="w-5 h-5 text-white ml-0.5" />
                           </div>
                         </div>
                       </div>

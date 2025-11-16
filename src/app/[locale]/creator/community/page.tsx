@@ -1,35 +1,46 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import {
-    ArrowLeft,
-    Home,
-    Play,
-    Bell,
-    Users,
-    MessageCircle,
-    Heart,
-    TrendingUp,
-    Video,
-    BarChart3,
-    Settings,
-    DollarSign,
-    Loader2,
-    ThumbsUp,
-    Reply,
-    MoreVertical,
-    Trash2,
-    Flag,
-    CheckCircle
-} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
+
+// Icon Components with lazy loading
+const IconComponents = {
+    ArrowLeft: lazy(() => import('lucide-react').then(mod => ({ default: mod.ArrowLeft }))),
+    Home: lazy(() => import('lucide-react').then(mod => ({ default: mod.Home }))),
+    Play: lazy(() => import('lucide-react').then(mod => ({ default: mod.Play }))),
+    Bell: lazy(() => import('lucide-react').then(mod => ({ default: mod.Bell }))),
+    BarChart3: lazy(() => import('lucide-react').then(mod => ({ default: mod.BarChart3 }))),
+    Video: lazy(() => import('lucide-react').then(mod => ({ default: mod.Video }))),
+    TrendingUp: lazy(() => import('lucide-react').then(mod => ({ default: mod.TrendingUp }))),
+    Users: lazy(() => import('lucide-react').then(mod => ({ default: mod.Users }))),
+    DollarSign: lazy(() => import('lucide-react').then(mod => ({ default: mod.DollarSign }))),
+    Settings: lazy(() => import('lucide-react').then(mod => ({ default: mod.Settings }))),
+    MessageCircle: lazy(() => import('lucide-react').then(mod => ({ default: mod.MessageCircle }))),
+    Heart: lazy(() => import('lucide-react').then(mod => ({ default: mod.Heart }))),
+    Loader2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Loader2 }))),
+    ThumbsUp: lazy(() => import('lucide-react').then(mod => ({ default: mod.ThumbsUp }))),
+    Reply: lazy(() => import('lucide-react').then(mod => ({ default: mod.Reply }))),
+    CheckCircle: lazy(() => import('lucide-react').then(mod => ({ default: mod.CheckCircle }))),
+    Trash2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Trash2 })))
+}
+
+// Dynamic Icon Component
+const DynamicIcon = ({ name, className, ...props }: { name: keyof typeof IconComponents; className?: string; [key: string]: any }) => {
+    const IconComponent = IconComponents[name]
+    
+    return (
+        <Suspense fallback={<div className={className} />}>
+            <IconComponent className={className} {...props} />
+        </Suspense>
+    )
+}
 
 interface Comment {
     id: string
@@ -130,13 +141,13 @@ export default function CreatorCommunity() {
                                 onClick={() => router.back()}
                                 className="p-2 hover:bg-accent rounded-full transition-colors"
                             >
-                                <ArrowLeft className="w-5 h-5" />
+                                <DynamicIcon name="ArrowLeft" className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => router.push(`/${locale}`)}
                                 className="p-2 hover:bg-accent rounded-full transition-colors"
                             >
-                                <Home className="w-5 h-5" />
+                                <DynamicIcon name="Home" className="w-5 h-5" />
                             </button>
                         </div>
 
@@ -144,7 +155,7 @@ export default function CreatorCommunity() {
 
                         <Link href={`/${locale}/creator/dashboard`} className="flex items-center gap-2">
                             <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
-                                <Play className="w-6 h-6 text-white fill-white" />
+                                <DynamicIcon name="Play" className="w-6 h-6 text-white fill-white" />
                             </div>
                             <span className="text-xl font-bold">
                                 {isArabic ? 'استوديو المنشئ' : 'Creator Studio'}
@@ -154,11 +165,11 @@ export default function CreatorCommunity() {
 
                     <div className="flex items-center gap-3">
                         <button className="p-2 hover:bg-accent rounded-full transition-colors">
-                            <Bell className="w-5 h-5" />
+                            <DynamicIcon name="Bell" className="w-5 h-5" />
                         </button>
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                            {session.user.image ? (
-                                <Image src={session.user.image} alt="" width={40} height={40} className="rounded-full" />
+                            {(session.user as any)?.image ? (
+                                <Image src={(session.user as any).image} alt="" width={40} height={40} className="rounded-full" />
                             ) : (
                                 <span className="text-white font-bold">
                                     {session.user.name?.[0]?.toUpperCase() || 'C'}
@@ -183,9 +194,9 @@ export default function CreatorCommunity() {
                                 navigating ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                         >
-                            <BarChart3 className="w-5 h-5" />
+                            <DynamicIcon name="BarChart3" className="w-5 h-5" />
                             <span>{isArabic ? 'لوحة التحكم' : 'Dashboard'}</span>
-                            {navigating && <Loader2 className="w-4 h-4 animate-spin ml-auto" />}
+                            {navigating && <DynamicIcon name="Loader2" className="w-4 h-4 animate-spin ml-auto" />}
                         </button>
 
                         <button
@@ -198,7 +209,7 @@ export default function CreatorCommunity() {
                                 navigating ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                         >
-                            <Video className="w-5 h-5" />
+                            <DynamicIcon name="Video" className="w-5 h-5" />
                             <span>{isArabic ? 'المحتوى' : 'Content'}</span>
                         </button>
 
@@ -212,14 +223,14 @@ export default function CreatorCommunity() {
                                 navigating ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                         >
-                            <TrendingUp className="w-5 h-5" />
+                            <DynamicIcon name="TrendingUp" className="w-5 h-5" />
                             <span>{isArabic ? 'التحليلات' : 'Analytics'}</span>
                         </button>
 
                         <button
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-accent text-foreground font-semibold transition-all"
                         >
-                            <Users className="w-5 h-5" />
+                            <DynamicIcon name="Users" className="w-5 h-5" />
                             <span>{isArabic ? 'المجتمع' : 'Community'}</span>
                         </button>
 
@@ -233,7 +244,7 @@ export default function CreatorCommunity() {
                                 navigating ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                         >
-                            <DollarSign className="w-5 h-5" />
+                            <DynamicIcon name="DollarSign" className="w-5 h-5" />
                             <span>{isArabic ? 'الأرباح' : 'Earn'}</span>
                         </button>
 
@@ -249,7 +260,7 @@ export default function CreatorCommunity() {
                                 navigating ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                         >
-                            <Settings className="w-5 h-5" />
+                            <DynamicIcon name="Settings" className="w-5 h-5" />
                             <span>{isArabic ? 'الإعدادات' : 'Settings'}</span>
                         </button>
                     </nav>
@@ -276,7 +287,7 @@ export default function CreatorCommunity() {
                                 <span className="text-sm text-muted-foreground">
                                     {isArabic ? 'إجمالي التعليقات' : 'Total comments'}
                                 </span>
-                                <MessageCircle className="w-5 h-5 text-blue-500" />
+                                <DynamicIcon name="MessageCircle" className="w-5 h-5 text-blue-500" />
                             </div>
                             <div className="text-3xl font-bold">{comments.length}</div>
                         </motion.div>
@@ -289,7 +300,7 @@ export default function CreatorCommunity() {
                                 <span className="text-sm text-muted-foreground">
                                     {isArabic ? 'بانتظار المراجعة' : 'Pending review'}
                                 </span>
-                                <Bell className="w-5 h-5 text-yellow-500" />
+                                <DynamicIcon name="Bell" className="w-5 h-5 text-yellow-500" />
                             </div>
                             <div className="text-3xl font-bold">
                                 {comments.filter(c => c.status === 'PENDING').length}
@@ -304,7 +315,7 @@ export default function CreatorCommunity() {
                                 <span className="text-sm text-muted-foreground">
                                     {isArabic ? 'إجمالي الإعجابات' : 'Total likes'}
                                 </span>
-                                <Heart className="w-5 h-5 text-pink-500" />
+                                <DynamicIcon name="Heart" className="w-5 h-5 text-pink-500" />
                             </div>
                             <div className="text-3xl font-bold">
                                 {comments.reduce((sum, c) => sum + c.likes, 0)}
@@ -352,7 +363,7 @@ export default function CreatorCommunity() {
                     <div className="bg-card border border-border rounded-xl overflow-hidden">
                         {loading ? (
                             <div className="text-center py-12">
-                                <Loader2 className="w-12 h-12 animate-spin mx-auto text-purple-500 mb-4" />
+                                <DynamicIcon name="Loader2" className="w-12 h-12 animate-spin mx-auto text-purple-500 mb-4" />
                                 <p className="text-muted-foreground">{isArabic ? 'جاري التحميل...' : 'Loading...'}</p>
                             </div>
                         ) : filteredComments.length === 0 ? (
@@ -398,11 +409,11 @@ export default function CreatorCommunity() {
 
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                                        <ThumbsUp className="w-4 h-4" />
+                                                        <DynamicIcon name="ThumbsUp" className="w-4 h-4" />
                                                         <span>{comment.likes}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                                        <Reply className="w-4 h-4" />
+                                                        <DynamicIcon name="Reply" className="w-4 h-4" />
                                                         <span>{comment.replies}</span>
                                                     </div>
 
@@ -414,7 +425,7 @@ export default function CreatorCommunity() {
                                                                 variant="outline"
                                                                 className="border-green-500/30 hover:bg-green-500/10 text-green-500"
                                                             >
-                                                                <CheckCircle className="w-4 h-4 mr-1" />
+                                                                <DynamicIcon name="CheckCircle" className="w-4 h-4 mr-1" />
                                                                 {isArabic ? 'موافقة' : 'Approve'}
                                                             </Button>
                                                         )}
@@ -424,7 +435,7 @@ export default function CreatorCommunity() {
                                                             variant="outline"
                                                             className="border-red-500/30 hover:bg-red-500/10 text-red-500"
                                                         >
-                                                            <Trash2 className="w-4 h-4 mr-1" />
+                                                            <DynamicIcon name="Trash2" className="w-4 h-4 mr-1" />
                                                             {isArabic ? 'حذف' : 'Delete'}
                                                         </Button>
                                                     </div>

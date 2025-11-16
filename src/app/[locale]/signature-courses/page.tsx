@@ -6,24 +6,29 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 
-// Dynamic icon imports with lazy loading - major performance boost
-const DynamicIcon = memo(({ name, className, ...props }: { name: string; className?: string; [key: string]: any }) => {
-  const [IconComponent, setIconComponent] = useState<React.ComponentType<any> | null>(null);
+// Icon Components with lazy loading
+const IconComponents = {
+  Search: lazy(() => import('lucide-react').then(mod => ({ default: mod.Search }))),
+  Play: lazy(() => import('lucide-react').then(mod => ({ default: mod.Play }))),
+  Info: lazy(() => import('lucide-react').then(mod => ({ default: mod.Info }))),
+  Plus: lazy(() => import('lucide-react').then(mod => ({ default: mod.Plus }))),
+  Check: lazy(() => import('lucide-react').then(mod => ({ default: mod.Check }))),
+  ChevronRight: lazy(() => import('lucide-react').then(mod => ({ default: mod.ChevronRight }))),
+  ChevronLeft: lazy(() => import('lucide-react').then(mod => ({ default: mod.ChevronLeft }))),
+  Crown: lazy(() => import('lucide-react').then(mod => ({ default: mod.Crown }))),
+  Clock: lazy(() => import('lucide-react').then(mod => ({ default: mod.Clock }))),
+  Loader2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Loader2 })))
+}
 
-  useEffect(() => {
-    const loadIcon = async () => {
-      try {
-        const { [name]: LoadedIcon } = await import('lucide-react');
-        setIconComponent(() => LoadedIcon);
-      } catch (error) {
-        console.warn(`Icon ${name} not found`);
-      }
-    };
-    loadIcon();
-  }, [name]);
-
-  if (!IconComponent) return <div className={`w-5 h-5 bg-gray-600 rounded ${className || ''}`} />;
-  return <IconComponent className={className} {...props} />;
+// Dynamic Icon Component
+const DynamicIcon = memo(({ name, className, ...props }: { name: keyof typeof IconComponents; className?: string; [key: string]: any }) => {
+  const IconComponent = IconComponents[name]
+  
+  return (
+    <Suspense fallback={<div className={`w-5 h-5 bg-gray-600 rounded ${className || ''}`} />}>
+      <IconComponent className={className} {...props} />
+    </Suspense>
+  )
 });
 
 // Lazy load heavy components
