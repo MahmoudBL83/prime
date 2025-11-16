@@ -1070,7 +1070,7 @@ export default function NetflixCoursePage() {
                                                                     : 'bg-gradient-to-br from-purple-600 to-blue-600 group-hover:from-purple-500 group-hover:to-blue-500'
                                                             }`}>
                                                                 {isLocked ? (
-                                                                    <DynamicIcon name="Lock" className="w-5 h-5 text-gray-400" />
+                                                                    <DynamicIcon name="LockIcon" className="w-5 h-5 text-gray-400" />
                                                                 ) : loadingLessonId === lesson.id ? (
                                                                     <DynamicIcon name="Loader2" className="w-5 h-5 text-white animate-spin" />
                                                                 ) : (
