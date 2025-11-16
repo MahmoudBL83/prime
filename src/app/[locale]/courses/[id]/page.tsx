@@ -212,7 +212,7 @@ const RelatedCourseCard = memo(({ course, index, locale, isDark, getLocalizedTex
                                     
                                     {course.rating && (
                                         <span className="flex items-center gap-1 font-semibold">
-                                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                                            <DynamicIcon name="Star" className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                                             {course.rating.toFixed(1)}
                                         </span>
                                     )}
