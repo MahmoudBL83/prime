@@ -1,40 +1,54 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import {
-    Upload,
-    Video,
-    BarChart3,
-    Users,
-    Settings,
-    DollarSign,
-    TrendingUp,
-    Eye,
-    Clock,
-    Bell,
-    Play,
-    ArrowLeft,
-    Home,
-    Search,
-    Filter,
-    MoreVertical,
-    Edit,
-    Trash2,
-    Copy,
-    Share2,
-    Download,
-    Image as ImageIcon,
-    FileText,
-    Calendar
-} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
+
+// Icon Components with lazy loading
+const IconComponents = {
+    Upload: lazy(() => import('lucide-react').then(mod => ({ default: mod.Upload }))),
+    Video: lazy(() => import('lucide-react').then(mod => ({ default: mod.Video }))),
+    BarChart3: lazy(() => import('lucide-react').then(mod => ({ default: mod.BarChart3 }))),
+    Users: lazy(() => import('lucide-react').then(mod => ({ default: mod.Users }))),
+    Settings: lazy(() => import('lucide-react').then(mod => ({ default: mod.Settings }))),
+    DollarSign: lazy(() => import('lucide-react').then(mod => ({ default: mod.DollarSign }))),
+    TrendingUp: lazy(() => import('lucide-react').then(mod => ({ default: mod.TrendingUp }))),
+    Eye: lazy(() => import('lucide-react').then(mod => ({ default: mod.Eye }))),
+    Clock: lazy(() => import('lucide-react').then(mod => ({ default: mod.Clock }))),
+    Bell: lazy(() => import('lucide-react').then(mod => ({ default: mod.Bell }))),
+    Play: lazy(() => import('lucide-react').then(mod => ({ default: mod.Play }))),
+    ArrowLeft: lazy(() => import('lucide-react').then(mod => ({ default: mod.ArrowLeft }))),
+    Home: lazy(() => import('lucide-react').then(mod => ({ default: mod.Home }))),
+    Search: lazy(() => import('lucide-react').then(mod => ({ default: mod.Search }))),
+    Filter: lazy(() => import('lucide-react').then(mod => ({ default: mod.Filter }))),
+    MoreVertical: lazy(() => import('lucide-react').then(mod => ({ default: mod.MoreVertical }))),
+    Edit: lazy(() => import('lucide-react').then(mod => ({ default: mod.Edit }))),
+    Trash2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Trash2 }))),
+    Copy: lazy(() => import('lucide-react').then(mod => ({ default: mod.Copy }))),
+    Share2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Share2 }))),
+    Download: lazy(() => import('lucide-react').then(mod => ({ default: mod.Download }))),
+    ImageIcon: lazy(() => import('lucide-react').then(mod => ({ default: mod.Image }))),
+    FileText: lazy(() => import('lucide-react').then(mod => ({ default: mod.FileText }))),
+    Calendar: lazy(() => import('lucide-react').then(mod => ({ default: mod.Calendar }))),
+    Loader2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Loader2 })))
+}
+
+// Dynamic Icon Component
+const DynamicIcon = ({ name, className, ...props }: { name: keyof typeof IconComponents; className?: string; [key: string]: any }) => {
+    const IconComponent = IconComponents[name]
+    
+    return (
+        <Suspense fallback={<div className={className} />}>
+            <IconComponent className={className} {...props} />
+        </Suspense>
+    )
+}
 
 interface ContentItem {
     id: string
@@ -127,14 +141,14 @@ export default function CreatorContent() {
                                 className="p-2 hover:bg-accent rounded-full transition-colors"
                                 title={isArabic ? 'رجوع' : 'Back'}
                             >
-                                <ArrowLeft className="w-5 h-5" />
+                                <DynamicIcon name="ArrowLeft" className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => router.push(`/${locale}`)}
                                 className="p-2 hover:bg-accent rounded-full transition-colors"
                                 title={isArabic ? 'الصفحة الرئيسية' : 'Home'}
                             >
-                                <Home className="w-5 h-5" />
+                                <DynamicIcon name="Home" className="w-5 h-5" />
                             </button>
                         </div>
 
@@ -142,7 +156,7 @@ export default function CreatorContent() {
 
                         <Link href={`/${locale}/creator/dashboard`} className="flex items-center gap-2">
                             <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
-                                <Play className="w-6 h-6 text-white fill-white" />
+                                <DynamicIcon name="Play" className="w-6 h-6 text-white fill-white" />
                             </div>
                             <span className="text-xl font-bold">
                                 {isArabic ? 'استوديو المنشئ' : 'Creator Studio'}
@@ -155,17 +169,17 @@ export default function CreatorContent() {
                             onClick={() => router.push(`/${locale}/creator/content/upload`)}
                             className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                         >
-                            <Upload className="w-4 h-4 mr-2" />
+                            <DynamicIcon name="Upload" className="w-4 h-4 mr-2" />
                             {isArabic ? 'إنشاء' : 'Create'}
                         </Button>
                         
                         <button className="p-2 hover:bg-accent rounded-full transition-colors">
-                            <Bell className="w-5 h-5" />
+                            <DynamicIcon name="Bell" className="w-5 h-5" />
                         </button>
 
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                            {session.user.image ? (
-                                <Image src={session.user.image} alt="" width={40} height={40} className="rounded-full" />
+                            {(session.user as any)?.image ? (
+                                <Image src={(session.user as any).image} alt="" width={40} height={40} className="rounded-full" />
                             ) : (
                                 <span className="text-white font-bold">
                                     {session.user.name?.[0]?.toUpperCase() || 'C'}
@@ -184,7 +198,7 @@ export default function CreatorContent() {
                             onClick={() => router.push(`/${locale}/creator/dashboard`)}
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-accent/50 transition-all"
                         >
-                            <BarChart3 className="w-5 h-5" />
+                            <DynamicIcon name="BarChart3" className="w-5 h-5" />
                             <span>{isArabic ? 'لوحة التحكم' : 'Dashboard'}</span>
                         </button>
 
@@ -192,7 +206,7 @@ export default function CreatorContent() {
                             onClick={() => setActiveTab('content')}
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-accent text-foreground font-semibold transition-all"
                         >
-                            <Video className="w-5 h-5" />
+                            <DynamicIcon name="Video" className="w-5 h-5" />
                             <span>{isArabic ? 'المحتوى' : 'Content'}</span>
                         </button>
 
@@ -200,7 +214,7 @@ export default function CreatorContent() {
                             onClick={() => router.push(`/${locale}/creator/analytics`)}
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-accent/50 transition-all"
                         >
-                            <TrendingUp className="w-5 h-5" />
+                            <DynamicIcon name="TrendingUp" className="w-5 h-5" />
                             <span>{isArabic ? 'التحليلات' : 'Analytics'}</span>
                         </button>
 
@@ -208,7 +222,7 @@ export default function CreatorContent() {
                             onClick={() => router.push(`/${locale}/creator/community`)}
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-accent/50 transition-all"
                         >
-                            <Users className="w-5 h-5" />
+                            <DynamicIcon name="Users" className="w-5 h-5" />
                             <span>{isArabic ? 'المجتمع' : 'Community'}</span>
                         </button>
 
@@ -216,7 +230,7 @@ export default function CreatorContent() {
                             onClick={() => router.push(`/${locale}/creator/earn`)}
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-accent/50 transition-all"
                         >
-                            <DollarSign className="w-5 h-5" />
+                            <DynamicIcon name="DollarSign" className="w-5 h-5" />
                             <span>{isArabic ? 'الأرباح' : 'Earn'}</span>
                         </button>
 
@@ -226,7 +240,7 @@ export default function CreatorContent() {
                             onClick={() => router.push(`/${locale}/creator/settings`)}
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-accent/50 transition-all"
                         >
-                            <Settings className="w-5 h-5" />
+                            <DynamicIcon name="Settings" className="w-5 h-5" />
                             <span>{isArabic ? 'الإعدادات' : 'Settings'}</span>
                         </button>
                     </nav>
@@ -247,7 +261,7 @@ export default function CreatorContent() {
                     <div className="flex items-center justify-between mb-6 gap-4">
                         <div className="flex items-center gap-3">
                             <div className="relative flex-1 min-w-[300px]">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                <DynamicIcon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                                 <input
                                     type="text"
                                     placeholder={isArabic ? 'بحث في المحتوى...' : 'Search content...'}
@@ -276,7 +290,7 @@ export default function CreatorContent() {
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
-                                    <Video className="w-4 h-4 inline mr-1" />
+                                    <DynamicIcon name="Video" className="w-4 h-4 inline mr-1" />
                                     {isArabic ? 'فيديو' : 'Videos'}
                                 </button>
                                 <button
@@ -287,7 +301,7 @@ export default function CreatorContent() {
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
-                                    <ImageIcon className="w-4 h-4 inline mr-1" />
+                                    <DynamicIcon name="ImageIcon" className="w-4 h-4 inline mr-1" />
                                     {isArabic ? 'صور' : 'Images'}
                                 </button>
                                 <button
@@ -298,7 +312,7 @@ export default function CreatorContent() {
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
-                                    <FileText className="w-4 h-4 inline mr-1" />
+                                    <DynamicIcon name="FileText" className="w-4 h-4 inline mr-1" />
                                     {isArabic ? 'نص' : 'Text'}
                                 </button>
                             </div>
@@ -314,7 +328,7 @@ export default function CreatorContent() {
                         ) : filteredContent.length === 0 ? (
                             <div className="text-center py-12">
                                 <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full mb-4">
-                                    <Video className="w-10 h-10 text-purple-400" />
+                                    <DynamicIcon name="Video" className="w-10 h-10 text-purple-400" />
                                 </div>
                                 <h3 className="text-xl font-bold mb-2">
                                     {isArabic ? 'لا يوجد محتوى بعد' : 'No content yet'}
@@ -326,7 +340,7 @@ export default function CreatorContent() {
                                     onClick={() => router.push(`/${locale}/creator/content/upload`)}
                                     className="bg-gradient-to-r from-purple-600 to-pink-600"
                                 >
-                                    <Upload className="w-4 h-4 mr-2" />
+                                    <DynamicIcon name="Upload" className="w-4 h-4 mr-2" />
                                     {isArabic ? 'إنشاء محتوى' : 'Create Content'}
                                 </Button>
                             </div>
@@ -370,9 +384,9 @@ export default function CreatorContent() {
                                                                 />
                                                             ) : (
                                                                 <div className="w-full h-full flex items-center justify-center">
-                                                                    {item.type === 'VIDEO' && <Video className="w-8 h-8 text-muted-foreground" />}
-                                                                    {item.type === 'IMAGE' && <ImageIcon className="w-8 h-8 text-muted-foreground" />}
-                                                                    {item.type === 'TEXT' && <FileText className="w-8 h-8 text-muted-foreground" />}
+                                                                    {item.type === 'VIDEO' && <DynamicIcon name="Video" className="w-8 h-8 text-muted-foreground" />}
+                                                                    {item.type === 'IMAGE' && <DynamicIcon name="ImageIcon" className="w-8 h-8 text-muted-foreground" />}
+                                                                    {item.type === 'TEXT' && <DynamicIcon name="FileText" className="w-8 h-8 text-muted-foreground" />}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -412,7 +426,7 @@ export default function CreatorContent() {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-2">
-                                                        <Eye className="w-4 h-4 text-muted-foreground" />
+                                                        <DynamicIcon name="Eye" className="w-4 h-4 text-muted-foreground" />
                                                         <span>{item.views}</span>
                                                     </div>
                                                 </td>
@@ -429,14 +443,14 @@ export default function CreatorContent() {
                                                             className="p-2 hover:bg-accent rounded-lg transition-colors"
                                                             title={isArabic ? 'تعديل' : 'Edit'}
                                                         >
-                                                            <Edit className="w-4 h-4" />
+                                                            <DynamicIcon name="Edit" className="w-4 h-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => handleDelete(item.id)}
                                                             className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
                                                             title={isArabic ? 'حذف' : 'Delete'}
                                                         >
-                                                            <Trash2 className="w-4 h-4" />
+                                                            <DynamicIcon name="Trash2" className="w-4 h-4" />
                                                         </button>
                                                     </div>
                                                 </td>

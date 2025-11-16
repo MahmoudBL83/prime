@@ -1,21 +1,46 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'react-hot-toast'
-import { CreditCard, Loader2, CheckCircle, XCircle } from 'lucide-react'
+import dynamic from 'next/dynamic'
+
+// Dynamic icon imports for better performance
+const IconComponents = {
+    CreditCard: dynamic(() => import('lucide-react').then(mod => ({ default: mod.CreditCard })), {
+        ssr: false,
+        loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
+    }),
+    Loader2: dynamic(() => import('lucide-react').then(mod => ({ default: mod.Loader2 })), {
+        ssr: false,
+        loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
+    }),
+    CheckCircle: dynamic(() => import('lucide-react').then(mod => ({ default: mod.CheckCircle })), {
+        ssr: false,
+        loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
+    }),
+    XCircle: dynamic(() => import('lucide-react').then(mod => ({ default: mod.XCircle })), {
+        ssr: false,
+        loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
+    }),
+}
 
 const paymentSchema = z.object({
     subscriptionType: z.enum(['CATEGORY_A', 'CATEGORY_C']),
     channelId: z.string().optional(),
     amount: z.number().min(1, 'Amount must be greater than 0'),
-    currency: z.string().default('EGP'),
+    currency: z.string(),
 })
 
-type PaymentForm = z.infer<typeof paymentSchema>
+type PaymentForm = {
+    subscriptionType: 'CATEGORY_A' | 'CATEGORY_C'
+    channelId?: string
+    amount: number
+    currency: string
+}
 
 interface PaymentInterfaceProps {
     onSuccess?: () => void
@@ -152,7 +177,9 @@ export function PaymentInterface({ onSuccess, onError }: PaymentInterfaceProps) 
         return (
             <div className="max-w-md w-full mx-auto p-6 bg-background rounded-lg shadow-lg">
                 <div className="text-center">
-                    <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-600" />
+                    <Suspense fallback={<div className="w-12 h-12 animate-pulse bg-gray-300 rounded mx-auto mb-4" />}>
+                        <IconComponents.Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-600" />
+                    </Suspense>
                     <h3 className="text-lg font-semibold mb-2">Processing Payment</h3>
                     <p className="text-muted-foreground mb-4">
                         Please complete your payment in the new window. Do not close this page.
@@ -196,7 +223,9 @@ export function PaymentInterface({ onSuccess, onError }: PaymentInterfaceProps) 
         return (
             <div className="max-w-md w-full mx-auto p-6 bg-background rounded-lg shadow-lg">
                 <div className="text-center">
-                    <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-600" />
+                    <Suspense fallback={<div className="w-16 h-16 animate-pulse bg-gray-300 rounded mx-auto mb-4" />}>
+                        <IconComponents.CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-600" />
+                    </Suspense>
                     <h3 className="text-xl font-semibold mb-2 text-green-600">Payment Successful!</h3>
                     <p className="text-muted-foreground mb-4">
                         Your subscription has been activated successfully.
@@ -213,7 +242,9 @@ export function PaymentInterface({ onSuccess, onError }: PaymentInterfaceProps) 
         return (
             <div className="max-w-md w-full mx-auto p-6 bg-background rounded-lg shadow-lg">
                 <div className="text-center">
-                    <XCircle className="w-16 h-16 mx-auto mb-4 text-red-600" />
+                    <Suspense fallback={<div className="w-16 h-16 animate-pulse bg-gray-300 rounded mx-auto mb-4" />}>
+                        <IconComponents.XCircle className="w-16 h-16 mx-auto mb-4 text-red-600" />
+                    </Suspense>
                     <h3 className="text-xl font-semibold mb-2 text-red-600">Payment Failed</h3>
                     <p className="text-muted-foreground mb-4">
                         There was an issue processing your payment. Please try again.
@@ -232,7 +263,9 @@ export function PaymentInterface({ onSuccess, onError }: PaymentInterfaceProps) 
     return (
         <div className="max-w-md w-full mx-auto p-6 bg-background rounded-lg shadow-lg">
             <div className="text-center mb-6">
-                <CreditCard className="w-12 h-12 mx-auto mb-4 text-blue-600" />
+                <Suspense fallback={<div className="w-12 h-12 animate-pulse bg-gray-300 rounded mx-auto mb-4" />}>
+                    <IconComponents.CreditCard className="w-12 h-12 mx-auto mb-4 text-blue-600" />
+                </Suspense>
                 <h3 className="text-xl font-semibold">Complete Your Subscription</h3>
                 <p className="text-muted-foreground">Choose your subscription plan and proceed to payment</p>
             </div>
@@ -341,12 +374,16 @@ export function PaymentInterface({ onSuccess, onError }: PaymentInterfaceProps) 
                 >
                     {isLoading ? (
                         <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            <Suspense fallback={<div className="w-4 h-4 animate-pulse bg-gray-300 rounded mr-2" />}>
+                                <IconComponents.Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            </Suspense>
                             Processing...
                         </>
                     ) : (
                         <>
-                            <CreditCard className="w-4 h-4 mr-2" />
+                            <Suspense fallback={<div className="w-4 h-4 animate-pulse bg-gray-300 rounded mr-2" />}>
+                                <IconComponents.CreditCard className="w-4 h-4 mr-2" />
+                            </Suspense>
                             Proceed to Payment
                         </>
                     )}

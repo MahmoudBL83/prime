@@ -1,34 +1,47 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import {
-    ArrowLeft,
-    Home,
-    Play,
-    Bell,
-    DollarSign,
-    TrendingUp,
-    Users,
-    Video,
-    BarChart3,
-    Settings,
-    Loader2,
-    Download,
-    CreditCard,
-    Wallet,
-    Calendar,
-    CheckCircle,
-    Clock,
-    X
-} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
+
+// Icon Components with lazy loading
+const IconComponents = {
+    ArrowLeft: lazy(() => import('lucide-react').then(mod => ({ default: mod.ArrowLeft }))),
+    Home: lazy(() => import('lucide-react').then(mod => ({ default: mod.Home }))),
+    Play: lazy(() => import('lucide-react').then(mod => ({ default: mod.Play }))),
+    Bell: lazy(() => import('lucide-react').then(mod => ({ default: mod.Bell }))),
+    DollarSign: lazy(() => import('lucide-react').then(mod => ({ default: mod.DollarSign }))),
+    TrendingUp: lazy(() => import('lucide-react').then(mod => ({ default: mod.TrendingUp }))),
+    Users: lazy(() => import('lucide-react').then(mod => ({ default: mod.Users }))),
+    Video: lazy(() => import('lucide-react').then(mod => ({ default: mod.Video }))),
+    BarChart3: lazy(() => import('lucide-react').then(mod => ({ default: mod.BarChart3 }))),
+    Settings: lazy(() => import('lucide-react').then(mod => ({ default: mod.Settings }))),
+    Loader2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Loader2 }))),
+    Download: lazy(() => import('lucide-react').then(mod => ({ default: mod.Download }))),
+    CreditCard: lazy(() => import('lucide-react').then(mod => ({ default: mod.CreditCard }))),
+    Wallet: lazy(() => import('lucide-react').then(mod => ({ default: mod.Wallet }))),
+    Calendar: lazy(() => import('lucide-react').then(mod => ({ default: mod.Calendar }))),
+    CheckCircle: lazy(() => import('lucide-react').then(mod => ({ default: mod.CheckCircle }))),
+    Clock: lazy(() => import('lucide-react').then(mod => ({ default: mod.Clock }))),
+    X: lazy(() => import('lucide-react').then(mod => ({ default: mod.X })))
+}
+
+// Dynamic Icon Component
+const DynamicIcon = ({ name, className, ...props }: { name: keyof typeof IconComponents; className?: string; [key: string]: any }) => {
+    const IconComponent = IconComponents[name]
+    
+    return (
+        <Suspense fallback={<div className={className} />}>
+            <IconComponent className={className} {...props} />
+        </Suspense>
+    )
+}
 
 interface EarningsData {
     availableBalance: number
@@ -125,13 +138,13 @@ export default function CreatorEarn() {
                                 onClick={() => router.back()}
                                 className="p-2 hover:bg-accent rounded-full transition-colors"
                             >
-                                <ArrowLeft className="w-5 h-5" />
+                                <DynamicIcon name="ArrowLeft" className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => router.push(`/${locale}`)}
                                 className="p-2 hover:bg-accent rounded-full transition-colors"
                             >
-                                <Home className="w-5 h-5" />
+                                <DynamicIcon name="Home" className="w-5 h-5" />
                             </button>
                         </div>
 
@@ -139,7 +152,7 @@ export default function CreatorEarn() {
 
                         <Link href={`/${locale}/creator/dashboard`} className="flex items-center gap-2">
                             <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
-                                <Play className="w-6 h-6 text-white fill-white" />
+                                <DynamicIcon name="Play" className="w-6 h-6 text-white fill-white" />
                             </div>
                             <span className="text-xl font-bold">
                                 {isArabic ? 'استوديو المنشئ' : 'Creator Studio'}
@@ -149,11 +162,11 @@ export default function CreatorEarn() {
 
                     <div className="flex items-center gap-3">
                         <button className="p-2 hover:bg-accent rounded-full transition-colors">
-                            <Bell className="w-5 h-5" />
+                            <DynamicIcon name="Bell" className="w-5 h-5" />
                         </button>
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                            {session.user.image ? (
-                                <Image src={session.user.image} alt="" width={40} height={40} className="rounded-full" />
+                            {(session.user as any)?.image ? (
+                                <Image src={(session.user as any).image} alt="" width={40} height={40} className="rounded-full" />
                             ) : (
                                 <span className="text-white font-bold">
                                     {session.user.name?.[0]?.toUpperCase() || 'C'}
@@ -178,9 +191,9 @@ export default function CreatorEarn() {
                                 navigating ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                         >
-                            <BarChart3 className="w-5 h-5" />
+                            <DynamicIcon name="BarChart3" className="w-5 h-5" />
                             <span>{isArabic ? 'لوحة التحكم' : 'Dashboard'}</span>
-                            {navigating && <Loader2 className="w-4 h-4 animate-spin ml-auto" />}
+                            {navigating && <DynamicIcon name="Loader2" className="w-4 h-4 animate-spin ml-auto" />}
                         </button>
 
                         <button
@@ -193,7 +206,7 @@ export default function CreatorEarn() {
                                 navigating ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                         >
-                            <Video className="w-5 h-5" />
+                            <DynamicIcon name="Video" className="w-5 h-5" />
                             <span>{isArabic ? 'المحتوى' : 'Content'}</span>
                         </button>
 
@@ -207,7 +220,7 @@ export default function CreatorEarn() {
                                 navigating ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                         >
-                            <TrendingUp className="w-5 h-5" />
+                            <DynamicIcon name="TrendingUp" className="w-5 h-5" />
                             <span>{isArabic ? 'التحليلات' : 'Analytics'}</span>
                         </button>
 
@@ -221,14 +234,14 @@ export default function CreatorEarn() {
                                 navigating ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                         >
-                            <Users className="w-5 h-5" />
+                            <DynamicIcon name="Users" className="w-5 h-5" />
                             <span>{isArabic ? 'المجتمع' : 'Community'}</span>
                         </button>
 
                         <button
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-accent text-foreground font-semibold transition-all"
                         >
-                            <DollarSign className="w-5 h-5" />
+                            <DynamicIcon name="DollarSign" className="w-5 h-5" />
                             <span>{isArabic ? 'الأرباح' : 'Earn'}</span>
                         </button>
 
@@ -244,7 +257,7 @@ export default function CreatorEarn() {
                                 navigating ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                         >
-                            <Settings className="w-5 h-5" />
+                            <DynamicIcon name="Settings" className="w-5 h-5" />
                             <span>{isArabic ? 'الإعدادات' : 'Settings'}</span>
                         </button>
                     </nav>
@@ -263,7 +276,7 @@ export default function CreatorEarn() {
 
                     {loading ? (
                         <div className="text-center py-12">
-                            <Loader2 className="w-12 h-12 animate-spin mx-auto text-purple-500 mb-4" />
+                            <DynamicIcon name="Loader2" className="w-12 h-12 animate-spin mx-auto text-purple-500 mb-4" />
                             <p className="text-muted-foreground">{isArabic ? 'جاري التحميل...' : 'Loading...'}</p>
                         </div>
                     ) : (
@@ -278,7 +291,7 @@ export default function CreatorEarn() {
                                         <span className="text-sm text-muted-foreground">
                                             {isArabic ? 'الرصيد المتاح' : 'Available Balance'}
                                         </span>
-                                        <Wallet className="w-5 h-5 text-green-500" />
+                                        <DynamicIcon name="Wallet" className="w-5 h-5 text-green-500" />
                                     </div>
                                     <div className="text-4xl font-bold mb-4">
                                         ${earnings?.availableBalance?.toFixed(2) || '0.00'}
@@ -290,12 +303,12 @@ export default function CreatorEarn() {
                                     >
                                         {requestingPayout ? (
                                             <>
-                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                <DynamicIcon name="Loader2" className="w-4 h-4 mr-2 animate-spin" />
                                                 {isArabic ? 'جاري الطلب...' : 'Requesting...'}
                                             </>
                                         ) : (
                                             <>
-                                                <Download className="w-4 h-4 mr-2" />
+                                                <DynamicIcon name="Download" className="w-4 h-4 mr-2" />
                                                 {isArabic ? 'طلب دفعة' : 'Request Payout'}
                                             </>
                                         )}
@@ -315,7 +328,7 @@ export default function CreatorEarn() {
                                         <span className="text-sm text-muted-foreground">
                                             {isArabic ? 'قيد المعالجة' : 'Pending'}
                                         </span>
-                                        <Clock className="w-5 h-5 text-yellow-500" />
+                                        <DynamicIcon name="Clock" className="w-5 h-5 text-yellow-500" />
                                     </div>
                                     <div className="text-4xl font-bold mb-2">
                                         ${earnings?.pendingBalance?.toFixed(2) || '0.00'}
@@ -333,7 +346,7 @@ export default function CreatorEarn() {
                                         <span className="text-sm text-muted-foreground">
                                             {isArabic ? 'إجمالي الأرباح' : 'Total Earned'}
                                         </span>
-                                        <DollarSign className="w-5 h-5 text-purple-500" />
+                                        <DynamicIcon name="DollarSign" className="w-5 h-5 text-purple-500" />
                                     </div>
                                     <div className="text-4xl font-bold mb-2">
                                         ${earnings?.totalEarned?.toFixed(2) || '0.00'}
@@ -405,9 +418,9 @@ export default function CreatorEarn() {
                                                         transaction.status === 'PENDING' ? 'bg-yellow-500/20' :
                                                         'bg-red-500/20'
                                                     }`}>
-                                                        {transaction.status === 'COMPLETED' && <CheckCircle className="w-5 h-5 text-green-500" />}
-                                                        {transaction.status === 'PENDING' && <Clock className="w-5 h-5 text-yellow-500" />}
-                                                        {transaction.status === 'FAILED' && <X className="w-5 h-5 text-red-500" />}
+                                                        {transaction.status === 'COMPLETED' && <DynamicIcon name="CheckCircle" className="w-5 h-5 text-green-500" />}
+                                                        {transaction.status === 'PENDING' && <DynamicIcon name="Clock" className="w-5 h-5 text-yellow-500" />}
+                                                        {transaction.status === 'FAILED' && <DynamicIcon name="X" className="w-5 h-5 text-red-500" />}
                                                     </div>
                                                     <div>
                                                         <h3 className="font-semibold">{transaction.description}</h3>

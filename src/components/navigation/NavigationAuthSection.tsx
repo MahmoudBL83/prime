@@ -8,6 +8,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslationsSafe } from '@/hooks/useTranslationsSafe';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
+import Image from 'next/image';
 
 interface NavigationAuthSectionProps {
     isMobile?: boolean;
@@ -52,11 +53,13 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
 
     // Get user avatar initials or image
     const getAvatarContent = () => {
-        if ((session.user as any)?.image) {
+        if (session?.user && (session.user as any)?.image) {
             return (
                 <Image
                     src={(session.user as any).image}
-                    alt={session.user.name || 'User'} 
+                    alt={session.user?.name || 'User'} 
+                    width={32}
+                    height={32}
                     className="w-full h-full object-cover rounded-full"
                 />
             );
