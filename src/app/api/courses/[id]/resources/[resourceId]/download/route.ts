@@ -10,13 +10,13 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 const resourceParamsSchema = z.object({
-  courseId: z.string(),
+  id: z.string(),
   resourceId: z.string(),
 });
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ courseId: string; resourceId: string }> }
+  { params }: { params: Promise<{ id: string; resourceId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -28,8 +28,8 @@ export async function GET(
       );
     }
 
-    const { courseId, resourceId } = await params;
-    const validation = resourceParamsSchema.safeParse({ courseId, resourceId });
+    const { id: courseId, resourceId } = await params;
+    const validation = resourceParamsSchema.safeParse({ id: courseId, resourceId });
     
     if (!validation.success) {
       return NextResponse.json(
