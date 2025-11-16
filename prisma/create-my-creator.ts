@@ -62,8 +62,7 @@ async function createCreator() {
         data: {
             creatorId: creator.id,
             name: `${user.name}'s Channel`,
-            description: 'My educational content channel',
-            isActive: true
+            description: 'My educational content channel'
         }
     })
     
