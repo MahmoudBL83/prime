@@ -85,7 +85,8 @@ interface Post {
     likes: number
     comments: number
     views: number
-    timestamp: string
+    timestamp?: string
+    scheduledFor?: string
     isLocked: boolean
 }
 
@@ -242,8 +243,8 @@ export default function OnlyFansMentorProfilePage() {
         totalMembers: 0,
         activeToday: 0,
         avgEngagement: 0,
-        topMembers: [],
-        recentActivity: []
+        topMembers: [] as Array<{name: string, posts: number, likes: number, tier: string}>,
+        recentActivity: [] as Array<{type: string, user: string, action: string, time: string}>
     })
 
     // Fetch user subscription status
@@ -1923,7 +1924,7 @@ export default function OnlyFansMentorProfilePage() {
                     author: {
                         name: session.user?.name || 'User',
                         arabicName: null,
-                        profileImage: session.user?.image || null
+                        profileImage: (session.user as any)?.image || null
                     },
                     content: commentContent,
                     timestamp: 'now',
@@ -2560,7 +2561,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             name: mentor.user.name || '',
                                                             arabicName: mentor.user.arabicName || '',
                                                             bio: mentor.user.bio || '',
-                                                            expertise: typeof mentor.expertise === 'string' ? mentor.expertise : (mentor.expertise || []).join(', '),
+                                                            expertise: mentor.expertise || '',
                                                             location: (mentor.user as any).location || '',
                                                             hourlyRate: (mentor as any).hourlyRate || 0,
                                                             basicPrice: mentor.basicMonthlyPrice || 0,
@@ -6378,7 +6379,9 @@ export default function OnlyFansMentorProfilePage() {
                                                             <Button 
                                                                 size="sm" 
                                                                 onClick={() => {
-                                                                    setViewingMedia({type: post.type, url: post.media!})
+                                                                    if (post.type === 'image' || post.type === 'video') {
+                                                                        setViewingMedia({type: post.type, url: post.media!})
+                                                                    }
                                                                 }}
                                                                 className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border-0"
                                                             >
@@ -6609,14 +6612,16 @@ export default function OnlyFansMentorProfilePage() {
 
                                                                         {/* Actions */}
                                                                         <div className="flex-shrink-0 flex gap-2">
-                                                                            <button
+                                                                            <Button
                                                                                 onClick={() => handlePublishNow(post.id)}
+                                                                                variant="ghost"
+                                                                                size="sm"
                                                                                 className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/10 rounded-lg transition-colors"
                                                                                 title={isArabic ? 'نشر الآن' : 'Publish Now'}
                                                                             >
                                                                                 <Send className="w-4 h-4" />
-                                                                            </button>
-                                                                            <button
+                                                                            </Button>
+                                                                            <Button
                                                                                 onClick={() => {
                                                                                     setEditingPost(post)
                                                                                     setNewPostText(post.content)
@@ -6625,18 +6630,22 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     setUploadPreview(post.media || null)
                                                                                     setShowNewPostModal(true)
                                                                                 }}
+                                                                                variant="ghost"
+                                                                                size="sm"
                                                                                 className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-colors"
                                                                                 title={isArabic ? 'تعديل' : 'Edit'}
                                                                             >
                                                                                 <Edit2 className="w-4 h-4" />
-                                                                            </button>
-                                                                            <button
+                                                                            </Button>
+                                                                            <Button
                                                                                 onClick={() => handleDeletePost(post.id)}
+                                                                                variant="ghost"
+                                                                                size="sm"
                                                                                 className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
                                                                                 title={isArabic ? 'حذف' : 'Delete'}
                                                                             >
                                                                                 <Trash2 className="w-4 h-4" />
-                                                                            </button>
+                                                                            </Button>
                                                                         </div>
                                                                     </div>
                                                                 </div>

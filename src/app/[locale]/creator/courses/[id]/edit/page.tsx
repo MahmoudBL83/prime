@@ -1,43 +1,65 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
+import React from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import {
-    ArrowLeft,
-    Home,
-    Save,
-    Eye,
-    Upload,
-    Video,
-    FileText,
-    Plus,
-    Trash2,
-    GripVertical,
-    Loader2,
-    Settings,
-    Image as ImageIcon,
-    Edit,
-    Play,
-    Clock,
-    Target,
-    Users,
-    X,
-    ClipboardList,
-    Calendar,
-    GraduationCap,
-    TrendingUp,
-    Award,
-    CheckCircle,
-    AlertCircle,
-    List
-} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'react-hot-toast'
 import Image from 'next/image'
+
+// Icon Components with lazy loading
+const IconComponents = {
+    ArrowLeft: lazy(() => import('lucide-react').then(mod => ({ default: mod.ArrowLeft }))),
+    Home: lazy(() => import('lucide-react').then(mod => ({ default: mod.Home }))),
+    Save: lazy(() => import('lucide-react').then(mod => ({ default: mod.Save }))),
+    Eye: lazy(() => import('lucide-react').then(mod => ({ default: mod.Eye }))),
+    Upload: lazy(() => import('lucide-react').then(mod => ({ default: mod.Upload }))),
+    Video: lazy(() => import('lucide-react').then(mod => ({ default: mod.Video }))),
+    FileText: lazy(() => import('lucide-react').then(mod => ({ default: mod.FileText }))),
+    Plus: lazy(() => import('lucide-react').then(mod => ({ default: mod.Plus }))),
+    Trash2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Trash2 }))),
+    GripVertical: lazy(() => import('lucide-react').then(mod => ({ default: mod.GripVertical }))),
+    Loader2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Loader2 }))),
+    Settings: lazy(() => import('lucide-react').then(mod => ({ default: mod.Settings }))),
+    ImageIcon: lazy(() => import('lucide-react').then(mod => ({ default: mod.Image }))),
+    Edit: lazy(() => import('lucide-react').then(mod => ({ default: mod.Edit }))),
+    Play: lazy(() => import('lucide-react').then(mod => ({ default: mod.Play }))),
+    Clock: lazy(() => import('lucide-react').then(mod => ({ default: mod.Clock }))),
+    Target: lazy(() => import('lucide-react').then(mod => ({ default: mod.Target }))),
+    Users: lazy(() => import('lucide-react').then(mod => ({ default: mod.Users }))),
+    X: lazy(() => import('lucide-react').then(mod => ({ default: mod.X }))),
+    ClipboardList: lazy(() => import('lucide-react').then(mod => ({ default: mod.ClipboardList }))),
+    Calendar: lazy(() => import('lucide-react').then(mod => ({ default: mod.Calendar }))),
+    GraduationCap: lazy(() => import('lucide-react').then(mod => ({ default: mod.GraduationCap }))),
+    TrendingUp: lazy(() => import('lucide-react').then(mod => ({ default: mod.TrendingUp }))),
+    Award: lazy(() => import('lucide-react').then(mod => ({ default: mod.Award }))),
+    CheckCircle: lazy(() => import('lucide-react').then(mod => ({ default: mod.CheckCircle }))),
+    AlertCircle: lazy(() => import('lucide-react').then(mod => ({ default: mod.AlertCircle }))),
+    List: lazy(() => import('lucide-react').then(mod => ({ default: mod.List })))
+}
+
+// Dynamic Icon Component
+type IconName = keyof typeof IconComponents;
+
+interface DynamicIconProps {
+    name: IconName;
+    className?: string;
+    [key: string]: any;
+}
+
+const DynamicIcon: React.FC<DynamicIconProps> = ({ name, className, ...props }) => {
+    const IconComponent = IconComponents[name]
+    
+    return (
+        <Suspense fallback={<div className={className} />}>
+            <IconComponent className={className} {...props} />
+        </Suspense>
+    )
+}
 
 interface Course {
     id: string
@@ -895,7 +917,7 @@ export default function EditCourse() {
     if (!session) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin" />
+                <DynamicIcon name="Loader2" className="w-8 h-8 animate-spin" />
             </div>
         )
     }
@@ -903,7 +925,7 @@ export default function EditCourse() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+                <DynamicIcon name="Loader2" className="w-8 h-8 animate-spin text-purple-500" />
             </div>
         )
     }
@@ -918,13 +940,13 @@ export default function EditCourse() {
                             onClick={() => router.push(`/${locale}/creator/courses`)}
                             className="p-2 hover:bg-accent rounded-full transition-colors"
                         >
-                            <ArrowLeft className="w-5 h-5" />
+                            <DynamicIcon name="ArrowLeft" className="w-5 h-5" />
                         </button>
                         <button
                             onClick={() => router.push(`/${locale}`)}
                             className="p-2 hover:bg-accent rounded-full transition-colors"
                         >
-                            <Home className="w-5 h-5" />
+                            <DynamicIcon name="Home" className="w-5 h-5" />
                         </button>
                         <div className="h-6 w-px bg-border" />
                         <div>
@@ -941,7 +963,7 @@ export default function EditCourse() {
                             variant="outline"
                             onClick={() => router.push(`/${locale}/courses/${courseId}`)}
                         >
-                            <Eye className="w-4 h-4 mr-2" />
+                            <DynamicIcon name="Eye" className="w-4 h-4 mr-2" />
                             {isArabic ? 'معاينة' : 'Preview'}
                         </Button>
                         <Button
@@ -951,12 +973,12 @@ export default function EditCourse() {
                         >
                             {saving ? (
                                 <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    <DynamicIcon name="Loader2" className="w-4 h-4 mr-2 animate-spin" />
                                     {isArabic ? 'جاري الحفظ...' : 'Saving...'}
                                 </>
                             ) : (
                                 <>
-                                    <Save className="w-4 h-4 mr-2" />
+                                    <DynamicIcon name="Save" className="w-4 h-4 mr-2" />
                                     {isArabic ? 'حفظ التغييرات' : 'Save Changes'}
                                 </>
                             )}
@@ -976,7 +998,7 @@ export default function EditCourse() {
                                 : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
-                        <FileText className="w-4 h-4 inline mr-2" />
+                        <DynamicIcon name="FileText" className="w-4 h-4 inline mr-2" />
                         {isArabic ? 'التفاصيل' : 'Details'}
                     </button>
                     <button
@@ -987,7 +1009,7 @@ export default function EditCourse() {
                                 : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
-                        <Video className="w-4 h-4 inline mr-2" />
+                        <DynamicIcon name="Video" className="w-4 h-4 inline mr-2" />
                         {isArabic ? 'المحتوى' : 'Content'}
                     </button>
                     <button
@@ -998,7 +1020,7 @@ export default function EditCourse() {
                                 : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
-                        <FileText className="w-4 h-4 inline mr-2" />
+                        <DynamicIcon name="FileText" className="w-4 h-4 inline mr-2" />
                         {isArabic ? 'الاختبارات' : 'Quizzes'}
                     </button>
                     <button
@@ -1009,7 +1031,7 @@ export default function EditCourse() {
                                 : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
-                        <ClipboardList className="w-4 h-4 inline mr-2" />
+                        <DynamicIcon name="ClipboardList" className="w-4 h-4 inline mr-2" />
                         {isArabic ? 'الواجبات' : 'Assignments'}
                     </button>
                     <button
@@ -1020,7 +1042,7 @@ export default function EditCourse() {
                                 : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
-                        <GraduationCap className="w-4 h-4 inline mr-2" />
+                        <DynamicIcon name="GraduationCap" className="w-4 h-4 inline mr-2" />
                         {isArabic ? 'الطلاب' : 'Students'}
                     </button>
                     <button
@@ -1031,7 +1053,7 @@ export default function EditCourse() {
                                 : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
-                        <CheckCircle className="w-4 h-4 inline mr-2" />
+                        <DynamicIcon name="CheckCircle" className="w-4 h-4 inline mr-2" />
                         {isArabic ? 'التقييم' : 'Grading'}
                         {submissionsStats && submissionsStats.ungradedAssignments > 0 && (
                             <span className="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
@@ -1047,7 +1069,7 @@ export default function EditCourse() {
                                 : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
-                        <Settings className="w-4 h-4 inline mr-2" />
+                        <DynamicIcon name="Settings" className="w-4 h-4 inline mr-2" />
                         {isArabic ? 'الإعدادات' : 'Settings'}
                     </button>
                 </div>
@@ -1218,7 +1240,7 @@ export default function EditCourse() {
                                     <label htmlFor="thumbnail-upload">
                                         <Button variant="outline" className="cursor-pointer" asChild>
                                             <span>
-                                                <Upload className="w-4 h-4 mr-2" />
+                                                <DynamicIcon name="Upload" className="w-4 h-4 mr-2" />
                                                 {isArabic ? 'تحميل صورة جديدة' : 'Upload New Image'}
                                             </span>
                                         </Button>
@@ -1355,7 +1377,7 @@ export default function EditCourse() {
                                         />
                                         <label htmlFor="lesson-video-upload">
                                             <div className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:bg-accent transition-colors">
-                                                <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                                                <DynamicIcon name="Upload" className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                                                 <p className="text-sm font-semibold mb-1">
                                                     {lessonVideo 
                                                         ? lessonVideo.name
@@ -1449,7 +1471,7 @@ export default function EditCourse() {
                                         >
                                             {uploadingLesson ? (
                                                 <>
-                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                    <DynamicIcon name="Loader2" className="w-4 h-4 mr-2 animate-spin" />
                                                     {isArabic ? 'جاري الرفع...' : 'Uploading...'}
                                                 </>
                                             ) : (
@@ -1474,7 +1496,7 @@ export default function EditCourse() {
                                         onClick={() => setShowAddLesson(true)}
                                         className="bg-gradient-to-r from-purple-600 to-pink-600"
                                     >
-                                        <Plus className="w-4 h-4 mr-2" />
+                                        <DynamicIcon name="Plus" className="w-4 h-4 mr-2" />
                                         {isArabic ? 'إضافة درس' : 'Add Lesson'}
                                     </Button>
                                 )}
@@ -1482,11 +1504,11 @@ export default function EditCourse() {
 
                             {lessonsLoading ? (
                                 <div className="flex items-center justify-center py-12">
-                                    <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+                                    <DynamicIcon name="Loader2" className="w-8 h-8 animate-spin text-purple-500" />
                                 </div>
                             ) : lessons.length === 0 ? (
                                 <div className="text-center py-12">
-                                    <Video className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+                                    <DynamicIcon name="Video" className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
                                     <p className="text-muted-foreground mb-4">
                                         {isArabic ? 'لا توجد دروس بعد' : 'No lessons yet'}
                                     </p>
@@ -1494,7 +1516,7 @@ export default function EditCourse() {
                                         onClick={() => setShowAddLesson(true)}
                                         variant="outline"
                                     >
-                                        <Plus className="w-4 h-4 mr-2" />
+                                        <DynamicIcon name="Plus" className="w-4 h-4 mr-2" />
                                         {isArabic ? 'إضافة أول درس' : 'Add First Lesson'}
                                     </Button>
                                 </div>
@@ -1509,11 +1531,11 @@ export default function EditCourse() {
                                             className="flex items-center gap-4 p-4 bg-accent/50 rounded-lg hover:bg-accent transition-colors group"
                                         >
                                             <div className="cursor-grab text-muted-foreground">
-                                                <GripVertical className="w-5 h-5" />
+                                                <DynamicIcon name="GripVertical" className="w-5 h-5" />
                                             </div>
 
                                             <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                                                <Play className="w-6 h-6 text-purple-500" />
+                                                <DynamicIcon name="Play" className="w-6 h-6 text-purple-500" />
                                             </div>
 
                                             <div className="flex-1 min-w-0">
@@ -1537,7 +1559,7 @@ export default function EditCourse() {
                                                 )}
                                                 <div className="flex items-center gap-4 mt-1">
                                                     <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                                        <Clock className="w-3 h-3" />
+                                                        <DynamicIcon name="Clock" className="w-3 h-3" />
                                                         {lesson.duration} {isArabic ? 'دقيقة' : 'min'}
                                                     </span>
                                                 </div>
@@ -1548,13 +1570,13 @@ export default function EditCourse() {
                                                     onClick={() => handleEditLesson(lesson)}
                                                     className="p-2 hover:bg-background rounded-lg transition-colors"
                                                 >
-                                                    <Edit className="w-4 h-4" />
+                                                    <DynamicIcon name="Edit" className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteLesson(lesson.id)}
                                                     className="p-2 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <DynamicIcon name="Trash2" className="w-4 h-4" />
                                                 </button>
                                             </div>
                                         </motion.div>
@@ -1764,12 +1786,12 @@ export default function EditCourse() {
                                     >
                                         {savingSettings ? (
                                             <>
-                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                <DynamicIcon name="Loader2" className="w-4 h-4 animate-spin" />
                                                 {isArabic ? 'جاري الحفظ...' : 'Saving...'}
                                             </>
                                         ) : (
                                             <>
-                                                <Save className="w-4 h-4" />
+                                                <DynamicIcon name="Save" className="w-4 h-4" />
                                                 {isArabic ? 'حفظ الإعدادات' : 'Save Settings'}
                                             </>
                                         )}
@@ -1825,7 +1847,7 @@ export default function EditCourse() {
                                             }
                                         }}
                                     >
-                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        <DynamicIcon name="Trash2" className="w-4 h-4 mr-2" />
                                         {isArabic ? 'حذف الدورة' : 'Delete Course'}
                                     </Button>
                                 </div>
@@ -1856,18 +1878,18 @@ export default function EditCourse() {
                                 onClick={handleAddQuiz}
                                 className="bg-gradient-to-r from-purple-600 to-pink-600"
                             >
-                                <Plus className="w-4 h-4 mr-2" />
+                                <DynamicIcon name="Plus" className="w-4 h-4 mr-2" />
                                 {isArabic ? 'إضافة اختبار' : 'Add Quiz'}
                             </Button>
                         </div>
 
                         {quizzesLoading ? (
                             <div className="flex justify-center py-12">
-                                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+                                <DynamicIcon name="Loader2" className="w-8 h-8 animate-spin text-purple-500" />
                             </div>
                         ) : quizzes.length === 0 ? (
                             <div className="text-center py-12 bg-card border border-border rounded-xl">
-                                <FileText className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                                <DynamicIcon name="FileText" className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
                                 <h3 className="text-xl font-semibold mb-2">
                                     {isArabic ? 'لا توجد اختبارات' : 'No Quizzes Yet'}
                                 </h3>
@@ -1880,7 +1902,7 @@ export default function EditCourse() {
                                     onClick={handleAddQuiz}
                                     className="bg-gradient-to-r from-purple-600 to-pink-600"
                                 >
-                                    <Plus className="w-4 h-4 mr-2" />
+                                    <DynamicIcon name="Plus" className="w-4 h-4 mr-2" />
                                     {isArabic ? 'إنشاء اختبار' : 'Create Quiz'}
                                 </Button>
                             </div>
@@ -1903,11 +1925,11 @@ export default function EditCourse() {
                                                 )}
                                                 <div className="flex flex-wrap gap-4 text-sm">
                                                     <div className="flex items-center gap-2">
-                                                        <FileText className="w-4 h-4 text-purple-500" />
+                                                        <DynamicIcon name="FileText" className="w-4 h-4 text-purple-500" />
                                                         <span>{quiz.questions.length} {isArabic ? 'أسئلة' : 'Questions'}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <Clock className="w-4 h-4 text-blue-500" />
+                                                        <DynamicIcon name="Clock" className="w-4 h-4 text-blue-500" />
                                                         <span>
                                                             {quiz.timeLimit 
                                                                 ? `${quiz.timeLimit} ${isArabic ? 'دقيقة' : 'min'}` 
@@ -1915,11 +1937,11 @@ export default function EditCourse() {
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <Target className="w-4 h-4 text-green-500" />
+                                                        <DynamicIcon name="Target" className="w-4 h-4 text-green-500" />
                                                         <span>{quiz.passingScore}% {isArabic ? 'للنجاح' : 'to pass'}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <Users className="w-4 h-4 text-orange-500" />
+                                                        <DynamicIcon name="Users" className="w-4 h-4 text-orange-500" />
                                                         <span>{quiz._count.attempts} {isArabic ? 'محاولات' : 'attempts'}</span>
                                                     </div>
                                                 </div>
@@ -1930,7 +1952,7 @@ export default function EditCourse() {
                                                     size="sm"
                                                     onClick={() => handleEditQuiz(quiz)}
                                                 >
-                                                    <Edit className="w-4 h-4" />
+                                                    <DynamicIcon name="Edit" className="w-4 h-4" />
                                                 </Button>
                                                 <Button
                                                     variant="outline"
@@ -1938,7 +1960,7 @@ export default function EditCourse() {
                                                     onClick={() => handleDeleteQuiz(quiz.id)}
                                                     className="text-red-500 hover:text-red-600"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <DynamicIcon name="Trash2" className="w-4 h-4" />
                                                 </Button>
                                             </div>
                                         </div>
@@ -1961,7 +1983,7 @@ export default function EditCourse() {
                                             onClick={() => setShowAddQuiz(false)}
                                             className="p-2 hover:bg-accent rounded-lg transition-colors"
                                         >
-                                            <X className="w-5 h-5" />
+                                            <DynamicIcon name="X" className="w-5 h-5" />
                                         </button>
                                     </div>
 
@@ -2060,7 +2082,7 @@ export default function EditCourse() {
                                                     variant="outline"
                                                     size="sm"
                                                 >
-                                                    <Plus className="w-4 h-4 mr-2" />
+                                                    <DynamicIcon name="Plus" className="w-4 h-4 mr-2" />
                                                     {isArabic ? 'إضافة سؤال' : 'Add Question'}
                                                 </Button>
                                             </div>
@@ -2080,7 +2102,7 @@ export default function EditCourse() {
                                                             size="sm"
                                                             className="text-red-500"
                                                         >
-                                                            <Trash2 className="w-4 h-4" />
+                                                            <DynamicIcon name="Trash2" className="w-4 h-4" />
                                                         </Button>
                                                     </div>
 
@@ -2198,12 +2220,12 @@ export default function EditCourse() {
                                             >
                                                 {savingQuiz ? (
                                                     <>
-                                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                        <DynamicIcon name="Loader2" className="w-4 h-4 mr-2 animate-spin" />
                                                         {isArabic ? 'جاري الحفظ...' : 'Saving...'}
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <Save className="w-4 h-4 mr-2" />
+                                                        <DynamicIcon name="Save" className="w-4 h-4 mr-2" />
                                                         {isArabic ? 'حفظ الاختبار' : 'Save Quiz'}
                                                     </>
                                                 )}
@@ -2238,18 +2260,18 @@ export default function EditCourse() {
                                 onClick={handleAddAssignment}
                                 className="bg-gradient-to-r from-purple-600 to-pink-600"
                             >
-                                <Plus className="w-4 h-4 mr-2" />
+                                <DynamicIcon name="Plus" className="w-4 h-4 mr-2" />
                                 {isArabic ? 'إضافة واجب' : 'Add Assignment'}
                             </Button>
                         </div>
 
                         {assignmentsLoading ? (
                             <div className="flex justify-center py-12">
-                                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+                                <DynamicIcon name="Loader2" className="w-8 h-8 animate-spin text-purple-500" />
                             </div>
                         ) : assignments.length === 0 ? (
                             <div className="text-center py-12 bg-card border border-border rounded-xl">
-                                <ClipboardList className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                                <DynamicIcon name="ClipboardList" className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
                                 <h3 className="text-xl font-semibold mb-2">
                                     {isArabic ? 'لا توجد واجبات' : 'No Assignments Yet'}
                                 </h3>
@@ -2262,7 +2284,7 @@ export default function EditCourse() {
                                     onClick={handleAddAssignment}
                                     className="bg-gradient-to-r from-purple-600 to-pink-600"
                                 >
-                                    <Plus className="w-4 h-4 mr-2" />
+                                    <DynamicIcon name="Plus" className="w-4 h-4 mr-2" />
                                     {isArabic ? 'إنشاء واجب' : 'Create Assignment'}
                                 </Button>
                             </div>
@@ -2283,12 +2305,12 @@ export default function EditCourse() {
                                                 </p>
                                                 <div className="flex flex-wrap gap-4 text-sm">
                                                     <div className="flex items-center gap-2">
-                                                        <Target className="w-4 h-4 text-purple-500" />
+                                                        <DynamicIcon name="Target" className="w-4 h-4 text-purple-500" />
                                                         <span>{assignment.maxPoints} {isArabic ? 'نقطة' : 'points'}</span>
                                                     </div>
                                                     {assignment.dueDate && (
                                                         <div className="flex items-center gap-2">
-                                                            <Calendar className="w-4 h-4 text-blue-500" />
+                                                            <DynamicIcon name="Calendar" className="w-4 h-4 text-blue-500" />
                                                             <span>
                                                                 {isArabic ? 'الموعد: ' : 'Due: '}
                                                                 {new Date(assignment.dueDate).toLocaleDateString(isArabic ? 'ar-EG' : 'en-US')}
@@ -2296,12 +2318,12 @@ export default function EditCourse() {
                                                         </div>
                                                     )}
                                                     <div className="flex items-center gap-2">
-                                                        <Users className="w-4 h-4 text-green-500" />
+                                                        <DynamicIcon name="Users" className="w-4 h-4 text-green-500" />
                                                         <span>{assignment._count.submissions} {isArabic ? 'تسليمات' : 'submissions'}</span>
                                                     </div>
                                                     {assignment.allowLateSubmission && (
                                                         <div className="flex items-center gap-2">
-                                                            <Clock className="w-4 h-4 text-orange-500" />
+                                                            <DynamicIcon name="Clock" className="w-4 h-4 text-orange-500" />
                                                             <span>{isArabic ? 'يسمح بالتأخير' : 'Late allowed'}</span>
                                                         </div>
                                                     )}
@@ -2313,7 +2335,7 @@ export default function EditCourse() {
                                                     size="sm"
                                                     onClick={() => handleEditAssignment(assignment)}
                                                 >
-                                                    <Edit className="w-4 h-4" />
+                                                    <DynamicIcon name="Edit" className="w-4 h-4" />
                                                 </Button>
                                                 <Button
                                                     variant="outline"
@@ -2321,7 +2343,7 @@ export default function EditCourse() {
                                                     onClick={() => handleDeleteAssignment(assignment.id)}
                                                     className="text-red-500 hover:text-red-600"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <DynamicIcon name="Trash2" className="w-4 h-4" />
                                                 </Button>
                                             </div>
                                         </div>
@@ -2344,7 +2366,7 @@ export default function EditCourse() {
                                             onClick={() => setShowAddAssignment(false)}
                                             className="p-2 hover:bg-accent rounded-lg transition-colors"
                                         >
-                                            <X className="w-5 h-5" />
+                                            <DynamicIcon name="X" className="w-5 h-5" />
                                         </button>
                                     </div>
 
@@ -2514,12 +2536,12 @@ export default function EditCourse() {
                                             >
                                                 {savingAssignment ? (
                                                     <>
-                                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                        <DynamicIcon name="Loader2" className="w-4 h-4 mr-2 animate-spin" />
                                                         {isArabic ? 'جاري الحفظ...' : 'Saving...'}
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <Save className="w-4 h-4 mr-2" />
+                                                        <DynamicIcon name="Save" className="w-4 h-4 mr-2" />
                                                         {isArabic ? 'حفظ الواجب' : 'Save Assignment'}
                                                     </>
                                                 )}
@@ -2555,7 +2577,7 @@ export default function EditCourse() {
                             <div className="grid md:grid-cols-4 gap-4 mb-6">
                                 <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/20 rounded-xl p-6">
                                     <div className="flex items-center justify-between mb-2">
-                                        <Users className="w-8 h-8 text-purple-500" />
+                                        <DynamicIcon name="Users" className="w-8 h-8 text-purple-500" />
                                     </div>
                                     <div className="text-3xl font-bold mb-1">{studentsSummary.totalStudents}</div>
                                     <div className="text-sm text-muted-foreground">
@@ -2565,7 +2587,7 @@ export default function EditCourse() {
 
                                 <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20 rounded-xl p-6">
                                     <div className="flex items-center justify-between mb-2">
-                                        <TrendingUp className="w-8 h-8 text-blue-500" />
+                                        <DynamicIcon name="TrendingUp" className="w-8 h-8 text-blue-500" />
                                     </div>
                                     <div className="text-3xl font-bold mb-1">{Math.round(studentsSummary.averageProgress)}%</div>
                                     <div className="text-sm text-muted-foreground">
@@ -2575,7 +2597,7 @@ export default function EditCourse() {
 
                                 <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/20 rounded-xl p-6">
                                     <div className="flex items-center justify-between mb-2">
-                                        <FileText className="w-8 h-8 text-green-500" />
+                                        <DynamicIcon name="FileText" className="w-8 h-8 text-green-500" />
                                     </div>
                                     <div className="text-3xl font-bold mb-1">{studentsSummary.totalQuizzes}</div>
                                     <div className="text-sm text-muted-foreground">
@@ -2585,7 +2607,7 @@ export default function EditCourse() {
 
                                 <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/10 border border-orange-500/20 rounded-xl p-6">
                                     <div className="flex items-center justify-between mb-2">
-                                        <ClipboardList className="w-8 h-8 text-orange-500" />
+                                        <DynamicIcon name="ClipboardList" className="w-8 h-8 text-orange-500" />
                                     </div>
                                     <div className="text-3xl font-bold mb-1">{studentsSummary.totalAssignments}</div>
                                     <div className="text-sm text-muted-foreground">
@@ -2597,11 +2619,11 @@ export default function EditCourse() {
 
                         {studentsLoading ? (
                             <div className="flex justify-center py-12">
-                                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+                                <DynamicIcon name="Loader2" className="w-8 h-8 animate-spin text-purple-500" />
                             </div>
                         ) : studentsData.length === 0 ? (
                             <div className="text-center py-12 bg-card border border-border rounded-xl">
-                                <GraduationCap className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                                <DynamicIcon name="GraduationCap" className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
                                 <h3 className="text-xl font-semibold mb-2">
                                     {isArabic ? 'لا يوجد طلاب مسجلين' : 'No Students Enrolled Yet'}
                                 </h3>
@@ -2671,7 +2693,7 @@ export default function EditCourse() {
                                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                     <div className="bg-accent/50 rounded-lg p-3">
                                                         <div className="flex items-center gap-2 mb-1">
-                                                            <FileText className="w-4 h-4 text-purple-500" />
+                                                            <DynamicIcon name="FileText" className="w-4 h-4 text-purple-500" />
                                                             <span className="text-sm font-medium">
                                                                 {isArabic ? 'الاختبارات' : 'Quizzes'}
                                                             </span>
@@ -2688,7 +2710,7 @@ export default function EditCourse() {
 
                                                     <div className="bg-accent/50 rounded-lg p-3">
                                                         <div className="flex items-center gap-2 mb-1">
-                                                            <ClipboardList className="w-4 h-4 text-orange-500" />
+                                                            <DynamicIcon name="ClipboardList" className="w-4 h-4 text-orange-500" />
                                                             <span className="text-sm font-medium">
                                                                 {isArabic ? 'الواجبات' : 'Assignments'}
                                                             </span>
@@ -2705,7 +2727,7 @@ export default function EditCourse() {
 
                                                     <div className="bg-accent/50 rounded-lg p-3">
                                                         <div className="flex items-center gap-2 mb-1">
-                                                            <Award className="w-4 h-4 text-green-500" />
+                                                            <DynamicIcon name="Award" className="w-4 h-4 text-green-500" />
                                                             <span className="text-sm font-medium">
                                                                 {isArabic ? 'مُقيّم' : 'Graded'}
                                                             </span>
@@ -2720,7 +2742,7 @@ export default function EditCourse() {
 
                                                     <div className="bg-accent/50 rounded-lg p-3">
                                                         <div className="flex items-center gap-2 mb-1">
-                                                            <Clock className="w-4 h-4 text-blue-500" />
+                                                            <DynamicIcon name="Clock" className="w-4 h-4 text-blue-500" />
                                                             <span className="text-sm font-medium">
                                                                 {isArabic ? 'آخر نشاط' : 'Last Active'}
                                                             </span>
@@ -2774,7 +2796,7 @@ export default function EditCourse() {
                                 size="sm"
                                 onClick={() => setGradingFilter('all')}
                             >
-                                <List className="w-4 h-4 mr-2" />
+                                <DynamicIcon name="List" className="w-4 h-4 mr-2" />
                                 {isArabic ? 'الكل' : 'All'}
                                 {submissionsStats && (
                                     <span className="ml-2 px-2 py-0.5 bg-background rounded-full text-xs">
@@ -2787,7 +2809,7 @@ export default function EditCourse() {
                                 size="sm"
                                 onClick={() => setGradingFilter('ungraded')}
                             >
-                                <AlertCircle className="w-4 h-4 mr-2" />
+                                <DynamicIcon name="AlertCircle" className="w-4 h-4 mr-2" />
                                 {isArabic ? 'غير مصحح' : 'Ungraded'}
                                 {submissionsStats && submissionsStats.ungradedAssignments > 0 && (
                                     <span className="ml-2 px-2 py-0.5 bg-red-500 text-white rounded-full text-xs">
@@ -2800,7 +2822,7 @@ export default function EditCourse() {
                                 size="sm"
                                 onClick={() => setGradingFilter('graded')}
                             >
-                                <CheckCircle className="w-4 h-4 mr-2" />
+                                <DynamicIcon name="CheckCircle" className="w-4 h-4 mr-2" />
                                 {isArabic ? 'مصحح' : 'Graded'}
                                 {submissionsStats && (
                                     <span className="ml-2 px-2 py-0.5 bg-background rounded-full text-xs">
@@ -2813,14 +2835,14 @@ export default function EditCourse() {
                         {/* Loading State */}
                         {submissionsLoading && (
                             <div className="flex items-center justify-center py-12">
-                                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                <DynamicIcon name="Loader2" className="w-8 h-8 animate-spin text-primary" />
                             </div>
                         )}
 
                         {/* Empty State */}
                         {!submissionsLoading && submissions.length === 0 && (
                             <div className="text-center py-12">
-                                <FileText className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
+                                <DynamicIcon name="FileText" className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
                                 <h3 className="text-lg font-semibold mb-2">
                                     {isArabic ? 'لا توجد تسليمات' : 'No Submissions'}
                                 </h3>
@@ -2874,7 +2896,7 @@ export default function EditCourse() {
                                                 {/* Assignment Info */}
                                                 <div className="bg-accent/30 rounded-lg p-4 mb-3">
                                                     <div className="flex items-center gap-2 mb-2">
-                                                        <FileText className="w-4 h-4 text-primary" />
+                                                        <DynamicIcon name="FileText" className="w-4 h-4 text-primary" />
                                                         <span className="font-medium">
                                                             {isArabic
                                                                 ? submission.assignment.titleAr || submission.assignment.titleEn
@@ -2902,7 +2924,7 @@ export default function EditCourse() {
                                                             rel="noopener noreferrer"
                                                             className="text-primary hover:underline text-sm mt-2 inline-flex items-center gap-1"
                                                         >
-                                                            <FileText className="w-4 h-4" />
+                                                            <DynamicIcon name="FileText" className="w-4 h-4" />
                                                             {isArabic ? 'عرض الملف المرفق' : 'View Attached File'}
                                                         </a>
                                                     )}
@@ -2910,7 +2932,7 @@ export default function EditCourse() {
 
                                                 {/* Submission Date */}
                                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                    <Clock className="w-4 h-4" />
+                                                    <DynamicIcon name="Clock" className="w-4 h-4" />
                                                     {isArabic ? 'تم التسليم في:' : 'Submitted:'}{' '}
                                                     {new Date(submission.submittedAt).toLocaleString(
                                                         isArabic ? 'ar-EG' : 'en-US',
@@ -2951,7 +2973,7 @@ export default function EditCourse() {
                                                 onClick={() => handleGradeSubmission(submission)}
                                                 variant={submission.score !== null ? 'outline' : 'default'}
                                             >
-                                                <CheckCircle className="w-4 h-4 mr-2" />
+                                                <DynamicIcon name="CheckCircle" className="w-4 h-4 mr-2" />
                                                 {submission.score !== null
                                                     ? (isArabic ? 'تعديل الدرجة' : 'Edit Grade')
                                                     : (isArabic ? 'تصحيح' : 'Grade')}
@@ -2981,7 +3003,7 @@ export default function EditCourse() {
                                                 size="sm"
                                                 onClick={() => setGradingSubmission(null)}
                                             >
-                                                <X className="w-5 h-5" />
+                                                <DynamicIcon name="X" className="w-5 h-5" />
                                             </Button>
                                         </div>
 
@@ -3039,7 +3061,7 @@ export default function EditCourse() {
                                                         rel="noopener noreferrer"
                                                         className="text-primary hover:underline text-sm mt-3 inline-flex items-center gap-1"
                                                     >
-                                                        <FileText className="w-4 h-4" />
+                                                        <DynamicIcon name="FileText" className="w-4 h-4" />
                                                         {isArabic ? 'فتح الملف المرفق' : 'Open Attached File'}
                                                     </a>
                                                 )}
@@ -3059,7 +3081,7 @@ export default function EditCourse() {
                                                 min="0"
                                                 max={gradingSubmission.assignment.maxPoints}
                                                 value={gradeScore}
-                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGradeScore(e.target.value)}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGradeScore(parseFloat(e.target.value) || 0)}
                                                 placeholder={isArabic ? 'أدخل الدرجة' : 'Enter score'}
                                             />
                                         </div>
@@ -3096,12 +3118,12 @@ export default function EditCourse() {
                                             >
                                                 {savingGrade ? (
                                                     <>
-                                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                        <DynamicIcon name="Loader2" className="w-4 h-4 mr-2 animate-spin" />
                                                         {isArabic ? 'جاري الحفظ...' : 'Saving...'}
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <Save className="w-4 h-4 mr-2" />
+                                                        <DynamicIcon name="Save" className="w-4 h-4 mr-2" />
                                                         {isArabic ? 'حفظ الدرجة' : 'Save Grade'}
                                                     </>
                                                 )}

@@ -52,10 +52,10 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
 
     // Get user avatar initials or image
     const getAvatarContent = () => {
-        if (session?.user?.image) {
+        if ((session.user as any)?.image) {
             return (
-                <img 
-                    src={session.user.image} 
+                <Image
+                    src={(session.user as any).image}
                     alt={session.user.name || 'User'} 
                     className="w-full h-full object-cover rounded-full"
                 />
