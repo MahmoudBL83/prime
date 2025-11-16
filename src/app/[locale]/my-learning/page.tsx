@@ -98,7 +98,7 @@ export default async function MyLearningPage() {
             return {
                 ...lesson,
                 completed: completedLessons.includes(lesson.id),
-                progress: progress || null,
+                progress: progress || undefined,
             };
         });
 
@@ -115,17 +115,11 @@ export default async function MyLearningPage() {
             .filter((p: any) => course.lessons.some((l: any) => l.id === p.lessonId))
             .reduce((sum: number, p: any) => sum + 0, 0); // No watchTime field available
 
-        return {
+        const courseData = {
             id: course.id,
             title: course.title,
             titleAr: course.titleAr,
-            description: course.description,
-            descriptionAr: course.descriptionAr,
             thumbnail: course.thumbnail,
-            level: course.level,
-            category: course.category,
-            price: course.price,
-            rating: course.rating,
             progress: enrollment.progress || 0,
             enrolledAt: enrollment.createdAt,
             lastAccessed: enrollment.lastAccessedAt || enrollment.createdAt,
@@ -144,19 +138,27 @@ export default async function MyLearningPage() {
                 title: lastWatchedLesson.title,
                 titleAr: lastWatchedLesson.titleAr,
                 position: 0, // No lastPosition field available
-            } : null,
+            } : undefined,
+            level: course.level,
+            category: course.category,
+            rating: course.rating,
             reviewsCount: course._count.reviews,
             studentsCount: course._count.enrollments,
         };
+
+        return courseData;
     });
 
     // Fetch certificates
     const certificates = await prisma.certificate.findMany({
         where: { userId: session.user.id },
-        select: {
-            id: true,
-            courseTitle: true,
-            completionDate: true,
+        include: {
+            course: {
+                select: {
+                    title: true,
+                    titleAr: true,
+                },
+            },
         },
     });
 
@@ -211,7 +213,13 @@ export default async function MyLearningPage() {
     ).length * 10; // Rough estimate: 10 mins per lesson watched
 
     const stats = {
+        totalCourses: coursesWithProgress.length,
+        completedCourses: coursesWithProgress.filter(c => c.completedAt).length,
+        inProgressCourses: coursesWithProgress.filter(c => !c.completedAt && c.progress > 0).length,
+        totalWatchTime: coursesWithProgress.reduce((sum, c) => sum + c.watchedDuration, 0),
         currentStreak,
+        certificates: certificates.length,
+        achievements: achievements.length,
         weeklyGoal: 300, // 5 hours
         weeklyProgress,
     };
