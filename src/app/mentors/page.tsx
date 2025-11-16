@@ -5,9 +5,62 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 import { motion } from 'framer-motion'
-import { Search, Filter, SlidersHorizontal, Grid, List, Star, BookOpen, Users, CheckCircle, Play } from 'lucide-react'
+import { Suspense, memo } from 'react'
+// Icons will be loaded dynamically
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+
+// Icon Components
+const IconComponents = {
+  Search: () => import('lucide-react').then(mod => ({ default: mod.Search })),
+  Filter: () => import('lucide-react').then(mod => ({ default: mod.Filter })),
+  SlidersHorizontal: () => import('lucide-react').then(mod => ({ default: mod.SlidersHorizontal })),
+  Grid: () => import('lucide-react').then(mod => ({ default: mod.Grid })),
+  List: () => import('lucide-react').then(mod => ({ default: mod.List })),
+  Star: () => import('lucide-react').then(mod => ({ default: mod.Star })),
+  BookOpen: () => import('lucide-react').then(mod => ({ default: mod.BookOpen })),
+  Users: () => import('lucide-react').then(mod => ({ default: mod.Users })),
+  CheckCircle: () => import('lucide-react').then(mod => ({ default: mod.CheckCircle })),
+  Play: () => import('lucide-react').then(mod => ({ default: mod.Play })),
+}
+
+// Dynamic Icon component
+const DynamicIcon = memo(({ 
+  name, 
+  className = "", 
+  ...props 
+}: { 
+  name: string
+  className?: string 
+  style?: Record<string, any>
+  [key: string]: any 
+}) => {
+  const [IconComponent, setIconComponent] = useState<React.ComponentType<any> | null>(null)
+  
+  useEffect(() => {
+    const loadIcon = async () => {
+      const iconLoader = IconComponents[name as keyof typeof IconComponents]
+      if (iconLoader) {
+        try {
+          const { default: Icon } = await iconLoader()
+          setIconComponent(() => Icon)
+        } catch (error) {
+          console.error(`Failed to load icon: ${name}`, error)
+        }
+      }
+    }
+    
+    loadIcon()
+  }, [name])
+  
+  if (!IconComponent) {
+    return <div className={`inline-block ${className}`} style={{ width: '1em', height: '1em' }} />
+  }
+  
+  return <IconComponent className={className} {...props} />
+})
+
+DynamicIcon.displayName = 'DynamicIcon'
 
 interface Mentor {
     id: string
@@ -183,7 +236,7 @@ export default function MentorsPage() {
                                     onClick={() => setViewMode('grid')}
                                     className="p-2"
                                 >
-                                    <Grid className="w-4 h-4" />
+                                    <DynamicIcon name="Grid" className="w-4 h-4" />
                                 </Button>
                                 <Button
                                     variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -191,7 +244,7 @@ export default function MentorsPage() {
                                     onClick={() => setViewMode('list')}
                                     className="p-2"
                                 >
-                                    <List className="w-4 h-4" />
+                                    <DynamicIcon name="List" className="w-4 h-4" />
                                 </Button>
                             </div>
 
@@ -215,7 +268,7 @@ export default function MentorsPage() {
                     <form onSubmit={handleSearch} className="mb-6">
                         <div className="flex flex-col md:flex-row gap-4">
                             <div className="flex-1 relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--muted-foreground)] w-4 h-4" />
+                                <DynamicIcon name="Search" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--muted-foreground)] w-4 h-4" />
                                 <input
                                     type="text"
                                     placeholder={currentT.search}
@@ -239,7 +292,7 @@ export default function MentorsPage() {
                             onClick={() => setShowFilters(!showFilters)}
                             className="mb-4"
                         >
-                            <SlidersHorizontal className="w-4 h-4 mr-2" />
+                            <DynamicIcon name="SlidersHorizontal" className="w-4 h-4 mr-2" />
                             {showFilters ? currentT.hideFilters : currentT.showFilters}
                         </Button>
 
@@ -290,7 +343,7 @@ export default function MentorsPage() {
                     </div>
                 ) : mentors.length === 0 ? (
                     <div className="bg-[var(--card)] rounded-lg border border-[var(--border)] p-8 text-center">
-                        <Users className="w-16 h-16 text-[var(--muted-foreground)] mx-auto mb-4" />
+                        <DynamicIcon name="Users" className="w-16 h-16 text-[var(--muted-foreground)] mx-auto mb-4" />
                         <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2">
                             {currentT.noMentors}
                         </h3>
@@ -362,7 +415,7 @@ export default function MentorsPage() {
                                                 >
                                                     <div className="text-center">
                                                         <div className="w-16 h-16 rounded-full bg-[var(--primary)] flex items-center justify-center mx-auto mb-3">
-                                                            <Play className="w-8 h-8 text-foreground ml-1" />
+                                                            <DynamicIcon name="Play" className="w-8 h-8 text-foreground ml-1" />
                                                         </div>
                                                         <span className="text-foreground text-sm font-medium">
                                                             {lang === 'ar' ? 'عرض الملف الشخصي' : 'View Profile'}
@@ -374,7 +427,7 @@ export default function MentorsPage() {
                                                 {mentor.verified && (
                                                     <div className="absolute top-4 right-4">
                                                         <div className="bg-green-500 text-foreground px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                                                            <CheckCircle className="w-4 h-4" />
+                                                            <DynamicIcon name="CheckCircle" className="w-4 h-4" />
                                                             {lang === 'ar' ? 'موثق' : 'Verified'}
                                                         </div>
                                                     </div>
@@ -387,7 +440,7 @@ export default function MentorsPage() {
                                                     {lang === 'ar' ? mentor.user.arabicName || mentor.user.name : mentor.user.name}
                                                 </h3>
                                                 <div className="flex items-center gap-1">
-                                                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                                                    <DynamicIcon name="Star" className="w-4 h-4 text-yellow-500 fill-current" />
                                                     <span className="text-[var(--muted-foreground)] text-sm">{mentor.averageRating.toFixed(1)}</span>
                                                 </div>
                                             </div>
@@ -406,7 +459,7 @@ export default function MentorsPage() {
                                             {/* Stats */}
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2 text-[var(--muted-foreground)] text-sm">
-                                                    <Users className="w-4 h-4" />
+                                                    <DynamicIcon name="Users" className="w-4 h-4" />
                                                     <span>{mentor.totalStudents.toLocaleString()} {lang === 'ar' ? 'متابع' : 'students'}</span>
                                                 </div>
                                                 <Button
@@ -434,7 +487,7 @@ export default function MentorsPage() {
                                                             {lang === 'ar' ? mentor.user.arabicName || mentor.user.name : mentor.user.name}
                                                         </h3>
                                                         {mentor.verified && (
-                                                            <CheckCircle className="w-4 h-4 text-green-500" />
+                                                            <DynamicIcon name="CheckCircle" className="w-4 h-4 text-green-500" />
                                                         )}
                                                     </div>
                                                     <div className="flex items-center space-x-4 rtl:space-x-reverse text-sm text-[var(--muted-foreground)]">
@@ -442,7 +495,7 @@ export default function MentorsPage() {
                                                         <span>{mentor.totalStudents} {currentT.students}</span>
                                                         {mentor.averageRating > 0 && (
                                                             <div className="flex items-center space-x-1 rtl:space-x-reverse">
-                                                                <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                                                                <DynamicIcon name="Star" className="w-3 h-3 text-yellow-400 fill-current" />
                                                                 <span>{mentor.averageRating.toFixed(1)}</span>
                                                             </div>
                                                         )}

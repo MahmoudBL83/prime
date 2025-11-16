@@ -59,7 +59,7 @@ const IconFallback = () => <div className="w-5 h-5 bg-muted rounded animate-puls
 const DynamicIcon = memo(({ name, className = "w-5 h-5", ...props }: { 
     name: keyof typeof IconComponents, 
     className?: string 
-}) => {
+} & Record<string, any>) => {
     const IconComponent = IconComponents[name]
     return (
         <Suspense fallback={<IconFallback />}>

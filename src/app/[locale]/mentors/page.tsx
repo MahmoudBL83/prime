@@ -1328,7 +1328,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                 {console.log('Checking VIDEO for post:', post.id, 'Type:', post.type, 'Is VIDEO?:', post.type === 'VIDEO')}
                                                 {post.type === 'VIDEO' && (
                                                     <div className="relative rounded-2xl overflow-hidden border border-border mt-3 bg-gradient-to-br from-purple-900/30 to-pink-900/30">
-                                                        {console.log('RENDERING VIDEO POST:', post.id)}
+                                                        
                                                         <div className="aspect-video relative">
                                                             {/* Only show thumbnail if it's an actual image file, not a video file */}
                                                             {post.thumbnailUrl && post.thumbnailUrl.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i) ? (
@@ -1725,7 +1725,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                 <div className="flex items-center gap-1">
                                                                     <h5 className="font-bold text-foreground group-hover:text-purple-400 transition-colors">{creator.user.name}</h5>
                                                                     {creator.stats.averageRating >= 4.5 && (
-                                                                        <CheckCircle className="w-4 h-4 text-purple-500 fill-purple-500" />
+                                                                        <DynamicIcon name="CheckCircle" className="w-4 h-4 text-purple-500 fill-purple-500" />
                                                                     )}
                                                                 </div>
                                                                 <p className="text-xs text-muted-foreground">{creator.expertise}</p>
@@ -1973,7 +1973,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                         <div className="flex items-center gap-1">
                                                             <h3 className="font-bold text-foreground group-hover:text-purple-400 transition-colors">{creator.user.name}</h3>
                                                             {creator.stats.averageRating >= 4.5 && (
-                                                                <CheckCircle className="w-4 h-4 text-purple-500 fill-purple-500" />
+                                                                <DynamicIcon name="CheckCircle" className="w-4 h-4 text-purple-500 fill-purple-500" />
                                                             )}
                                                         </div>
                                                         <p className="text-sm text-muted-foreground">{creator.expertise}</p>
@@ -2360,15 +2360,15 @@ export default function OnlyFansStyleMentorsPage() {
                                                                 : 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20'
                                                         }`}>
                                                             {activity.type === 'new_subscription' ? (
-                                                                <Crown className={`w-6 h-6 ${
+                                                                <DynamicIcon name="Crown" className={`w-6 h-6 ${
                                                                     activity.tier === 'VIP' ? 'text-yellow-400' :
                                                                     activity.tier === 'PREMIUM' ? 'text-purple-400' :
                                                                     'text-gray-400'
                                                                 }`} />
                                                             ) : activity.type === 'withdrawal' ? (
-                                                                <TrendingUp className="w-6 h-6 text-green-400" />
+                                                                <DynamicIcon name="TrendingUp" className="w-6 h-6 text-green-400" />
                                                             ) : (
-                                                                <MessageCircle className="w-6 h-6 text-blue-400" />
+                                                                <DynamicIcon name="MessageCircle" className="w-6 h-6 text-blue-400" />
                                                             )}
                                                         </div>
                                                         <div className="flex-1">
@@ -2581,7 +2581,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                             ) : (
                                                                 <>
                                                                     <div className="text-center py-12">
-                                                                        <Calendar className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                                                                        <DynamicIcon name="Calendar" className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                                                                         <h3 className="text-xl font-bold mb-2 text-foreground">
                                                                             {isArabic ? 'لم يتم العثور على ملف المنشئ' : 'Creator Profile Not Found'}
                                                                         </h3>
@@ -2686,7 +2686,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                         {/* Play button overlay */}
                                                                                         <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                                                                                             <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
-                                                                                                <Play className="w-8 h-8 text-black ml-1" fill="black" />
+                                                                                                <DynamicIcon name="Play" className="w-8 h-8 text-black ml-1" fill="black" />
                                                                                             </div>
                                                                                         </div>
                                                                                         {/* Duration badge */}
@@ -2705,11 +2705,11 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                         <div className="flex items-center justify-between text-white text-sm mb-2">
                                                                                             <div className="flex items-center gap-3">
                                                                                                 <span className="flex items-center gap-1">
-                                                                                                    <Heart className="w-4 h-4" />
+                                                                                                    <DynamicIcon name="Heart" className="w-4 h-4" />
                                                                                                     {post.likeCount || 0}
                                                                                                 </span>
                                                                                                 <span className="flex items-center gap-1">
-                                                                                                    <MessageCircle className="w-4 h-4" />
+                                                                                                    <DynamicIcon name="MessageCircle" className="w-4 h-4" />
                                                                                                     {post.commentCount || 0}
                                                                                                 </span>
                                                                                             </div>
@@ -2724,7 +2724,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                                     handleEditPost(post)
                                                                                                 }}
                                                                                             >
-                                                                                                <Edit className="w-3 h-3 mr-1" />
+                                                                                                <DynamicIcon name="Edit" className="w-3 h-3 mr-1" />
                                                                                                 {isArabic ? 'تعديل' : 'Edit'}
                                                                                             </Button>
                                                                                             <Button 
@@ -2736,7 +2736,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                                     handleDeletePost(post.id)
                                                                                                 }}
                                                                                             >
-                                                                                                <Trash2 className="w-3 h-3 mr-1" />
+                                                                                                <DynamicIcon name="Trash2" className="w-3 h-3 mr-1" />
                                                                                                 {isArabic ? 'حذف' : 'Delete'}
                                                                                             </Button>
                                                                                         </div>
@@ -2789,15 +2789,15 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                     </p>
                                                                                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                                                                         <span className="flex items-center gap-1">
-                                                                                            <Heart className="w-3 h-3" />
+                                                                                            <DynamicIcon name="Heart" className="w-3 h-3" />
                                                                                             {post.likeCount || 0}
                                                                                         </span>
                                                                                         <span className="flex items-center gap-1">
-                                                                                            <MessageCircle className="w-3 h-3" />
+                                                                                            <DynamicIcon name="MessageCircle" className="w-3 h-3" />
                                                                                             {post.commentCount || 0}
                                                                                         </span>
                                                                                         <span className="flex items-center gap-1">
-                                                                                            <Eye className="w-3 h-3" />
+                                                                                            <DynamicIcon name="Eye" className="w-3 h-3" />
                                                                                             {post.viewCount || 0}
                                                                                         </span>
                                                                                         <Badge className={
@@ -2818,7 +2818,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                             toast.success(isArabic ? 'قريباً' : 'Coming soon')
                                                                                         }}
                                                                                     >
-                                                                                        <Edit className="w-3 h-3 mr-1" />
+                                                                                        <DynamicIcon name="Edit" className="w-3 h-3 mr-1" />
                                                                                         {isArabic ? 'تعديل' : 'Edit'}
                                                                                     </Button>
                                                                                     <Button 
@@ -2830,7 +2830,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                             toast.success(isArabic ? 'قريباً' : 'Coming soon')
                                                                                         }}
                                                                                     >
-                                                                                        <Trash2 className="w-3 h-3 mr-1" />
+                                                                                        <DynamicIcon name="Trash2" className="w-3 h-3 mr-1" />
                                                                                         {isArabic ? 'حذف' : 'Delete'}
                                                                                     </Button>
                                                                                 </div>
@@ -2869,14 +2869,14 @@ export default function OnlyFansStyleMentorsPage() {
                                                                             />
                                                                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
                                                                                 <Button size="sm" variant="outline">
-                                                                                    <Eye className="w-4 h-4" />
+                                                                                    <DynamicIcon name="Eye" className="w-4 h-4" />
                                                                                 </Button>
                                                                             </div>
                                                                             <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-all">
                                                                                 <div className="flex items-center gap-2 text-white text-xs">
-                                                                                    <Heart className="w-3 h-3" />
+                                                                                    <DynamicIcon name="Heart" className="w-3 h-3" />
                                                                                     {post.likeCount || 0}
-                                                                                    <Eye className="w-3 h-3 ml-2" />
+                                                                                    <DynamicIcon name="Eye" className="w-3 h-3 ml-2" />
                                                                                     {post.viewCount || 0}
                                                                                 </div>
                                                                             </div>
@@ -2914,12 +2914,12 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                 />
                                                                             ) : (
                                                                                 <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                                                                                    <Video className="w-12 h-12 text-purple-400" />
+                                                                                    <DynamicIcon name="Video" className="w-12 h-12 text-purple-400" />
                                                                                 </div>
                                                                             )}
                                                                             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-all flex items-center justify-center">
                                                                                 <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center">
-                                                                                    <Play className="w-8 h-8 text-black ml-1" fill="black" />
+                                                                                    <DynamicIcon name="Play" className="w-8 h-8 text-black ml-1" fill="black" />
                                                                                 </div>
                                                                             </div>
                                                                             {post.duration && (
@@ -2928,7 +2928,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                 </div>
                                                                             )}
                                                                             <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                                                                                <Eye className="w-3 h-3 inline mr-1" />
+                                                                                <DynamicIcon name="Eye" className="w-3 h-3 inline mr-1" />
                                                                                 {post.viewCount || 0}
                                                                             </div>
                                                                             {post.title && (
@@ -2947,28 +2947,28 @@ export default function OnlyFansStyleMentorsPage() {
                                                             <div className="space-y-4">
                                                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                                     <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-4">
-                                                                        <Heart className="w-8 h-8 text-purple-400 mb-2" />
+                                                                        <DynamicIcon name="Heart" className="w-8 h-8 text-purple-400 mb-2" />
                                                                         <div className="text-2xl font-black text-foreground">
                                                                             {creatorPosts.reduce((sum, post) => sum + (post.likeCount || 0), 0).toLocaleString()}
                                                                         </div>
                                                                         <div className="text-xs text-muted-foreground">{isArabic ? 'إجمالي الإعجابات' : 'Total Likes'}</div>
                                                                     </div>
                                                                     <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-xl p-4">
-                                                                        <MessageCircle className="w-8 h-8 text-blue-400 mb-2" />
+                                                                        <DynamicIcon name="MessageCircle" className="w-8 h-8 text-blue-400 mb-2" />
                                                                         <div className="text-2xl font-black text-foreground">
                                                                             {creatorPosts.reduce((sum, post) => sum + (post.commentCount || 0), 0).toLocaleString()}
                                                                         </div>
                                                                         <div className="text-xs text-muted-foreground">{isArabic ? 'التعليقات' : 'Comments'}</div>
                                                                     </div>
                                                                     <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-4">
-                                                                        <Eye className="w-8 h-8 text-green-400 mb-2" />
+                                                                        <DynamicIcon name="Eye" className="w-8 h-8 text-green-400 mb-2" />
                                                                         <div className="text-2xl font-black text-foreground">
                                                                             {creatorPosts.reduce((sum, post) => sum + (post.viewCount || 0), 0).toLocaleString()}
                                                                         </div>
                                                                         <div className="text-xs text-muted-foreground">{isArabic ? 'المشاهدات' : 'Views'}</div>
                                                                     </div>
                                                                     <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-xl p-4">
-                                                                        <Film className="w-8 h-8 text-yellow-400 mb-2" />
+                                                                        <DynamicIcon name="Film" className="w-8 h-8 text-yellow-400 mb-2" />
                                                                         <div className="text-2xl font-black text-foreground">
                                                                             {creatorPosts.length}
                                                                         </div>
@@ -3181,7 +3181,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                         className="flex flex-col items-center gap-2 h-auto py-4 hover:bg-pink-500/10 hover:border-pink-500/50 transition-all"
                                                     >
                                                         {isNavigating ? (
-                                                            <Loader2 className="w-6 h-6 text-pink-500 animate-spin" />
+                                                            <DynamicIcon name="Loader2" className="w-6 h-6 text-pink-500 animate-spin" />
                                                         ) : (
                                                             <DynamicIcon name="MessageCircle" className="w-6 h-6 text-pink-500" />
                                                         )}
@@ -3192,7 +3192,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                         variant="outline"
                                                         className="flex flex-col items-center gap-2 h-auto py-4 hover:bg-yellow-500/10 hover:border-yellow-500/50 transition-all"
                                                     >
-                                                        <Users className="w-6 h-6 text-yellow-500" />
+                                                        <DynamicIcon name="Users" className="w-6 h-6 text-yellow-500" />
                                                         <span className="text-xs font-semibold text-foreground">{isArabic ? 'المشتركون' : 'Subscribers'}</span>
                                                     </Button>
                                                     <Button 
@@ -3211,7 +3211,7 @@ export default function OnlyFansStyleMentorsPage() {
                                             {/* Subscribers Breakdown */}
                                             <div className="mb-6">
                                                 <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                                                    <Users className="w-5 h-5 text-purple-400" />
+                                                    <DynamicIcon name="Users" className="w-5 h-5 text-purple-400" />
                                                     {isArabic ? 'تحليل المشتركين' : 'Subscriber Analytics'}
                                                 </h3>
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -3222,7 +3222,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                     >
                                                         <div className="flex items-center justify-between mb-3">
                                                             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center">
-                                                                <Users className="w-6 h-6 text-white" />
+                                                                <DynamicIcon name="Users" className="w-6 h-6 text-white" />
                                                             </div>
                                                             <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">Basic</Badge>
                                                         </div>
@@ -3241,7 +3241,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                     >
                                                         <div className="flex items-center justify-between mb-3">
                                                             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                                                <Sparkles className="w-6 h-6 text-white" />
+                                                                <DynamicIcon name="Sparkles" className="w-6 h-6 text-white" />
                                                             </div>
                                                             <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">Premium</Badge>
                                                         </div>
@@ -3260,7 +3260,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                     >
                                                         <div className="flex items-center justify-between mb-3">
                                                             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center">
-                                                                <Crown className="w-6 h-6 text-white" />
+                                                                <DynamicIcon name="Crown" className="w-6 h-6 text-white" />
                                                             </div>
                                                             <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">VIP</Badge>
                                                         </div>
@@ -3284,7 +3284,7 @@ export default function OnlyFansStyleMentorsPage() {
                                             {/* Content Performance */}
                                             <div className="mb-6">
                                                 <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                                                    <Sparkles className="w-5 h-5 text-purple-400" />
+                                                    <DynamicIcon name="Sparkles" className="w-5 h-5 text-purple-400" />
                                                     {isArabic ? 'أداء المحتوى' : 'Content Performance'}
                                                 </h3>
                                                 <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
@@ -3308,7 +3308,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                         <div className="text-xs text-muted-foreground">{isArabic ? 'مشاهدات' : 'Views'}</div>
                                                     </div>
                                                     <div className="bg-card border border-border rounded-2xl p-4 text-center hover:border-purple-500/50 transition-all">
-                                                        <Heart className="w-8 h-8 text-pink-400 mx-auto mb-2" />
+                                                        <DynamicIcon name="Heart" className="w-8 h-8 text-pink-400 mx-auto mb-2" />
                                                         <div className="text-2xl font-black text-foreground">
                                                             {creatorStats?.content?.avgLikes || Math.floor(creatorPosts.reduce((sum, p) => sum + (p.likeCount || 0), 0) / (creatorPosts.length || 1))}
                                                         </div>
@@ -3349,7 +3349,7 @@ export default function OnlyFansStyleMentorsPage() {
                                             {/* Top Subscribers */}
                                             <div className="mb-6">
                                                 <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                                                    <Crown className="w-5 h-5 text-yellow-400" />
+                                                    <DynamicIcon name="Crown" className="w-5 h-5 text-yellow-400" />
                                                     {isArabic ? 'أفضل المشتركين' : 'Top Subscribers'}
                                                 </h3>
                                                 <div className="bg-card border border-border rounded-2xl overflow-hidden">
@@ -3566,7 +3566,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                         </div>
                                                         <div className="flex items-center gap-3 mb-4 mt-2">
                                                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                                                <Sparkles className="w-5 h-5 text-white" />
+                                                                <DynamicIcon name="Sparkles" className="w-5 h-5 text-white" />
                                                             </div>
                                                             <div>
                                                                 <h4 className="font-bold text-foreground">Premium</h4>
@@ -3611,7 +3611,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                     <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-2xl p-5">
                                                         <div className="flex items-center gap-3 mb-4">
                                                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center">
-                                                                <Crown className="w-5 h-5 text-white" />
+                                                                <DynamicIcon name="Crown" className="w-5 h-5 text-white" />
                                                             </div>
                                                             <div>
                                                                 <h4 className="font-bold text-foreground">VIP</h4>
@@ -3686,7 +3686,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                 </div>
                                                                 <p className="text-xs text-muted-foreground mb-2">{isArabic ? 'أفضل مشروع يفوز بـ 5,000 جنيه' : 'Best project wins 5,000 EGP'}</p>
                                                                 <div className="flex items-center gap-2 text-xs">
-                                                                    <Users className="w-3 h-3" />
+                                                                    <DynamicIcon name="Users" className="w-3 h-3" />
                                                                     <span className="text-muted-foreground">{isArabic ? '24 مشارك' : '24 participants'}</span>
                                                                 </div>
                                                             </div>
@@ -3699,7 +3699,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                 </div>
                                                                 <p className="text-xs text-muted-foreground mb-2">{isArabic ? 'أعلى درجة تفوز بـ 3,000 جنيه' : 'Highest score wins 3,000 EGP'}</p>
                                                                 <div className="flex items-center gap-2 text-xs">
-                                                                    <Users className="w-3 h-3" />
+                                                                    <DynamicIcon name="Users" className="w-3 h-3" />
                                                                     <span className="text-muted-foreground">{isArabic ? '38 مشارك' : '38 participants'}</span>
                                                                 </div>
                                                             </div>
@@ -3719,7 +3719,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                         <div className="space-y-3">
                                                             <div className="flex items-center gap-3 p-2 rounded-lg bg-card-hover">
                                                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center flex-shrink-0">
-                                                                    <Crown className="w-5 h-5 text-white" />
+                                                                    <DynamicIcon name="Crown" className="w-5 h-5 text-white" />
                                                                 </div>
                                                                 <div className="flex-1">
                                                                     <div className="font-semibold text-foreground text-sm">{isArabic ? 'الأعضاء المميزون' : 'Top Contributors'}</div>
@@ -3729,7 +3729,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                             </div>
                                                             <div className="flex items-center gap-3 p-2 rounded-lg bg-card-hover">
                                                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                                                                    <Sparkles className="w-5 h-5 text-white" />
+                                                                    <DynamicIcon name="Sparkles" className="w-5 h-5 text-white" />
                                                                 </div>
                                                                 <div className="flex-1">
                                                                     <div className="font-semibold text-foreground text-sm">{isArabic ? 'قوة التعلم' : 'Learning Powerhouse'}</div>
@@ -3831,7 +3831,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                             {creator.user.name}
                                                         </h4>
                                                         {creator.stats.averageRating >= 4.5 && (
-                                                            <CheckCircle className="w-3.5 h-3.5 text-purple-500 fill-purple-500 flex-shrink-0" />
+                                                            <DynamicIcon name="CheckCircle" className="w-3.5 h-3.5 text-purple-500 fill-purple-500 flex-shrink-0" />
                                                         )}
                                                     </div>
                                                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -3939,7 +3939,7 @@ export default function OnlyFansStyleMentorsPage() {
                                     size="icon"
                                     onClick={() => setSelectedPost(null)}
                                 >
-                                    <X className="w-5 h-5" />
+                                    <DynamicIcon name="X" className="w-5 h-5" />
                                 </Button>
                             </div>
                             
@@ -3967,15 +3967,15 @@ export default function OnlyFansStyleMentorsPage() {
                             
                             <div className="flex items-center gap-4 mt-6 pt-6 border-t border-border">
                                 <Button variant="outline" className="flex items-center gap-2">
-                                    <Heart className="w-4 h-4" />
+                                    <DynamicIcon name="Heart" className="w-4 h-4" />
                                     {selectedPost.likeCount || 0} {isArabic ? 'إعجاب' : 'Likes'}
                                 </Button>
                                 <Button variant="outline" className="flex items-center gap-2">
-                                    <MessageCircle className="w-4 h-4" />
+                                    <DynamicIcon name="MessageCircle" className="w-4 h-4" />
                                     {selectedPost.commentCount || 0} {isArabic ? 'تعليق' : 'Comments'}
                                 </Button>
                                 <Button variant="outline" className="flex items-center gap-2">
-                                    <Eye className="w-4 h-4" />
+                                    <DynamicIcon name="Eye" className="w-4 h-4" />
                                     {selectedPost.viewCount || 0} {isArabic ? 'مشاهدة' : 'Views'}
                                 </Button>
                             </div>
