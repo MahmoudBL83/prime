@@ -959,7 +959,7 @@ export default function NetflixCoursePage() {
                         exit={{ opacity: 0, y: -50 }}
                         className={`fixed top-20 left-1/2 -translate-x-1/2 z-[200] ${isDark ? 'bg-white text-black' : 'bg-gray-900 text-white'} px-6 py-3 rounded-full shadow-2xl flex items-center gap-3`}
                     >
-                        <CheckCircle className="w-5 h-5 text-green-600" />
+                        <DynamicIcon name="CheckCircle" className="w-5 h-5 text-green-600" />
                         <span className="font-semibold">{notificationMessage}</span>
                     </motion.div>
                 )}
@@ -1157,9 +1157,9 @@ export default function NetflixCoursePage() {
                                                                     : 'bg-gradient-to-br from-green-600 to-emerald-600 group-hover:from-green-500 group-hover:to-emerald-500'
                                                             }`}>
                                                                 {isLocked ? (
-                                                                    <Lock className="w-5 h-5 text-gray-400" />
+                                                                    <DynamicIcon name="LockIcon" className="w-5 h-5 text-gray-400" />
                                                                 ) : (
-                                                                    <Play className="w-5 h-5 text-white" fill="white" />
+                                                                    <DynamicIcon name="Play" className="w-5 h-5 text-white" />
                                                                 )}
                                                             </div>
 
@@ -1195,7 +1195,7 @@ export default function NetflixCoursePage() {
                                 {/* Locked Message */}
                                 {!hasSubscription && course.lessons && course.lessons.length > 0 && (
                                     <div className="mt-6 bg-gradient-to-r from-yellow-600/10 to-orange-600/5 border border-yellow-600/30 rounded-xl p-6 text-center">
-                                        <Lock className="w-10 h-10 mx-auto mb-3 text-yellow-500" />
+                                        <DynamicIcon name="LockIcon" className="w-10 h-10 mx-auto mb-3 text-yellow-500" />
                                         <h3 className="text-lg font-bold mb-2">Unlock All {course.lessons.length} Lessons</h3>
                                         <p className="text-gray-400 text-sm mb-4">
                                             Subscribe to access this course and thousands more
@@ -1384,9 +1384,9 @@ export default function NetflixCoursePage() {
                                     }}
                                 >
                                     {playButtonLoading ? (
-                                        <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#000000' }} />
+                                        <DynamicIcon name="Loader2" className="w-8 h-8 animate-spin" style={{ color: '#000000' }} />
                                     ) : (
-                                        <Play className="w-8 h-8 ml-1" style={{ color: '#000000' }} fill="#000000" />
+                                        <DynamicIcon name="Play" className="w-8 h-8 ml-1" style={{ color: '#000000' }} />
                                     )}
                                 </div>
                                 
@@ -1463,7 +1463,7 @@ export default function NetflixCoursePage() {
                                             backdropFilter: 'blur(8px)'
                                         }}
                                     >
-                                        <Share2 className="w-6 h-6" style={{ color: '#ffffff' }} strokeWidth={2.5} />
+                                        <DynamicIcon name="Share2" className="w-6 h-6" style={{ color: '#ffffff' }} />
                                     </div>
                                     <span className="text-[13px] font-medium" style={{ color: '#b8bcc8' }}>Share</span>
                                 </button>
@@ -1668,9 +1668,9 @@ export default function NetflixCoursePage() {
                                                         }}
                                                     >
                                                         {loadingLessonId === lesson.id ? (
-                                                            <Loader2 className="w-5 h-5 animate-spin" style={{ color: '#00d9df' }} />
+                                                            <DynamicIcon name="Loader2" className="w-5 h-5 animate-spin" style={{ color: '#00d9df' }} />
                                                         ) : (
-                                                            <Play className="w-5 h-5" style={{ color: '#00d9df' }} />
+                                                            <DynamicIcon name="Play" className="w-5 h-5" style={{ color: '#00d9df' }} />
                                                         )}
                                                     </button>
                                                 </div>
@@ -1805,7 +1805,7 @@ export default function NetflixCoursePage() {
                                         {/* Play Button Overlay */}
                                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                             <div className="w-16 h-16 rounded-full bg-cyan-500 flex items-center justify-center shadow-lg">
-                                                <Play className="w-7 h-7 text-black ml-1" fill="black" />
+                                                <DynamicIcon name="Play" className="w-7 h-7 text-black ml-1" />
                                             </div>
                                         </div>
                                         
@@ -1835,7 +1835,7 @@ export default function NetflixCoursePage() {
                 <div className={`py-8 ${isDark ? 'bg-transparent' : 'bg-white'}`}>
                     {loadingRelated ? (
                         <div className="flex justify-center py-20">
-                            <Loader2 className={`w-12 h-12 animate-spin ${isDark ? 'text-cyan-500' : 'text-purple-600'}`} />
+                            <DynamicIcon name="Loader2" className={`w-12 h-12 animate-spin ${isDark ? 'text-cyan-500' : 'text-purple-600'}`} />
                         </div>
                     ) : relatedCourses.length > 0 ? (
                         <div className="px-6">
@@ -1951,13 +1951,13 @@ export default function NetflixCoursePage() {
                                 onClick={() => setShowSubscribeModal(false)}
                                 className="absolute top-6 right-6 w-10 h-10 rounded-full bg-gray-800/80 hover:bg-gray-700 flex items-center justify-center transition-colors z-10"
                             >
-                                <X className="w-6 h-6" />
+                                <DynamicIcon name="X" className="w-6 h-6" />
                             </button>
 
                             {/* Hero Section */}
                             <div className="relative overflow-hidden pt-16 pb-12 px-8 text-center border-b border-gray-800">
                                 <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-blue-600/10"></div>
-                                <Lock className="w-20 h-20 mx-auto mb-6 text-yellow-500 relative" />
+                                <DynamicIcon name="LockIcon" className="w-20 h-20 mx-auto mb-6 text-yellow-500 relative" />
                                 <h2 className="text-5xl font-black mb-4 bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent relative">
                                     Unlock Unlimited Learning
                                 </h2>
@@ -1966,15 +1966,15 @@ export default function NetflixCoursePage() {
                                 </p>
                                 <div className="flex items-center justify-center gap-6 text-sm text-gray-400 relative">
                                     <div className="flex items-center gap-2">
-                                        <Shield className="w-4 h-4 text-green-500" />
+                                        <DynamicIcon name="Shield" className="w-4 h-4 text-green-500" />
                                         <span>7-Day Money Back</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <CheckCircle className="w-4 h-4 text-green-500" />
+                                        <DynamicIcon name="CheckCircle" className="w-4 h-4 text-green-500" />
                                         <span>No Commitment</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Users className="w-4 h-4 text-green-500" />
+                                        <DynamicIcon name="Users" className="w-4 h-4 text-green-500" />
                                         <span>10K+ Active Learners</span>
                                     </div>
                                 </div>
@@ -1990,7 +1990,7 @@ export default function NetflixCoursePage() {
                                         onClick={() => router.push(`/${locale}/subscribe?plan=CATEGORY_A`)}
                                     >
                                         <div className="absolute top-6 right-6">
-                                            <BookOpen className="w-8 h-8 text-yellow-500 opacity-20 group-hover:opacity-40 transition-opacity" />
+                                            <DynamicIcon name="BookOpen" className="w-8 h-8 text-yellow-500 opacity-20 group-hover:opacity-40 transition-opacity" />
                                         </div>
 
                                         <div className="mb-6">
@@ -2008,30 +2008,30 @@ export default function NetflixCoursePage() {
 
                                         <div className="space-y-3 mb-8">
                                             <div className="flex items-start gap-3">
-                                                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <DynamicIcon name="Check" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                                                 <span className="text-gray-300 text-sm">Access to 500+ courses across all topics</span>
                                             </div>
                                             <div className="flex items-start gap-3">
-                                                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <DynamicIcon name="Check" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                                                 <span className="text-gray-300 text-sm">HD streaming quality (1080p)</span>
                                             </div>
                                             <div className="flex items-start gap-3">
-                                                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <DynamicIcon name="Check" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                                                 <span className="text-gray-300 text-sm">Download for offline viewing</span>
                                             </div>
                                             <div className="flex items-start gap-3">
-                                                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <DynamicIcon name="Check" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                                                 <span className="text-gray-300 text-sm">Basic certificates of completion</span>
                                             </div>
                                             <div className="flex items-start gap-3">
-                                                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <DynamicIcon name="Check" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                                                 <span className="text-gray-300 text-sm">Community forum access</span>
                                             </div>
                                         </div>
 
                                         <Button className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold py-6 text-lg">
                                             Get Started
-                                            <ArrowRight className="w-5 h-5 ml-2" />
+                                            <DynamicIcon name="ArrowRight" className="w-5 h-5 ml-2" />
                                         </Button>
                                     </motion.div>
 
@@ -2048,7 +2048,7 @@ export default function NetflixCoursePage() {
                                         </div>
 
                                         <div className="absolute top-6 right-6">
-                                            <Sparkles className="w-8 h-8 text-purple-500 opacity-20 group-hover:opacity-40 transition-opacity" />
+                                            <DynamicIcon name="Sparkles" className="w-8 h-8 text-purple-500 opacity-20 group-hover:opacity-40 transition-opacity" />
                                         </div>
 
                                         <div className="mb-6 mt-4">
@@ -2066,31 +2066,31 @@ export default function NetflixCoursePage() {
 
                                         <div className="space-y-3 mb-8">
                                             <div className="flex items-start gap-3">
-                                                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <DynamicIcon name="Check" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                                                 <span className="text-gray-300 text-sm font-semibold">Everything in All-Access, plus:</span>
                                             </div>
                                             <div className="flex items-start gap-3">
-                                                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <DynamicIcon name="Check" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                                                 <span className="text-gray-300 text-sm">50+ premium signature courses</span>
                                             </div>
                                             <div className="flex items-start gap-3">
-                                                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <DynamicIcon name="Check" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                                                 <span className="text-gray-300 text-sm">4K Ultra HD streaming quality</span>
                                             </div>
                                             <div className="flex items-start gap-3">
-                                                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <DynamicIcon name="Check" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                                                 <span className="text-gray-300 text-sm">Expert-curated learning paths</span>
                                             </div>
                                             <div className="flex items-start gap-3">
-                                                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <DynamicIcon name="Check" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                                                 <span className="text-gray-300 text-sm">Priority email support</span>
                                             </div>
                                             <div className="flex items-start gap-3">
-                                                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <DynamicIcon name="Check" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                                                 <span className="text-gray-300 text-sm">Professional certificates</span>
                                             </div>
                                             <div className="flex items-start gap-3">
-                                                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <DynamicIcon name="Check" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                                                 <span className="text-gray-300 text-sm">Structured workbooks & projects</span>
                                             </div>
                                         </div>
@@ -2146,18 +2146,18 @@ export default function NetflixCoursePage() {
                                                 <span className="text-gray-300 text-sm">Private community access</span>
                                             </div>
                                             <div className="flex items-start gap-3">
-                                                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <DynamicIcon name="Check" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                                                 <span className="text-gray-300 text-sm">Creator tools & resources</span>
                                             </div>
                                             <div className="flex items-start gap-3">
-                                                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <DynamicIcon name="Check" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                                                 <span className="text-gray-300 text-sm">VIP support (24/7)</span>
                                             </div>
                                         </div>
 
                                         <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-6 text-lg">
                                             Get Ultimate
-                                            <ArrowRight className="w-5 h-5 ml-2" />
+                                            <DynamicIcon name="ArrowRight" className="w-5 h-5 ml-2" />
                                         </Button>
                                     </motion.div>
                                 </div>
