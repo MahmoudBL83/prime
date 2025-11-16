@@ -52,8 +52,7 @@ async function createCreatorForAdmin() {
         data: {
             creatorId: creator.id,
             name: "Omar Hassan's Channel",
-            description: 'Educational content and platform tutorials',
-            isActive: true
+            description: 'Educational content and platform tutorials'
         }
     })
     
