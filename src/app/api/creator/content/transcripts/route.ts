@@ -52,13 +52,6 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        if (lesson.contentType !== 'VIDEO') {
-            return NextResponse.json(
-                { error: 'Transcripts can only be generated for video lessons' },
-                { status: 400 }
-            )
-        }
-
         if (!lesson.videoUrl) {
             return NextResponse.json(
                 { error: 'Lesson has no video URL' },
@@ -70,13 +63,20 @@ export async function POST(request: NextRequest) {
         // For demo purposes, generate a mock transcript
         const mockTranscript = generateMockTranscript(lesson.title, language)
 
-        // Update lesson with transcript
+        // Update lesson with transcript based on language
+        let updateData: any = {}
+        
+        if (language === 'ar') {
+            updateData.transcriptAr = mockTranscript
+        } else if (language === 'de') {
+            updateData.transcriptDe = mockTranscript
+        } else {
+            updateData.transcript = mockTranscript
+        }
+
         const updatedLesson = await prisma.lesson.update({
             where: { id: lessonId },
-            data: {
-                transcript: mockTranscript,
-                transcriptLanguage: language
-            }
+            data: updateData
         })
 
         return NextResponse.json({
@@ -138,9 +138,9 @@ export async function GET(request: NextRequest) {
                 id: true,
                 title: true,
                 transcript: true,
-                transcriptLanguage: true,
-                videoUrl: true,
-                contentType: true
+                transcriptAr: true,
+                transcriptDe: true,
+                videoUrl: true
             }
         })
 
@@ -151,15 +151,37 @@ export async function GET(request: NextRequest) {
             )
         }
 
+        // Determine which transcript to return based on query param or default to English
+        const requestedLanguage = searchParams.get('language') || 'en'
+        
+        let transcript = ''
+        let language = 'en'
+        
+        if (requestedLanguage === 'ar' && lesson.transcriptAr) {
+            transcript = lesson.transcriptAr
+            language = 'ar'
+        } else if (requestedLanguage === 'de' && lesson.transcriptDe) {
+            transcript = lesson.transcriptDe
+            language = 'de'
+        } else if (lesson.transcript) {
+            transcript = lesson.transcript
+            language = 'en'
+        }
+
         return NextResponse.json({
             success: true,
             data: {
                 lessonId: lesson.id,
                 title: lesson.title,
-                transcript: lesson.transcript,
-                language: lesson.transcriptLanguage,
-                hasTranscript: !!lesson.transcript,
-                wordCount: lesson.transcript ? lesson.transcript.split(' ').length : 0
+                transcript,
+                language,
+                hasTranscript: !!transcript,
+                wordCount: transcript ? transcript.split(' ').length : 0,
+                availableLanguages: {
+                    en: !!lesson.transcript,
+                    ar: !!lesson.transcriptAr,
+                    de: !!lesson.transcriptDe
+                }
             }
         })
     } catch (error) {
@@ -217,13 +239,20 @@ export async function PUT(request: NextRequest) {
             )
         }
 
-        // Update transcript
+        // Update transcript based on language
+        let updateData: any = {}
+        
+        if (language === 'ar') {
+            updateData.transcriptAr = transcript
+        } else if (language === 'de') {
+            updateData.transcriptDe = transcript
+        } else {
+            updateData.transcript = transcript
+        }
+
         const updatedLesson = await prisma.lesson.update({
             where: { id: lessonId },
-            data: {
-                transcript,
-                transcriptLanguage: language || 'en'
-            }
+            data: updateData
         })
 
         return NextResponse.json({
@@ -264,6 +293,7 @@ export async function DELETE(request: NextRequest) {
 
         const { searchParams } = new URL(request.url)
         const lessonId = searchParams.get('lessonId')
+        const language = searchParams.get('language') || 'en'
 
         if (!lessonId) {
             return NextResponse.json(
@@ -289,13 +319,20 @@ export async function DELETE(request: NextRequest) {
             )
         }
 
-        // Remove transcript
+        // Remove transcript based on language
+        let updateData: any = {}
+        
+        if (language === 'ar') {
+            updateData.transcriptAr = null
+        } else if (language === 'de') {
+            updateData.transcriptDe = null
+        } else {
+            updateData.transcript = null
+        }
+
         await prisma.lesson.update({
             where: { id: lessonId },
-            data: {
-                transcript: null,
-                transcriptLanguage: null
-            }
+            data: updateData
         })
 
         return NextResponse.json({

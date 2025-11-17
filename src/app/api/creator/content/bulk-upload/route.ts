@@ -116,12 +116,19 @@ export async function POST(request: NextRequest) {
                 const filepath = path.join(uploadPath, filename)
                 await writeFile(filepath, buffer)
 
-                // Determine content type
-                let contentType: 'VIDEO' | 'TEXT' | 'QUIZ' | 'DOCUMENT' = 'VIDEO'
+                // Determine content type and URL
+                let videoUrl = ''
+                let contentType: 'VIDEO' | 'DOCUMENT' = 'VIDEO'
+                
                 if (file.type.includes('pdf')) {
                     contentType = 'DOCUMENT'
+                    videoUrl = `/${uploadDir}/lessons/${filename}`
                 } else if (file.type.includes('image')) {
-                    contentType = 'TEXT'
+                    contentType = 'DOCUMENT' // Treat images as documents since no TEXT type in model
+                    videoUrl = `/${uploadDir}/lessons/${filename}`
+                } else {
+                    contentType = 'VIDEO'
+                    videoUrl = `/${uploadDir}/lessons/${filename}`
                 }
 
                 // Get lesson order
@@ -141,12 +148,9 @@ export async function POST(request: NextRequest) {
                         titleAr: lessonMeta.titleAr || null,
                         description: lessonMeta.description || null,
                         descriptionAr: lessonMeta.descriptionAr || null,
-                        contentType,
-                        videoUrl: contentType === 'VIDEO' ? `/${uploadDir}/lessons/${filename}` : null,
-                        documentUrl: contentType === 'DOCUMENT' ? `/${uploadDir}/lessons/${filename}` : null,
+                        videoUrl,
                         duration: lessonMeta.duration || 0,
-                        order,
-                        isFree: lessonMeta.isFree || false
+                        order
                     }
                 })
 
@@ -154,7 +158,8 @@ export async function POST(request: NextRequest) {
                     filename: file.name,
                     lessonId: lesson.id,
                     title: lesson.title,
-                    url: contentType === 'VIDEO' ? lesson.videoUrl : lesson.documentUrl,
+                    url: lesson.videoUrl,
+                    contentType,
                     success: true
                 })
             } catch (error) {
@@ -229,9 +234,9 @@ export async function GET(request: NextRequest) {
                     select: {
                         id: true,
                         title: true,
-                        contentType: true,
                         duration: true,
                         order: true,
+                        videoUrl: true,
                         createdAt: true
                     }
                 }
@@ -256,9 +261,16 @@ export async function GET(request: NextRequest) {
                 lessons: course.lessons,
                 summary: {
                     total: course.lessons.length,
-                    videos: course.lessons.filter(l => l.contentType === 'VIDEO').length,
-                    documents: course.lessons.filter(l => l.contentType === 'DOCUMENT').length,
-                    text: course.lessons.filter(l => l.contentType === 'TEXT').length
+                    // Since we don't have contentType in model, we'll categorize by file extension
+                    videos: course.lessons.filter((l: any) => 
+                        l.videoUrl && (l.videoUrl.includes('.mp4') || l.videoUrl.includes('.webm'))
+                    ).length,
+                    documents: course.lessons.filter((l: any) => 
+                        l.videoUrl && l.videoUrl.includes('.pdf')
+                    ).length,
+                    others: course.lessons.filter((l: any) => 
+                        l.videoUrl && !l.videoUrl.includes('.mp4') && !l.videoUrl.includes('.webm') && !l.videoUrl.includes('.pdf')
+                    ).length
                 }
             }
         })

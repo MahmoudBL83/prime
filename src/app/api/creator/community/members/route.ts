@@ -61,26 +61,35 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // Fetch members
+        // Fetch members and users separately
         const [members, total] = await Promise.all([
             prisma.channelGroupMember.findMany({
                 where: { groupId },
-                include: {
-                    user: {
-                        select: {
-                            id: true,
-                            name: true,
-                            email: true,
-                            profileImage: true
-                        }
-                    }
-                },
                 orderBy: { joinedAt: 'desc' },
                 skip,
                 take: limit
             }),
             prisma.channelGroupMember.count({ where: { groupId } })
         ])
+
+        // Get user data for all members
+        const userIds = members.map(m => m.userId)
+        const users = await prisma.user.findMany({
+            where: {
+                id: {
+                    in: userIds
+                }
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                profileImage: true
+            }
+        })
+
+        // Create a map for quick lookup
+        const userMap = new Map(users.map(user => [user.id, user]))
 
         // Check moderator status for each member
         const membersWithRoles = await Promise.all(
@@ -101,6 +110,7 @@ export async function GET(request: NextRequest) {
 
                 return {
                     ...member,
+                    user: userMap.get(member.userId),
                     isModerator: !!isModerator,
                     postCount
                 }
@@ -244,8 +254,7 @@ export async function POST(request: NextRequest) {
             const moderator = await prisma.groupModerator.create({
                 data: {
                     groupId,
-                    userId,
-                    assignedBy: creator.id
+                    userId
                 }
             })
 

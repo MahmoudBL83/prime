@@ -11,86 +11,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const creator = await prisma.creator.findUnique({
-            where: { userId: session.user.id }
-        })
-
-        if (!creator) {
-            return NextResponse.json(
-                { error: 'Creator profile not found' },
-                { status: 404 }
-            )
-        }
-
-        const body = await request.json()
-        const { lessonId, changes, versionNote } = body
-
-        if (!lessonId || !changes) {
-            return NextResponse.json(
-                { error: 'Lesson ID and changes are required' },
-                { status: 400 }
-            )
-        }
-
-        // Get current lesson
-        const lesson = await prisma.lesson.findFirst({
-            where: {
-                id: lessonId,
-                course: {
-                    creatorId: creator.id
-                }
-            }
-        })
-
-        if (!lesson) {
-            return NextResponse.json(
-                { error: 'Lesson not found or access denied' },
-                { status: 404 }
-            )
-        }
-
-        // Get current version number
-        const latestVersion = await prisma.lessonVersion.findFirst({
-            where: { lessonId },
-            orderBy: { version: 'desc' }
-        })
-
-        const newVersionNumber = (latestVersion?.version || 0) + 1
-
-        // Create version snapshot
-        const version = await prisma.lessonVersion.create({
-            data: {
-                lessonId,
-                version: newVersionNumber,
-                title: lesson.title,
-                titleAr: lesson.titleAr,
-                description: lesson.description,
-                descriptionAr: lesson.descriptionAr,
-                contentType: lesson.contentType,
-                videoUrl: lesson.videoUrl,
-                documentUrl: lesson.documentUrl,
-                duration: lesson.duration,
-                transcript: lesson.transcript,
-                changes: versionNote || 'Content updated',
-                createdBy: session.user.id
-            }
-        })
-
-        // Update lesson with new content
-        await prisma.lesson.update({
-            where: { id: lessonId },
-            data: changes
-        })
-
-        return NextResponse.json({
-            success: true,
-            message: 'New version created successfully',
-            data: {
-                versionId: version.id,
-                versionNumber: newVersionNumber,
-                lessonId: lesson.id
-            }
-        })
+        // Version management is not yet implemented in the current schema
+        return NextResponse.json(
+            { 
+                error: 'Lesson versioning is not yet implemented',
+                message: 'This feature requires a LessonVersion model to be added to the database schema'
+            },
+            { status: 501 }
+        )
     } catch (error) {
         console.error('Error creating version:', error)
         return NextResponse.json(
@@ -129,7 +57,7 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // Verify ownership
+        // Verify ownership and get current lesson info
         const lesson = await prisma.lesson.findFirst({
             where: {
                 id: lessonId,
@@ -140,7 +68,8 @@ export async function GET(request: NextRequest) {
             select: {
                 id: true,
                 title: true,
-                updatedAt: true
+                updatedAt: true,
+                createdAt: true
             }
         })
 
@@ -151,23 +80,7 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // Get all versions
-        const versions = await prisma.lessonVersion.findMany({
-            where: { lessonId },
-            orderBy: { version: 'desc' },
-            include: {
-                creator: {
-                    select: {
-                        user: {
-                            select: {
-                                name: true
-                            }
-                        }
-                    }
-                }
-            }
-        })
-
+        // Since versioning is not implemented, return current lesson as single version
         return NextResponse.json({
             success: true,
             data: {
@@ -176,15 +89,16 @@ export async function GET(request: NextRequest) {
                     title: lesson.title,
                     lastUpdated: lesson.updatedAt
                 },
-                versions: versions.map(v => ({
-                    id: v.id,
-                    version: v.version,
-                    title: v.title,
-                    changes: v.changes,
-                    createdAt: v.createdAt,
-                    createdBy: v.creator?.user?.name || 'Unknown'
-                })),
-                totalVersions: versions.length
+                versions: [{
+                    id: lesson.id,
+                    version: 1,
+                    title: lesson.title,
+                    changes: 'Initial version',
+                    createdAt: lesson.createdAt,
+                    createdBy: 'Creator'
+                }],
+                totalVersions: 1,
+                message: 'Full versioning system not yet implemented'
             }
         })
     } catch (error) {
@@ -204,97 +118,14 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const creator = await prisma.creator.findUnique({
-            where: { userId: session.user.id }
-        })
-
-        if (!creator) {
-            return NextResponse.json(
-                { error: 'Creator profile not found' },
-                { status: 404 }
-            )
-        }
-
-        const body = await request.json()
-        const { versionId } = body
-
-        if (!versionId) {
-            return NextResponse.json(
-                { error: 'Version ID is required' },
-                { status: 400 }
-            )
-        }
-
-        // Get version
-        const version = await prisma.lessonVersion.findUnique({
-            where: { id: versionId },
-            include: {
-                lesson: {
-                    include: {
-                        course: true
-                    }
-                }
-            }
-        })
-
-        if (!version || version.lesson.course.creatorId !== creator.id) {
-            return NextResponse.json(
-                { error: 'Version not found or access denied' },
-                { status: 404 }
-            )
-        }
-
-        // Create a new version snapshot of current state before restoring
-        const latestVersion = await prisma.lessonVersion.findFirst({
-            where: { lessonId: version.lessonId },
-            orderBy: { version: 'desc' }
-        })
-
-        const newVersionNumber = (latestVersion?.version || 0) + 1
-
-        await prisma.lessonVersion.create({
-            data: {
-                lessonId: version.lessonId,
-                version: newVersionNumber,
-                title: version.lesson.title,
-                titleAr: version.lesson.titleAr,
-                description: version.lesson.description,
-                descriptionAr: version.lesson.descriptionAr,
-                contentType: version.lesson.contentType,
-                videoUrl: version.lesson.videoUrl,
-                documentUrl: version.lesson.documentUrl,
-                duration: version.lesson.duration,
-                transcript: version.lesson.transcript,
-                changes: `Restored from version ${version.version}`,
-                createdBy: session.user.id
-            }
-        })
-
-        // Restore lesson to version state
-        await prisma.lesson.update({
-            where: { id: version.lessonId },
-            data: {
-                title: version.title,
-                titleAr: version.titleAr,
-                description: version.description,
-                descriptionAr: version.descriptionAr,
-                contentType: version.contentType,
-                videoUrl: version.videoUrl,
-                documentUrl: version.documentUrl,
-                duration: version.duration,
-                transcript: version.transcript
-            }
-        })
-
-        return NextResponse.json({
-            success: true,
-            message: `Lesson restored to version ${version.version}`,
-            data: {
-                lessonId: version.lessonId,
-                restoredVersion: version.version,
-                newVersion: newVersionNumber
-            }
-        })
+        // Version restore is not yet implemented in the current schema
+        return NextResponse.json(
+            { 
+                error: 'Version restore is not yet implemented',
+                message: 'This feature requires a LessonVersion model to be added to the database schema'
+            },
+            { status: 501 }
+        )
     } catch (error) {
         console.error('Error restoring version:', error)
         return NextResponse.json(
@@ -312,67 +143,14 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const creator = await prisma.creator.findUnique({
-            where: { userId: session.user.id }
-        })
-
-        if (!creator) {
-            return NextResponse.json(
-                { error: 'Creator profile not found' },
-                { status: 404 }
-            )
-        }
-
-        const { searchParams } = new URL(request.url)
-        const versionId = searchParams.get('versionId')
-
-        if (!versionId) {
-            return NextResponse.json(
-                { error: 'Version ID is required' },
-                { status: 400 }
-            )
-        }
-
-        // Get version
-        const version = await prisma.lessonVersion.findUnique({
-            where: { id: versionId },
-            include: {
-                lesson: {
-                    include: {
-                        course: true
-                    }
-                }
-            }
-        })
-
-        if (!version || version.lesson.course.creatorId !== creator.id) {
-            return NextResponse.json(
-                { error: 'Version not found or access denied' },
-                { status: 404 }
-            )
-        }
-
-        // Check if this is the only version
-        const versionCount = await prisma.lessonVersion.count({
-            where: { lessonId: version.lessonId }
-        })
-
-        if (versionCount <= 1) {
-            return NextResponse.json(
-                { error: 'Cannot delete the only version' },
-                { status: 400 }
-            )
-        }
-
-        // Delete version
-        await prisma.lessonVersion.delete({
-            where: { id: versionId }
-        })
-
-        return NextResponse.json({
-            success: true,
-            message: 'Version deleted successfully'
-        })
+        // Version deletion is not yet implemented in the current schema
+        return NextResponse.json(
+            { 
+                error: 'Version deletion is not yet implemented',
+                message: 'This feature requires a LessonVersion model to be added to the database schema'
+            },
+            { status: 501 }
+        )
     } catch (error) {
         console.error('Error deleting version:', error)
         return NextResponse.json(
