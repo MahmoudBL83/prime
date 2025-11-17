@@ -11,6 +11,7 @@ export type NotificationType =
   | 'STUDY_BUDDY_MATCH'
   | 'STUDY_SESSION_SCHEDULED'
   | 'STUDY_SESSION_REMINDER'
+  | 'STUDY_SESSION_CANCELLED'
   | 'VIDEO_CALL_INCOMING'
   | 'VIDEO_CALL_SCHEDULED'
 
@@ -32,7 +33,7 @@ export class NotificationService {
           type: data.type,
           title: data.title,
           message: data.message,
-          data: data.data ? JSON.stringify(data.data) : null,
+          data: data.data ? JSON.stringify(data.data) : undefined,
         },
       })
 
@@ -51,7 +52,7 @@ export class NotificationService {
         type: notification.type,
         title: notification.title,
         message: notification.message,
-        data: notification.data ? JSON.stringify(notification.data) : null,
+        data: notification.data ? JSON.stringify(notification.data) : undefined,
       }))
 
       await prisma.notification.createMany({

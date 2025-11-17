@@ -3,11 +3,11 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-// POST /api/messages - Send a message
+// POST /api/messages - Send a message to a conversation
 export async function POST(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions)
-        
+
         if (!session?.user) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
@@ -16,76 +16,98 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json()
-        const { recipientId, content, type = 'text', attachmentUrl } = body
+        const { conversationId, content, messageType = 'TEXT', replyToId } = body
 
         // Validate required fields
-        if (!recipientId || !content) {
+        if (!conversationId || !content) {
             return NextResponse.json(
                 { error: 'Missing required fields' },
                 { status: 400 }
             )
         }
 
-        // Validate type
-        if (!['text', 'image', 'tip'].includes(type)) {
+        // Validate message type
+        const validTypes = ['TEXT', 'IMAGE', 'VIDEO', 'AUDIO', 'FILE', 'VOICE_NOTE', 'SYSTEM']
+        if (!validTypes.includes(messageType)) {
             return NextResponse.json(
                 { error: 'Invalid message type' },
                 { status: 400 }
             )
         }
 
-        // Get recipient user
-        const recipient = await prisma.user.findUnique({
-            where: { id: recipientId },
-            select: {
-                id: true,
-                name: true,
-                email: true
+        // Verify user has access to the conversation
+        const participant = await prisma.conversationParticipant.findFirst({
+            where: {
+                conversationId: conversationId,
+                userId: session.user.id,
+                isActive: true
+            },
+            include: {
+                conversation: {
+                    include: {
+                        participants: {
+                            include: {
+                                user: {
+                                    select: {
+                                        id: true,
+                                        name: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         })
 
-        if (!recipient) {
+        if (!participant) {
             return NextResponse.json(
-                { error: 'Recipient not found' },
+                { error: 'Conversation not found or access denied' },
                 { status: 404 }
             )
         }
 
-        // Check if recipient is a creator and user has access
-        const creator = await prisma.creator.findFirst({
-            where: { userId: recipientId }
-        })
+        // Check if this is a direct message to a creator and user has subscription
+        const conversation = participant.conversation
+        if (conversation.type === 'DIRECT' && conversation.participants.length === 2) {
+            // Find the other participant (creator)
+            const otherParticipant = conversation.participants.find(p => p.userId !== session.user.id)
+            if (otherParticipant) {
+                const creator = await prisma.creator.findFirst({
+                    where: { userId: otherParticipant.userId }
+                })
 
-        if (creator) {
-            // Check if user has active subscription to this creator
-            const hasSubscription = await prisma.mentorSubscription.findFirst({
-                where: {
-                    userId: session.user.id,
-                    creatorId: creator.id,
-                    status: 'ACTIVE',
-                    tier: {
-                        in: ['PREMIUM', 'VIP'] // Only premium/VIP can message
+                if (creator) {
+                    // Check if user has active subscription to this creator
+                    const hasSubscription = await prisma.mentorSubscription.findFirst({
+                        where: {
+                            studentId: session.user.id,
+                            creatorId: creator.id,
+                            status: 'ACTIVE',
+                            tier: {
+                                in: ['PREMIUM', 'VIP'] // Only premium/VIP can message
+                            }
+                        }
+                    })
+
+                    if (!hasSubscription) {
+                        return NextResponse.json(
+                            { error: 'You need a Premium or VIP subscription to message this creator' },
+                            { status: 403 }
+                        )
                     }
                 }
-            })
-
-            if (!hasSubscription) {
-                return NextResponse.json(
-                    { error: 'You need a Premium or VIP subscription to message this creator' },
-                    { status: 403 }
-                )
             }
         }
 
         // Create message
         const message = await prisma.message.create({
             data: {
+                conversationId: conversationId,
                 senderId: session.user.id,
-                recipientId: recipientId,
                 content: content,
-                type: type,
-                attachmentUrl: attachmentUrl || null,
-                read: false
+                messageType: messageType as any,
+                replyToId: replyToId || null
             },
             include: {
                 sender: {
@@ -95,45 +117,56 @@ export async function POST(req: NextRequest) {
                         profileImage: true
                     }
                 },
-                recipient: {
-                    select: {
-                        id: true,
-                        name: true,
-                        profileImage: true
+                conversation: {
+                    include: {
+                        participants: {
+                            where: {
+                                userId: {
+                                    not: session.user.id
+                                }
+                            },
+                            include: {
+                                user: {
+                                    select: {
+                                        id: true,
+                                        name: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
         })
 
-        // Create notification for recipient
-        await prisma.notification.create({
-            data: {
-                userId: recipientId,
-                type: 'NEW_MESSAGE',
-                title: `New message from ${session.user.name}`,
-                message: type === 'text' ? content.substring(0, 100) : `Sent a ${type}`,
-                metadata: {
-                    messageId: message.id,
-                    senderId: session.user.id,
-                    senderName: session.user.name
+        // Create notifications for other participants
+        const otherParticipants = conversation.participants.filter(p => p.userId !== session.user.id)
+        for (const participant of otherParticipants) {
+            await prisma.notification.create({
+                data: {
+                    userId: participant.userId,
+                    type: 'MESSAGE',
+                    title: `New message from ${session.user.name}`,
+                    message: messageType === 'TEXT' ? content.substring(0, 100) : `Sent a ${messageType.toLowerCase()}`,
+                    data: {
+                        messageId: message.id,
+                        conversationId: conversationId,
+                        senderId: session.user.id,
+                        senderName: session.user.name
+                    }
                 }
-            }
-        })
-
-        // TODO: Send push notification
-        // TODO: Send email notification if user has email notifications enabled
+            })
+        }
 
         return NextResponse.json({
             success: true,
             message: {
                 id: message.id,
                 content: message.content,
-                type: message.type,
-                attachmentUrl: message.attachmentUrl,
+                messageType: message.messageType,
                 sender: message.sender,
-                recipient: message.recipient,
-                createdAt: message.createdAt,
-                read: message.read
+                conversationId: message.conversationId,
+                createdAt: message.createdAt
             }
         })
 
@@ -146,11 +179,11 @@ export async function POST(req: NextRequest) {
     }
 }
 
-// GET /api/messages?userId=xxx - Get conversation with a user
+// GET /api/messages?conversationId=xxx - Get messages for a conversation
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions)
-        
+
         if (!session?.user) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
@@ -159,87 +192,129 @@ export async function GET(req: NextRequest) {
         }
 
         const { searchParams } = new URL(req.url)
-        const userId = searchParams.get('userId')
+        const conversationId = searchParams.get('conversationId')
 
-        if (!userId) {
-            // Get all conversations
-            const messages = await prisma.message.findMany({
+        if (!conversationId) {
+            // Get all conversations the user is part of
+            const participants = await prisma.conversationParticipant.findMany({
                 where: {
-                    OR: [
-                        { senderId: session.user.id },
-                        { recipientId: session.user.id }
-                    ]
+                    userId: session.user.id,
+                    isActive: true
                 },
                 include: {
-                    sender: {
-                        select: {
-                            id: true,
-                            name: true,
-                            profileImage: true
-                        }
-                    },
-                    recipient: {
-                        select: {
-                            id: true,
-                            name: true,
-                            profileImage: true
+                    conversation: {
+                        include: {
+                            participants: {
+                                where: {
+                                    userId: {
+                                        not: session.user.id
+                                    }
+                                },
+                                include: {
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            name: true,
+                                            profileImage: true,
+                                            arabicName: true
+                                        }
+                                    }
+                                }
+                            },
+                            messages: {
+                                orderBy: { createdAt: 'desc' },
+                                take: 1,
+                                include: {
+                                    sender: {
+                                        select: {
+                                            id: true,
+                                            name: true
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
                 orderBy: {
-                    createdAt: 'desc'
-                },
-                take: 100
+                    conversation: {
+                        updatedAt: 'desc'
+                    }
+                }
             })
 
-            // Group by conversation
-            const conversations = new Map()
-            messages.forEach(msg => {
-                const otherUserId = msg.senderId === session.user.id 
-                    ? msg.recipientId 
-                    : msg.senderId
-                
-                if (!conversations.has(otherUserId)) {
-                    conversations.set(otherUserId, {
-                        userId: otherUserId,
-                        user: msg.senderId === session.user.id ? msg.recipient : msg.sender,
-                        lastMessage: msg,
-                        unreadCount: 0
-                    })
-                }
+            // Format conversations
+            const conversations = participants.map(participant => {
+                const conversation = participant.conversation
+                const otherParticipant = conversation.participants[0]
+                const lastMessage = conversation.messages[0]
 
-                if (msg.recipientId === session.user.id && !msg.read) {
-                    const conv = conversations.get(otherUserId)
-                    conv.unreadCount++
+                return {
+                    id: conversation.id,
+                    type: conversation.type,
+                    title: conversation.title || otherParticipant?.user?.name || 'Unknown',
+                    avatar: conversation.avatar || otherParticipant?.user?.profileImage,
+                    lastMessage: lastMessage ? {
+                        content: lastMessage.content,
+                        senderName: lastMessage.sender.name,
+                        createdAt: lastMessage.createdAt
+                    } : null,
+                    participants: conversation.participants.map(p => ({
+                        id: p.user.id,
+                        name: p.user.name,
+                        profileImage: p.user.profileImage
+                    })),
+                    unreadCount: 0, // TODO: Implement unread count
+                    updatedAt: conversation.updatedAt
                 }
             })
 
             return NextResponse.json({
-                conversations: Array.from(conversations.values())
+                conversations
             })
 
         } else {
-            // Get conversation with specific user
+            // Get messages for specific conversation
+            // Verify user has access to conversation
+            const participant = await prisma.conversationParticipant.findFirst({
+                where: {
+                    conversationId: conversationId,
+                    userId: session.user.id,
+                    isActive: true
+                }
+            })
+
+            if (!participant) {
+                return NextResponse.json(
+                    { error: 'Conversation not found or access denied' },
+                    { status: 404 }
+                )
+            }
+
+            // Get messages
             const messages = await prisma.message.findMany({
                 where: {
-                    OR: [
-                        { senderId: session.user.id, recipientId: userId },
-                        { senderId: userId, recipientId: session.user.id }
-                    ]
+                    conversationId: conversationId,
+                    isDeleted: false
                 },
                 include: {
                     sender: {
                         select: {
                             id: true,
                             name: true,
-                            profileImage: true
+                            profileImage: true,
+                            arabicName: true
                         }
                     },
-                    recipient: {
-                        select: {
-                            id: true,
-                            name: true,
-                            profileImage: true
+                    attachments: true,
+                    reactions: {
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    name: true
+                                }
+                            }
                         }
                     }
                 },
@@ -248,20 +323,31 @@ export async function GET(req: NextRequest) {
                 }
             })
 
-            // Mark messages as read
-            await prisma.message.updateMany({
+            // Update last read timestamp for user
+            await prisma.conversationParticipant.update({
                 where: {
-                    senderId: userId,
-                    recipientId: session.user.id,
-                    read: false
+                    id: participant.id
                 },
                 data: {
-                    read: true
+                    lastReadAt: new Date()
                 }
             })
 
             return NextResponse.json({
-                messages
+                messages: messages.map(message => ({
+                    id: message.id,
+                    content: message.content,
+                    messageType: message.messageType,
+                    sender: message.sender,
+                    attachments: message.attachments,
+                    reactions: message.reactions,
+                    replyToId: message.replyToId,
+                    isEdited: message.edited,
+                    isPinned: message.isPinned,
+                    isStarred: message.isStarred,
+                    createdAt: message.createdAt,
+                    updatedAt: message.updatedAt
+                }))
             })
         }
 
