@@ -22,22 +22,12 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        const bookmarks = await prisma.discussionBookmark.findMany({
-            where: {
-                userId: session.user.id
-            },
-            select: {
-                discussionId: true,
-                createdAt: true
-            },
-            orderBy: {
-                createdAt: 'desc'
-            }
-        })
-
+        // Discussion bookmarks are not yet implemented in the current schema
+        // The DiscussionBookmark model doesn't exist
         return NextResponse.json({
             success: true,
-            bookmarks
+            bookmarks: [],
+            message: 'Discussion bookmarks feature is not yet implemented. Please check back later.'
         })
 
     } catch (error) {

@@ -75,8 +75,9 @@ export async function POST(request: NextRequest) {
         const payout = await prisma.creatorPayout.create({
             data: {
                 creatorId: creator.id,
-                amount: netAmount,
-                platformFee,
+                amount: amount, // Original requested amount
+                processingFee: platformFee, // Use processingFee instead of platformFee
+                netAmount: netAmount, // Net amount after fees
                 status: 'PENDING',
                 method,
                 accountDetails: accountDetails || '',
@@ -89,8 +90,8 @@ export async function POST(request: NextRequest) {
             payout: {
                 id: payout.id,
                 amount: payout.amount,
-                platformFee: payout.platformFee,
-                netAmount: payout.amount,
+                processingFee: payout.processingFee,
+                netAmount: payout.netAmount,
                 status: payout.status,
                 method: payout.method,
                 createdAt: payout.createdAt
