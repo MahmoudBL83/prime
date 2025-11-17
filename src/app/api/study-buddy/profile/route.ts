@@ -190,9 +190,9 @@ export async function PATCH(req: NextRequest) {
         const validation = updateProfileSchema.safeParse(body)
 
         if (!validation.success) {
-            console.error('❌ Profile validation failed:', validation.error.errors)
+            console.error('❌ Profile validation failed:', validation.error.issues)
             return NextResponse.json(
-                { error: 'Invalid data', details: validation.error.errors },
+                { error: 'Invalid data', details: validation.error.issues },
                 { status: 400 }
             )
         }

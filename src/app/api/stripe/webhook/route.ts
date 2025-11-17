@@ -108,7 +108,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         type: subscriptionType as any,
         status: 'ACTIVE',
         startDate: new Date(subscription.current_period_start * 1000),
-        endDate: new Date(subscription.current_period_end * 1000),
+        endDate: typeof subscription.current_period_end === 'number'
+          ? new Date(subscription.current_period_end * 1000)
+          : null,
         pricePerMonth: pricePerMonth,
         billingCycle: billingCycle as any,
         stripeSubscriptionId: subscription.id,

@@ -62,8 +62,8 @@ async function calculateComprehensiveUserStats(userId: string) {
       prisma.videoCallSession.count({
         where: {
           OR: [
-            { initiatorId: userId },
-            { participantId: userId }
+            { hostId: userId },
+            { inviteeId: userId }
           ],
           status: 'COMPLETED'
         }

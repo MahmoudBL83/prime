@@ -115,7 +115,24 @@ export async function GET(
 
         // Process posts with access control and engagement data
         const channel = mentor.channels[0]
-        let processedPosts = []
+        let processedPosts: Array<{
+            id: string;
+            title: string;
+            titleAr?: string;
+            content: string;
+            contentAr?: string;
+            type: string;
+            tier: string;
+            mediaUrl?: string;
+            mediaType?: string;
+            publishedAt?: Date | string | null;
+            viewCount?: number;
+            isPinned?: boolean;
+            hasAccess: boolean;
+            likesCount: number;
+            commentsCount: number;
+            isLiked: boolean;
+        }> = []
 
         if (channel) {
             const postsWithEngagement = await Promise.all(
