@@ -78,14 +78,14 @@ export async function GET(request: NextRequest) {
                 },
                 createdAt: {
                     gte: startDate
-                },
-                status: 'ACTIVE'
+                }
             },
             include: {
                 course: {
                     select: {
                         id: true,
-                        title: true
+                        title: true,
+                        price: true
                     }
                 }
             },
@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
                 periodKey = `${enrollDate.getFullYear()}-${String(enrollDate.getMonth() + 1).padStart(2, '0')}`
             }
 
-            revenueByPeriod[periodKey] = (revenueByPeriod[periodKey] || 0) + (enrollment.price || 0)
+            revenueByPeriod[periodKey] = (revenueByPeriod[periodKey] || 0) + (enrollment.course.price || 0)
             enrollmentsByPeriod[periodKey] = (enrollmentsByPeriod[periodKey] || 0) + 1
         })
 
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
         }))
 
         // Calculate total revenue
-        const totalRevenue = enrollments.reduce((sum, e) => sum + (e.price || 0), 0)
+        const totalRevenue = enrollments.reduce((sum, e) => sum + (e.course.price || 0), 0)
 
         // Revenue by course
         const revenueByCourse: { [courseId: string]: { title: string, revenue: number, enrollments: number } } = {}
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
                     enrollments: 0
                 }
             }
-            revenueByCourse[courseId].revenue += enrollment.price || 0
+            revenueByCourse[courseId].revenue += enrollment.course.price || 0
             revenueByCourse[courseId].enrollments += 1
         })
 
@@ -166,12 +166,11 @@ export async function GET(request: NextRequest) {
                 createdAt: {
                     gte: previousStartDate,
                     lt: startDate
-                },
-                status: 'ACTIVE'
+                }
             }
         })
 
-        const previousRevenue = await prisma.enrollment.aggregate({
+        const previousEnrollmentsWithCourse = await prisma.enrollment.findMany({
             where: {
                 courseId: {
                     in: courseIds
@@ -179,16 +178,21 @@ export async function GET(request: NextRequest) {
                 createdAt: {
                     gte: previousStartDate,
                     lt: startDate
-                },
-                status: 'ACTIVE'
+                }
             },
-            _sum: {
-                price: true
+            include: {
+                course: {
+                    select: {
+                        price: true
+                    }
+                }
             }
         })
 
-        const revenueTrend = previousRevenue._sum.price
-            ? ((totalRevenue - previousRevenue._sum.price) / previousRevenue._sum.price) * 100
+        const previousRevenue = previousEnrollmentsWithCourse.reduce((sum, e) => sum + (e.course.price || 0), 0)
+
+        const revenueTrend = previousRevenue > 0
+            ? ((totalRevenue - previousRevenue) / previousRevenue) * 100
             : totalRevenue > 0 ? 100 : 0
 
         const enrollmentTrend = previousEnrollments > 0

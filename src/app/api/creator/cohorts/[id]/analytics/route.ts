@@ -126,7 +126,7 @@ export async function GET(
       attendanceRate: member.attendedSessions + member.missedSessions > 0
         ? Math.round((member.attendedSessions / (member.attendedSessions + member.missedSessions)) * 100)
         : 0,
-      lastActive: member.lastActiveAt,
+      lastActive: member.updatedAt,
       risks: [
         member.progressPercent < 40 && 'Low progress',
         member.missedSessions > 3 && 'High absences',
@@ -144,7 +144,7 @@ export async function GET(
           cohort.sessions
             .filter((s) => s.status === 'COMPLETED')
             .reduce((sum, s) => {
-              const attended = s.attendance.filter((a: any) => a.attended).length;
+              const attended = s.attendees.length;
               const rate = activeMembers.length > 0 ? (attended / activeMembers.length) * 100 : 0;
               return sum + rate;
             }, 0) / completedSessions
@@ -167,7 +167,7 @@ export async function GET(
       .reverse();
 
     const attendanceTrend = recentSessions.map((session) => {
-      const attended = session.attendance.filter((a: any) => a.attended).length;
+      const attended = session.attendees.length;
       const rate = activeMembers.length > 0 ? Math.round((attended / activeMembers.length) * 100) : 0;
       
       return {
@@ -275,7 +275,7 @@ export async function GET(
       },
       engagement: {
         avgSessionAttendance: avgAttendance,
-        totalAnnouncements: cohort._count?.announcements || 0,
+        totalAnnouncements: 0, // TODO: Implement announcements tracking
         activeMembersPercent: cohort.members.length > 0
           ? Math.round((activeMembers.length / cohort.members.length) * 100)
           : 0,
