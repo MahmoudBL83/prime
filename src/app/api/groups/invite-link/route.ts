@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
             inviteCode,
             groupId,
-            groupName: conversation.name || 'Group',
+            groupName: conversation.title || 'Group',
             expiresAt: null, // null means never expires
         })
     } catch (error) {

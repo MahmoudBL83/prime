@@ -37,10 +37,7 @@ async function calculateComprehensiveUserStats(userId: string) {
     ] = await Promise.all([
       prisma.studySession.count({
         where: {
-          OR: [
-            { createdById: userId },
-            { participantIds: { has: userId } }
-          ],
+            createdBy: userId,
           status: 'COMPLETED'
         }
       }),
@@ -55,10 +52,7 @@ async function calculateComprehensiveUserStats(userId: string) {
       }),
       prisma.studySession.aggregate({
         where: {
-          OR: [
-            { createdById: userId },
-            { participantIds: { has: userId } }
-          ],
+            createdBy: userId,
           status: 'COMPLETED'
         },
         _sum: {
@@ -137,10 +131,7 @@ async function calculateStudyStreak(userId: string): Promise<number> {
   try {
     const sessions = await prisma.studySession.findMany({
       where: {
-        OR: [
-          { createdById: userId },
-          { participantIds: { has: userId } }
-        ],
+          createdBy: userId,
         status: 'COMPLETED'
       },
       orderBy: { createdAt: 'desc' },
@@ -183,10 +174,7 @@ async function calculateLongestStreak(userId: string): Promise<number> {
   try {
     const sessions = await prisma.studySession.findMany({
       where: {
-        OR: [
-          { createdById: userId },
-          { participantIds: { has: userId } }
-        ],
+          createdBy: userId,
         status: 'COMPLETED'
       },
       orderBy: { createdAt: 'asc' },

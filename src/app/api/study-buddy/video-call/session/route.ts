@@ -66,13 +66,13 @@ export async function POST(req: NextRequest) {
       await prisma.notification.create({
         data: {
           userId: inviteeId,
-          type: 'VIDEO_CALL_INVITATION',
+          type: 'VIDEO_CALL_INCOMING',
           title: 'Video Call Invitation',
           message: `${session.user.name} invited you to a video study session: ${title}`,
-          metadata: JSON.stringify({
+          data: {
             videoSessionId: videoSession.id,
             sessionToken: videoSession.sessionToken
-          })
+          }
         }
       })
 

@@ -32,7 +32,6 @@ export async function GET(request: NextRequest) {
               name: true,
               arabicName: true,
               profileImage: true,
-              image: true,
             }
           }
         }
@@ -74,7 +73,7 @@ export async function GET(request: NextRequest) {
       rank: entry.rank,
       userId: entry.user?.id || entry.userId,
       userName: entry.user?.name || entry.user?.arabicName || 'Anonymous',
-      userImage: entry.user?.profileImage || entry.user?.image,
+      userImage: entry.user?.profileImage,
       totalScore: entry.totalScore || 0,
       quizScore: entry.quizScore || 0,
       projectScore: entry.projectScore || 0,

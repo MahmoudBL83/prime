@@ -78,14 +78,23 @@ export async function POST(req: NextRequest) {
         })
 
         // Update creator analytics
+        const currentPeriod = new Date().toISOString().slice(0, 7) // "2025-11" format
         await prisma.creatorAnalytics.upsert({
-            where: { creatorId: creatorId },
+            where: { 
+                creatorId_period_periodType: {
+                    creatorId: creatorId,
+                    period: currentPeriod,
+                    periodType: 'MONTHLY'
+                }
+            },
             create: {
                 creatorId: creatorId,
+                period: currentPeriod,
+                periodType: 'MONTHLY',
                 totalRevenue: amount,
                 totalSubscribers: 0,
                 totalViews: 0,
-                totalLikes: 0
+                totalEnrollments: 0
             },
             update: {
                 totalRevenue: {
@@ -98,12 +107,12 @@ export async function POST(req: NextRequest) {
         await prisma.notification.create({
             data: {
                 userId: creator.userId,
-                type: 'TIP_RECEIVED',
+                type: 'SYSTEM',
                 title: isAnonymous 
                     ? 'New Anonymous Tip' 
                     : `${session.user.name} sent you a tip`,
                 message: message || `You received ${amount} EGP`,
-                metadata: {
+                data: {
                     tipId: tip.id,
                     amount: amount,
                     isAnonymous: isAnonymous,

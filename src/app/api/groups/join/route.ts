@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { ConversationType, ParticipantRole, MessageType } from '@prisma/client'
 
 export async function POST(req: NextRequest) {
     try {
@@ -35,8 +36,8 @@ export async function POST(req: NextRequest) {
         // Demo: Create a new group conversation if it doesn't exist
         let conversation = await prisma.conversation.findFirst({
             where: {
-                isGroup: true,
-                name: 'Study Group' // Demo group name
+                type: ConversationType.GROUP,
+                title: 'Study Group' // Demo group name
             },
             include: {
                 participants: true
@@ -47,12 +48,12 @@ export async function POST(req: NextRequest) {
         if (!conversation) {
             conversation = await prisma.conversation.create({
                 data: {
-                    isGroup: true,
-                    name: 'Study Group',
+                    type: ConversationType.GROUP,
+                    title: 'Study Group',
                     participants: {
                         create: {
                             userId: session.user.id,
-                            isAdmin: true // First member is admin
+                            role: ParticipantRole.ADMIN // First member is admin
                         }
                     }
                 },
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
         } else {
             // Check if user is already a member
             const existingParticipant = conversation.participants.find(
-                p => p.userId === session.user.id
+                (p) => p.userId === session.user.id
             )
 
             if (existingParticipant) {
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
                 data: {
                     conversationId: conversation.id,
                     userId: session.user.id,
-                    isAdmin: false
+                    role: ParticipantRole.MEMBER
                 }
             })
 
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest) {
                     conversationId: conversation.id,
                     senderId: session.user.id,
                     content: `${user?.name || user?.email} joined the group`,
-                    isSystemMessage: true
+                    messageType: MessageType.SYSTEM
                 }
             })
         }

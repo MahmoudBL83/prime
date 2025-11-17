@@ -47,14 +47,14 @@ export async function POST(
         const validation = bookMeetingSchema.safeParse(body)
 
         if (!validation.success) {
-            console.error('Validation failed details:', JSON.stringify(validation.error.errors, null, 2));
+            console.error('Validation failed details:', JSON.stringify(validation.error.issues, null, 2));
             return NextResponse.json(
                 { 
                     error: 'Invalid request data', 
-                    details: validation.error.errors.map(err => ({
+                    details: validation.error.issues.map(err => ({
                         field: err.path.join('.'),
                         message: err.message,
-                        received: err.code === 'invalid_type' ? err.received : undefined
+                        received: err.code === 'invalid_type' && 'received' in err ? err.received : undefined
                     }))
                 },
                 { status: 400 }
@@ -71,6 +71,7 @@ export async function POST(
                 user: {
                     select: {
                         name: true,
+                        arabicName: true,
                         email: true
                     }
                 }
