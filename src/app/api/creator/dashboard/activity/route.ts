@@ -164,12 +164,6 @@ export async function GET(request: NextRequest) {
         },
       },
       include: {
-        user: {
-          select: {
-            name: true,
-            profileImage: true,
-          },
-        },
         session: {
           select: {
             title: true,
@@ -182,18 +176,39 @@ export async function GET(request: NextRequest) {
       take: Math.floor(limit / 4),
     });
 
+    // Get user data for live session attendees
+    const userIds = recentLiveJoins.map(join => join.userId);
+    const users = await prisma.user.findMany({
+      where: {
+        id: {
+          in: userIds
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        profileImage: true
+      }
+    });
+
+    // Create user map for quick lookup
+    const userMap = new Map(users.map(user => [user.id, user]));
+
     recentLiveJoins.forEach(join => {
-      activities.push({
-        id: `live-join-${join.id}`,
-        type: 'live_join',
-        message: `${join.user.name} joined "${join.session.title}" live session`,
-        timestamp: join.joinedAt.toISOString(),
-        courseTitle: join.session.title,
-        user: {
-          name: join.user.name,
-          avatar: join.user.profileImage,
-        },
-      });
+      const user = userMap.get(join.userId);
+      if (user) {
+        activities.push({
+          id: `live-join-${join.id}`,
+          type: 'live_join',
+          message: `${user.name} joined "${join.session.title}" live session`,
+          timestamp: join.joinedAt.toISOString(),
+          courseTitle: join.session.title,
+          user: {
+            name: user.name,
+            avatar: user.profileImage,
+          },
+        });
+      }
     });
 
     // Sort all activities by timestamp (most recent first)

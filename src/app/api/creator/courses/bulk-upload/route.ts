@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         const course = await prisma.course.findUnique({
             where: { id: courseId },
             include: {
-                sections: {
+                lessons: {
                     orderBy: { order: 'asc' }
                 }
             }
@@ -65,30 +65,20 @@ export async function POST(request: NextRequest) {
         const createdLessons = []
         
         for (const video of videos) {
-            // Find or create section
-            let section = course.sections[video.moduleIndex]
-            
-            if (!section) {
-                section = await prisma.section.create({
-                    data: {
-                        courseId: courseId,
-                        title: `Module ${video.moduleIndex + 1}`,
-                        titleAr: `الوحدة ${video.moduleIndex + 1}`,
-                        order: video.moduleIndex
-                    }
-                })
-            }
+            // Get the next order number for this course
+            const maxOrder = course.lessons.length > 0 
+                ? Math.max(...course.lessons.map(l => l.order))
+                : 0
 
-            // Create lesson
+            // Create lesson directly in course
             const lesson = await prisma.lesson.create({
                 data: {
-                    sectionId: section.id,
+                    courseId: courseId,
                     title: video.lessonTitle,
                     titleAr: video.lessonTitleAr || video.lessonTitle,
                     duration: video.duration,
-                    order: video.order,
-                    videoUrl: '', // Will be updated after upload
-                    status: 'PENDING_UPLOAD'
+                    order: video.order > 0 ? video.order : maxOrder + 1,
+                    videoUrl: `placeholder_${video.file.name}` // Placeholder until upload
                 }
             })
 
@@ -127,7 +117,7 @@ export async function POST(request: NextRequest) {
         if (error instanceof z.ZodError) {
             return NextResponse.json({
                 error: 'Invalid request data',
-                details: error.errors
+                details: error.issues
             }, { status: 400 })
         }
 
@@ -157,33 +147,23 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Course ID required' }, { status: 400 })
         }
 
-        // Get all lessons with upload status
+        // Get all lessons for the course
         const lessons = await prisma.lesson.findMany({
             where: {
-                section: {
-                    courseId: courseId
-                }
+                courseId: courseId
             },
-            include: {
-                section: {
-                    select: {
-                        title: true,
-                        titleAr: true
-                    }
-                }
-            },
-            orderBy: [
-                { section: { order: 'asc' } },
-                { order: 'asc' }
-            ]
+            orderBy: {
+                order: 'asc'
+            }
         })
 
         const statusSummary = {
             total: lessons.length,
-            uploaded: lessons.filter(l => l.status === 'READY').length,
-            processing: lessons.filter(l => l.status === 'PROCESSING').length,
-            pending: lessons.filter(l => l.status === 'PENDING_UPLOAD').length,
-            failed: lessons.filter(l => l.status === 'FAILED').length
+            // Since we don't have status tracking, categorize by videoUrl presence
+            uploaded: lessons.filter(l => l.videoUrl && !l.videoUrl.startsWith('placeholder_')).length,
+            processing: 0, // Not supported without status field
+            pending: lessons.filter(l => !l.videoUrl || l.videoUrl.startsWith('placeholder_')).length,
+            failed: 0 // Not supported without status field
         }
 
         return NextResponse.json({
@@ -194,9 +174,9 @@ export async function GET(request: NextRequest) {
                 title: l.title,
                 titleAr: l.titleAr,
                 duration: l.duration,
-                status: l.status,
-                videoUrl: l.videoUrl,
-                sectionTitle: l.section.title
+                status: l.videoUrl && !l.videoUrl.startsWith('placeholder_') ? 'READY' : 'PENDING',
+                videoUrl: l.videoUrl && !l.videoUrl.startsWith('placeholder_') ? l.videoUrl : null,
+                order: l.order
             }))
         })
 
