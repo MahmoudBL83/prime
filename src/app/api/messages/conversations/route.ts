@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
       // Count unread messages
       const unreadCount = p.lastReadAt
         ? conversation.messages.filter(
-            (m: any) => m.createdAt > p.lastReadAt && m.senderId !== userId
+            (m: any) => p.lastReadAt && m.createdAt > p.lastReadAt && m.senderId !== userId
           ).length
         : 0
 

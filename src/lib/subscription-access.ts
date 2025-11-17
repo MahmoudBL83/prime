@@ -181,6 +181,7 @@ export async function getUserAccessibleCourses(userId: string) {
                             user: {
                                 select: {
                                     name: true,
+                                    arabicName: true,
                                     profileImage: true
                                 }
                             }
@@ -215,6 +216,7 @@ export async function getUserAccessibleCourses(userId: string) {
                         user: {
                             select: {
                                 name: true,
+                                arabicName: true,
                                 profileImage: true
                             }
                         }

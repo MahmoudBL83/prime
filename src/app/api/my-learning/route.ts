@@ -75,6 +75,7 @@ export async function GET(req: NextRequest) {
                                 user: {
                                     select: {
                                         name: true,
+                                        arabicName: true,
                                         profileImage: true
                                     }
                                 }

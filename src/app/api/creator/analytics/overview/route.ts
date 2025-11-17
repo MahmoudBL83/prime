@@ -61,18 +61,13 @@ export async function GET(request: NextRequest) {
             }
         })
 
-        // Calculate total revenue
-        const totalRevenue = await prisma.enrollment.aggregate({
-            where: {
-                courseId: {
-                    in: courses.map(c => c.id)
-                },
-                status: 'ACTIVE'
-            },
-            _sum: {
-                price: true
+        // Calculate total revenue from course prices and enrollments
+        let totalRevenue = 0
+        for (const course of courses) {
+            if (course.price) {
+                totalRevenue += course.price * course.enrollments.length
             }
-        })
+        }
 
         // Calculate total course completions
         const totalCompletions = await prisma.certificate.count({
@@ -178,7 +173,7 @@ export async function GET(request: NextRequest) {
             overview: {
                 totalCourses: courses.length,
                 totalStudents,
-                totalRevenue: totalRevenue._sum.price || 0,
+                totalRevenue,
                 totalCompletions,
                 averageRating: Math.round(averageRating * 10) / 10,
                 totalViews,
