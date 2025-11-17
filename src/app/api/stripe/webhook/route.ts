@@ -107,9 +107,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         userId: userId,
         type: subscriptionType as any,
         status: 'ACTIVE',
-        startDate: new Date(subscription.current_period_start * 1000),
-        endDate: typeof subscription.current_period_end === 'number'
-          ? new Date(subscription.current_period_end * 1000)
+        startDate: new Date((subscription as any).current_period_start * 1000),
+        endDate: typeof (subscription as any).current_period_end === 'number'
+          ? new Date((subscription as any).current_period_end * 1000)
           : null,
         pricePerMonth: pricePerMonth,
         billingCycle: billingCycle as any,
@@ -143,8 +143,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+  // Retrieve the full subscription object to ensure we have all properties
+  const fullSubscription = await stripe.subscriptions.retrieve(subscription.id);
+
   const dbSubscription = await prisma.subscription.findFirst({
-    where: { stripeSubscriptionId: subscription.id },
+    where: { stripeSubscriptionId: fullSubscription.id },
   });
 
   if (!dbSubscription) {
@@ -153,16 +156,16 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   }
 
   // Update subscription status
-  const status = subscription.status === 'active' ? 'ACTIVE' 
-    : subscription.status === 'canceled' ? 'CANCELLED'
-    : subscription.status === 'past_due' ? 'PAST_DUE'
+  const status = fullSubscription.status === 'active' ? 'ACTIVE' 
+    : fullSubscription.status === 'canceled' ? 'CANCELLED'
+    : fullSubscription.status === 'past_due' ? 'PAST_DUE'
     : 'EXPIRED';
 
   await prisma.subscription.update({
     where: { id: dbSubscription.id },
     data: {
       status: status as any,
-      endDate: new Date(subscription.current_period_end * 1000),
+      endDate: new Date((fullSubscription as any).current_period_end * 1000),
     },
   });
 
@@ -170,8 +173,11 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+  // Retrieve the full subscription object to ensure we have all properties
+  const fullSubscription = await stripe.subscriptions.retrieve(subscription.id);
+
   const dbSubscription = await prisma.subscription.findFirst({
-    where: { stripeSubscriptionId: subscription.id },
+    where: { stripeSubscriptionId: fullSubscription.id },
   });
 
   if (!dbSubscription) {
@@ -191,9 +197,9 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 }
 
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
-  if (invoice.subscription) {
+  if ((invoice as any).subscription) {
     const subscription = await stripe.subscriptions.retrieve(
-      invoice.subscription as string
+      (invoice as any).subscription as string
     );
     
     await handleSubscriptionUpdated(subscription);
@@ -206,7 +212,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
       });
 
       if (dbSubscription?.user?.email) {
-        const nextBillingDate = new Date(subscription.current_period_end * 1000);
+        const nextBillingDate = new Date((subscription as any).current_period_end * 1000);
         
         await sendPaymentReceiptEmail({
           userEmail: dbSubscription.user.email,

@@ -26,17 +26,20 @@ interface StudyBuddyMatch {
 }
 
 export async function GET(req: NextRequest) {
+    const session = await getServerSession(authOptions)
+    if (!session?.user) {
+        return NextResponse.json({ 
+            error: 'Please log in to find study buddies',
+            code: 'NOT_AUTHENTICATED',
+            matches: [],
+            totalFound: 0,
+            totalAvailable: 0
+        }, { status: 401 })
+    }
+
+    const sessionUser = session.user
+
     try {
-        const session = await getServerSession(authOptions)
-        if (!session?.user) {
-            return NextResponse.json({ 
-                error: 'Please log in to find study buddies',
-                code: 'NOT_AUTHENTICATED',
-                matches: [],
-                totalFound: 0,
-                totalAvailable: 0
-            }, { status: 401 })
-        }
 
         // Parse query parameters
         const { searchParams } = new URL(req.url)
@@ -54,7 +57,6 @@ export async function GET(req: NextRequest) {
         }
 
         const { limit } = validation.data
-        const sessionUser = session.user
 
         console.log('🔍 Study Buddy API - Session user:', {
             id: sessionUser.id,

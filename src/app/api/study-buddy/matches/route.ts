@@ -8,18 +8,18 @@ interface StudyBuddyMatchWithDetails {
     status: string
     sharedSubjects: string[]
     sharedGoals: string[]
-    chatRoomId?: string | null
+    chatRoomId: string | null
     createdAt: string
     updatedAt: string
     otherUser: {
         id: string
         name: string
-        arabicName?: string | null
-        profileImage?: string | null
+        arabicName: string | null
+        profileImage: string | null
         interests: string[]
         goals: string[]
         skillLevel: string | null
-        learningMode?: string | null
+        learningMode: string | null
     }
 }
 
@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
 
         // Filter out null values and cast to correct type
         const validMatches = enrichedMatches.filter((match): match is StudyBuddyMatchWithDetails =>
-            match !== null && match.chatRoomId !== undefined
+            match !== null
         ) as StudyBuddyMatchWithDetails[]
 
         // Group matches by status
