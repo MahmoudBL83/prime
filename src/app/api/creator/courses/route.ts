@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
                 : 0
 
             // Calculate total revenue (assuming price * enrollments)
-            const totalRevenue = course.price * course._count.enrollments
+            const totalRevenue = (course.price || 0) * course._count.enrollments
 
             return {
                 id: course.id,
