@@ -15,15 +15,7 @@ export async function GET() {
           select: {
             id: true,
             name: true,
-            profileImage: true,
-          },
-        },
-        attendees: {
-          where: {
-            leftAt: null,
-          },
-          select: {
-            id: true,
+            coverImage: true,
           },
         },
       },
@@ -31,6 +23,19 @@ export async function GET() {
         viewCount: 'desc',
       },
     });
+
+    // Get attendee counts for live streams
+    const liveStreamAttendees = await Promise.all(
+      liveStreams.map(async (stream) => {
+        const attendeeCount = await prisma.sessionAttendee.count({
+          where: {
+            sessionId: stream.id,
+            leftAt: null, // Currently active attendees
+          },
+        });
+        return { ...stream, attendeeCount };
+      })
+    );
 
     // Get upcoming streams (within next 7 days)
     const upcomingStreams = await prisma.liveSession.findMany({
@@ -46,7 +51,7 @@ export async function GET() {
           select: {
             id: true,
             name: true,
-            profileImage: true,
+            coverImage: true,
           },
         },
       },
@@ -57,10 +62,9 @@ export async function GET() {
     });
 
     // Transform data
-    const transformedLive = liveStreams.map(stream => ({
+    const transformedLive = liveStreamAttendees.map(stream => ({
       ...stream,
-      attendeeCount: stream.attendees.length,
-      attendees: undefined, // Remove from response
+      // attendeeCount is already included from the previous step
     }));
 
     return NextResponse.json({

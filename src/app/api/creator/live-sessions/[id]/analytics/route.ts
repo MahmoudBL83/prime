@@ -47,15 +47,6 @@ export async function GET(
                     }
                 },
                 attendees: {
-                    include: {
-                        user: {
-                            select: {
-                                id: true,
-                                name: true,
-                                profileImage: true
-                            }
-                        }
-                    },
                     orderBy: {
                         joinedAt: 'asc'
                     }
@@ -70,8 +61,19 @@ export async function GET(
             );
         }
 
-        // 2. Verify ownership
-        if (liveSession.channel.creator.user.id !== session.user.id) {
+        // 2. Verify ownership by checking creator separately
+        const channel = await prisma.creatorChannel.findUnique({
+            where: { id: liveSession.channelId },
+            include: {
+                creator: {
+                    include: {
+                        user: true
+                    }
+                }
+            }
+        });
+
+        if (!channel || channel.creator.user.id !== session.user.id) {
             return NextResponse.json(
                 { error: 'You do not have permission to view this session analytics' },
                 { status: 403 }
@@ -81,14 +83,14 @@ export async function GET(
         // 3. Calculate analytics metrics
         const attendees = liveSession.attendees;
         const totalAttendees = attendees.length;
-        const uniqueViewers = new Set(attendees.map(a => a.userId)).size;
+        const uniqueViewers = new Set(attendees.map((a: any) => a.userId)).size;
 
         // Calculate watch durations
         const watchDurations = attendees
-            .filter(a => a.duration !== null)
-            .map(a => a.duration!);
+            .filter((a: any) => a.duration !== null)
+            .map((a: any) => a.duration!);
 
-        const totalWatchTime = watchDurations.reduce((sum, d) => sum + d, 0);
+        const totalWatchTime = watchDurations.reduce((sum: number, d: number) => sum + d, 0);
         const averageWatchDuration = watchDurations.length > 0 
             ? Math.round(totalWatchTime / watchDurations.length)
             : 0;
@@ -99,7 +101,7 @@ export async function GET(
             // Create timeline of join/leave events
             const events: Array<{ time: Date, type: 'join' | 'leave' }> = [];
             
-            attendees.forEach(attendee => {
+            attendees.forEach((attendee: any) => {
                 events.push({ time: attendee.joinedAt, type: 'join' });
                 if (attendee.leftAt) {
                     events.push({ time: attendee.leftAt, type: 'leave' });
@@ -124,7 +126,7 @@ export async function GET(
         // Calculate retention rate (% who stayed > 50% of session)
         const sessionDurationSeconds = liveSession.duration * 60;
         const halfDuration = sessionDurationSeconds / 2;
-        const retainedViewers = watchDurations.filter(d => d >= halfDuration).length;
+        const retainedViewers = watchDurations.filter((d: number) => d >= halfDuration).length;
         const retentionRate = watchDurations.length > 0
             ? Math.round((retainedViewers / watchDurations.length) * 100)
             : 0;
@@ -145,7 +147,7 @@ export async function GET(
                 const timestamp = new Date(startTime.getTime() + i * 60 * 1000);
                 
                 // Count viewers at this timestamp
-                const viewersAtTime = attendees.filter(a => {
+                const viewersAtTime = attendees.filter((a: any) => {
                     const joined = new Date(a.joinedAt);
                     const left = a.leftAt ? new Date(a.leftAt) : new Date();
                     return timestamp >= joined && timestamp <= left;
@@ -159,26 +161,41 @@ export async function GET(
         }
 
         // 5. Engagement breakdown by tier
-        const tierBreakdown = attendees.reduce((acc, attendee) => {
+        const tierBreakdown = attendees.reduce((acc: Record<string, number>, attendee: any) => {
             // Note: We'd need to fetch user's subscription tier here
             // For now, we'll count all as general viewers
             acc.total = (acc.total || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
 
-        // 6. Top viewers (by watch duration)
-        const topViewers = attendees
-            .filter(a => a.duration !== null)
-            .sort((a, b) => b.duration! - a.duration!)
-            .slice(0, 10)
-            .map(a => ({
-                id: a.user.id,
-                name: a.user.name,
-                profileImage: a.user.profileImage,
+        // 6. Top viewers (by watch duration) - Get user data separately
+        const topAttendees = attendees
+            .filter((a: any) => a.duration !== null)
+            .sort((a: any, b: any) => b.duration! - a.duration!)
+            .slice(0, 10);
+
+        // Get user data for top attendees
+        const userIds = topAttendees.map((a: any) => a.userId);
+        const users = await prisma.user.findMany({
+            where: { id: { in: userIds } },
+            select: {
+                id: true,
+                name: true,
+                profileImage: true
+            }
+        });
+
+        const topViewers = topAttendees.map((a: any) => {
+            const user = users.find(u => u.id === a.userId);
+            return {
+                id: user?.id || a.userId,
+                name: user?.name || 'Unknown User',
+                profileImage: user?.profileImage || null,
                 watchDuration: a.duration!,
                 joinedAt: a.joinedAt,
                 leftAt: a.leftAt
-            }));
+            };
+        });
 
         // 7. Calculate engagement score (0-100)
         const engagementScore = Math.round(

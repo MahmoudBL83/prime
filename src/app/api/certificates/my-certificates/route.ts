@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
                         titleAr: true,
                         thumbnail: true,
                         category: true,
-                        level: true,
                         creator: {
                             select: {
                                 user: {

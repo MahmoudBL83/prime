@@ -75,7 +75,7 @@ export async function GET(
     // Calculate completion stats for each milestone
     const milestonesWithStats = milestones.map((milestone) => {
       const completionPercentage = activeMembersCount > 0
-        ? Math.round((milestone.completedCount / activeMembersCount) * 100)
+        ? Math.round((milestone.completionCount / activeMembersCount) * 100)
         : 0;
 
       const now = new Date();
@@ -169,9 +169,6 @@ export async function POST(
       description,
       type,
       dueDate,
-      points,
-      attachmentUrl,
-      submissionRequired,
     } = body;
 
     // Validate required fields
@@ -222,11 +219,8 @@ export async function POST(
         description: description || '',
         type,
         dueDate: dueDateObj,
-        points: points || 0,
-        attachmentUrl: attachmentUrl || null,
-        submissionRequired: submissionRequired || false,
         isCompleted: false,
-        completedCount: 0,
+        completionCount: 0,
       },
     });
 

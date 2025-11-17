@@ -171,8 +171,8 @@ export async function POST(req: NextRequest) {
                 creatorId: creatorId,
                 scheduledAt: new Date(scheduledAt),
                 duration: duration,
-                type: type,
-                topic: topic || '',
+                meetingType: type,
+                title: topic || 'Meeting',
                 notes: notes || '',
                 status: 'SCHEDULED',
                 meetingLink: '' // Will be updated when meeting starts or by creator

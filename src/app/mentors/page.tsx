@@ -279,7 +279,7 @@ export default function MentorsPage() {
                                 />
                             </div>
                             <Button type="submit" size="lg" className="px-8">
-                                <Search className="w-4 h-4 mr-2" />
+                                <DynamicIcon name="Search" className="w-4 h-4 mr-2" />
                                 {lang === 'ar' ? 'بحث' : 'Search'}
                             </Button>
                         </div>

@@ -97,7 +97,7 @@ Let's start with the first point...`
         if (error instanceof z.ZodError) {
             return NextResponse.json({
                 error: 'Invalid request data',
-                details: error.errors
+                details: error.issues
             }, { status: 400 })
         }
 
@@ -135,13 +135,10 @@ export async function GET(
         const lesson = await prisma.lesson.findUnique({
             where: { id: lessonId },
             include: {
-                section: {
-                    include: {
-                        course: {
-                            select: {
-                                creatorId: true
-                            }
-                        }
+                course: {
+                    select: {
+                        id: true,
+                        creatorId: true
                     }
                 }
             }
@@ -156,7 +153,7 @@ export async function GET(
             where: { userId: session.user.id }
         })
 
-        if (!creator || lesson.section.course.creatorId !== creator.id) {
+        if (!creator || lesson.course.creatorId !== creator.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
         }
 
@@ -207,13 +204,10 @@ export async function PUT(
         const lesson = await prisma.lesson.findUnique({
             where: { id: lessonId },
             include: {
-                section: {
-                    include: {
-                        course: {
-                            select: {
-                                creatorId: true
-                            }
-                        }
+                course: {
+                    select: {
+                        id: true,
+                        creatorId: true
                     }
                 }
             }
@@ -227,7 +221,7 @@ export async function PUT(
             where: { userId: session.user.id }
         })
 
-        if (!creator || lesson.section.course.creatorId !== creator.id) {
+        if (!creator || lesson.course.creatorId !== creator.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
         }
 

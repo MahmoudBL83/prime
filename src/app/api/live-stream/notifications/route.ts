@@ -46,11 +46,7 @@ export async function POST(request: NextRequest) {
 
         // Verify the live session exists and user has permission
         const liveSession = await prisma.liveSession.findUnique({
-            where: { id: sessionId },
-            include: {
-                creator: true,
-                course: true
-            }
+            where: { id: sessionId }
         })
 
         if (!liveSession) {
@@ -60,51 +56,48 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Check if user is the creator of the session
-        if (liveSession.creator.userId !== session.user.id) {
+        // Get creator info separately
+        const creator = await prisma.creator.findFirst({
+            where: { 
+                channels: {
+                    some: {
+                        liveSessions: {
+                            some: { id: sessionId }
+                        }
+                    }
+                }
+            },
+            include: {
+                user: true
+            }
+        })
+
+        if (!creator || creator.userId !== session.user.id) {
             return NextResponse.json(
                 { error: 'Unauthorized to send notifications for this session' },
                 { status: 403 }
             )
         }
 
-        let recipients = []
+        let recipients: any[] = []
 
         if (sendToAll) {
-            // Get all enrolled students if it's a course session
-            if (liveSession.courseId) {
-                const enrollments = await prisma.enrollment.findMany({
-                    where: { 
-                        courseId: liveSession.courseId,
-                        status: 'ACTIVE'
-                    },
-                    include: {
-                        user: {
-                            select: {
-                                id: true,
-                                email: true,
-                                name: true
-                            }
-                        }
-                    }
-                })
-                recipients = enrollments.map(enrollment => enrollment.user)
-            } else {
-                // Get session participants
-                const participants = await prisma.sessionParticipant.findMany({
-                    where: { sessionId: sessionId },
-                    include: {
-                        user: {
-                            select: {
-                                id: true,
-                                email: true,
-                                name: true
-                            }
-                        }
-                    }
-                })
-                recipients = participants.map(participant => participant.user)
-            }
+            // Get session attendees and their user data separately
+            const attendees = await prisma.sessionAttendee.findMany({
+                where: { sessionId: sessionId }
+            })
+            
+            // Get user data for all attendees
+            const userIds = attendees.map(attendee => attendee.userId)
+            const users = await prisma.user.findMany({
+                where: { id: { in: userIds } },
+                select: {
+                    id: true,
+                    email: true,
+                    name: true
+                }
+            })
+            recipients = users
         } else if (targetUsers && targetUsers.length > 0) {
             // Get specific target users
             const users = await prisma.user.findMany({
@@ -129,21 +122,18 @@ export async function POST(request: NextRequest) {
 
         // Create notifications for each recipient
         const notifications = await Promise.all(
-            recipients.map(async (user) => {
+            recipients.map(async (user: any) => {
                 return await prisma.notification.create({
                     data: {
                         userId: user.id,
-                        type: 'LIVE_STREAM',
+                        type: 'SYSTEM',
                         title: `Live Session: ${liveSession.title}`,
                         message: message,
                         data: JSON.stringify({
                             sessionId: liveSession.id,
                             notificationType: type,
-                            creatorName: liveSession.creator.user?.name,
-                            courseTitle: liveSession.course?.title
-                        }),
-                        read: false,
-                        createdAt: new Date()
+                            creatorName: creator?.user?.name
+                        })
                     }
                 })
             })
@@ -159,7 +149,7 @@ export async function POST(request: NextRequest) {
                 sessionId: liveSession.id,
                 notificationType: type,
                 recipientCount: notifications.length,
-                notificationIds: notifications.map(n => n.id)
+                notificationIds: notifications.map((n: any) => n.id)
             }
         })
 
@@ -194,7 +184,7 @@ export async function GET(request: NextRequest) {
 
         // Build where clause
         let whereClause: any = {
-            type: 'LIVE_STREAM'
+            type: 'SYSTEM'
         }
 
         if (sessionId) {
@@ -217,7 +207,6 @@ export async function GET(request: NextRequest) {
                 title: true,
                 message: true,
                 data: true,
-                read: true,
                 createdAt: true
             }
         })

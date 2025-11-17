@@ -28,22 +28,28 @@ export async function POST(
         const body = await request.json()
         const { type, replyId, content } = body // type: 'reply' | 'mention' | 'best_answer'
 
-        // Get discussion details
-        const discussion = await prisma.courseDiscussion.findUnique({
+        // Get discussion details (using VideoComment as discussion)
+        const discussion = await prisma.videoComment.findUnique({
             where: { id },
             include: {
-                author: {
+                user: {
                     select: {
                         id: true,
                         name: true,
                         email: true
                     }
                 },
-                course: {
+                videoAsset: {
                     select: {
                         id: true,
                         title: true,
-                        creatorId: true
+                        course: {
+                            select: {
+                                id: true,
+                                title: true,
+                                creatorId: true
+                            }
+                        }
                     }
                 }
             }
@@ -56,38 +62,46 @@ export async function POST(
             )
         }
 
+        // Check if the video asset and course exist
+        if (!discussion.videoAsset || !discussion.videoAsset.course) {
+            return NextResponse.json(
+                { error: 'Invalid discussion - missing video asset or course' },
+                { status: 400 }
+            )
+        }
+
         const notifications = []
 
         // Notify discussion author (if not the one replying)
-        if (type === 'reply' && discussion.authorId !== session.user.id) {
+        if (type === 'reply' && discussion.userId !== (session.user as any).id) {
             notifications.push({
-                userId: discussion.authorId,
+                userId: discussion.userId,
                 type: 'DISCUSSION_REPLY' as any,
                 title: 'New reply to your discussion',
-                message: `${session.user.name} replied to "${discussion.title}"`,
-                link: `/courses/${discussion.courseId}/discussions/${discussion.id}`,
+                message: `${session.user.name} replied to your comment on "${discussion.videoAsset?.title || 'a video'}"`,
+                link: `/courses/${discussion.videoAsset.course.id}/watch/${discussion.videoAssetId}#comment-${discussion.id}`,
                 metadata: {
                     discussionId: discussion.id,
                     replyId,
-                    courseId: discussion.courseId
+                    courseId: discussion.videoAsset.course.id
                 }
             })
         }
 
         // Notify course creator (if they're not the author or replier)
         if (type === 'reply' && 
-            discussion.course.creatorId !== session.user.id && 
-            discussion.course.creatorId !== discussion.authorId) {
+            discussion.videoAsset.course.creatorId !== (session.user as any).id && 
+            discussion.videoAsset.course.creatorId !== discussion.userId) {
             notifications.push({
-                userId: discussion.course.creatorId,
+                userId: discussion.videoAsset.course.creatorId,
                 type: 'DISCUSSION_REPLY' as any,
                 title: 'New discussion reply in your course',
-                message: `${session.user.name} replied to "${discussion.title}"`,
-                link: `/courses/${discussion.courseId}/discussions/${discussion.id}`,
+                message: `${session.user.name} replied to a comment on "${discussion.videoAsset?.title || 'a video'}"`,
+                link: `/courses/${discussion.videoAsset.course.id}/watch/${discussion.videoAssetId}#comment-${discussion.id}`,
                 metadata: {
                     discussionId: discussion.id,
                     replyId,
-                    courseId: discussion.courseId
+                    courseId: discussion.videoAsset.course.id
                 }
             })
         }
@@ -112,17 +126,17 @@ export async function POST(
                 })
 
                 mentionedUsers.forEach(user => {
-                    if (user.id !== session.user.id) {
+                    if (user.id !== (session.user as any).id && discussion.videoAsset?.course) {
                         notifications.push({
                             userId: user.id,
                             type: 'DISCUSSION_MENTION' as any,
                             title: 'You were mentioned in a discussion',
-                            message: `${session.user.name} mentioned you in "${discussion.title}"`,
-                            link: `/courses/${discussion.courseId}/discussions/${discussion.id}`,
+                            message: `${session.user.name} mentioned you in a video comment`,
+                            link: `/courses/${discussion.videoAsset.course.id}/watch/${discussion.videoAssetId}#comment-${discussion.id}`,
                             metadata: {
                                 discussionId: discussion.id,
                                 replyId,
-                                courseId: discussion.courseId
+                                courseId: discussion.videoAsset.course.id
                             }
                         })
                     }
@@ -130,12 +144,12 @@ export async function POST(
             }
         }
 
-        // Best answer notification
+        // Best answer notification (using VideoComment for reply)
         if (type === 'best_answer' && replyId) {
-            const reply = await prisma.discussionReply.findUnique({
+            const reply = await prisma.videoComment.findUnique({
                 where: { id: replyId },
                 include: {
-                    author: {
+                    user: {
                         select: {
                             id: true,
                             name: true
@@ -144,17 +158,17 @@ export async function POST(
                 }
             })
 
-            if (reply && reply.authorId !== session.user.id) {
+            if (reply && reply.userId !== (session.user as any).id) {
                 notifications.push({
-                    userId: reply.authorId,
+                    userId: reply.userId,
                     type: 'BEST_ANSWER' as any,
                     title: '🏆 Your answer was marked as best!',
-                    message: `Your answer to "${discussion.title}" was marked as the best answer`,
-                    link: `/courses/${discussion.courseId}/discussions/${discussion.id}`,
+                    message: `Your reply was marked as the best answer`,
+                    link: `/courses/${discussion.videoAsset.course.id}/watch/${discussion.videoAssetId}#comment-${discussion.id}`,
                     metadata: {
                         discussionId: discussion.id,
                         replyId,
-                        courseId: discussion.courseId
+                        courseId: discussion.videoAsset.course.id
                     }
                 })
             }

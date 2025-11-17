@@ -84,7 +84,7 @@ export function useOptimizedNavigation() {
 
         try {
             // Use Next.js router prefetch with high priority
-            await router.prefetch(path, { kind: 'auto' })
+            await router.prefetch(path)
             prefetchCache.current.add(path)
         } catch (error) {
             console.warn('Failed to prefetch route:', path, error)

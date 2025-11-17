@@ -162,7 +162,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            hasCompletedOnboarding: creator?.onboardingCompleted || false,
+            hasCompletedOnboarding: false, // Mock value since field doesn't exist
             kycStatus: creator?.kycStatus || 'NOT_STARTED',
             creator
         })

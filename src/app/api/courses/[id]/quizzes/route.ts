@@ -89,10 +89,15 @@ export async function POST(
                 questions.map((question, index) =>
                     tx.question.create({
                         data: {
-                            ...question,
+                            type: question.type,
+                            question: question.question,
+                            questionAr: question.questionAr,
+                            correctAnswer: question.correctAnswer,
+                            explanation: question.explanation,
+                            points: question.points,
                             quizId: newQuiz.id,
                             order: index + 1,
-                            options: question.options || null
+                            options: question.options && Array.isArray(question.options) ? question.options : undefined
                         }
                     })
                 )
@@ -160,7 +165,14 @@ export async function GET(
         })
 
         // If student, get their attempts
-        let userAttempts = []
+        let userAttempts: Array<{
+            id: string;
+            quizId: string;
+            score: number;
+            maxScore: number;
+            passed: boolean;
+            completedAt: Date | null;
+        }> = []
         if (!isCreator) {
             userAttempts = await prisma.quizAttempt.findMany({
                 where: {

@@ -41,7 +41,7 @@ export async function POST(
     // Update or create progress
     const existingProgress = await prisma.lessonProgress.findFirst({
       where: {
-        enrollmentId: enrollment.id,
+        userId: user.id,
         lessonId: episodeId,
       },
     });
@@ -50,19 +50,19 @@ export async function POST(
       await prisma.lessonProgress.update({
         where: { id: existingProgress.id },
         data: {
-          progress,
+          lastPosition: progress,
           completed,
-          lastWatchedAt: new Date(),
+          completedAt: completed ? new Date() : null,
         },
       });
     } else {
       await prisma.lessonProgress.create({
         data: {
-          enrollmentId: enrollment.id,
+          userId: user.id,
           lessonId: episodeId,
-          progress,
+          lastPosition: progress,
           completed,
-          lastWatchedAt: new Date(),
+          completedAt: completed ? new Date() : null,
         },
       });
     }
@@ -74,7 +74,10 @@ export async function POST(
 
     const completedLessons = await prisma.lessonProgress.count({
       where: {
-        enrollmentId: enrollment.id,
+        userId: user.id,
+        lesson: {
+          courseId: courseId
+        },
         completed: true,
       },
     });

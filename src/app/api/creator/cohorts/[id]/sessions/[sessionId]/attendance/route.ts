@@ -72,16 +72,12 @@ export async function GET(
         sessionId,
       },
       include: {
-        member: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true,
-              },
-            },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profileImage: true,
           },
         },
       },
@@ -98,7 +94,7 @@ export async function GET(
       },
     });
 
-    const attendedCount = attendance.filter((a: any) => a.attended).length;
+    const attendedCount = attendance.length; // All records mean they attended (joined)
     const attendanceRate = totalMembers > 0 
       ? Math.round((attendedCount / totalMembers) * 100)
       : 0;
@@ -185,38 +181,27 @@ export async function POST(
     }
 
     const body = await req.json();
-    const { memberId, attended, duration, notes } = body;
+    const { userId, duration } = body;
 
-    if (!memberId) {
+    if (!userId) {
       return NextResponse.json(
-        { error: 'Member ID is required', errorAr: 'معرف العضو مطلوب' },
+        { error: 'User ID is required', errorAr: 'معرف المستخدم مطلوب' },
         { status: 400 }
       );
     }
 
-    if (attended === undefined) {
-      return NextResponse.json(
-        { error: 'Attended status is required', errorAr: 'حالة الحضور مطلوبة' },
-        { status: 400 }
-      );
-    }
-
-    // Verify member exists and belongs to this cohort
-    const member = await prisma.cohortMember.findUnique({
-      where: { id: memberId },
+    // Verify user exists and is a member of this cohort
+    const member = await prisma.cohortMember.findFirst({
+      where: { 
+        cohortId: cohortId,
+        userId: userId,
+      },
     });
 
     if (!member) {
       return NextResponse.json(
-        { error: 'Member not found', errorAr: 'العضو غير موجود' },
+        { error: 'User is not a member of this cohort', errorAr: 'المستخدم ليس عضواً في هذه المجموعة' },
         { status: 404 }
-      );
-    }
-
-    if (member.cohortId !== cohortId) {
-      return NextResponse.json(
-        { error: 'Member does not belong to this cohort', errorAr: 'العضو لا ينتمي إلى هذه المجموعة' },
-        { status: 400 }
       );
     }
 
@@ -224,32 +209,27 @@ export async function POST(
     const existingAttendance = await prisma.sessionAttendance.findFirst({
       where: {
         sessionId,
-        memberId,
+        userId,
       },
     });
 
     let attendanceRecord;
 
     if (existingAttendance) {
-      // Update existing attendance
+      // Update existing attendance (extend duration)
       attendanceRecord = await prisma.sessionAttendance.update({
         where: { id: existingAttendance.id },
         data: {
-          attended,
-          duration,
-          notes,
+          leftAt: new Date(),
+          durationMinutes: duration,
         },
         include: {
-          member: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  image: true,
-                },
-              },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              profileImage: true,
             },
           },
         },
@@ -259,42 +239,29 @@ export async function POST(
       attendanceRecord = await prisma.sessionAttendance.create({
         data: {
           sessionId,
-          memberId,
-          attended,
-          duration,
-          notes,
-          joinedAt: attended ? new Date() : undefined,
+          userId,
+          joinedAt: new Date(),
+          durationMinutes: duration,
         },
         include: {
-          member: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  image: true,
-                },
-              },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              profileImage: true,
             },
           },
         },
       });
     }
 
-    // Update member's total attendance count
-    if (attended && !existingAttendance?.attended) {
+    // Update member's total attendance count if this is a new attendance
+    if (!existingAttendance) {
       await prisma.cohortMember.update({
-        where: { id: memberId },
+        where: { id: member.id },
         data: {
-          sessionsAttended: { increment: 1 },
-        },
-      });
-    } else if (!attended && existingAttendance?.attended) {
-      await prisma.cohortMember.update({
-        where: { id: memberId },
-        data: {
-          sessionsAttended: { decrement: 1 },
+          attendedSessions: { increment: 1 },
         },
       });
     }

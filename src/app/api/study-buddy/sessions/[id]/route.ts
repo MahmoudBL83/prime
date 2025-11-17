@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { ReminderType } from '@prisma/client'
 
 const updateSessionSchema = z.object({
   title: z.string().min(1).optional(),
@@ -30,8 +31,8 @@ export async function GET(
         id: id,
         match: {
           OR: [
-            { user1Id: session.user.id },
-            { user2Id: session.user.id },
+            { user1Id: (session.user as any).id },
+            { user2Id: (session.user as any).id },
           ],
         },
       },
@@ -64,7 +65,7 @@ export async function GET(
       return NextResponse.json({ error: 'Study session not found' }, { status: 404 })
     }
 
-    const otherUser = studySession.match.user1Id === session.user.id 
+    const otherUser = studySession.match.user1Id === (session.user as any).id 
       ? studySession.match.user2 
       : studySession.match.user1
 
@@ -127,8 +128,8 @@ export async function PATCH(
         id: id,
         match: {
           OR: [
-            { user1Id: session.user.id },
-            { user2Id: session.user.id },
+            { user1Id: (session.user as any).id },
+            { user2Id: (session.user as any).id },
           ],
         },
       },
@@ -142,7 +143,7 @@ export async function PATCH(
       },
     })
 
-    if (!existingSession) {
+    if (!studySession) {
       return NextResponse.json({ error: 'Study session not found' }, { status: 404 })
     }
 
@@ -159,12 +160,12 @@ export async function PATCH(
       updateData.status = validation.data.status
 
       // Update timestamps based on status
-      if (validation.data.status === 'IN_PROGRESS' && !existingSession.startedAt) {
+      if (validation.data.status === 'IN_PROGRESS' && !studySession.startedAt) {
         updateData.startedAt = new Date()
-      } else if (validation.data.status === 'COMPLETED' && !existingSession.completedAt) {
+      } else if (validation.data.status === 'COMPLETED' && !studySession.completedAt) {
         updateData.completedAt = new Date()
-        if (!existingSession.startedAt) {
-          updateData.startedAt = existingSession.scheduledAt
+        if (!studySession.startedAt) {
+          updateData.startedAt = studySession.scheduledAt
         }
       }
     }
@@ -178,9 +179,9 @@ export async function PATCH(
     // If rescheduling, update reminders
     if (validation.data.scheduledAt) {
       const newSessionTime = new Date(validation.data.scheduledAt)
-      const otherUserId = existingSession.match.user1Id === session.user.id 
-        ? existingSession.match.user2Id 
-        : existingSession.match.user1Id
+      const otherUserId = studySession.match.user1Id === (session.user as any).id 
+        ? studySession.match.user2Id 
+        : studySession.match.user1Id
 
       // Delete old reminders
       await prisma.studySessionReminder.deleteMany({
@@ -191,27 +192,27 @@ export async function PATCH(
       const reminders = [
         {
           sessionId: id,
-          userId: session.user.id,
+          userId: (session.user as any).id,
           reminderTime: new Date(newSessionTime.getTime() - 60 * 60 * 1000),
-          reminderType: 'ONE_HOUR_BEFORE',
+          reminderType: ReminderType.ONE_HOUR_BEFORE,
         },
         {
           sessionId: id,
           userId: otherUserId,
           reminderTime: new Date(newSessionTime.getTime() - 60 * 60 * 1000),
-          reminderType: 'ONE_HOUR_BEFORE',
+          reminderType: ReminderType.ONE_HOUR_BEFORE,
         },
         {
           sessionId: id,
-          userId: session.user.id,
+          userId: (session.user as any).id,
           reminderTime: new Date(newSessionTime.getTime() - 15 * 60 * 1000),
-          reminderType: 'FIFTEEN_MINUTES_BEFORE',
+          reminderType: ReminderType.FIFTEEN_MINUTES_BEFORE,
         },
         {
           sessionId: id,
           userId: otherUserId,
           reminderTime: new Date(newSessionTime.getTime() - 15 * 60 * 1000),
-          reminderType: 'FIFTEEN_MINUTES_BEFORE',
+          reminderType: ReminderType.FIFTEEN_MINUTES_BEFORE,
         },
       ]
 
@@ -257,8 +258,8 @@ export async function DELETE(
         id: id,
         match: {
           OR: [
-            { user1Id: session.user.id },
-            { user2Id: session.user.id },
+            { user1Id: (session.user as any).id },
+            { user2Id: (session.user as any).id },
           ],
         },
       },

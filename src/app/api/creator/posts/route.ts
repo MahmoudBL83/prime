@@ -152,8 +152,7 @@ export async function POST(request: NextRequest) {
                         name: `${session.user.name}'s Channel`,
                         description: 'Your exclusive content channel',
                         creatorId: creator.id,
-                        monthlyPrice: 0,
-                        isActive: true
+                        tiers: { bronze: true, silver: true, gold: true } // Default tier access
                     }
                 });
                 targetChannelId = newChannel.id;

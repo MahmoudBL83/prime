@@ -32,16 +32,23 @@ export async function GET(request: NextRequest) {
 
         // Get notification settings from user preferences
         const user = await prisma.user.findUnique({
-            where: { id: session.user.id }
+            where: { id: session.user.id },
+            include: {
+                notificationSettings: true
+            }
         })
+
+        const settings = user?.notificationSettings;
 
         return NextResponse.json({
             success: true,
             settings: {
-                emailNotifications: user?.emailNotifications ?? true,
-                enrollmentNotifications: true, // Default
-                reviewNotifications: true, // Default
-                payoutNotifications: true // Default
+                emailNotifications: settings?.emailNotifications ?? true,
+                pushNotifications: settings?.pushNotifications ?? false,
+                courseUpdates: settings?.courseUpdates ?? true,
+                newMessages: settings?.newMessages ?? true,
+                marketingEmails: settings?.marketingEmails ?? false,
+                weeklyDigest: settings?.weeklyDigest ?? true
             }
         })
 
@@ -72,9 +79,11 @@ export async function PATCH(request: NextRequest) {
         const body = await request.json()
         const {
             emailNotifications,
-            enrollmentNotifications,
-            reviewNotifications,
-            payoutNotifications
+            pushNotifications,
+            courseUpdates,
+            newMessages,
+            marketingEmails,
+            weeklyDigest
         } = body
 
         // Get creator profile
@@ -89,16 +98,27 @@ export async function PATCH(request: NextRequest) {
             )
         }
 
-        // Update user email notifications preference
-        await prisma.user.update({
-            where: { id: session.user.id },
-            data: {
-                emailNotifications: emailNotifications ?? undefined
+        // Update or create notification settings
+        await prisma.notificationSetting.upsert({
+            where: { userId: session.user.id },
+            update: {
+                emailNotifications: emailNotifications ?? undefined,
+                pushNotifications: pushNotifications ?? undefined,
+                courseUpdates: courseUpdates ?? undefined,
+                newMessages: newMessages ?? undefined,
+                marketingEmails: marketingEmails ?? undefined,
+                weeklyDigest: weeklyDigest ?? undefined
+            },
+            create: {
+                userId: session.user.id,
+                emailNotifications: emailNotifications ?? true,
+                pushNotifications: pushNotifications ?? false,
+                courseUpdates: courseUpdates ?? true,
+                newMessages: newMessages ?? true,
+                marketingEmails: marketingEmails ?? false,
+                weeklyDigest: weeklyDigest ?? true
             }
         })
-
-        // TODO: Store other notification preferences in a separate table
-        // For now, we acknowledge the request
 
         return NextResponse.json({
             success: true,

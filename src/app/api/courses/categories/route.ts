@@ -20,7 +20,9 @@ export async function GET(req: NextRequest) {
         
         // Create comprehensive category objects
         const categoriesWithCounts = categoryGroups
-            .filter(group => group.category && group.categoryAr) // Only include complete categories
+            .filter((group): group is typeof group & { category: string; categoryAr: string } => 
+                Boolean(group.category && group.categoryAr)
+            ) // Only include complete categories with type assertion
             .map(group => ({
                 id: group.category.toLowerCase().replace(/[^a-z0-9]/g, '-'),
                 name: locale === 'ar' ? group.categoryAr : group.category,

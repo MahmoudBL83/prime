@@ -22,7 +22,7 @@ const quizSchema = z.object({
     titleAr: z.string().optional(),
     description: z.string().optional(),
     descriptionAr: z.string().optional(),
-    duration: z.number().min(1).default(30), // minutes
+    timeLimit: z.number().min(1).default(30), // minutes
     passingScore: z.number().min(0).max(100).default(70),
     maxAttempts: z.number().min(1).default(3),
     questions: z.array(questionSchema).min(1)
@@ -71,16 +71,15 @@ export async function POST(request: NextRequest) {
                 titleAr: data.titleAr,
                 description: data.description,
                 descriptionAr: data.descriptionAr,
-                duration: data.duration,
+                timeLimit: data.timeLimit,
                 passingScore: data.passingScore,
                 maxAttempts: data.maxAttempts,
-                totalPoints: data.questions.reduce((sum, q) => sum + q.points, 0),
                 questions: {
-                    create: data.questions.map((q, index) => ({
+                    create: data.questions.map((q: any, index: number) => ({
                         type: q.type,
                         question: q.question,
                         questionAr: q.questionAr,
-                        options: q.options ? JSON.stringify(q.options) : null,
+                        options: q.options ? q.options : null,
                         correctAnswer: q.correctAnswer,
                         points: q.points,
                         explanation: q.explanation,
@@ -96,6 +95,9 @@ export async function POST(request: NextRequest) {
             }
         })
 
+        // Calculate total points from questions
+        const totalPoints = quiz.questions.reduce((sum: number, q: any) => sum + q.points, 0);
+
         return NextResponse.json({
             success: true,
             message: 'Quiz created successfully',
@@ -104,8 +106,8 @@ export async function POST(request: NextRequest) {
                 title: quiz.title,
                 titleAr: quiz.titleAr,
                 questionCount: quiz.questions.length,
-                totalPoints: quiz.totalPoints,
-                duration: quiz.duration,
+                totalPoints: totalPoints,
+                timeLimit: quiz.timeLimit,
                 passingScore: quiz.passingScore
             }
         }, { status: 201 })
@@ -116,7 +118,7 @@ export async function POST(request: NextRequest) {
         if (error instanceof z.ZodError) {
             return NextResponse.json({
                 error: 'Invalid request data',
-                details: error.errors
+                details: error.issues
             }, { status: 400 })
         }
 
@@ -196,19 +198,22 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            quizzes: quizzes.map(quiz => ({
-                id: quiz.id,
-                title: quiz.title,
-                titleAr: quiz.titleAr,
-                description: quiz.description,
-                questionCount: quiz.questions.length,
-                totalPoints: quiz.totalPoints,
-                duration: quiz.duration,
-                passingScore: quiz.passingScore,
-                maxAttempts: quiz.maxAttempts,
-                attemptCount: quiz._count.attempts,
-                createdAt: quiz.createdAt
-            }))
+            quizzes: quizzes.map((quiz: any) => {
+                const totalPoints = quiz.questions.reduce((sum: number, q: any) => sum + q.points, 0);
+                return {
+                    id: quiz.id,
+                    title: quiz.title,
+                    titleAr: quiz.titleAr,
+                    description: quiz.description,
+                    questionCount: quiz.questions.length,
+                    totalPoints: totalPoints,
+                    timeLimit: quiz.timeLimit,
+                    passingScore: quiz.passingScore,
+                    maxAttempts: quiz.maxAttempts,
+                    attemptCount: quiz._count.attempts,
+                    createdAt: quiz.createdAt
+                }
+            })
         })
 
     } catch (error) {

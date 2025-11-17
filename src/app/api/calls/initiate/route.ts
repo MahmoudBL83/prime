@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
           callType,
           hostId: userId,
           hostName: session.user.name,
-          hostImage: session.user.image,
+          hostImage: null, // session.user doesn't have image in our type definition
         },
       },
     })

@@ -79,7 +79,7 @@ export async function GET(
     });
 
     const completionPercentage = activeMembersCount > 0
-      ? Math.round((milestone.completedCount / activeMembersCount) * 100)
+      ? Math.round((milestone.completionCount / activeMembersCount) * 100)
       : 0;
 
     const now = new Date();

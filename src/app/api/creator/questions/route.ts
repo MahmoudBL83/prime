@@ -22,12 +22,14 @@ export async function GET(request: NextRequest) {
         const searchParams = request.nextUrl.searchParams
         const status = searchParams.get('status') || 'unanswered'
 
-        // Get comments on creator's lessons (as questions)
-        const comments = await prisma.lessonComment.findMany({
+        // Get comments on creator's video content (as questions)
+        const comments = await prisma.videoComment.findMany({
             where: {
-                lesson: {
-                    course: {
-                        creatorId: creator.id
+                videoAsset: {
+                    lesson: {
+                        course: {
+                            creatorId: creator.id
+                        }
                     }
                 }
             },
@@ -39,16 +41,22 @@ export async function GET(request: NextRequest) {
                         email: true
                     }
                 },
-                lesson: {
+                videoAsset: {
                     select: {
                         id: true,
                         title: true,
-                        titleAr: true,
-                        course: {
+                        lesson: {
                             select: {
                                 id: true,
                                 title: true,
-                                titleAr: true
+                                titleAr: true,
+                                course: {
+                                    select: {
+                                        id: true,
+                                        title: true,
+                                        titleAr: true
+                                    }
+                                }
                             }
                         }
                     }
@@ -67,14 +75,14 @@ export async function GET(request: NextRequest) {
 
         // Filter by answered/unanswered
         const filtered = status === 'unanswered' 
-            ? comments.filter(c => c.replies.length === 0)
+            ? comments.filter((c: any) => c.replies.length === 0)
             : status === 'answered'
-            ? comments.filter(c => c.replies.length > 0)
+            ? comments.filter((c: any) => c.replies.length > 0)
             : comments
 
         return NextResponse.json({
             success: true,
-            questions: filtered.map(q => ({
+            questions: filtered.map((q: any) => ({
                 id: q.id,
                 question: q.content,
                 answer: q.replies.length > 0 ? q.replies[0].content : null,
@@ -84,13 +92,18 @@ export async function GET(request: NextRequest) {
                     email: q.user.email
                 },
                 course: {
-                    id: q.lesson.course.id,
-                    title: q.lesson.course.title
+                    id: q.videoAsset.lesson?.course?.id,
+                    title: q.videoAsset.lesson?.course?.title
                 },
                 lesson: {
-                    id: q.lesson.id,
-                    title: q.lesson.title
+                    id: q.videoAsset.lesson?.id,
+                    title: q.videoAsset.lesson?.title
                 },
+                videoAsset: {
+                    id: q.videoAsset.id,
+                    title: q.videoAsset.title
+                },
+                timestamp: q.timestamp,
                 createdAt: q.createdAt,
                 answeredAt: q.replies.length > 0 ? q.replies[0].createdAt : null
             }))
@@ -126,12 +139,14 @@ export async function POST(request: NextRequest) {
         }
 
         // Verify comment belongs to creator's course
-        const comment = await prisma.lessonComment.findFirst({
+        const comment = await prisma.videoComment.findFirst({
             where: {
                 id: questionId,
-                lesson: {
-                    course: {
-                        creatorId: creator.id
+                videoAsset: {
+                    lesson: {
+                        course: {
+                            creatorId: creator.id
+                        }
                     }
                 }
             }
@@ -142,9 +157,9 @@ export async function POST(request: NextRequest) {
         }
 
         // Create reply
-        const reply = await prisma.lessonComment.create({
+        const reply = await prisma.videoComment.create({
             data: {
-                lessonId: comment.lessonId,
+                videoAssetId: comment.videoAssetId,
                 userId: session.user.id,
                 content: answer,
                 parentId: questionId

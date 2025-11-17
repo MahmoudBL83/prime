@@ -43,11 +43,11 @@ export async function POST(
         }
 
         if (type === 'discussion') {
-            // Check if already voted
-            const existingVote = await prisma.discussionVote.findFirst({
+            // Check if already voted (using VideoCommentLike)
+            const existingVote = await prisma.videoCommentLike.findFirst({
                 where: {
-                    discussionId: id,
-                    userId: session.user.id
+                    commentId: id, // Using commentId instead of discussionId
+                    userId: (session.user as any).id
                 }
             })
 
@@ -61,16 +61,16 @@ export async function POST(
 
                 // Create vote and increment counter
                 await prisma.$transaction([
-                    prisma.discussionVote.create({
+                    prisma.videoCommentLike.create({
                         data: {
-                            discussionId: id,
-                            userId: session.user.id
+                            commentId: id, // Using commentId instead of discussionId
+                            userId: (session.user as any).id
                         }
                     }),
-                    prisma.courseDiscussion.update({
+                    prisma.videoComment.update({
                         where: { id },
                         data: {
-                            upvotes: {
+                            likesCount: {
                                 increment: 1
                             }
                         }
@@ -86,13 +86,13 @@ export async function POST(
                 }
 
                 await prisma.$transaction([
-                    prisma.discussionVote.delete({
+                    prisma.videoCommentLike.delete({
                         where: { id: existingVote.id }
                     }),
-                    prisma.courseDiscussion.update({
+                    prisma.videoComment.update({
                         where: { id },
                         data: {
-                            upvotes: {
+                            likesCount: {
                                 decrement: 1
                             }
                         }
@@ -100,11 +100,11 @@ export async function POST(
                 ])
             }
         } else {
-            // Reply voting
-            const existingVote = await prisma.replyVote.findFirst({
+            // Reply voting (also using VideoCommentLike since replies are also VideoComments)
+            const existingVote = await prisma.videoCommentLike.findFirst({
                 where: {
-                    replyId: id,
-                    userId: session.user.id
+                    commentId: id, // Using commentId instead of replyId
+                    userId: (session.user as any).id
                 }
             })
 
@@ -117,16 +117,16 @@ export async function POST(
                 }
 
                 await prisma.$transaction([
-                    prisma.replyVote.create({
+                    prisma.videoCommentLike.create({
                         data: {
-                            replyId: id,
-                            userId: session.user.id
+                            commentId: id, // Using commentId instead of replyId
+                            userId: (session.user as any).id
                         }
                     }),
-                    prisma.discussionReply.update({
+                    prisma.videoComment.update({
                         where: { id },
                         data: {
-                            upvotes: {
+                            likesCount: {
                                 increment: 1
                             }
                         }
@@ -141,13 +141,13 @@ export async function POST(
                 }
 
                 await prisma.$transaction([
-                    prisma.replyVote.delete({
+                    prisma.videoCommentLike.delete({
                         where: { id: existingVote.id }
                     }),
-                    prisma.discussionReply.update({
+                    prisma.videoComment.update({
                         where: { id },
                         data: {
-                            upvotes: {
+                            likesCount: {
                                 decrement: 1
                             }
                         }

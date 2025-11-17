@@ -49,13 +49,13 @@ export async function GET(
                 }
             }),
 
-            // Aggregated subscription data
-            prisma.subscription.groupBy({
+            // Aggregated mentor subscription data
+            prisma.mentorSubscription.groupBy({
                 by: ['tier', 'status'],
                 where: {
-                    channel: { creatorId }
+                    creatorId
                 },
-                _count: { tier: true }
+                _count: { id: true }
             }),
 
             // Aggregated post data
@@ -80,12 +80,13 @@ export async function GET(
         // Process subscription stats
         let basicCount = 0, premiumCount = 0, vipCount = 0, totalActive = 0
         
-        subscriptionStats.forEach(stat => {
+        subscriptionStats.forEach((stat: any) => {
             if (stat.status === 'ACTIVE') {
-                if (stat.tier === 'BASIC') basicCount = stat._count.tier
-                else if (stat.tier === 'PREMIUM') premiumCount = stat._count.tier  
-                else if (stat.tier === 'VIP') vipCount = stat._count.tier
-                totalActive += stat._count.tier
+                const count = stat._count?.id || 0
+                if (stat.tier === 'BASIC') basicCount = count
+                else if (stat.tier === 'PREMIUM') premiumCount = count
+                else if (stat.tier === 'VIP') vipCount = count
+                totalActive += count
             }
         })
 

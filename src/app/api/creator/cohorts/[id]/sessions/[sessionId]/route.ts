@@ -28,7 +28,7 @@ export async function GET(
 
     const cohortId = id;
 
-    // Fetch session with cohort and attendance details
+    // Fetch session first to verify ownership
     const cohortSession = await prisma.cohortSession.findUnique({
       where: { id: sessionId },
       include: {
@@ -40,27 +40,6 @@ export async function GET(
                 creatorId: true,
               },
             },
-          },
-        },
-        attendance: {
-          include: {
-            member: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    image: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-        _count: {
-          select: {
-            attendance: true,
           },
         },
       },
@@ -89,9 +68,24 @@ export async function GET(
       );
     }
 
+    // Get attendance separately
+    const attendees = await prisma.sessionAttendance.findMany({
+      where: { sessionId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profileImage: true,
+          },
+        },
+      },
+    });
+
     // Calculate attendance stats
-    const attendedCount = cohortSession.attendance.filter((a: any) => a.attended).length;
-    const totalRegistered = cohortSession.attendance.length;
+    const attendedCount = attendees.length; // All attendance records mean they attended
+    const totalRegistered = attendees.length;
     const attendanceRate = totalRegistered > 0 
       ? Math.round((attendedCount / totalRegistered) * 100)
       : 0;
@@ -99,6 +93,7 @@ export async function GET(
     return NextResponse.json({
       session: {
         ...cohortSession,
+        attendees,
         attendedCount,
         totalRegistered,
         attendanceRate,
@@ -285,13 +280,6 @@ export async function PATCH(
     const updatedSession = await prisma.cohortSession.update({
       where: { id: sessionId },
       data: updateData,
-      include: {
-        _count: {
-          select: {
-            attendance: true,
-          },
-        },
-      },
     });
 
     return NextResponse.json({

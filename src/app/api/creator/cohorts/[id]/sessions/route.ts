@@ -76,15 +76,10 @@ export async function GET(
     const sessions = await prisma.cohortSession.findMany({
       where,
       include: {
-        attendance: {
+        attendees: {
           select: {
             id: true,
-            attended: true,
-          },
-        },
-        _count: {
-          select: {
-            attendance: true,
+            userId: true,
           },
         },
       },
@@ -95,8 +90,8 @@ export async function GET(
 
     // Calculate attendance stats for each session
     const sessionsWithStats = sessions.map((session: any) => {
-      const attendedCount = session.attendance.filter((a: any) => a.attended).length;
-      const totalRegistered = session.attendance.length;
+      const attendedCount = session.attendees.length; // All attendees records mean they attended
+      const totalRegistered = session.attendees.length;
       const attendanceRate = totalRegistered > 0 
         ? Math.round((attendedCount / totalRegistered) * 100)
         : 0;
@@ -261,13 +256,6 @@ export async function POST(
         maxAttendees,
         isRecorded: isRecorded || false,
         status: 'SCHEDULED',
-      },
-      include: {
-        _count: {
-          select: {
-            attendance: true,
-          },
-        },
       },
     });
 

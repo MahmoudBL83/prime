@@ -15,7 +15,7 @@ export async function GET(
         // Get authenticated session
         const session = await getServerSession(authOptions);
         
-        if (!session?.user?.id) {
+        if (!session?.user) {
             return NextResponse.json(
                 { error: 'Unauthorized - Please sign in' },
                 { status: 401 }
@@ -24,7 +24,7 @@ export async function GET(
 
         const { id } = await params;
         const sessionId = id;
-        const userId = session.user.id;
+        const userId = (session.user as any).id;
 
         // Fetch the live session
         const liveSession = await prisma.liveSession.findUnique({
@@ -43,10 +43,13 @@ export async function GET(
                                 }
                             }
                         },
-                        subscriptions: {
+                        channelSubscriptions: {
                             where: {
                                 userId: userId,
                                 status: 'ACTIVE'
+                            },
+                            include: {
+                                tier: true
                             }
                         }
                     }
@@ -83,9 +86,9 @@ export async function GET(
         let hasAccess = liveSession.tier === 'ALL';
         let userTier = null;
 
-        if (!hasAccess && liveSession.channel.subscriptions.length > 0) {
-            const subscription = liveSession.channel.subscriptions[0];
-            userTier = subscription.tier;
+        if (!hasAccess && liveSession.channel.channelSubscriptions.length > 0) {
+            const subscription = liveSession.channel.channelSubscriptions[0];
+            userTier = subscription.tier.name;
             
             const tierHierarchy = { 'BRONZE': 1, 'SILVER': 2, 'GOLD': 3 };
             const userTierLevel = tierHierarchy[userTier as keyof typeof tierHierarchy] || 0;

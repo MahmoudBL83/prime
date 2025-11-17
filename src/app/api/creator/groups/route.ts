@@ -12,7 +12,7 @@ const createGroupSchema = z.object({
     descriptionAr: z.string().optional(),
     rules: z.string().optional(),
     rulesAr: z.string().optional(),
-    minTier: z.enum(['BRONZE', 'SILVER', 'GOLD']),
+    tier: z.enum(['BRONZE', 'SILVER', 'GOLD']).default('BRONZE'),
     isPrivate: z.boolean().default(false),
     maxMembers: z.number().int().min(2).max(10000).optional()
 })
@@ -58,15 +58,6 @@ export async function GET(request: NextRequest) {
                     }
                 },
                 moderators: {
-                    include: {
-                        user: {
-                            select: {
-                                id: true,
-                                name: true,
-                                email: true
-                            }
-                        }
-                    },
                     take: 5
                 }
             },
@@ -83,20 +74,14 @@ export async function GET(request: NextRequest) {
                 descriptionAr: g.descriptionAr,
                 rules: g.rules,
                 rulesAr: g.rulesAr,
-                minTier: g.minTier,
+                tier: g.tier,
                 isPrivate: g.isPrivate,
                 maxMembers: g.maxMembers,
                 memberCount: g._count.members,
                 postCount: g._count.posts,
+                channelId: g.channelId,
                 channel: g.channel,
-                moderators: g.moderators.map(m => ({
-                    id: m.id,
-                    userId: m.userId,
-                    userName: m.user.name,
-                    userEmail: m.user.email,
-                    role: m.role,
-                    assignedAt: m.assignedAt
-                })),
+                moderatorCount: g.moderators.length,
                 createdAt: g.createdAt
             }))
         })
@@ -147,7 +132,7 @@ export async function POST(request: NextRequest) {
                 descriptionAr: validated.descriptionAr,
                 rules: validated.rules,
                 rulesAr: validated.rulesAr,
-                minTier: validated.minTier,
+                tier: validated.tier,
                 isPrivate: validated.isPrivate,
                 maxMembers: validated.maxMembers
             },
@@ -169,7 +154,8 @@ export async function POST(request: NextRequest) {
                 name: group.name,
                 nameAr: group.nameAr,
                 description: group.description,
-                minTier: group.minTier,
+                tier: group.tier,
+                channelId: group.channelId,
                 channel: group.channel,
                 createdAt: group.createdAt
             }
@@ -180,7 +166,7 @@ export async function POST(request: NextRequest) {
         
         if (error instanceof z.ZodError) {
             return NextResponse.json(
-                { error: 'Validation error', details: error.errors },
+                { error: 'Validation error', details: error.issues },
                 { status: 400 }
             )
         }

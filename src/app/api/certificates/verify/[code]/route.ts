@@ -34,8 +34,8 @@ export async function GET(
                         id: true,
                         name: true,
                         arabicName: true,
-                        profileImage: true,
-                        email: false // Don't expose email publicly
+                        profileImage: true
+                        // Don't expose email publicly
                     }
                 },
                 course: {
@@ -45,7 +45,7 @@ export async function GET(
                         titleAr: true,
                         thumbnail: true,
                         category: true,
-                        level: true,
+                        skillLevel: true,
                         creator: {
                             select: {
                                 user: {
@@ -92,7 +92,7 @@ export async function GET(
                 courseName: certificate.course.title,
                 courseNameAr: certificate.course.titleAr,
                 courseCategory: certificate.course.category,
-                courseLevel: certificate.course.level,
+                courseLevel: certificate.course.skillLevel,
                 instructorName: certificate.course.creator.user.name,
                 instructorNameAr: certificate.course.creator.user.arabicName,
                 completionDate: certificate.completionDate,

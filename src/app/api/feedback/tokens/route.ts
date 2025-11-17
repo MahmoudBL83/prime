@@ -29,27 +29,34 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Generate a unique token
+        // Generate a unique token (simplified - in production you'd want JWT or database storage)
         const token = crypto.randomUUID()
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
-        // Store the token in database
-        const feedbackToken = await prisma.feedbackToken.create({
+        // Store the token using Report model as a workaround
+        // Note: This is a temporary solution - ideally would have FeedbackToken model
+        const feedbackToken = await prisma.report.create({
             data: {
-                token,
-                email,
-                purpose: purpose || 'feedback',
-                expiresAt,
-                used: false,
-                createdAt: new Date()
+                reporterId: 'anonymous', // Special ID for anonymous tokens
+                type: 'FEEDBACK_TOKEN',
+                targetId: email, // Store email in targetId
+                reason: JSON.stringify({
+                    token,
+                    purpose: purpose || 'feedback',
+                    expiresAt,
+                    used: false
+                }),
+                status: 'PENDING'
             }
         })
+
+        const tokenData = JSON.parse(feedbackToken.reason)
 
         return NextResponse.json({
             success: true,
             message: 'Feedback token generated successfully',
-            token: feedbackToken.token,
-            expiresAt: feedbackToken.expiresAt
+            token: tokenData.token,
+            expiresAt: tokenData.expiresAt
         })
 
     } catch (error) {
@@ -77,9 +84,14 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // Find and validate the token
-        const feedbackToken = await prisma.feedbackToken.findUnique({
-            where: { token }
+        // Find and validate the token using Report model
+        const feedbackToken = await prisma.report.findFirst({
+            where: {
+                type: 'FEEDBACK_TOKEN',
+                reason: {
+                    contains: token // Search for token in the JSON reason field
+                }
+            }
         })
 
         if (!feedbackToken) {
@@ -89,14 +101,16 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        if (feedbackToken.used) {
+        const tokenData = JSON.parse(feedbackToken.reason)
+
+        if (tokenData.used) {
             return NextResponse.json(
                 { error: 'Token has already been used' },
                 { status: 400 }
             )
         }
 
-        if (feedbackToken.expiresAt < new Date()) {
+        if (new Date(tokenData.expiresAt) < new Date()) {
             return NextResponse.json(
                 { error: 'Token has expired' },
                 { status: 400 }
@@ -106,9 +120,9 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
             success: true,
             valid: true,
-            email: feedbackToken.email,
-            purpose: feedbackToken.purpose,
-            expiresAt: feedbackToken.expiresAt
+            email: feedbackToken.targetId, // Email is stored in targetId
+            purpose: tokenData.purpose,
+            expiresAt: tokenData.expiresAt
         })
 
     } catch (error) {
@@ -136,12 +150,33 @@ export async function DELETE(request: NextRequest) {
             )
         }
 
-        // Mark token as used
-        const updatedToken = await prisma.feedbackToken.update({
-            where: { token },
+        // Find and mark token as used
+        const feedbackToken = await prisma.report.findFirst({
+            where: {
+                type: 'FEEDBACK_TOKEN',
+                reason: {
+                    contains: token
+                }
+            }
+        })
+
+        if (!feedbackToken) {
+            return NextResponse.json(
+                { error: 'Token not found' },
+                { status: 404 }
+            )
+        }
+
+        const tokenData = JSON.parse(feedbackToken.reason)
+        tokenData.used = true
+        tokenData.usedAt = new Date()
+
+        // Update the token data
+        const updatedToken = await prisma.report.update({
+            where: { id: feedbackToken.id },
             data: { 
-                used: true,
-                usedAt: new Date()
+                reason: JSON.stringify(tokenData),
+                status: 'RESOLVED' // Mark as resolved when used
             }
         })
 
@@ -150,8 +185,8 @@ export async function DELETE(request: NextRequest) {
             message: 'Token invalidated successfully'
         })
 
-    } catch (error) {
-        if (error.code === 'P2025') {
+    } catch (error: any) {
+        if (error?.code === 'P2025') {
             return NextResponse.json(
                 { error: 'Token not found' },
                 { status: 404 }

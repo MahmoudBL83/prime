@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { CohortStatus } from '@prisma/client';
 
 // POST /api/student/cohorts/[id]/apply - Apply to join a cohort
 export async function POST(
@@ -20,7 +21,7 @@ export async function POST(
 
     const { id } = await params;
     const cohortId = id;
-    const userId = session.user.id;
+    const userId = (session.user as any).id;
 
     // Check if cohort exists and is open
     const cohort = await prisma.cohort.findUnique({
@@ -42,18 +43,17 @@ export async function POST(
     }
 
     // Check if cohort is open for enrollment
-    if (cohort.status !== 'OPEN') {
+    if (cohort.status !== CohortStatus.UPCOMING) {
       return NextResponse.json(
         { error: 'This cohort is not open for enrollment' },
         { status: 400 }
       );
     }
 
-    // Check enrollment deadline
-    const now = new Date();
-    if (cohort.enrollmentEndDate && cohort.enrollmentEndDate < now) {
+    // Check if cohort is still upcoming (no enrollment deadline check since field doesn't exist)
+    if (cohort.status !== CohortStatus.UPCOMING) {
       return NextResponse.json(
-        { error: 'Enrollment deadline has passed' },
+        { error: 'Enrollment is not available for this cohort' },
         { status: 400 }
       );
     }
@@ -102,7 +102,7 @@ export async function POST(
         attendedSessions: 0,
         missedSessions: 0,
         capstoneSubmitted: false,
-        joinedAt: null, // Will be set when approved
+        applicationText: motivation, // Store the motivation text
       },
     });
 
@@ -144,7 +144,7 @@ export async function GET(
     const { id } = await params;
     const cohortId = id;
 
-    const userId = session.user.id;
+    const userId = (session.user as any).id;
 
     // Fetch cohort with details
     const cohort = await prisma.cohort.findUnique({
@@ -221,7 +221,6 @@ export async function GET(
         description: cohort.description,
         startDate: cohort.startDate,
         endDate: cohort.endDate,
-        enrollmentEndDate: cohort.enrollmentEndDate,
         status: cohort.status,
         maxMembers: cohort.maxMembers,
         currentMembers: cohort._count.members,
@@ -231,7 +230,6 @@ export async function GET(
         announcementsCount: cohort._count.announcements,
         milestonesCount: cohort._count.milestones,
         timezone: cohort.timezone,
-        language: cohort.language,
       },
       membership: membership
         ? {
@@ -244,7 +242,7 @@ export async function GET(
             joinedAt: membership.joinedAt,
           }
         : null,
-      canApply: !membership && !isFull && cohort.status === 'OPEN',
+      canApply: !membership && !isFull && cohort.status === CohortStatus.UPCOMING,
     });
   } catch (error) {
     console.error('Error fetching cohort details:', error);

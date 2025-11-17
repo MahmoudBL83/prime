@@ -17,21 +17,21 @@ export async function GET(
 
         // Get educational resources for this instructor
         const [digitalResources, courseMaterials] = await Promise.all([
-            // Digital resources from posts with downloadable content
-            prisma.post.findMany({
+            // Digital resources from channel posts with downloadable content
+            prisma.channelPost.findMany({
                 where: {
                     channel: { creatorId },
                     OR: [
-                        { mediaUrls: { not: null } },
-                        { attachments: { not: null } }
+                        { mediaUrl: { not: null } },
+                        { type: { in: ['VIDEO', 'IMAGE', 'DOCUMENT'] } }
                     ]
                 },
                 select: {
                     id: true,
                     title: true,
                     content: true,
-                    mediaUrls: true,
-                    attachments: true,
+                    mediaUrl: true,
+                    type: true,
                     createdAt: true,
                     tier: true
                 },
@@ -44,29 +44,21 @@ export async function GET(
             // Course materials if the instructor has courses
             prisma.course.findMany({
                 where: {
-                    instructorId: creatorId
+                    creatorId: creatorId
                 },
                 select: {
                     id: true,
                     title: true,
                     description: true,
                     thumbnail: true,
-                    level: true,
+                    skillLevel: true,
                     duration: true,
-                    modules: {
+                    lessons: {
                         select: {
                             id: true,
                             title: true,
-                            lessons: {
-                                select: {
-                                    id: true,
-                                    title: true,
-                                    type: true,
-                                    videoUrl: true,
-                                    content: true,
-                                    resources: true
-                                }
-                            }
+                            videoUrl: true,
+                            resources: true
                         }
                     }
                 },
@@ -76,26 +68,25 @@ export async function GET(
 
         // Process resources
         const resources = {
-            digitalResources: digitalResources.map(post => ({
+            digitalResources: digitalResources.map((post: any) => ({
                 id: post.id,
                 title: post.title,
                 description: post.content?.substring(0, 200) + '...',
                 type: 'post',
-                mediaUrls: post.mediaUrls ? JSON.parse(post.mediaUrls as string) : [],
-                attachments: post.attachments ? JSON.parse(post.attachments as string) : [],
+                mediaUrl: post.mediaUrl,
+                postType: post.type,
                 createdAt: post.createdAt,
                 tier: post.tier
             })),
-            courseMaterials: courseMaterials.map(course => ({
+            courseMaterials: courseMaterials.map((course: any) => ({
                 id: course.id,
                 title: course.title,
                 description: course.description,
                 type: 'course',
                 thumbnail: course.thumbnail,
-                level: course.level,
+                skillLevel: course.skillLevel,
                 duration: course.duration,
-                moduleCount: course.modules?.length || 0,
-                lessonCount: course.modules?.reduce((total, module) => total + (module.lessons?.length || 0), 0) || 0
+                lessonCount: course.lessons?.length || 0
             }))
         }
 

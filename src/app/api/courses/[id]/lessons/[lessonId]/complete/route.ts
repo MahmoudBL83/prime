@@ -22,7 +22,7 @@ export async function POST(
         // Get user details
         const user = await prisma.user.findUnique({
             where: { id: session.user.id },
-            select: { id: true, email: true, name: true, locale: true }
+            select: { id: true, email: true, name: true }
         })
 
         if (!user) {
@@ -133,14 +133,10 @@ export async function POST(
                     await sendCourseCompletionEmail({
                         userEmail: user.email,
                         userName: user.name || 'Student',
-                        courseName: user.locale === 'ar' && course.titleAr 
-                            ? course.titleAr 
-                            : course.title,
-                        certificateUrl: certificate?.credentialUrl,
-                        completionDate: new Date().toLocaleDateString(
-                            user.locale === 'ar' ? 'ar-EG' : 'en-US'
-                        ),
-                        locale: user.locale || 'en',
+                        courseName: course.titleAr || course.title,
+                        certificateUrl: certificate?.credentialUrl || undefined,
+                        completionDate: new Date().toLocaleDateString('en-US'),
+                        locale: 'en',
                     })
 
                     console.log(`Sent course completion email to ${user.email}`)

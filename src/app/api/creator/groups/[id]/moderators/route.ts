@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 const moderatorSchema = z.object({
     userId: z.string(),
-    role: z.enum(['MODERATOR', 'ADMIN']).default('MODERATOR')
+    permissions: z.array(z.string()).optional()
 })
 
 // POST /api/creator/groups/[id]/moderators - Add moderator
@@ -31,7 +31,7 @@ export async function POST(
 
         const groupId = id
         const body = await request.json()
-        const { userId, role } = moderatorSchema.parse(body)
+        const { userId, permissions } = moderatorSchema.parse(body)
 
         // Verify group ownership
         const group = await prisma.memberGroup.findFirst({
@@ -73,16 +73,7 @@ export async function POST(
             data: {
                 groupId,
                 userId,
-                role
-            },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true
-                    }
-                }
+                permissions: permissions || []
             }
         })
 
@@ -92,9 +83,8 @@ export async function POST(
             moderator: {
                 id: moderator.id,
                 userId: moderator.userId,
-                userName: moderator.user.name,
-                userEmail: moderator.user.email,
-                role: moderator.role,
+                groupId: moderator.groupId,
+                permissions: moderator.permissions,
                 assignedAt: moderator.assignedAt
             }
         }, { status: 201 })
@@ -104,7 +94,7 @@ export async function POST(
         
         if (error instanceof z.ZodError) {
             return NextResponse.json(
-                { error: 'Validation error', details: error.errors },
+                { error: 'Validation error', details: error.issues },
                 { status: 400 }
             )
         }
@@ -151,28 +141,30 @@ export async function GET(
 
         const moderators = await prisma.groupModerator.findMany({
             where: { groupId },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true
-                    }
-                }
-            },
             orderBy: { assignedAt: 'desc' }
         })
 
+        // Get user details separately to avoid the missing relation
+        const moderatorsWithUsers = await Promise.all(
+            moderators.map(async (m) => {
+                const user = await prisma.user.findUnique({
+                    where: { id: m.userId },
+                    select: { id: true, name: true, email: true }
+                })
+                return {
+                    id: m.id,
+                    userId: m.userId,
+                    userName: user?.name || 'Unknown User',
+                    userEmail: user?.email || '',
+                    permissions: m.permissions,
+                    assignedAt: m.assignedAt
+                }
+            })
+        )
+
         return NextResponse.json({
             success: true,
-            moderators: moderators.map(m => ({
-                id: m.id,
-                userId: m.userId,
-                userName: m.user.name,
-                userEmail: m.user.email,
-                role: m.role,
-                assignedAt: m.assignedAt
-            }))
+            moderators: moderatorsWithUsers
         })
 
     } catch (error) {

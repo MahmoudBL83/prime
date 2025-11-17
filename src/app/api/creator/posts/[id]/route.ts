@@ -129,7 +129,9 @@ export async function PATCH(
         const existingPost = await prisma.channelPost.findFirst({
             where: {
                 id,
-                creatorId: creator.id
+                channel: {
+                    creatorId: creator.id
+                }
             }
         });
 
@@ -216,7 +218,9 @@ export async function DELETE(
         const existingPost = await prisma.channelPost.findFirst({
             where: {
                 id,
-                creatorId: creator.id
+                channel: {
+                    creatorId: creator.id
+                }
             }
         });
 

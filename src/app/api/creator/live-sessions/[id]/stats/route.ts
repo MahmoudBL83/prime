@@ -29,7 +29,7 @@ export async function GET(
       );
     }
 
-    if (liveSession.channel.userId !== session.user.id) {
+    if (liveSession.channel.creatorId !== session.user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

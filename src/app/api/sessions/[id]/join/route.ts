@@ -15,7 +15,7 @@ export async function POST(
         // Get authenticated session
         const session = await getServerSession(authOptions);
         
-        if (!session?.user?.id) {
+        if (!session?.user) {
             return NextResponse.json(
                 { error: 'Unauthorized - Please sign in' },
                 { status: 401 }
@@ -24,7 +24,7 @@ export async function POST(
 
         const { id } = await params;
         const sessionId = id;
-        const userId = session.user.id;
+        const userId = (session.user as any).id;
 
         // Fetch the live session with channel and attendees
         const liveSession = await prisma.liveSession.findUnique({
@@ -32,10 +32,13 @@ export async function POST(
             include: {
                 channel: {
                     include: {
-                        subscriptions: {
+                        channelSubscriptions: {
                             where: {
                                 userId: userId,
                                 status: 'ACTIVE'
+                            },
+                            include: {
+                                tier: true
                             }
                         }
                     }
@@ -73,7 +76,7 @@ export async function POST(
 
         // Check tier access
         if (liveSession.tier !== 'ALL') {
-            const hasAccess = liveSession.channel.subscriptions.length > 0;
+            const hasAccess = liveSession.channel.channelSubscriptions.length > 0;
             
             if (!hasAccess) {
                 return NextResponse.json(
@@ -85,17 +88,17 @@ export async function POST(
                 );
             }
 
-            // Check if user's tier matches session tier
-            const userSubscription = liveSession.channel.subscriptions[0];
+            // Check if user's tier matches session tier (using tier name for comparison)
+            const userSubscription = liveSession.channel.channelSubscriptions[0];
             const tierHierarchy = { 'BRONZE': 1, 'SILVER': 2, 'GOLD': 3 };
-            const userTierLevel = tierHierarchy[userSubscription.tier as keyof typeof tierHierarchy] || 0;
+            const userTierLevel = tierHierarchy[userSubscription.tier.name as keyof typeof tierHierarchy] || 0;
             const sessionTierLevel = tierHierarchy[liveSession.tier as keyof typeof tierHierarchy] || 0;
 
             if (userTierLevel < sessionTierLevel) {
                 return NextResponse.json(
                     { 
                         error: `This session requires ${liveSession.tier} tier or higher`,
-                        userTier: userSubscription.tier,
+                        userTier: userSubscription.tier.name,
                         requiredTier: liveSession.tier
                     },
                     { status: 403 }

@@ -73,28 +73,34 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Create feedback record
-        const feedback = await prisma.feedback.create({
+        // Create feedback record using Report model (adapted for feedback)
+        const feedback = await prisma.report.create({
             data: {
-                userId: user.id,
-                type: type,
-                subject: subject || `${type.charAt(0).toUpperCase() + type.slice(1)} Feedback`,
-                message: message,
-                rating: rating,
-                category: category || 'general',
-                pageUrl: pageUrl,
-                userAgent: userAgent || request.headers.get('user-agent'),
-                additionalData: additionalData ? JSON.stringify(additionalData) : null,
-                status: 'pending',
-                priority: rating && rating <= 2 ? 'high' : 'normal',
-                createdAt: new Date()
+                reporterId: user.id,
+                type: 'FEEDBACK', // Using FEEDBACK as a type
+                targetId: 'PLATFORM', // Generic target for platform feedback
+                reason: JSON.stringify({
+                    type: type,
+                    subject: subject || `${type.charAt(0).toUpperCase() + type.slice(1)} Feedback`,
+                    message: message,
+                    rating: rating,
+                    category: category || 'general',
+                    pageUrl: pageUrl,
+                    userAgent: userAgent || request.headers.get('user-agent'),
+                    additionalData: additionalData,
+                    priority: rating && rating <= 2 ? 'high' : 'normal'
+                }),
+                status: 'PENDING'
             }
         })
 
+        // Parse the feedback data from reason field
+        const feedbackData = JSON.parse(feedback.reason)
+        
         // For high priority feedback (low ratings), you might want to trigger notifications
-        if (feedback.priority === 'high') {
+        if (feedbackData.priority === 'high') {
             // TODO: Send notification to support team
-            console.log(`High priority feedback received from ${user.email}: ${feedback.subject}`)
+            console.log(`High priority feedback received from ${user.email}: ${feedbackData.subject}`)
         }
 
         return NextResponse.json({
@@ -102,8 +108,8 @@ export async function POST(request: NextRequest) {
             message: 'Feedback submitted successfully',
             feedback: {
                 id: feedback.id,
-                type: feedback.type,
-                subject: feedback.subject,
+                type: feedbackData.type,
+                subject: feedbackData.subject,
                 status: feedback.status,
                 createdAt: feedback.createdAt
             }

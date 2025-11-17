@@ -86,7 +86,7 @@ export async function GET(
                 courseId: cohort.course.id,
               },
               select: {
-                enrolledAt: true,
+                createdAt: true,
                 progress: true,
               },
             },
@@ -117,7 +117,7 @@ export async function GET(
 
       return {
         ...member,
-        enrollmentDate: enrollment?.enrolledAt || null,
+        enrollmentDate: enrollment?.createdAt || null,
         courseProgress: enrollment?.progress || 0,
         isAtRisk,
         needsAttention,

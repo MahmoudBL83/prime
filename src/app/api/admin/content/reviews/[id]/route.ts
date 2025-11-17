@@ -151,7 +151,8 @@ export async function PUT(
                 status: action === 'approve' ? 'APPROVED' : 
                         action === 'reject' ? 'REJECTED' : 'REQUIRES_CHANGES',
                 notes: reviewNotes || null,
-                checklist: qualityScore ? { score: qualityScore } : null
+                qualityScore: qualityScore || null,
+                reviewedAt: new Date()
             }
         })
 
@@ -252,15 +253,14 @@ export async function GET(
         // Get previous review history for this course
         const reviewHistory = await prisma.courseReview.findMany({
             where: { courseId: id },
-            include: {
-                reviewer: {
-                    select: {
-                        name: true,
-                        email: true
-                    }
-                }
-            },
             orderBy: { reviewedAt: 'desc' }
+        })
+
+        // Get reviewer details separately
+        const reviewerIds = reviewHistory.map(r => r.reviewerId).filter(Boolean)
+        const reviewers = await prisma.user.findMany({
+            where: { id: { in: reviewerIds } },
+            select: { id: true, name: true, email: true }
         })
 
         // Get creator's content strikes
@@ -278,13 +278,16 @@ export async function GET(
             course: {
                 ...course,
                 creatorStats,
-                reviewHistory: reviewHistory.map(r => ({
-                    id: r.id,
-                    status: r.status,
-                    notes: r.notes,
-                    reviewedAt: r.reviewedAt,
-                    reviewer: r.reviewer
-                })),
+                reviewHistory: reviewHistory.map(r => {
+                    const reviewer = reviewers.find(rev => rev.id === r.reviewerId)
+                    return {
+                        id: r.id,
+                        status: r.status,
+                        notes: r.notes,
+                        reviewedAt: r.reviewedAt,
+                        reviewer: reviewer ? { name: reviewer.name, email: reviewer.email } : null
+                    }
+                }),
                 strikes: strikes.map(s => ({
                     id: s.id,
                     reason: s.reason,

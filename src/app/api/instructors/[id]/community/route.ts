@@ -18,7 +18,7 @@ export async function GET(
         // Get community data for this instructor - posts from their channel
         const [communityPosts, communityStats] = await Promise.all([
             // Recent community posts
-            prisma.post.findMany({
+            prisma.channelPost.findMany({
                 where: {
                     channel: { creatorId }
                 },
@@ -59,7 +59,7 @@ export async function GET(
             }),
             
             // Community engagement stats
-            prisma.post.aggregate({
+            prisma.channelPost.aggregate({
                 where: {
                     channel: { creatorId }
                 },
@@ -71,8 +71,8 @@ export async function GET(
         // Calculate engagement metrics
         const totalPosts = communityStats._count.id || 0
         const totalViews = communityStats._sum.viewCount || 0
-        const totalLikes = communityPosts.reduce((sum, post) => sum + (post.likes?.length || 0), 0)
-        const totalComments = communityPosts.reduce((sum, post) => sum + (post.comments?.length || 0), 0)
+        const totalLikes = communityPosts.reduce((sum: number, post: any) => sum + (post.likes?.length || 0), 0)
+        const totalComments = communityPosts.reduce((sum: number, post: any) => sum + (post.comments?.length || 0), 0)
 
         const communityData = {
             posts: communityPosts,

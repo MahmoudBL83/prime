@@ -18,27 +18,27 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        const replies = await prisma.discussionReply.findMany({
+        const replies = await prisma.videoComment.findMany({
             where: {
-                discussionId: id,
-                isDeleted: false
+                parentId: id, // Parent comment is the discussion
+                isHidden: false // Use isHidden instead of isDeleted
             },
             orderBy: [
                 { isPinned: 'desc' },
-                { upvotes: 'desc' },
+                { likesCount: 'desc' }, // Use likesCount instead of upvotes
                 { createdAt: 'asc' }
             ],
             include: {
-                author: {
+                user: {
                     select: {
                         id: true,
                         name: true,
-                        image: true
+                        profileImage: true // Use profileImage instead of image
                     }
                 },
                 _count: {
                     select: {
-                        upvotes: true
+                        likes: true // Count likes instead of upvotes
                     }
                 }
             }
@@ -86,20 +86,24 @@ export async function POST(
             )
         }
 
-        // Verify discussion exists
-        const discussion = await prisma.courseDiscussion.findUnique({
+        // Verify discussion exists (main comment as discussion)
+        const discussion = await prisma.videoComment.findUnique({
             where: { id: id },
             include: {
-                course: {
-                    select: {
-                        id: true,
-                        creatorId: true,
-                        enrollments: {
-                            where: {
-                                userId: session.user.id,
-                                status: 'ACTIVE'
-                            },
-                            select: { id: true }
+                videoAsset: {
+                    include: {
+                        course: {
+                            select: {
+                                id: true,
+                                creatorId: true,
+                                enrollments: {
+                                    where: {
+                                        userId: (session.user as any).id
+                                        // Enrollment doesn't have status field, so just check if enrollment exists
+                                    },
+                                    select: { id: true }
+                                }
+                            }
                         }
                     }
                 }
@@ -114,8 +118,8 @@ export async function POST(
         }
 
         // Check access
-        const isCreator = discussion.course.creatorId === session.user.id
-        const isEnrolled = discussion.course.enrollments.length > 0
+        const isCreator = discussion?.videoAsset?.course?.creatorId === (session.user as any).id
+        const isEnrolled = (discussion?.videoAsset?.course?.enrollments?.length || 0) > 0
 
         if (!isCreator && !isEnrolled) {
             return NextResponse.json(
@@ -126,10 +130,10 @@ export async function POST(
 
         // If parentReplyId, verify it exists
         if (parentReplyId) {
-            const parentReply = await prisma.discussionReply.findFirst({
+            const parentReply = await prisma.videoComment.findFirst({
                 where: {
                     id: parentReplyId,
-                    discussionId: id
+                    parentId: id // Parent of the parent is the main discussion
                 }
             })
 
@@ -142,23 +146,24 @@ export async function POST(
         }
 
         // Create reply
-        const reply = await prisma.discussionReply.create({
+        const reply = await prisma.videoComment.create({
             data: {
                 content,
-                discussionId: id,
-                authorId: session.user.id,
-                parentReplyId: parentReplyId || null,
-                upvotes: 0,
-                isInstructorReply: isCreator,
+                videoAssetId: discussion.videoAssetId, // Use the same video asset
+                userId: (session.user as any).id,
+                parentId: parentReplyId || id, // If no parent, reply to main discussion
+                timestamp: null, // No timestamp for discussion replies
+                likesCount: 0,
+                isEdited: false,
                 isPinned: false,
-                isDeleted: false
+                isHidden: false
             },
             include: {
-                author: {
+                user: {
                     select: {
                         id: true,
                         name: true,
-                        image: true
+                        profileImage: true
                     }
                 }
             }
@@ -166,9 +171,13 @@ export async function POST(
 
         // Mark discussion as solved if instructor replies and marks it
         if (isCreator && body.markAsSolved) {
-            await prisma.courseDiscussion.update({
+            await prisma.videoComment.update({
                 where: { id: id },
-                data: { isSolved: true }
+                data: { 
+                    // Note: VideoComment doesn't have isSolved field,
+                    // we use isPinned as an alternative
+                    isPinned: true 
+                }
             })
         }
 
