@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if user is a creator
-        const instructor = await prisma.instructor.findFirst({
+        const instructor = await prisma.creator.findFirst({
             where: { userId: session.user.id }
         })
 
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Get instructor
-        const instructor = await prisma.instructor.findFirst({
+        const instructor = await prisma.creator.findFirst({
             where: { userId: session.user.id }
         })
 

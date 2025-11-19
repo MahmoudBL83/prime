@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Only admins can award rewards
-    if (session.user.role !== 'admin' && session.user.role !== 'instructor') {
+    if (session.user.role !== 'ADMIN' && session.user.role !== 'CREATOR') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

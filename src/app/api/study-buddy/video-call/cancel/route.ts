@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { NotificationType } from '@prisma/client'
 
 const cancelCallSchema = z.object({
   sessionId: z.string()
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
     await prisma.notification.create({
       data: {
         userId: otherUserId,
-        type: 'VIDEO_CALL_CANCELLED',
+        type: NotificationType.VIDEO_CALL_CANCELLED,
         title: 'Call Cancelled',
         message: `${session.user.name} cancelled the video call`,
         data: {

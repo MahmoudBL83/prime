@@ -191,9 +191,25 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Match not accepted yet' }, { status: 400 });
         }
 
+        // Get user data for both participants
+        const [user1, user2] = await Promise.all([
+            prisma.user.findUnique({
+                where: { id: match.user1Id },
+                select: { id: true, name: true, email: true, profileImage: true },
+            }),
+            prisma.user.findUnique({
+                where: { id: match.user2Id },
+                select: { id: true, name: true, email: true, profileImage: true },
+            }),
+        ]);
+
+        if (!user1 || !user2) {
+            return NextResponse.json({ error: 'User data not found' }, { status: 404 });
+        }
+
         // Get the other user
         const otherUserId = match.user1Id === session.user.id ? match.user2Id : match.user1Id;
-        const otherUser = match.user1Id === session.user.id ? match.user2 : match.user1;
+        const otherUser = match.user1Id === session.user.id ? user2 : user1;
 
         // Create conversation
         const conversation = await prisma.conversation.create({
