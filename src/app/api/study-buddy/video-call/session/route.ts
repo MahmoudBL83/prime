@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { VideoCallStatus } from '@prisma/client'
 
 const createSessionSchema = z.object({
   studySessionId: z.string(),
@@ -236,6 +237,9 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const status = searchParams.get('status') || 'all'
 
+    const validStatuses: VideoCallStatus[] = ['PENDING', 'ACTIVE', 'DECLINED', 'COMPLETED'];
+    const upperStatus = status.toUpperCase();
+
     // Get user's video call sessions
     const sessions = await prisma.videoCallSession.findMany({
       where: {
@@ -243,7 +247,7 @@ export async function GET(req: NextRequest) {
           { hostId: session.user.id },
           { inviteeId: session.user.id }
         ],
-        ...(status !== 'all' && { status: status.toUpperCase() })
+        ...(status !== 'all' && validStatuses.includes(upperStatus as VideoCallStatus) && { status: upperStatus as VideoCallStatus })
       },
       include: {
         host: { select: { id: true, name: true, profileImage: true } },
