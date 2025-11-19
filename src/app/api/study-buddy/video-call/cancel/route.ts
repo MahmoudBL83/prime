@@ -33,8 +33,8 @@ export async function POST(req: NextRequest) {
     const videoCallSession = await prisma.videoCallSession.findUnique({
       where: { id: sessionId },
       include: {
-        initiator: { select: { id: true, name: true } },
-        participant: { select: { id: true, name: true } }
+        host: { select: { id: true, name: true } },
+        invitee: { select: { id: true, name: true } }
       }
     })
 
@@ -44,9 +44,9 @@ export async function POST(req: NextRequest) {
       }, { status: 404 })
     }
 
-    // Check if user has permission to cancel (must be initiator or participant)
-    if (videoCallSession.initiatorId !== session.user.id && 
-        videoCallSession.participantId !== session.user.id) {
+    // Check if user has permission to cancel (must be host or invitee)
+    if (videoCallSession.hostId !== session.user.id && 
+        videoCallSession.inviteeId !== session.user.id) {
       return NextResponse.json({
         error: 'Not authorized to cancel this call'
       }, { status: 403 })
@@ -57,20 +57,14 @@ export async function POST(req: NextRequest) {
       where: { id: sessionId },
       data: {
         status: 'CANCELLED',
-        endTime: new Date(),
-        metadata: {
-          ...videoCallSession.metadata as any,
-          cancelledBy: session.user.id,
-          cancelledAt: new Date().toISOString(),
-          reason: 'User cancelled'
-        }
+        endedAt: new Date()
       }
     })
 
     // Notify the other participant
-    const otherUserId = videoCallSession.initiatorId === session.user.id 
-      ? videoCallSession.participantId 
-      : videoCallSession.initiatorId
+    const otherUserId = videoCallSession.hostId === session.user.id 
+      ? videoCallSession.inviteeId 
+      : videoCallSession.hostId
 
     await prisma.notification.create({
       data: {

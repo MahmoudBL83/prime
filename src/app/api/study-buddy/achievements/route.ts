@@ -38,8 +38,15 @@ async function generateUserAchievements(userId: string) {
       prisma.studySession.count({
         where: {
           OR: [
-            { createdById: userId },
-            { participantIds: { has: userId } }
+            { createdBy: userId },
+            {
+              match: {
+                OR: [
+                  { user1Id: userId },
+                  { user2Id: userId }
+                ]
+              }
+            }
           ],
           status: 'COMPLETED'
         }
@@ -56,8 +63,15 @@ async function generateUserAchievements(userId: string) {
       prisma.studySession.aggregate({
         where: {
           OR: [
-            { createdById: userId },
-            { participantIds: { has: userId } }
+            { createdBy: userId },
+            {
+              match: {
+                OR: [
+                  { user1Id: userId },
+                  { user2Id: userId }
+                ]
+              }
+            }
           ],
           status: 'COMPLETED'
         },
@@ -68,8 +82,8 @@ async function generateUserAchievements(userId: string) {
       prisma.videoCallSession.count({
         where: {
           OR: [
-            { initiatorId: userId },
-            { participantId: userId }
+            { hostId: userId },
+            { inviteeId: userId }
           ],
           status: 'COMPLETED'
         }
@@ -336,8 +350,15 @@ async function calculateCurrentStreak(userId: string): Promise<number> {
     const sessions = await prisma.studySession.findMany({
       where: {
         OR: [
-          { createdById: userId },
-          { participantIds: { has: userId } }
+          { createdBy: userId },
+          {
+            match: {
+              OR: [
+                { user1Id: userId },
+                { user2Id: userId }
+              ]
+            }
+          }
         ],
         status: 'COMPLETED'
       },

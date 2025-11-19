@@ -95,7 +95,7 @@ export async function PATCH(
             where: { id },
             data: {
                 content: content.trim(),
-                isEdited: true,
+                edited: true,
             },
         });
 

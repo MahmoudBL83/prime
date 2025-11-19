@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { NotificationService } from '@/services/NotificationService'
+import { ReminderType } from '@prisma/client'
 
 const createSessionSchema = z.object({
   matchId: z.string(),
@@ -76,25 +77,25 @@ export async function POST(req: NextRequest) {
         sessionId: studySession.id,
         userId: session.user.id,
         reminderTime: new Date(sessionTime.getTime() - 60 * 60 * 1000), // 1 hour before
-        reminderType: 'ONE_HOUR_BEFORE',
+        reminderType: ReminderType.ONE_HOUR_BEFORE,
       },
       {
         sessionId: studySession.id,
         userId: otherUserId,
         reminderTime: new Date(sessionTime.getTime() - 60 * 60 * 1000), // 1 hour before
-        reminderType: 'ONE_HOUR_BEFORE',
+        reminderType: ReminderType.ONE_HOUR_BEFORE,
       },
       {
         sessionId: studySession.id,
         userId: session.user.id,
         reminderTime: new Date(sessionTime.getTime() - 15 * 60 * 1000), // 15 minutes before
-        reminderType: 'FIFTEEN_MINUTES_BEFORE',
+        reminderType: ReminderType.FIFTEEN_MINUTES_BEFORE,
       },
       {
         sessionId: studySession.id,
         userId: otherUserId,
         reminderTime: new Date(sessionTime.getTime() - 15 * 60 * 1000), // 15 minutes before
-        reminderType: 'FIFTEEN_MINUTES_BEFORE',
+        reminderType: ReminderType.FIFTEEN_MINUTES_BEFORE,
       },
     ]
 

@@ -41,36 +41,38 @@ async function generateUserActivities(userId: string, limit: number, filter: str
       const recentSessions = await prisma.studySession.findMany({
         where: {
           OR: [
-            { createdById: userId },
-            { participantIds: { has: userId } }
+            { createdBy: userId },
+            {
+              match: {
+                OR: [
+                  { user1Id: userId },
+                  { user2Id: userId }
+                ]
+              }
+            }
           ],
           status: 'COMPLETED'
         },
         orderBy: { createdAt: 'desc' },
         take: 10,
-        select: {
-          id: true,
-          title: true,
-          duration: true,
-          createdAt: true,
-          createdById: true,
-          participantIds: true,
-          metadata: true
+        include: {
+          match: {
+            include: {
+              user1: { select: { id: true, name: true, arabicName: true, profileImage: true } },
+              user2: { select: { id: true, name: true, arabicName: true, profileImage: true } }
+            }
+          }
         }
       })
 
       for (const session of recentSessions) {
-        // Get other participant info
-        const otherUserId = session.participantIds.find(id => id !== userId)
+        // Get other participant info from match
         let relatedUser = null
         
-        if (otherUserId) {
-          const user = await prisma.user.findUnique({
-            where: { id: otherUserId },
-            select: { id: true, name: true, arabicName: true, profileImage: true }
-          })
-          if (user) {
-            relatedUser = user
+        if (session.match) {
+          const otherUser = session.match.user1Id === userId ? session.match.user2 : session.match.user1
+          if (otherUser) {
+            relatedUser = otherUser
           }
         }
 
@@ -193,8 +195,15 @@ async function calculateStudyStreak(userId: string): Promise<number> {
     const sessions = await prisma.studySession.findMany({
       where: {
         OR: [
-          { createdById: userId },
-          { participantIds: { has: userId } }
+          { createdBy: userId },
+          {
+            match: {
+              OR: [
+                { user1Id: userId },
+                { user2Id: userId }
+              ]
+            }
+          }
         ],
         status: 'COMPLETED'
       },
@@ -244,8 +253,15 @@ async function calculateUserStats(userId: string) {
       prisma.studySession.count({
         where: {
           OR: [
-            { createdById: userId },
-            { participantIds: { has: userId } }
+            { createdBy: userId },
+            {
+              match: {
+                OR: [
+                  { user1Id: userId },
+                  { user2Id: userId }
+                ]
+              }
+            }
           ],
           status: 'COMPLETED'
         }
@@ -262,8 +278,15 @@ async function calculateUserStats(userId: string) {
       prisma.studySession.aggregate({
         where: {
           OR: [
-            { createdById: userId },
-            { participantIds: { has: userId } }
+            { createdBy: userId },
+            {
+              match: {
+                OR: [
+                  { user1Id: userId },
+                  { user2Id: userId }
+                ]
+              }
+            }
           ],
           status: 'COMPLETED'
         },
@@ -276,7 +299,7 @@ async function calculateUserStats(userId: string) {
     return {
       completedSessions: sessions,
       totalMatches: matches,
-      studyMinutes: studyTime._sum.duration || 0
+      studyMinutes: studyTime._sum?.duration || 0
     }
 
   } catch (error) {

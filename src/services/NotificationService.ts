@@ -14,6 +14,7 @@ export type NotificationType =
   | 'STUDY_SESSION_CANCELLED'
   | 'VIDEO_CALL_INCOMING'
   | 'VIDEO_CALL_SCHEDULED'
+  | 'VIDEO_CALL_CANCELLED'
 
 export interface CreateNotificationData {
   userId: string

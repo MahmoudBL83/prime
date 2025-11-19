@@ -66,7 +66,7 @@ export async function PATCH(req: NextRequest) {
                 where: { id: creator.id },
                 data: {
                     expertise,
-                    socialLinks: socialLinks ? JSON.stringify(socialLinks) : null,
+                    socialLinks: socialLinks ? JSON.stringify(socialLinks) : undefined,
                     basicMonthlyPrice: basicMonthlyPrice || null,
                     premiumMonthlyPrice: premiumMonthlyPrice || null,
                     vipMonthlyPrice: vipMonthlyPrice || null,

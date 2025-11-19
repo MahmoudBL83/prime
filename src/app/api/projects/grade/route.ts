@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { gradeProjectSubmission } from '@/services/leaderboardService'
+import { UserRole } from '@prisma/client'
 
 // POST /api/projects/grade - Grade a submission
 export async function POST(request: NextRequest) {
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Only instructors/admins can grade
-    if (session.user.role !== 'admin' && session.user.role !== 'instructor') {
+    if (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.CREATOR) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
