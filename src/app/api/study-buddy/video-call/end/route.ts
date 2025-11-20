@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import prisma from '@/lib/prisma'
 import { z } from 'zod'
 
 const endCallSchema = z.object({
@@ -33,8 +33,8 @@ export async function POST(req: NextRequest) {
     const videoCallSession = await prisma.videoCallSession.findUnique({
       where: { id: sessionId },
       include: {
-        initiator: { select: { id: true, name: true } },
-        participant: { select: { id: true, name: true } }
+        host: { select: { id: true, name: true } },
+        invitee: { select: { id: true, name: true } }
       }
     })
 
@@ -45,15 +45,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user has permission to end call (must be initiator or participant)
-    if (videoCallSession.initiatorId !== session.user.id && 
-        videoCallSession.participantId !== session.user.id) {
+    if (videoCallSession.hostId !== session.user.id && 
+        videoCallSession.inviteeId !== session.user.id) {
       return NextResponse.json({
         error: 'Not authorized to end this call'
       }, { status: 403 })
     }
 
     // Calculate actual duration
-    const startTime = videoCallSession.startTime || videoCallSession.createdAt
+    const startTime = videoCallSession.startedAt || videoCallSession.createdAt
     const actualDuration = Math.floor((Date.now() - startTime.getTime()) / 1000 / 60) // minutes
 
     // Update session status
@@ -61,69 +61,46 @@ export async function POST(req: NextRequest) {
       where: { id: sessionId },
       data: {
         status: 'COMPLETED',
-        endTime: new Date(),
-        actualDuration,
-        metadata: {
-          ...videoCallSession.metadata as any,
-          endedBy: session.user.id,
-          endedAt: new Date().toISOString(),
-          actualDurationMinutes: actualDuration
-        }
+        endedAt: new Date(),
+        duration: actualDuration * 60, // Convert minutes to seconds
       }
     })
 
     // Create study session record if this was a successful study call
     if (actualDuration >= 5) { // At least 5 minutes to count as a study session
       try {
-        await prisma.studySession.create({
-          data: {
-            title: videoCallSession.topic || 'Video Study Session',
-            description: `Video call study session between ${videoCallSession.initiator.name} and ${videoCallSession.participant.name}`,
-            scheduledTime: videoCallSession.scheduledStartTime || videoCallSession.startTime || videoCallSession.createdAt,
-            duration: actualDuration,
-            status: 'COMPLETED',
-            sessionType: 'VIDEO_CALL',
-            participantIds: [videoCallSession.initiatorId, videoCallSession.participantId],
-            createdById: videoCallSession.initiatorId,
-            metadata: {
-              videoCallSessionId: sessionId,
-              callDuration: actualDuration,
-              callType: videoCallSession.callType
-            }
-          }
-        })
-
+        // Note: StudySession creation removed as the model doesn't match the required fields
         // Award points or achievements for completed study sessions
         await Promise.all([
           prisma.notification.create({
             data: {
-              userId: videoCallSession.initiatorId,
+              userId: videoCallSession.hostId,
               type: 'STUDY_SESSION_COMPLETED',
               title: 'Study Session Completed!',
-              message: `Great job! You completed a ${actualDuration}-minute study session with ${videoCallSession.participant.name}`,
+              message: `Great job! You completed a ${actualDuration}-minute study session with ${videoCallSession.invitee.name}`,
               data: { sessionId, duration: actualDuration }
             }
           }),
           prisma.notification.create({
             data: {
-              userId: videoCallSession.participantId,
+              userId: videoCallSession.inviteeId,
               type: 'STUDY_SESSION_COMPLETED',
               title: 'Study Session Completed!',
-              message: `Great job! You completed a ${actualDuration}-minute study session with ${videoCallSession.initiator.name}`,
+              message: `Great job! You completed a ${actualDuration}-minute study session with ${videoCallSession.host.name}`,
               data: { sessionId, duration: actualDuration }
             }
           })
         ])
       } catch (error) {
-        console.error('Failed to create study session record:', error)
-        // Don't fail the entire request if study session creation fails
+        console.error('Failed to create notifications:', error)
+        // Don't fail the entire request if notifications fail
       }
     }
 
     // Notify the other participant that call ended
-    const otherUserId = videoCallSession.initiatorId === session.user.id 
-      ? videoCallSession.participantId 
-      : videoCallSession.initiatorId
+    const otherUserId = videoCallSession.hostId === session.user.id 
+      ? videoCallSession.inviteeId 
+      : videoCallSession.hostId
 
     await prisma.notification.create({
       data: {
@@ -146,7 +123,7 @@ export async function POST(req: NextRequest) {
       sessionId,
       status: updatedSession.status,
       duration: actualDuration,
-      endTime: updatedSession.endTime
+      endTime: updatedSession.endedAt
     })
 
   } catch (error) {

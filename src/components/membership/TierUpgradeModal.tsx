@@ -197,8 +197,8 @@ export default function TierUpgradeModal({
                                 <div className="space-y-3 mb-6">
                                     {tiers.map(tier => {
                                         const isSelected = selectedTier === tier.id
-                                        const isFull = tier.maxMembers && tier.subscriberCount && 
-                                                      tier.subscriberCount >= tier.maxMembers
+                                        const isFull = Boolean(tier.maxMembers && tier.subscriberCount && 
+                                                      tier.subscriberCount >= tier.maxMembers)
 
                                         return (
                                             <motion.button

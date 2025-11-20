@@ -23,6 +23,7 @@ interface Member {
         nameAr?: string
         color?: string
         icon?: string
+        price: number
     }
     status: string
     priceAtPurchase: number
