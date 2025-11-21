@@ -1,28 +1,26 @@
 import { NextRequest } from 'next/server';
-import SocketHandler from '@/lib/socket';
 
 export async function GET(req: NextRequest) {
-    // This endpoint is just for initialization
-    // The actual Socket.io connection will be handled by the SocketHandler
-    return new Response('Socket.io endpoint', { status: 200 });
+    // Socket.io is not supported in Vercel's serverless environment
+    // Real-time features require a persistent server (Railway, Render, etc.)
+    return new Response(JSON.stringify({
+        error: 'Real-time features not available',
+        message: 'Socket.io requires a persistent server. Deploy the socket server separately on Railway or Render.',
+        status: 'disabled'
+    }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+    });
 }
 
 export async function POST(req: NextRequest) {
-    // Handle Socket.io initialization
-    const res = {
-        socket: {
-            server: {
-                io: undefined as any,
-            },
-        },
-        end: () => { },
-        status: (code: number) => ({
-            end: () => { },
-        }),
-    };
-
-    // Initialize Socket.io server
-    SocketHandler(req as any, res as any);
-
-    return new Response('Socket.io initialized', { status: 200 });
+    // Socket.io initialization disabled for Vercel
+    return new Response(JSON.stringify({
+        error: 'Real-time features not available',
+        message: 'Socket.io server cannot run in Vercel serverless environment.',
+        status: 'disabled'
+    }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+    });
 }
