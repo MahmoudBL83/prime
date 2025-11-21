@@ -4,7 +4,9 @@ if (!process.env.RESEND_API_KEY) {
   console.warn('⚠️  RESEND_API_KEY not found. Email notifications will not work.');
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Only initialize Resend client if API key is available
+// This prevents build-time errors when RESEND_API_KEY is not set
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 interface EmailOptions {
   to: string | string[];
@@ -14,6 +16,12 @@ interface EmailOptions {
 }
 
 export async function sendEmail({ to, subject, html, from }: EmailOptions) {
+  // If Resend client is not initialized, skip sending email
+  if (!resend) {
+    console.warn('Email service not configured. Skipping email send.');
+    return null;
+  }
+
   try {
     const { data, error } = await resend.emails.send({
       from: from || process.env.EMAIL_FROM || 'Prime Learning <noreply@prime-learning.com>',
