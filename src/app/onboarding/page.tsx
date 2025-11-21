@@ -241,8 +241,8 @@ export default function OnboardingPage() {
         } catch (error) {
             console.log('💥 Network/Fetch error:', error)
             console.log('💥 Error type:', typeof error)
-            console.log('💥 Error name:', error?.name)
-            console.log('💥 Error message:', error?.message)
+            console.log('💥 Error name:', error instanceof Error ? error.name : 'Unknown')
+            console.log('💥 Error message:', error instanceof Error ? error.message : 'Unknown error')
             toast.error(lang === 'ar' ? 'خطأ في الشبكة' : 'Network error')
         } finally {
             setIsLoading(false)
