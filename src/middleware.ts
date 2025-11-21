@@ -117,11 +117,10 @@ export default withAuth(
 
 export const config = {
     matcher: [
-        '/((?!_next|_vercel|.*\\..*).*)',
+        '/((?!api|_next|_vercel|.*\\..*).*)',
         '/(ar|en|de)/:path*',
         '/courses/:path*',
         '/dashboard',
-        '/auth/:path*',
         '/admin/:path*',
         '/onboarding',
         '/verify/:path*'
