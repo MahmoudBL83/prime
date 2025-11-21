@@ -9,6 +9,7 @@ declare module "next-auth" {
             name: string
             role: UserRole
             subscriptionStatus?: 'NONE' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED'
+            image?: string
         }
     }
 
@@ -18,6 +19,7 @@ declare module "next-auth" {
         name: string
         role: UserRole
         subscriptionStatus?: 'NONE' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED'
+        image?: string
     }
 }
 

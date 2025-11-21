@@ -48,7 +48,7 @@ async function CoursePlayerPage({ params, searchParams }: CoursePlayerPageProps)
     include: {
       lessons: {
         include: {
-          videoAsset: true,
+          videoAssets: true,
         },
         orderBy: { order: 'asc' },
       },
@@ -79,7 +79,7 @@ async function CoursePlayerPage({ params, searchParams }: CoursePlayerPageProps)
 
 // Loading component for course player
 function CoursePlayerLoading() {
-  const t = useTranslationsSafe('coursePage');
+  const { t } = useTranslationsSafe('coursePage');
 
   return (
     <div className="h-screen bg-gray-50 flex items-center justify-center">

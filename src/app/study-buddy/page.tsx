@@ -139,9 +139,9 @@ export default function StudyBuddyPage() {
                 // Show helpful message if no matches found
                 if (!data.matches || data.matches.length === 0) {
                     if (data.totalAvailable === 0) {
-                        toast.info('No other learners available yet. Invite friends to join!')
+                        toast('No other learners available yet. Invite friends to join!')
                     } else {
-                        toast.info('No compatible matches found. Try updating your preferences.')
+                        toast('No compatible matches found. Try updating your preferences.')
                     }
                 }
             } else {

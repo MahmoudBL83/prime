@@ -317,7 +317,11 @@ export default function TierManagementPage() {
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 onSave={editingTier ? handleUpdateTier : handleCreateTier}
-                initialData={editingTier || undefined}
+                initialData={editingTier ? {
+                    ...editingTier,
+                    price: editingTier.price.toString(),
+                    maxMembers: editingTier.maxMembers?.toString() || ''
+                } : undefined}
                 mode={editingTier ? 'edit' : 'create'}
             />
         </div>
