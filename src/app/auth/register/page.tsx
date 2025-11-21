@@ -370,3 +370,6 @@ export default function RegisterPage() {
 
 // Prevent static generation for auth pages
 export const dynamic = 'force-dynamic'
+
+// Explicitly prevent static param generation
+export const generateStaticParams = () => []
