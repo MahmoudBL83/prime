@@ -1173,7 +1173,7 @@ model Session {
 
 model VideoAsset {
   id               String           @id @default(cuid())
-  muxAssetId       String           @unique
+  muxAssetId       String?          @unique
   muxPlaybackId    String?
   uploadId         String?          @unique
   status           VideoStatus      @default(UPLOADING)

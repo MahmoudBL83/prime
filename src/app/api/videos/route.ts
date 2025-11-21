@@ -97,8 +97,6 @@ export async function GET(request: NextRequest) {
         const orderBy: any = {};
         if (sortBy === 'title') {
             orderBy.title = sortOrder;
-        } else if (sortBy === 'views') {
-            orderBy.views = sortOrder;
         } else if (sortBy === 'duration') {
             orderBy.duration = sortOrder;
         } else {
@@ -125,7 +123,6 @@ export async function GET(request: NextRequest) {
                     maxResolution: true,
                     fileSize: true,
                     status: true,
-                    views: true,
                     originalFilename: true,
                     aspectRatio: true,
                     errors: true,
@@ -135,11 +132,10 @@ export async function GET(request: NextRequest) {
                     creator: {
                         select: {
                             id: true,
-                            name: true,
-                            avatarUrl: true,
                             user: {
                                 select: {
-                                    name: true
+                                    name: true,
+                                    profileImage: true
                                 }
                             }
                         }
@@ -182,7 +178,7 @@ export async function GET(request: NextRequest) {
         ]);
 
         // Format response with engagement metrics
-        const formattedVideos = videos.map(video => {
+        const formattedVideos = videos.map((video: any) => {
             const baseVideo = {
                 id: video.id,
                 title: video.title,
@@ -196,17 +192,21 @@ export async function GET(request: NextRequest) {
                 maxResolution: video.maxResolution,
                 fileSize: video.fileSize,
                 status: video.status,
-                views: video.views,
                 originalFilename: video.originalFilename,
                 aspectRatio: video.aspectRatio,
                 muxPlaybackId: video.muxPlaybackId,
-                creator: video.creator,
+                creator: {
+                    id: video.creator.id,
+                    name: video.creator.user.name,
+                    avatarUrl: video.creator.user.profileImage
+                },
                 course: video.course,
                 lesson: video.lesson,
                 qualities: video.qualities,
                 engagement: {
                     commentsCount: video._count.comments,
                     reactionsCount: video._count.reactions,
+                    viewsCount: video._count.watchHistory,
                     watchCount: video._count.watchHistory,
                     progressCount: video._count.progress,
                     analyticsCount: video._count.analytics
