@@ -259,3 +259,6 @@ export default function LoginPage() {
         </Suspense>
     )
 }
+
+// Prevent static generation for auth pages
+export const dynamic = 'force-dynamic'

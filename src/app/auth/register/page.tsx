@@ -367,3 +367,6 @@ export default function RegisterPage() {
         </Suspense>
     )
 }
+
+// Prevent static generation for auth pages
+export const dynamic = 'force-dynamic'

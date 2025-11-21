@@ -69,3 +69,6 @@ export default function AuthErrorPage() {
         </Suspense>
     )
 }
+
+// Prevent static generation for auth pages
+export const dynamic = 'force-dynamic'
