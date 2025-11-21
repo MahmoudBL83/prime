@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { z } from 'zod'
+import { NotificationType } from '@prisma/client'
 
 const endCallSchema = z.object({
   sessionId: z.string()
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
           prisma.notification.create({
             data: {
               userId: videoCallSession.hostId,
-              type: 'STUDY_SESSION_COMPLETED',
+              type: NotificationType.STUDY_SESSION_COMPLETED,
               title: 'Study Session Completed!',
               message: `Great job! You completed a ${actualDuration}-minute study session with ${videoCallSession.invitee.name}`,
               data: { sessionId, duration: actualDuration }
@@ -84,7 +85,7 @@ export async function POST(req: NextRequest) {
           prisma.notification.create({
             data: {
               userId: videoCallSession.inviteeId,
-              type: 'STUDY_SESSION_COMPLETED',
+              type: NotificationType.STUDY_SESSION_COMPLETED,
               title: 'Study Session Completed!',
               message: `Great job! You completed a ${actualDuration}-minute study session with ${videoCallSession.host.name}`,
               data: { sessionId, duration: actualDuration }
@@ -105,7 +106,7 @@ export async function POST(req: NextRequest) {
     await prisma.notification.create({
       data: {
         userId: otherUserId,
-        type: 'VIDEO_CALL_ENDED',
+        type: NotificationType.VIDEO_CALL_ENDED,
         title: 'Call Ended',
         message: `Video call ended. Duration: ${actualDuration} minutes`,
         data: {

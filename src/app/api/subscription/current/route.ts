@@ -51,14 +51,14 @@ export async function GET(req: NextRequest) {
       coursesCount = await prisma.course.count({
         where: {
           category: 'CATEGORY_A',
-          published: true
+          status: 'PUBLISHED'
         }
       });
     } else if (subscription.type === 'CATEGORY_B') {
       coursesCount = await prisma.course.count({
         where: {
           category: 'CATEGORY_B',
-          published: true
+          status: 'PUBLISHED'
         }
       });
     } else if (subscription.type === 'BUNDLE_AB') {
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
           category: {
             in: ['CATEGORY_A', 'CATEGORY_B']
           },
-          published: true
+          status: 'PUBLISHED'
         }
       });
     }
