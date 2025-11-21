@@ -4,6 +4,10 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 
+// Prevent static generation for redirect pages
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 export default function CoursesPage() {
     const router = useRouter()
     const locale = useLocale()

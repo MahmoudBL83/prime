@@ -63,8 +63,7 @@ const SKILL_LEVELS = [
 ]
 
 export default function EnhancedCoursesPage() {
-    const sessionData = useSession()
-    const session = sessionData?.data
+    const { data: session, status } = useSession()
     const router = useRouter()
     const [courses, setCourses] = useState<Course[]>([])
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
@@ -211,6 +210,21 @@ export default function EnhancedCoursesPage() {
     }
 
     const currentT = t[lang]
+
+    if (status === 'loading') {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">
+                        {lang === 'ar' ? 'جاري التحميل...' : 'Loading...'}
+                    </h2>
+                    <p className="text-[var(--muted-foreground)]">
+                        {lang === 'ar' ? 'يرجى الانتظار' : 'Please wait'}
+                    </p>
+                </div>
+            </div>
+        )
+    }
 
     if (!session) {
         return (
