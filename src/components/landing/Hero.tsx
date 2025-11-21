@@ -17,16 +17,13 @@ export function Hero() {
     const router = useRouter();
     const { navigateWithLoading, isLoading } = useNavigationLoading();
     const [isMuted, setIsMuted] = useState(true);
-    const [trailerOpen, setTrailerOpen] = useState(false);
     const [bgVideoPlayable, setBgVideoPlayable] = useState(true);
     const [promoVideoPlayable, setPromoVideoPlayable] = useState(true);
     const [hoverPreviewPlayable, setHoverPreviewPlayable] = useState<Record<number, boolean>>({});
     const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
-    const trailerRef = useRef<HTMLVideoElement>(null);
 
     // Hero no longer shows a course; this component highlights platform features.
-    const featuredCourse = null
 
     useEffect(() => {
         if (videoRef.current) {
@@ -35,15 +32,6 @@ export function Hero() {
             });
         }
     }, []);
-
-    // Close trailer modal on Escape
-    useEffect(() => {
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && trailerOpen) setTrailerOpen(false)
-        }
-        window.addEventListener('keydown', onKey)
-        return () => window.removeEventListener('keydown', onKey)
-    }, [trailerOpen])
 
     const toggleMute = () => {
         if (videoRef.current) {
@@ -71,7 +59,7 @@ export function Hero() {
                             loop
                             muted={isMuted}
                             playsInline
-                            poster={featuredCourse?.thumbnailUrl || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1920'}
+                            poster="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1920"
                             onError={() => setBgVideoPlayable(false)}
                             onCanPlay={() => setBgVideoPlayable(true)}
                         >
@@ -80,8 +68,8 @@ export function Hero() {
                     ) : (
                         <div className="absolute inset-0 w-full h-full -z-10">
                             <Image
-                                src={featuredCourse?.thumbnailUrl || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1920'}
-                                alt={featuredCourse?.title || 'Featured Course'}
+                                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1920"
+                                alt="Featured Course"
                                 fill
                                 className="object-cover"
                                 priority
@@ -212,70 +200,6 @@ export function Hero() {
                     </div>
                 </div>
             </motion.div>
-                {/* Featured mini card on the right for large screens (fresh UX idea) */}
-                <div className="hidden lg:block absolute right-12 top-24 z-20">
-                    <div className="w-80 rounded-2xl overflow-hidden shadow-2xl bg-black/40 border border-white/6 backdrop-blur-sm">
-                        <img
-                            src={featuredCourse?.thumbnailUrl || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200'}
-                            alt={featuredCourse?.title || 'Featured'}
-                            className="w-full h-48 object-cover"
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/courses/netflix1.jpg' }}
-                        />
-                        <div className="p-4 bg-gradient-to-t from-black/40 to-transparent">
-                            <div className="text-sm text-white font-semibold line-clamp-2 mb-3">{featuredCourse?.title}</div>
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => navigateWithLoading(featuredCourse ? `/${locale}/courses/${featuredCourse.id}` : `/${locale}/courses`, 'hero-mini-play')}
-                                    className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white px-3 py-2 rounded-full font-semibold text-sm transition-all shadow-md"
-                                >
-                                    <Play className="w-4 h-4" />
-                                    <span>Play</span>
-                                </button>
-                                <button
-                                    onClick={() => navigateWithLoading(featuredCourse ? `/${locale}/courses/${featuredCourse.id}` : `/${locale}/courses`, 'hero-mini-start')}
-                                    className="px-3 py-2 rounded-full border border-white/10 text-white text-sm"
-                                >Start</button>
-                            </div>
-                            <div className="mt-3 text-sm">
-                                <button
-                                    onClick={() => setTrailerOpen(true)}
-                                    className="text-purple-300 hover:underline"
-                                >
-                                    {t('hero.watchTrailer') || 'Watch trailer'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Trailer Modal */}
-                {trailerOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-                        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setTrailerOpen(false)} />
-                        <div className="relative w-full max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl z-50">
-                            <video
-                                ref={trailerRef}
-                                className="w-full h-auto bg-black"
-                                controls
-                                autoPlay
-                                playsInline
-                            >
-                                <source src={featuredCourse?.trailerUrl || '/videos/demo/course-trailer.mp4'} type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                            <button
-                                onClick={() => {
-                                    try { trailerRef.current?.pause() } catch (e) {}
-                                    setTrailerOpen(false)
-                                }}
-                                className="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/60 flex items-center justify-center text-white border border-white/10"
-                                aria-label="Close trailer"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                    </div>
-                )}
 
             {/* Scroll Indicator */}
             <motion.div

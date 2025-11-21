@@ -87,7 +87,7 @@ export default function DiscussionList({
             const response = await fetch(`/api/discussions/bookmarks`)
             if (response.ok) {
                 const data = await response.json()
-                const ids = new Set(data.bookmarks.map((b: any) => b.discussionId))
+                const ids = new Set<string>(data.bookmarks.map((b: any) => b.discussionId))
                 setBookmarkedIds(ids)
             }
         } catch (error) {

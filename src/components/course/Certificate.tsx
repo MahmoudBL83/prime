@@ -41,8 +41,6 @@ export default function Certificate({
             const html2canvas = (await import('html2canvas')).default;
 
             const canvas = await html2canvas(certificateRef.current, {
-                backgroundColor: '#ffffff',
-                scale: 2,
                 useCORS: true,
             });
 

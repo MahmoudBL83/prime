@@ -105,8 +105,7 @@ export function CourseRow({ title, titleAr, courses, onCourseClick, className }:
                     onScroll={checkScroll}
                     style={{
                         scrollbarWidth: 'none',
-                        msOverflowStyle: 'none',
-                        WebkitScrollbar: { display: 'none' }
+                        msOverflowStyle: 'none'
                     }}
                 >
                     {courses.map((course, index) => (

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { AchievementType } from '@prisma/client'
 
 export type EventType =
   | 'LESSON_COMPLETED'
@@ -77,7 +78,7 @@ export async function unlockBadge(userId: string, badgeCode: string) {
   return userBadge
 }
 
-export async function unlockAchievement(userId: string, type: string, title: string, description: string, points = 0, courseId: string | null = null) {
+export async function unlockAchievement(userId: string, type: AchievementType, title: string, description: string, points = 0, courseId: string | null = null) {
   // avoid duplicates for same type + course
   const existing = await prisma.achievement.findFirst({ where: { userId, type, courseId } })
   if (existing) return existing
@@ -85,7 +86,7 @@ export async function unlockAchievement(userId: string, type: string, title: str
   const achievement = await prisma.achievement.create({
     data: {
       userId,
-      type: type as any,
+      type,
       title,
       description,
       points,

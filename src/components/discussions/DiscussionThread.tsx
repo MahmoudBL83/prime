@@ -30,6 +30,7 @@ interface Reply {
     upvotes: number
     isInstructorReply: boolean
     isPinned: boolean
+    isBestAnswer: boolean
     author: {
         id: string
         name: string
@@ -324,8 +325,8 @@ export default function DiscussionThread({
                                 </button>
                                 {/* Mark as Best Answer */}
                                 {session?.user && discussion && (
-                                    session.user.id === discussion.authorId || 
-                                    session.user.id === discussion.course?.creatorId
+                                    session.user.id === discussion.author.id || 
+                                    session.user.id === discussion.lesson?.id
                                 ) && !reply.isBestAnswer && (
                                     <button
                                         onClick={async () => {

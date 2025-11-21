@@ -162,7 +162,7 @@ const MOCK_FILTERS: MessageFilter[] = [
         description: 'Blocks common profanity and offensive language',
         enabled: true,
         filterType: 'keyword',
-        action: 'auto_moderate',
+        action: 'block',
         matchCount: 1234
     }
 ]

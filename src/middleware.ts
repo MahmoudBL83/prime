@@ -96,7 +96,7 @@ export default withAuth(
             );
         }
 
-        if (req.nextUrl.pathname.includes('/creator') && token.role !== "CREATOR") {
+        if (req.nextUrl.pathname.includes('/creator') && token && (token as any).role !== "CREATOR") {
             return NextResponse.redirect(new URL(`/${locale}/dashboard`, req.url));
         }
     },

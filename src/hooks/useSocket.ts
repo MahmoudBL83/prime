@@ -45,9 +45,9 @@ export const useSocket = ({
         });
 
         // Message events
-        socket.on('new_message', onMessage);
-        socket.on('user_typing', onTyping);
-        socket.on('user_stopped_typing', onStopTyping);
+        if (onMessage) socket.on('new_message', onMessage);
+        if (onTyping) socket.on('user_typing', onTyping);
+        if (onStopTyping) socket.on('user_stopped_typing', onStopTyping);
 
         return () => {
             socket.disconnect();

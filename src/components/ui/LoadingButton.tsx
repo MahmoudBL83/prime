@@ -10,7 +10,7 @@ interface LoadingButtonProps {
     loading?: boolean;
     loadingText?: string;
     disabled?: boolean;
-    onClick?: () => void;
+    onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
     className?: string;
     size?: 'default' | 'sm' | 'lg' | 'icon';
     variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';

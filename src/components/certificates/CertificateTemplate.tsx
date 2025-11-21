@@ -49,8 +49,7 @@ export default function CertificateTemplate({
             if (!certificateRef.current) return
 
             const canvas = await html2canvas(certificateRef.current, {
-                scale: 2,
-                backgroundColor: '#ffffff',
+                background: '#ffffff',
                 logging: false
             })
 
@@ -58,7 +57,7 @@ export default function CertificateTemplate({
             canvas.toBlob((blob) => {
                 if (!blob) return
                 const url = URL.createObjectURL(blob)
-                const link = document.createLink()
+                const link = document.createElement('a')
                 link.href = url
                 link.download = `Certificate-${certificateNumber}.png`
                 document.body.appendChild(link)

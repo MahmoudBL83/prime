@@ -353,7 +353,7 @@ export async function saveGoal(
         progress: data.progress,
         category: data.category,
         priority: data.priority,
-        milestones: data.milestones ? JSON.stringify(data.milestones) : null,
+        milestones: data.milestones ? JSON.stringify(data.milestones) : undefined,
         completedAt: data.status === 'COMPLETED' ? new Date() : null
       },
       include: {
@@ -380,7 +380,7 @@ export async function saveGoal(
         progress: data.progress || 0,
         category: data.category,
         priority: data.priority || 'medium',
-        milestones: data.milestones ? JSON.stringify(data.milestones) : null
+        milestones: data.milestones ? JSON.stringify(data.milestones) : undefined
       },
       include: {
         creator: {
