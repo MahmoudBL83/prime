@@ -9,6 +9,11 @@ export default withAuth(
     function middleware(req) {
         const pathname = req.nextUrl.pathname;
         
+        // Skip middleware for API routes entirely
+        if (pathname.startsWith('/api')) {
+            return null;
+        }
+        
         // Skip internationalization for admin routes - they don't use locale
         if (!pathname.startsWith('/admin')) {
             const intlResponse = intlMiddleware(req);
@@ -44,7 +49,7 @@ export default withAuth(
 
         // Handle old routes without locale prefix - redirect to locale-based routes
         // EXCEPTION: /admin routes should NOT be redirected (they're separate from locale routes)
-        if (!hasLocale && !pathname.startsWith('/admin')) {
+        if (!hasLocale && !pathname.startsWith('/admin') && !pathname.startsWith('/api')) {
             // Handle old routes
             if (pathname === '/courses') {
                 return NextResponse.redirect(new URL(`/${locale}/courses`, req.url));
@@ -65,7 +70,7 @@ export default withAuth(
             }
         }
 
-        if (isAuthPage) {
+        if (isAuthPage && !pathname.startsWith('/api')) {
             if (isAuth) {
                 if (token.role === "ADMIN") {
                     return NextResponse.redirect(new URL('/admin', req.url));
@@ -112,7 +117,7 @@ export default withAuth(
 
 export const config = {
     matcher: [
-        '/((?!api|_next|_vercel|.*\\..*).*)',
+        '/((?!_next|_vercel|.*\\..*).*)',
         '/(ar|en|de)/:path*',
         '/courses/:path*',
         '/dashboard',
