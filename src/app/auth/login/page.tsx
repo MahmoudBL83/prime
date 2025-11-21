@@ -12,11 +12,6 @@ import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 
-// Prevent prerendering during build
-if (typeof window === 'undefined') {
-    throw new Error('This page should not be prerendered')
-}
-
 const loginSchema = z.object({
     email: z.string().email('Invalid email address'),
     password: z.string().min(1, 'Password is required'),

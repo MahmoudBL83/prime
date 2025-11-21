@@ -5,11 +5,6 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { Suspense } from 'react'
 
-// Prevent prerendering during build
-if (typeof window === 'undefined') {
-    throw new Error('This page should not be prerendered')
-}
-
 function ErrorContent() {
     const searchParams = useSearchParams()
     const error = searchParams.get('error') || 'Default'
