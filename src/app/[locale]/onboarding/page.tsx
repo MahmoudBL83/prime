@@ -11,6 +11,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle, ChevronRight, ChevronLeft, User, Phone, Globe, BookOpen, Users, Target, Award, Heart, Brain, Code, Briefcase, Palette, Languages, GraduationCap, TrendingUp, Coffee, Clock, UserCheck, MessageCircle, Video, MapPin, Shuffle } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 const onboardingSchema = z.object({
     interests: z.array(z.string()).min(1, 'اختر مجال واحد على الأقل'),
     goals: z.array(z.string()).min(1, 'اختر هدف واحد على الأقل'),

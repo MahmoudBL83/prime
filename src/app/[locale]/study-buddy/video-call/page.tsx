@@ -10,6 +10,9 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 interface Participant {
   id: string
   name: string

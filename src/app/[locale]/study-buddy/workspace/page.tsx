@@ -28,6 +28,9 @@ import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 interface Workspace {
   id: string
   name: string

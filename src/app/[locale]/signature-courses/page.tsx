@@ -6,6 +6,9 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 // Icon Components with lazy loading
 const IconComponents = {
   Search: lazy(() => import('lucide-react').then(mod => ({ default: mod.Search }))),

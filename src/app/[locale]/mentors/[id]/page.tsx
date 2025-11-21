@@ -53,6 +53,9 @@ import { toast } from 'react-hot-toast'
 import { BookingModal } from '@/components/mentors/BookingModal'
 import ReviewModal from '@/components/mentors/ReviewModal'
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 interface MentorData {
     id: string
     user: {

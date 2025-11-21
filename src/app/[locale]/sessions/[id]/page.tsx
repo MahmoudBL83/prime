@@ -16,6 +16,9 @@ import {
     AlertCircle
 } from 'lucide-react';
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 interface SessionData {
     id: string;
     title: string;

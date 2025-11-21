@@ -10,6 +10,9 @@ import { Suspense, memo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 // Icon Components
 const IconComponents = {
   Search: () => import('lucide-react').then(mod => ({ default: mod.Search })),

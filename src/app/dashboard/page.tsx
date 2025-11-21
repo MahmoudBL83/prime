@@ -4,6 +4,9 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 export default function DashboardPage() {
     const router = useRouter()
     const locale = useLocale()

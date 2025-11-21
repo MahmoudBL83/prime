@@ -54,6 +54,9 @@ import {
   Sparkles
 } from 'lucide-react';
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 interface UserProfile {
   id: string;
   name: string;

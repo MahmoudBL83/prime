@@ -20,6 +20,9 @@ import {
     Shield
 } from 'lucide-react';
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 interface LiveSession {
     id: string;
     title: string;

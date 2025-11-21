@@ -42,6 +42,9 @@ import { useLocaleSafe } from '@/hooks/useTranslationsSafe'
 import { useNavigationLoading } from '@/hooks/useNavigationLoading'
 import toast from 'react-hot-toast'
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 interface Notification {
     id: string
     type: 'MESSAGE' | 'COMMENT' | 'LIKE' | 'FOLLOW' | 'COURSE' | 'MEETING' | 'ACHIEVEMENT' | 'REVIEW' | 'LIVE' | 'ANNOUNCEMENT' | 'REWARD'

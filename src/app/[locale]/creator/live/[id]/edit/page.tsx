@@ -6,6 +6,9 @@ import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Calendar, Clock, Shield, Users, ArrowLeft } from 'lucide-react';
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 interface LiveSession {
     id: string;
     title: string;

@@ -21,6 +21,9 @@ import {
   Target,
 } from 'lucide-react';
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 interface Cohort {
   id: string;
   courseId: string;
