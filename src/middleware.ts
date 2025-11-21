@@ -22,6 +22,7 @@ export default withAuth(
             '/mentors',
             '/creators',
             '/auth',
+            '/verify',
         ];
         
         // Check if current path is public
@@ -117,6 +118,7 @@ export const config = {
         '/dashboard',
         '/auth/:path*',
         '/admin/:path*',
-        '/onboarding'
+        '/onboarding',
+        '/verify/:path*'
     ]
 };
