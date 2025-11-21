@@ -10,6 +10,10 @@ import { Search, Filter, SlidersHorizontal, Grid, List } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
+// Prevent static generation for auth-required pages
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
 interface Course {
     id: string
     title: string
@@ -59,7 +63,8 @@ const SKILL_LEVELS = [
 ]
 
 export default function EnhancedCoursesPage() {
-    const { data: session } = useSession()
+    const sessionData = useSession()
+    const session = sessionData?.data
     const router = useRouter()
     const [courses, setCourses] = useState<Course[]>([])
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
