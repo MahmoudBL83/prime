@@ -262,6 +262,3 @@ export default function LoginPage() {
 
 // Prevent static generation for auth pages
 export const dynamic = 'force-dynamic'
-
-// Explicitly prevent static param generation
-export const generateStaticParams = () => []
