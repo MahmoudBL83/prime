@@ -22,54 +22,51 @@ export function Footer() {
     };
 
     return (
-        <footer className="bg-background border-t border-border/50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Main Footer Content */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-                    {/* Left: Compact Links */}
-                    <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm">
-                        <Link href="/about" className="text-muted-foreground hover:text-foreground transition-colors">
-                            {footerTranslations.about}
-                        </Link>
-                        <Link href="/help" className="text-muted-foreground hover:text-foreground transition-colors">
-                            {footerTranslations.help}
-                        </Link>
-                        <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
-                            {footerTranslations.terms}
-                        </Link>
-                        <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
-                            {footerTranslations.privacy}
-                        </Link>
-                        <Link href="/contact" className="text-muted-foreground hover:text-foreground transition-colors">
-                            {footerTranslations.contact}
-                        </Link>
-                    </div>
-
-                    {/* Center: Language Options */}
-                    <div className="flex items-center">
-                        <LanguageSwitcher />
-                    </div>
-
-                    {/* Right: Social Links */}
-                    <div className="flex items-center gap-3">
-                        <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                            <Facebook className="w-5 h-5" />
-                        </a>
-                        <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                            <Twitter className="w-5 h-5" />
-                        </a>
-                        <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                            <Instagram className="w-5 h-5" />
-                        </a>
-                        <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                            <Youtube className="w-5 h-5" />
-                        </a>
-                    </div>
+        <footer className="bg-black border-t border-white/10">
+            <div className="max-w-screen-2xl mx-auto px-8 py-12">
+                {/* Footer Links */}
+                <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-8">
+                    <Link href="/about" className="text-sm text-white/60 hover:text-white transition-colors">
+                        {footerTranslations.about}
+                    </Link>
+                    <Link href="/help" className="text-sm text-white/60 hover:text-white transition-colors">
+                        {footerTranslations.help}
+                    </Link>
+                    <Link href="/terms" className="text-sm text-white/60 hover:text-white transition-colors">
+                        {footerTranslations.terms}
+                    </Link>
+                    <Link href="/privacy" className="text-sm text-white/60 hover:text-white transition-colors">
+                        {footerTranslations.privacy}
+                    </Link>
+                    <Link href="/contact" className="text-sm text-white/60 hover:text-white transition-colors">
+                        {footerTranslations.contact}
+                    </Link>
                 </div>
 
-                {/* Bottom: Copyright */}
-                <div className="mt-6 pt-6 border-t border-border/50 text-center">
-                    <p className="text-muted-foreground text-sm">
+                {/* Language Switcher */}
+                <div className="flex justify-center mb-6">
+                    <LanguageSwitcher />
+                </div>
+
+                {/* Social Links */}
+                <div className="flex justify-center gap-6 mb-8">
+                    <a href="#" className="text-white/60 hover:text-white transition-colors">
+                        <Facebook className="w-5 h-5" />
+                    </a>
+                    <a href="#" className="text-white/60 hover:text-white transition-colors">
+                        <Twitter className="w-5 h-5" />
+                    </a>
+                    <a href="#" className="text-white/60 hover:text-white transition-colors">
+                        <Instagram className="w-5 h-5" />
+                    </a>
+                    <a href="#" className="text-white/60 hover:text-white transition-colors">
+                        <Youtube className="w-5 h-5" />
+                    </a>
+                </div>
+
+                {/* Copyright */}
+                <div className="text-center">
+                    <p className="text-xs text-white/40">
                         {footerTranslations.copyright}
                     </p>
                 </div>

@@ -3796,16 +3796,16 @@ export default function OnlyFansStyleMentorsPage() {
                                                 {/* Profile Image */}
                                                 <div className="relative flex-shrink-0">
                                                     <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                    {creator.user.profileImage ? (
+                                                    {creator.user?.profileImage ? (
                                                         <Image
                                                             src={creator.user.profileImage}
-                                                            alt={creator.user.name}
+                                                            alt={creator.user?.name || 'Creator'}
                                                             width={48} height={48} className="rounded-full object-cover w-12 h-12 relative"
                                                         />
                                                     ) : (
                                                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center relative">
                                                             <span className="text-lg font-bold text-foreground">
-                                                                {creator.user.name[0]}
+                                                                {creator.user?.name?.[0] || 'C'}
                                                             </span>
                                                         </div>
                                                     )}
@@ -3819,7 +3819,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-1 mb-0.5">
                                                         <h4 className="font-bold text-foreground text-sm truncate group-hover:text-purple-400 transition-colors">
-                                                            {creator.user.name}
+                                                            {creator.user?.name || 'Creator'}
                                                         </h4>
                                                         {creator.stats.averageRating >= 4.5 && (
                                                             <DynamicIcon name="CheckCircle" className="w-3.5 h-3.5 text-purple-500 fill-purple-500 flex-shrink-0" />

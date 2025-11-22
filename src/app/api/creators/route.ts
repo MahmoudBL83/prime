@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
         // Build where clause for filtering
         const where: any = {
-            kycStatus: 'VERIFIED' as any, // Only show verified creators
+            kycStatus: 'VERIFIED', // Only show verified creators
         }
 
         if (search) {
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
         }
 
         // Fetch creators with full OnlyFans-style data
-        const [creators, total] = await Promise.all([
+        const [allCreators, total] = await Promise.all([
             prisma.creator.findMany({
                 where,
                 include: {
@@ -81,11 +81,14 @@ export async function GET(req: NextRequest) {
             prisma.creator.count({ where }),
         ])
 
+        // Filter out creators without valid user relations (orphaned records)
+        const creators = allCreators.filter(creator => creator.user !== null)
+
         // If user is logged in, also fetch their creator profile (even if not verified)
         let userCreator = null
         if (session?.user) {
             console.log('Creators API: Fetching creator for userId:', session.user.id)
-            userCreator = await prisma.creator.findFirst({
+            const fetchedUserCreator = await prisma.creator.findFirst({
                 where: { userId: session.user.id },
                 include: {
                     user: {
@@ -118,23 +121,29 @@ export async function GET(req: NextRequest) {
                     },
                 },
             })
-            console.log('Creators API: User creator found?', userCreator ? 'YES' : 'NO', userCreator?.id)
+            // Only set userCreator if it has a valid user relation
+            if (fetchedUserCreator && fetchedUserCreator.user) {
+                userCreator = fetchedUserCreator
+                console.log('Creators API: User creator found:', userCreator.id)
+            } else {
+                console.log('Creators API: User creator not found or has no user relation')
+            }
         } else {
             console.log('Creators API: No session, skipping user creator fetch')
         }
 
         // Combine creators list with user's creator (if exists and not already in list)
-        let allCreators = creators
+        let finalCreators = creators
         if (userCreator && !creators.find(c => c.id === userCreator.id)) {
             console.log('Creators API: Adding user creator to list')
-            allCreators = [userCreator, ...creators]
+            finalCreators = [userCreator, ...creators]
         } else if (userCreator) {
             console.log('Creators API: User creator already in list')
         }
 
         // Calculate stats for each creator
         const creatorsWithStats = await Promise.all(
-            allCreators.map(async (creator) => {
+            finalCreators.map(async (creator) => {
                 const courses = await prisma.course.findMany({
                     where: { creatorId: creator.id },
                     select: { rating: true, totalEnrollments: true },

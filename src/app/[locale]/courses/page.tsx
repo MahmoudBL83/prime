@@ -1,705 +1,468 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Play, Info, Star, Clock, Users, Volume2, VolumeX, Sun, Moon } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { NetflixCourseShowcase } from '@/components/landing/NetflixCourseShowcase';
-import { useTheme } from 'next-themes';
-import { useNavigationLoading } from '@/hooks/useNavigationLoading';
 import { useLocaleSafe } from '@/hooks/useTranslationsSafe';
-import { useSession } from 'next-auth/react';
+import { Search, Play } from 'lucide-react';
+import Image from 'next/image';
 
 interface Course {
-  id: string;
-  title: string;
-  description: string;
-  thumbnail: string;
-  instructor: string;
-  rating: number;
-  students: number;
-  duration: string;
-  category: string;
-  level: string;
+    id: string;
+    title: string;
+    titleAr?: string;
+    category: string;
+    thumbnail?: string;
+    rating?: number;
+    year?: number;
+    duration?: string;
+    description?: string;
+    descriptionAr?: string;
 }
 
+// Mock courses data matching Apple TV style
+const mockCourses: Course[] = [
+    {
+        id: '1',
+        title: 'The Lost Bus',
+        titleAr: 'الحافلة المفقودة',
+        category: 'German Language',
+        rating: 4.8,
+        year: 2024,
+        duration: '6 months',
+        description: 'To save 22 children, they risk everything—including their lives. Inspired by a true story of survival.',
+        descriptionAr: 'لإنقاذ 22 طفلاً، يخاطرون بكل شيء - بما في ذلك حياتهم. مستوحى من قصة حقيقية للبقاء على قيد الحياة.',
+        thumbnail: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&h=450&fit=crop'
+    },
+    {
+        id: '2',
+        title: 'Pluribus',
+        titleAr: 'بلوريبوس',
+        category: 'Freelance & Side Hustle',
+        rating: 4.5,
+        year: 2024,
+        duration: '4 months',
+        description: 'A compelling drama series exploring complex human relationships.',
+        thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=600&fit=crop'
+    },
+    {
+        id: '3',
+        title: 'High Potential',
+        titleAr: 'إمكانات عالية',
+        category: 'Entrepreneurship',
+        rating: 4.6,
+        year: 2024,
+        duration: '5 months',
+        thumbnail: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&h=600&fit=crop'
+    },
+    {
+        id: '4',
+        title: 'Morning Show',
+        titleAr: 'برنامج الصباح',
+        category: 'Trading',
+        rating: 4.7,
+        year: 2024,
+        duration: '6 months',
+        thumbnail: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=600&fit=crop'
+    },
+    {
+        id: '5',
+        title: 'Ted Lasso',
+        titleAr: 'تيد لاسو',
+        category: 'Coding & AI',
+        rating: 4.9,
+        year: 2024,
+        duration: '3 months',
+        thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=600&fit=crop'
+    },
+    {
+        id: '6',
+        title: 'Slow Horses',
+        titleAr: 'الخيول البطيئة',
+        category: 'German Integration',
+        rating: 4.8,
+        year: 2024,
+        duration: '5 months',
+        thumbnail: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=600&fit=crop'
+    },
+    {
+        id: '7',
+        title: 'Severance',
+        titleAr: 'الفصل',
+        category: 'German Language',
+        rating: 4.9,
+        year: 2024,
+        duration: '6 months',
+        thumbnail: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=400&h=600&fit=crop'
+    },
+    {
+        id: '8',
+        title: 'Foundation',
+        titleAr: 'الأساس',
+        category: 'Freelance & Side Hustle',
+        rating: 4.7,
+        year: 2024,
+        duration: '8 months',
+        thumbnail: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=400&h=600&fit=crop'
+    },
+    {
+        id: '9',
+        title: 'Invasion',
+        titleAr: 'الغزو',
+        category: 'Entrepreneurship',
+        rating: 4.5,
+        year: 2024,
+        duration: '5 months',
+        thumbnail: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&h=600&fit=crop'
+    },
+    {
+        id: '10',
+        title: 'Master Trader',
+        titleAr: 'المتداول المحترف',
+        category: 'Trading',
+        rating: 4.8,
+        year: 2024,
+        duration: '4 months',
+        thumbnail: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=600&fit=crop'
+    },
+    {
+        id: '11',
+        title: 'AI Revolution',
+        titleAr: 'ثورة الذكاء الاصطناعي',
+        category: 'Coding & AI',
+        rating: 4.9,
+        year: 2024,
+        duration: '7 months',
+        thumbnail: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=600&fit=crop'
+    },
+    {
+        id: '12',
+        title: 'German Life',
+        titleAr: 'الحياة الألمانية',
+        category: 'German Integration',
+        rating: 4.7,
+        year: 2024,
+        duration: '5 months',
+        thumbnail: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=400&h=600&fit=crop'
+    }
+];
+
 export default function CoursesPage() {
-  const router = useRouter();
-  const { theme, setTheme } = useTheme();
-  const { navigateWithLoading, isLoading } = useNavigationLoading();
-  const locale = useLocaleSafe();
-  const { data: session } = useSession();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [featuredCourse, setFeaturedCourse] = useState<Course | null>(null);
-  const [courseInteractions, setCourseInteractions] = useState<Record<string, {liked: boolean, inMyList: boolean}>>({});
-  const [isMuted, setIsMuted] = useState(true);
-  const [loading, setLoading] = useState(false); // Changed to false for instant display
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mounted, setMounted] = useState(false);
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [heroIndex, setHeroIndex] = useState(0);
+    const [isScrolled, setIsScrolled] = useState(false);
+    const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+    const [showMenu, setShowMenu] = useState<string | null>(null);
+    const router = useRouter();
+    const locale = useLocaleSafe();
+    const isArabic = locale === 'ar';
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+    // Categories for course sections
+    const categories = [
+        'German Language',
+        'Freelance & Side Hustle',
+        'Entrepreneurship',
+        'Trading',
+        'Coding & AI',
+        'German Integration'
+    ];
 
-  const isDark = mounted ? theme === 'dark' : true;
+    useEffect(() => {
+        setCourses(mockCourses);
+    }, []);
 
-  // Memoize theme toggle handler
-  const toggleTheme = useCallback(() => {
-    if (mounted) {
-      setTheme(theme === 'dark' ? 'light' : 'dark');
-    }
-  }, [mounted, theme, setTheme]);
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 50);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
-  // Memoize course click handler
-  const handleCourseClick = useCallback((courseId: string) => {
-    navigateWithLoading(`/${locale}/courses/${courseId}`, 'course-navigation');
-  }, [navigateWithLoading, locale]);
+    const heroCourse = courses[heroIndex] || mockCourses[0];
 
-  // Batch fetch course interactions
-  const fetchCourseInteractions = useCallback(async (courseIds: string[]) => {
-    if (courseIds.length === 0 || !session?.user?.email) return;
-    
-    try {
-      const response = await fetch('/api/courses/interactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courseIds })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setCourseInteractions(data);
-      }
-    } catch (error) {
-      console.error('Error fetching course interactions:', error);
-    }
-  }, [session?.user?.email]);
-
-  useEffect(() => {
-    fetchCourses();
-    
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
+    const handleCourseClick = (courseId: string) => {
+        router.push(`/${locale}/courses/${courseId}`);
     };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
-  const fetchCourses = async () => {
-    try {
-      // Fetch real courses from API for featured course
-      const response = await fetch('/api/courses');
-      const data = await response.json();
-      
-      // Get all real courses from database to display in showcases
-      let allCourses: Course[] = [];
-      
-      if (data.courses && data.courses.length > 0) {
-        // Map database courses to match our interface
-        allCourses = data.courses.map((course: any) => ({
-          id: course.id,
-          title: course.title || course.titleAr || 'Untitled Course',
-          description: course.description || course.descriptionAr || 'No description available',
-          thumbnail: course.thumbnail || course.thumbnailUrl || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400',
-          instructor: course.creator?.user?.name || course.creator?.user?.arabicName || 'Instructor',
-          rating: course.rating || 4.5,
-          students: course.totalEnrollments || 0,
-          duration: course.duration || '8 weeks',
-          category: 'technology', // Default category for display
-          level: course.skillLevel?.toLowerCase() || 'beginner'
-        }));
-      }
-      
-      // If we have less than 20 courses, add mock courses to fill the page
-      if (allCourses.length < 20) {
-        const mockCourses: Course[] = [
-          {
-            id: 'cm2k3x8y10000z8pq1k2m3n4p',
-            title: 'Complete Web Development Bootcamp',
-            description: 'Master modern web development from scratch with HTML, CSS, JavaScript, React, Node.js and more',
-            thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400',
-            instructor: 'Sarah Johnson',
-            rating: 4.8,
-            students: 15420,
-            duration: '12 weeks',
-            category: 'technology',
-            level: 'beginner'
-          },
-          {
-            id: 'cm2k3x8y10001z8pq5r6s7t8u',
-            title: 'Advanced React & TypeScript',
-            description: 'Build scalable enterprise applications with React 18, TypeScript, Redux Toolkit and best practices',
-            thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400',
-            instructor: 'Mike Chen',
-            rating: 4.9,
-            students: 12350,
-            duration: '10 weeks',
-            category: 'technology',
-            level: 'advanced'
-          },
-          {
-            id: 'cm2k3x8y10002z8pq9v0w1x2y',
-            title: 'Python for Data Science',
-            description: 'Master Python programming for data analysis, visualization, and machine learning with pandas, numpy',
-            thumbnail: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400',
-            instructor: 'James Lee',
-            rating: 4.9,
-            students: 14500,
-            duration: '9 weeks',
-            category: 'technology',
-            level: 'intermediate'
-          },
-          {
-            id: 'cm2k3x8y10003z8pq3z4a5b6c',
-            title: 'Full Stack JavaScript Development',
-            description: 'Learn MERN stack development with MongoDB, Express.js, React, and Node.js',
-            thumbnail: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400',
-            instructor: 'Alex Kumar',
-            rating: 4.7,
-            students: 11200,
-            duration: '14 weeks',
-            category: 'technology',
-            level: 'intermediate'
-          },
-          {
-            id: 'cm2k3x8y10004z8pq7d8e9f0g',
-            title: 'Mobile App Development with React Native',
-            description: 'Build cross-platform mobile apps for iOS and Android using React Native',
-            thumbnail: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400',
-            instructor: 'Jennifer Park',
-            rating: 4.8,
-            students: 9870,
-            duration: '11 weeks',
-            category: 'technology',
-            level: 'intermediate'
-          },
-          {
-            id: 'cm2k3x8y10005z8pq1h2i3j4k',
-            title: 'Cloud Computing with AWS',
-            description: 'Master Amazon Web Services, deploy scalable applications, and get AWS certified',
-            thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400',
-            instructor: 'David Zhang',
-            rating: 4.6,
-            students: 8900,
-            duration: '8 weeks',
-            category: 'technology',
-            level: 'advanced'
-          },
-          {
-            id: 'cm2k3x8y10006z8pq5l6m7n8o',
-            title: 'Business Strategy Masterclass',
-            description: 'Learn strategic business planning, competitive analysis, and growth strategies from industry experts',
-            thumbnail: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400',
-            instructor: 'David Miller',
-            rating: 4.7,
-            students: 9876,
-            duration: '6 weeks',
-            category: 'business',
-            level: 'intermediate'
-          },
-          {
-            id: 'cm2k3x8y10007z8pq9p0q1r2s',
-            title: 'Financial Management & Analysis',
-            description: 'Master corporate finance, financial statements, budgeting, and investment analysis',
-            thumbnail: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400',
-            instructor: 'Robert Taylor',
-            rating: 4.7,
-            students: 7890,
-            duration: '8 weeks',
-            category: 'business',
-            level: 'advanced'
-          },
-          {
-            id: 'cm2k3x8y10008z8pq3t4u5v6w',
-            title: 'Entrepreneurship & Startup Fundamentals',
-            description: 'Launch your startup with business planning, funding strategies, and growth tactics',
-            thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400',
-            instructor: 'Maria Rodriguez',
-            rating: 4.8,
-            students: 13450,
-            duration: '7 weeks',
-            category: 'business',
-            level: 'beginner'
-          },
-          {
-            id: 'cm2k3x8y10009z8pq7x8y9z0a',
-            title: 'Project Management Professional',
-            description: 'Master project management methodologies, Agile, Scrum, and prepare for PMP certification',
-            thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400',
-            instructor: 'Thomas Anderson',
-            rating: 4.6,
-            students: 10200,
-            duration: '9 weeks',
-            category: 'business',
-            level: 'intermediate'
-          },
-          {
-            id: 'cm2k3x8y10010z8pq1b2c3d4e',
-            title: 'Leadership & Management Skills',
-            description: 'Develop essential leadership skills, team management, and organizational behavior',
-            thumbnail: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400',
-            instructor: 'Patricia Wong',
-            rating: 4.9,
-            students: 11890,
-            duration: '6 weeks',
-            category: 'business',
-            level: 'beginner'
-          },
-          {
-            id: 'cm2k3x8y10011z8pq5f6g7h8i',
-            title: 'UI/UX Design Fundamentals',
-            description: 'Create beautiful user experiences with design thinking, wireframing, prototyping and user testing',
-            thumbnail: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400',
-            instructor: 'Emma Wilson',
-            rating: 4.8,
-            students: 8765,
-            duration: '7 weeks',
-            category: 'design',
-            level: 'beginner'
-          },
-          {
-            id: 'cm2k3x8y10012z8pq9j0k1l2m',
-            title: 'Graphic Design Masterclass',
-            description: 'Master Adobe Creative Suite: Photoshop, Illustrator, InDesign for professional design',
-            thumbnail: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=400',
-            instructor: 'Sophie Martinez',
-            rating: 4.7,
-            students: 12340,
-            duration: '10 weeks',
-            category: 'design',
-            level: 'intermediate'
-          },
-          {
-            id: 'cm2k3x8y10013z8pq3n4o5p6q',
-            title: 'Motion Graphics & Animation',
-            description: 'Create stunning animations with After Effects, Premiere Pro, and motion design principles',
-            thumbnail: 'https://images.unsplash.com/photo-1626785774625-ddcddc3445e9?w=400',
-            instructor: 'Lucas Brown',
-            rating: 4.6,
-            students: 7650,
-            duration: '8 weeks',
-            category: 'design',
-            level: 'intermediate'
-          },
-          {
-            id: 'cm2k3x8y10014z8pq7r8s9t0u',
-            title: '3D Design with Blender',
-            description: 'Master 3D modeling, texturing, lighting, and rendering with Blender',
-            thumbnail: 'https://images.unsplash.com/photo-1633409361554-e97b0219fbc8?w=400',
-            instructor: 'Nina Petrov',
-            rating: 4.8,
-            students: 9200,
-            duration: '12 weeks',
-            category: 'design',
-            level: 'advanced'
-          },
-          {
-            id: 'cm2k3x8y10015z8pq1v2w3x4y',
-            title: 'Web Design & Figma',
-            description: 'Design modern websites and mobile apps using Figma, design systems, and prototyping',
-            thumbnail: 'https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=400',
-            instructor: 'Hannah Lee',
-            rating: 4.9,
-            students: 10890,
-            duration: '6 weeks',
-            category: 'design',
-            level: 'beginner'
-          },
-          {
-            id: 'cm2k3x8y10016z8pq5z6a7b8c',
-            title: 'Digital Marketing Complete Guide',
-            description: 'Master digital marketing strategies including SEO, social media, email marketing and analytics',
-            thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400',
-            instructor: 'Lisa Anderson',
-            rating: 4.6,
-            students: 11234,
-            duration: '10 weeks',
-            category: 'marketing',
-            level: 'beginner'
-          },
-          {
-            id: 'cm2k3x8y10017z8pq9d0e1f2g',
-            title: 'SEO & Content Marketing',
-            description: 'Boost your online presence with search engine optimization and content strategy',
-            thumbnail: 'https://images.unsplash.com/photo-1432888622747-4eb9a8f2c293?w=400',
-            instructor: 'Anna Martinez',
-            rating: 4.6,
-            students: 10234,
-            duration: '6 weeks',
-            category: 'marketing',
-            level: 'intermediate'
-          },
-          {
-            id: 'cm2k3x8y10018z8pq3h4i5j6k',
-            title: 'Social Media Marketing Mastery',
-            description: 'Grow your brand on Facebook, Instagram, Twitter, TikTok, and LinkedIn',
-            thumbnail: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400',
-            instructor: 'Chris Evans',
-            rating: 4.7,
-            students: 14560,
-            duration: '7 weeks',
-            category: 'marketing',
-            level: 'beginner'
-          },
-          {
-            id: 'cm2k3x8y10019z8pq7l8m9n0o',
-            title: 'Email Marketing & Automation',
-            description: 'Build email campaigns, automate workflows, and increase conversions',
-            thumbnail: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400',
-            instructor: 'Rachel Green',
-            rating: 4.5,
-            students: 8900,
-            duration: '5 weeks',
-            category: 'marketing',
-            level: 'intermediate'
-          },
-          {
-            id: 'cm2k3x8y10020z8pq1p2q3r4s',
-            title: 'Growth Hacking & Analytics',
-            description: 'Learn data-driven marketing, A/B testing, conversion optimization, and growth strategies',
-            thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400',
-            instructor: 'Kevin Patel',
-            rating: 4.8,
-            students: 9750,
-            duration: '8 weeks',
-            category: 'marketing',
-            level: 'advanced'
-          },
-        ];
-        
-        // Combine real courses with mock courses
-        allCourses = [...allCourses, ...mockCourses];
-      }
-      
-      // Use all courses for showcase
-      setCourses(allCourses);
-      
-      // Batch fetch course interactions for better performance (only if authenticated)
-      if (allCourses.length > 0 && session?.user?.email) {
-        const courseIds = allCourses.map(course => course.id);
-        await fetchCourseInteractions(courseIds);
-      }
-      
-      // Use real course from database as featured (if available)
-      if (data.courses && data.courses.length > 0) {
-        const featured = data.courses.find((c: Course) => c.rating >= 4.8) || data.courses[0];
-        setFeaturedCourse(featured);
-      } else {
-        // Fallback to first course in allCourses
-        setFeaturedCourse(allCourses[0]);
-      }
-      
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching courses:', error);
-      // Use mock courses even on error
-      const mockCourses: Course[] = [
-        {
-          id: 'cm2k3x8y10000z8pq1k2m3n4p',
-          title: 'Complete Web Development Bootcamp',
-          description: 'Master modern web development from scratch',
-          thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400',
-          instructor: 'Sarah Johnson',
-          rating: 4.8,
-          students: 15420,
-          duration: '12 weeks',
-          category: 'technology',
-          level: 'beginner'
-        },
-      ];
-      setCourses(mockCourses);
-      setFeaturedCourse(mockCourses[0]);
-      
-      // Fetch interactions for mock courses if user is authenticated
-      if (session?.user?.email) {
-        await fetchCourseInteractions([mockCourses[0].id]);
-      }
-      
-      setLoading(false);
-    }
-  };
+    return (
+        <div className="min-h-screen pt-12" style={{ backgroundColor: '#1f1f1f' }}>
+            {/* Hero Section - Featured Course */}
+            <div className="relative h-[70vh] w-full overflow-hidden mb-20">
+                {/* Background Image */}
+                <div className="absolute inset-0">
+                    <Image
+                        src={heroCourse.thumbnail || '/placeholder.jpg'}
+                        alt={heroCourse.title}
+                        fill
+                        className="object-cover"
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
+                </div>
 
-  return (
-    <div className={`min-h-screen ${isDark ? 'bg-black text-white' : 'bg-gray-50 text-gray-900'} overflow-x-hidden`}>
-      {/* Custom Navbar - Shahid Style */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? (isDark ? 'bg-[#181d25]' : 'bg-white/95 backdrop-blur-lg shadow-md')
-          : (isDark ? 'bg-gradient-to-b from-[#181d25] to-transparent' : 'bg-gradient-to-b from-white/80 to-transparent')
-      }`}>
-        <div className="max-w-[1920px] mx-auto px-6 lg:px-12">
-          <div className="flex items-center justify-between h-[72px]">
-            {/* Logo */}
-            <div className="flex items-center gap-8">
-              {/* PRIME Logo */}
-              <button 
-                onClick={() => navigateWithLoading(`/${locale}`, 'nav-home')}
-                disabled={isLoading('nav-home')}
-                className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity disabled:opacity-50"
-              >
-                <svg width="85" height="32" viewBox="0 0 85 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <text x="0" y="24" fill={isDark ? "#00d9c0" : "#00d9c0"} fontFamily="Arial, sans-serif" fontSize="28" fontWeight="bold">
-                    PRIME
-                  </text>
-                </svg>
-                {isLoading('nav-home') && (
-                  <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin ml-1"></div>
-                )}
-              </button>
-
-              {/* Navigation Links */}
-              <div className="hidden lg:flex items-center gap-8">
-                <button 
-                  onClick={() => navigateWithLoading(`/${locale}`, 'nav-home')}
-                  disabled={isLoading('nav-home')}
-                  className={`${isDark ? 'text-white/90 hover:text-white' : 'text-gray-700 hover:text-gray-900'} transition-colors text-[15px] font-medium flex items-center gap-1 disabled:opacity-50`}
-                >
-                  {isLoading('nav-home') && (
-                    <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin mr-1"></div>
-                  )}
-                  Home
-                </button>
-                <a href="#" className={`${isDark ? 'text-white' : 'text-gray-900'} transition-colors text-[15px] font-semibold flex items-center gap-1`}>
-                  <span>Courses</span>
-                </a>
-                <a href="#" className={`${isDark ? 'text-white/90 hover:text-white' : 'text-gray-700 hover:text-gray-900'} transition-colors text-[15px] font-medium`}>
-                  New & Top 🔥
-                </a>
-                <a href="#" className={`${isDark ? 'text-white/90 hover:text-white' : 'text-gray-700 hover:text-gray-900'} transition-colors text-[15px] font-medium`}>
-                  TV Shows
-                </a>
-                <a href="#" className={`${isDark ? 'text-white/90 hover:text-white' : 'text-gray-700 hover:text-gray-900'} transition-colors text-[15px] font-medium`}>
-                  Movies
-                </a>
-                <a href="#" className={`${isDark ? 'text-white/90 hover:text-white' : 'text-gray-700 hover:text-gray-900'} transition-colors text-[15px] font-medium`}>
-                  Sports
-                </a>
-                <a href="#" className={`${isDark ? 'text-white/90 hover:text-white' : 'text-gray-700 hover:text-gray-900'} transition-colors text-[15px] font-medium`}>
-                  Explore
-                </a>
-                <a href="#" className={`${isDark ? 'text-white/90 hover:text-white' : 'text-gray-700 hover:text-gray-900'} transition-colors text-[15px] font-medium`}>
-                  Live TV
-                </a>
-                <a href="#" className={`${isDark ? 'text-white/90 hover:text-white' : 'text-gray-700 hover:text-gray-900'} transition-colors text-[15px] font-medium`}>
-                  My List
-                </a>
-                <a href="#" className={`${isDark ? 'text-white/90 hover:text-white' : 'text-gray-700 hover:text-gray-900'} transition-colors text-[15px] font-medium flex items-center gap-1`}>
-                  <span className={`${isDark ? 'bg-[#00d9c0] text-black' : 'bg-[#00d9c0] text-black'} px-2 py-0.5 rounded text-xs font-bold`}>kids</span>
-                  <span>Kids</span>
-                </a>
-              </div>
-            </div>
-
-            {/* Right Section */}
-            <div className="flex items-center gap-4">
-              <button className={`p-2 ${isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'} rounded-lg transition-colors`}>
-                <Search className="w-5 h-5" />
-              </button>
-              
-              {/* Theme Toggle Button */}
-              {mounted && (
-                <button 
-                  onClick={toggleTheme}
-                  className={`p-2 ${isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'} rounded-lg transition-all duration-300`}
-                  aria-label="Toggle theme"
-                >
-                  {isDark ? (
-                    <Sun className="w-5 h-5 text-yellow-400 transition-transform hover:rotate-180 duration-500" />
-                  ) : (
-                    <Moon className="w-5 h-5 text-[#00d9c0] transition-transform hover:-rotate-12 duration-500" />
-                  )}
-                </button>
-              )}
-              
-              <button className={`${isDark ? 'text-white/90 hover:text-white' : 'text-gray-700 hover:text-gray-900'} text-[15px] font-medium hidden lg:block`}>
-                My Account
-              </button>
-              <div className={`w-9 h-9 rounded-full ${isDark ? 'bg-gradient-to-br from-[#00d9c0] to-[#00b4a0] ring-white/20' : 'bg-gradient-to-br from-[#00d9c0] to-[#00b4a0] ring-[#00d9c0]/20'} flex items-center justify-center ring-2`}>
-                <span className="text-white text-sm font-semibold">U</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section with Video Background */}
-      <div className="relative h-[85vh] overflow-hidden">
-        {/* Video Background */}
-        <div className="absolute inset-0">
-          <video
-            ref={videoRef}
-            autoPlay
-            loop
-            muted={isMuted}
-            playsInline
-            className="w-full h-full object-cover"
-          >
-            <source src="/videos/demo/course-promo.mp4" type="video/mp4" />
-          </video>
-          
-          {/* Gradient Overlays */}
-          <div className={`absolute inset-0 ${isDark ? 'bg-gradient-to-r from-black via-black/70 to-transparent' : 'bg-gradient-to-r from-white via-white/70 to-transparent'}`} />
-          <div className={`absolute inset-0 ${isDark ? 'bg-gradient-to-t from-black via-transparent to-black/50' : 'bg-gradient-to-t from-white via-transparent to-white/50'}`} />
-        </div>
-
-        {/* Hero Content */}
-        <div className="relative h-full flex items-start justify-start pt-[120px]">
-          <div className="max-w-[1920px] mx-auto px-6 lg:px-12 w-full">
-            <div className="max-w-xl">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="space-y-4"
-              >
-                {featuredCourse ? (
-                  <>
-                    {/* ORIGINALS Badge */}
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="flex items-center gap-1">
-                        <div className={`w-2 h-2 ${isDark ? 'bg-[#00d9c0]' : 'bg-[#00d9c0]'} rounded-full`}></div>
-                        <div className={`w-2 h-2 ${isDark ? 'bg-[#00d9c0]' : 'bg-[#00d9c0]'} rounded-full`}></div>
-                        <div className={`w-2 h-2 ${isDark ? 'bg-[#00d9c0]' : 'bg-[#00d9c0]'} rounded-full`}></div>
-                      </div>
-                      <span className={`${isDark ? 'text-white' : 'text-gray-900'} text-sm font-bold tracking-wider`}>FEATURED COURSE</span>
-                    </div>
-
-                    {/* Course Title */}
-                    <div className="mb-6">
-                      <h1 className={`text-5xl md:text-6xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-4 leading-tight`} style={{ textShadow: isDark ? '2px 2px 4px rgba(0,0,0,0.5)' : '2px 2px 4px rgba(255,255,255,0.5)' }}>
-                        {featuredCourse.title}
-                      </h1>
-                    </div>
-
-                    {/* Rating Badge */}
-                    <div className={`inline-flex items-center gap-2 ${isDark ? 'bg-gradient-to-r from-[#00d9c0] to-[#00b4a0]' : 'bg-gradient-to-r from-[#00d9c0] to-[#00b4a0]'} px-3 py-1 rounded mb-4`}>
-                      <Star className={`w-4 h-4 ${isDark ? 'text-black fill-black' : 'text-black fill-black'}`} />
-                      <span className={`${isDark ? 'text-black' : 'text-black'} text-sm font-bold`}>{(featuredCourse.rating || 0).toFixed(1)} Rating</span>
-                      {featuredCourse.students && (
-                        <span className={`${isDark ? 'text-black' : 'text-white'} text-sm`}>• {featuredCourse.students.toLocaleString()} Students</span>
-                      )}
-                    </div>
-
-                    {/* Description */}
-                    <p className={`${isDark ? 'text-gray-200' : 'text-gray-700'} text-lg mb-6 max-w-2xl leading-relaxed`}>
-                      {featuredCourse.description}
-                    </p>
-
-                    {/* Watch Now Button */}
-                    <div className="pt-4">
-                      <button 
-                        onClick={() => handleCourseClick(featuredCourse.id)}
-                        disabled={isLoading('course-navigation')}
-                        className={`group flex items-center gap-4 ${isDark ? 'bg-white/10 hover:bg-white/20 border-white/20' : 'bg-black/10 hover:bg-black/20 border-black/20'} backdrop-blur-xl ${isDark ? 'text-white' : 'text-gray-900'} rounded-full transition-all duration-300 border hover:scale-105 hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
-                      >
-                        <div className={`w-16 h-16 ${isDark ? 'bg-gradient-to-br from-[#00d9c0] to-[#00b4a0]' : 'bg-gradient-to-br from-[#00d9c0] to-[#00b4a0]'} rounded-full flex items-center justify-center flex-shrink-0 group-hover:shadow-lg transition-shadow duration-300`}>
-                          {isLoading('course-navigation') ? (
-                            <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          ) : (
-                            <Play className="w-7 h-7 ml-0.5 text-white group-hover:scale-110 transition-transform duration-300" fill="white" />
-                          )}
+                {/* Hero Content */}
+                <div className="relative h-full max-w-screen-2xl mx-auto px-8 flex flex-col justify-end pb-16">
+                    <div className="max-w-xl space-y-3">
+                        {/* Title */}
+                        <h1 className="text-5xl font-bold text-white tracking-tight leading-tight">
+                            {isArabic && heroCourse.titleAr ? heroCourse.titleAr : heroCourse.title}
+                        </h1>
+                        
+                        {/* Metadata - Movies • Thriller • Drama • 18+ */}
+                        <div className="flex items-center space-x-3 text-sm text-white/90">
+                            <div className="flex items-center space-x-1">
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+                                </svg>
+                                <span className="font-medium">{heroCourse.category}</span>
+                            </div>
+                            <span>•</span>
+                            <span>Thriller</span>
+                            <span>•</span>
+                            <span>Drama</span>
+                            <span>•</span>
+                            <span className="px-1.5 py-0.5 border border-white/40 rounded text-xs">18+</span>
                         </div>
-                        <div className="text-left pr-6 pl-1">
-                          <div className="text-xl font-bold group-hover:translate-x-1 transition-transform duration-300">
-                            {isLoading('course-navigation') ? 'Loading...' : 'Start Learning'}
-                          </div>
-                          <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} group-hover:translate-x-1 transition-transform duration-300`}>
-                            {isLoading('course-navigation') ? 'Please wait' : 'Begin Course Now'}
-                          </div>
+
+                        {/* Description */}
+                        <p className="text-base text-white/90 leading-relaxed max-w-md">
+                            {isArabic && heroCourse.descriptionAr 
+                                ? heroCourse.descriptionAr 
+                                : heroCourse.description}
+                        </p>
+
+                        {/* Buttons */}
+                        <div className="flex items-center space-x-3 pt-2">
+                            <button 
+                                onClick={() => handleCourseClick(heroCourse.id)}
+                                className="apple-tv-button relative flex items-center justify-center gap-2 px-8 py-3 font-semibold text-base text-black rounded-full min-w-[100px] max-w-[340px] w-auto transition-transform duration-100 ease-in hover:scale-[1.02] active:scale-[0.98] z-10"
+                                style={{
+                                    height: '48px',
+                                    borderRadius: '48px'
+                                }}
+                            >
+                                <span className="absolute inset-0 bg-white rounded-full -z-10"></span>
+                                Accept Offer
+                            </button>
+                            <button className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all backdrop-blur-sm">
+                                <span className="text-white text-xl font-light leading-none">+</span>
+                            </button>
                         </div>
-                      </button>
+
+                        {/* Offer Text */}
+                        <p className="text-xs text-white/70 pt-1 leading-relaxed">
+                            EGP 59.99/month for the first<br />
+                            <span className="font-medium">6 months</span>, then EGP 119.99/month
+                        </p>
                     </div>
-                  </>
-                ) : (
-                  <div className="text-center">
-                    <div className={`inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 ${isDark ? 'border-[#00d9c0]' : 'border-[#00d9c0]'}`}></div>
-                  </div>
-                )}
-              </motion.div>
+                </div>
+
+                {/* Pagination Dots */}
+                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                    {courses.slice(0, 5).map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => setHeroIndex(index)}
+                            className={`w-2 h-2 rounded-full transition-all ${
+                                index === heroIndex ? 'bg-white w-8' : 'bg-white/40'
+                            }`}
+                        />
+                    ))}
+                </div>
             </div>
-          </div>
+
+            {/* Top 10 TV Shows Section */}
+            <div className="relative z-10 pb-20">
+                <div className="max-w-screen-2xl mx-auto px-8">
+                    <div className="flex items-center space-x-2 mb-6">
+                        <h2 className="text-xl font-semibold text-white">
+                            Top 10 TV Shows
+                        </h2>
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                        {courses.slice(0, 8).map((course, index) => (
+                            <div 
+                                key={course.id} 
+                                className="relative group cursor-pointer" 
+                                onMouseEnter={() => setHoveredCard(course.id)}
+                                onMouseLeave={() => {
+                                    setHoveredCard(null);
+                                    setShowMenu(null);
+                                }}
+                            >
+                                {/* Rank Number */}
+                                <div className="absolute -left-3 top-1/2 transform -translate-y-1/2 text-9xl font-black text-white/10 group-hover:text-white/20 transition-all z-0 pointer-events-none select-none" style={{ 
+                                    WebkitTextStroke: '2px rgba(255,255,255,0.3)',
+                                    textShadow: '0 0 20px rgba(0,0,0,0.8)'
+                                }}>
+                                    {index + 1}
+                                </div>
+                                
+                                {/* Course Thumbnail */}
+                                <div className="relative aspect-[2/3] overflow-hidden" onClick={() => handleCourseClick(course.id)} style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
+                                    <Image
+                                        src={course.thumbnail || '/placeholder.jpg'}
+                                        alt={course.title}
+                                        fill
+                                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                    {/* Three Dots Button - Apple TV Style */}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowMenu(showMenu === course.id ? null : course.id);
+                                        }}
+                                        className="absolute bottom-2 right-2 w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center transition-all z-10"
+                                    >
+                                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 16 16">
+                                            <circle cx="3" cy="8" r="1.5"/>
+                                            <circle cx="8" cy="8" r="1.5"/>
+                                            <circle cx="13" cy="8" r="1.5"/>
+                                        </svg>
+                                    </button>
+
+                                    {/* Actions Dropdown Menu */}
+                                    {showMenu === course.id && (
+                                        <div className="absolute bottom-12 right-2 bg-neutral-800/95 backdrop-blur-md overflow-hidden shadow-xl z-20 w-[140px]" style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setShowMenu(null);
+                                                }}
+                                                className="w-full px-3 py-2.5 text-left text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between"
+                                            >
+                                                <span>Share</span>
+                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                                                </svg>
+                                            </button>
+                                            <div className="h-[0.5px] bg-white/10 mx-2"></div>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigator.clipboard.writeText(`${window.location.origin}/${locale}/courses/${course.id}`);
+                                                    setShowMenu(null);
+                                                }}
+                                                className="w-full px-3 py-2.5 text-left text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between"
+                                            >
+                                                <span>Copy Link</span>
+                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Category Sections */}
+            {categories.map((category) => {
+                const categoryCourses = courses.filter(c => c.category === category);
+                if (categoryCourses.length === 0) return null;
+
+                return (
+                    <div key={category} className="relative z-10 pb-16">
+                        <div className="max-w-screen-2xl mx-auto px-8">
+                            <div className="flex items-center space-x-2 mb-6">
+                                <h2 className="text-xl font-semibold text-white">
+                                    {category}
+                                </h2>
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                {categoryCourses.map((course) => (
+                                    <div 
+                                        key={course.id} 
+                                        className="relative group cursor-pointer" 
+                                        onMouseEnter={() => setHoveredCard(course.id)}
+                                        onMouseLeave={() => {
+                                            setHoveredCard(null);
+                                            setShowMenu(null);
+                                        }}
+                                    >
+                                        {/* Course Thumbnail */}
+                                        <div className="relative aspect-[2/3] overflow-hidden" onClick={() => handleCourseClick(course.id)} style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
+                                            <Image
+                                                src={course.thumbnail || '/placeholder.jpg'}
+                                                alt={course.title}
+                                                fill
+                                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                            {/* Three Dots Button - Apple TV Style */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setShowMenu(showMenu === course.id ? null : course.id);
+                                                }}
+                                                className="absolute bottom-2 right-2 w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center transition-all z-10"
+                                            >
+                                                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 16 16">
+                                                    <circle cx="3" cy="8" r="1.5"/>
+                                                    <circle cx="8" cy="8" r="1.5"/>
+                                                    <circle cx="13" cy="8" r="1.5"/>
+                                                </svg>
+                                            </button>
+
+                                            {/* Actions Dropdown Menu */}
+                                            {showMenu === course.id && (
+                                                <div className="absolute bottom-12 right-2 bg-neutral-800/95 backdrop-blur-md overflow-hidden shadow-xl z-20 w-[140px]" style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setShowMenu(null);
+                                                        }}
+                                                        className="w-full px-3 py-2.5 text-left text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between"
+                                                    >
+                                                        <span>Share</span>
+                                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                                                        </svg>
+                                                    </button>
+                                                    <div className="h-[0.5px] bg-white/10 mx-2"></div>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigator.clipboard.writeText(`${window.location.origin}/${locale}/courses/${course.id}`);
+                                                            setShowMenu(null);
+                                                        }}
+                                                        className="w-full px-3 py-2.5 text-left text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between"
+                                                    >
+                                                        <span>Copy Link</span>
+                                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            })}
+
+            <style jsx global>{`
+                .line-clamp-1 {
+                    display: -webkit-box;
+                    -webkit-line-clamp: 1;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                }
+            `}</style>
         </div>
-
-        {/* Mute/Unmute Button */}
-        <button
-          onClick={() => setIsMuted(!isMuted)}
-          className={`absolute bottom-8 right-8 w-12 h-12 ${isDark ? 'bg-black/60 hover:bg-black/80 border-white/20' : 'bg-white/60 hover:bg-white/80 border-gray-300'} backdrop-blur-sm rounded-full flex items-center justify-center border transition-all`}
-        >
-          {isMuted ? (
-            <VolumeX className={`w-5 h-5 ${isDark ? 'text-white' : 'text-gray-900'}`} />
-          ) : (
-            <Volume2 className={`w-5 h-5 ${isDark ? 'text-white' : 'text-gray-900'}`} />
-          )}
-        </button>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className={`w-6 h-10 border-2 ${isDark ? 'border-white/30' : 'border-gray-400/50'} rounded-full flex items-start justify-center p-2`}
-          >
-            <div className={`w-1 h-2 ${isDark ? 'bg-white/50' : 'bg-gray-600/50'} rounded-full`} />
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Course Rows - Netflix/Shahid Style */}
-      <div className="relative -mt-32 z-10 pb-20">
-        {loading ? (
-          <div className="text-center py-20">
-            <div className={`inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 ${isDark ? 'border-[#00ca98]' : 'border-[#00d9c0]'}`}></div>
-          </div>
-        ) : (
-          <>
-            {/* Technology Courses */}
-            {courses.filter(c => c.category === 'technology').length > 0 && (
-              <NetflixCourseShowcase
-                title="Technology Courses"
-                courses={courses.filter(c => c.category === 'technology') as any}
-                lang="en"
-                onCourseClick={handleCourseClick}
-                courseInteractions={courseInteractions}
-              />
-            )}
-
-            {/* Business Courses */}
-            {courses.filter(c => c.category === 'business').length > 0 && (
-              <NetflixCourseShowcase
-                title="Business & Management"
-                courses={courses.filter(c => c.category === 'business') as any}
-                lang="en"
-                onCourseClick={handleCourseClick}
-                courseInteractions={courseInteractions}
-              />
-            )}
-
-            {/* Design Courses */}
-            {courses.filter(c => c.category === 'design').length > 0 && (
-              <NetflixCourseShowcase
-                title="Design & Creativity"
-                courses={courses.filter(c => c.category === 'design') as any}
-                lang="en"
-                onCourseClick={handleCourseClick}
-                courseInteractions={courseInteractions}
-              />
-            )}
-
-            {/* Marketing Courses */}
-            {courses.filter(c => c.category === 'marketing').length > 0 && (
-              <NetflixCourseShowcase
-                title="Marketing & Growth"
-                courses={courses.filter(c => c.category === 'marketing') as any}
-                lang="en"
-                onCourseClick={handleCourseClick}
-                courseInteractions={courseInteractions}
-              />
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  );
+    );
 }

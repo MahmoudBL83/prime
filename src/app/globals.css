@@ -6,55 +6,85 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom theme variables for backward compatibility */
+/* Apple TV Theme - Pure Black & Clean Design */
 :root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
+  /* Light mode - Apple TV style (minimal use) */
+  --background: 0 0% 96%;
+  --foreground: 0 0% 11%;
+  
   --card: 0 0% 100%;
   --card-hover: 0 0% 97%;
-  --card-foreground: 222.2 84% 4.9%;
-  --muted: 210 40% 96%;
-  --muted-dark: 210 40% 92%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --border: 214.3 31.8% 91.4%;
-  --border-hover: 214.3 31.8% 85%;
-  --primary: 222.2 47.4% 11.2%;
-  --primary-hover: 222.2 47.4% 15%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222.2 47.4% 11.2%;
+  --card-foreground: 0 0% 11%;
+  
+  --muted: 0 0% 96%;
+  --muted-dark: 0 0% 92%;
+  --muted-foreground: 0 0% 45%;
+  
+  --border: 0 0% 90%;
+  --border-hover: 0 0% 80%;
+  
+  --primary: 0 0% 0%;
+  --primary-hover: 0 0% 11%;
+  --primary-foreground: 0 0% 100%;
+  
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 11%;
+  
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  
+  --accent: 0 0% 96%;
+  --accent-foreground: 0 0% 11%;
+  
   --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --ring: 222.2 84% 4.9%;
+  --popover-foreground: 0 0% 11%;
+  
+  --ring: 0 0% 11%;
 }
 
+/* Apple TV Dark Theme - Primary Mode (Pure Black like Apple TV) */
 .dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-hover: 222.2 84% 8%;
-  --card-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-dark: 217.2 32.6% 12%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --border: 217.2 32.6% 17.5%;
-  --border-hover: 217.2 32.6% 22%;
-  --primary: 210 40% 98%;
-  --primary-hover: 210 40% 95%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --ring: 212.7 26.8% 83.9%;
+  /* Pure black background - #000000 */
+  --background: 0 0% 0%;
+  --foreground: 0 0% 96%;
+  
+  /* Card surfaces - subtle lift (#1d1d1f) */
+  --card: 0 0% 11%;
+  --card-hover: 0 0% 17%;
+  --card-foreground: 0 0% 96%;
+  
+  /* Muted surfaces */
+  --muted: 0 0% 11%;
+  --muted-dark: 0 0% 0%;
+  --muted-foreground: 0 0% 53%;
+  
+  /* Minimal borders - hsla(0,0%,100%,.16) equivalent */
+  --border: 0 0% 16%;
+  --border-hover: 0 0% 23%;
+  
+  /* Clean white accents */
+  --primary: 0 0% 100%;
+  --primary-hover: 0 0% 96%;
+  --primary-foreground: 0 0% 0%;
+  
+  /* Secondary surfaces */
+  --secondary: 0 0% 11%;
+  --secondary-foreground: 0 0% 96%;
+  
+  /* Error states - Apple red */
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  
+  /* Accent surfaces */
+  --accent: 0 0% 11%;
+  --accent-foreground: 0 0% 96%;
+  
+  /* Popover surfaces - slightly elevated */
+  --popover: 0 0% 6%;
+  --popover-foreground: 0 0% 96%;
+  
+  /* Focus rings */
+  --ring: 0 0% 83%;
 }
 
 /* Netflix-style Arabic font class */
@@ -129,107 +159,101 @@
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Theme variables - Easy to customize */
+/* Apple TV Theme - Clean Black Design */
 :root {
-  /* Light theme colors */
-  --background: #ffffff;
-  --foreground: #0a0a0a;
+  /* Light mode (minimal use in Apple TV) */
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
   
-  /* Surface colors */
+  /* Apple TV uses pure black */
   --card: #ffffff;
-  --card-hover: #f9fafb;
-  --card-foreground: #0a0a0a;
+  --card-hover: #f5f5f5;
+  --card-foreground: #1d1d1f;
   
-  /* Muted/subtle colors */
-  --muted: #f5f5f5;
-  --muted-dark: #e5e5e5;
-  --muted-foreground: #737373;
+  --muted: #f5f5f7;
+  --muted-dark: #e8e8ed;
+  --muted-foreground: #86868b;
   
-  /* Border colors */
-  --border: #e5e5e5;
-  --border-hover: #d4d4d4;
+  --border: #d2d2d7;
+  --border-hover: #b0b0b5;
   
-  /* Primary/Accent colors (Purple brand) */
-  --primary: #8b5cf6;
-  --primary-hover: #7c3aed;
+  --primary: #000000;
+  --primary-hover: #1d1d1f;
   --primary-foreground: #ffffff;
   
-  /* Secondary accent (Pink) */
-  --secondary: #ec4899;
-  --secondary-hover: #db2777;
-  --secondary-foreground: #ffffff;
+  --secondary: #f5f5f7;
+  --secondary-hover: #e8e8ed;
+  --secondary-foreground: #1d1d1f;
   
-  /* Success/Info/Warning/Error */
-  --success: #10b981;
-  --info: #3b82f6;
-  --warning: #f59e0b;
-  --error: #ef4444;
+  --success: #30d158;
+  --info: #0071e3;
+  --warning: #ff9f0a;
+  --error: #ff3b30;
   
-  /* Input colors */
   --input-bg: #ffffff;
-  --input-border: #d1d5db;
-  --input-focus: #8b5cf6;
+  --input-border: #d2d2d7;
+  --input-focus: #0071e3;
   
-  /* Overlay colors */
-  --overlay: rgba(0, 0, 0, 0.5);
+  --overlay: rgba(0, 0, 0, 0.4);
   --overlay-light: rgba(0, 0, 0, 0.1);
 }
 
-/* Dark theme */
+/* Apple TV Dark Theme - Primary Mode */
 .dark {
-  /* Dark theme colors */
-  --background: #0a0a0a;
-  --foreground: #ffffff;
+  /* Pure black background like Apple TV */
+  --background: #000000;
+  --foreground: #f5f5f7;
   
-  /* Surface colors */
-  --card: #111111;
-  --card-hover: #1a1a1a;
-  --card-foreground: #ffffff;
+  /* Card surfaces - subtle lift from background */
+  --card: #1d1d1f;
+  --card-hover: #2c2c2e;
+  --card-foreground: #f5f5f7;
   
-  /* Muted/subtle colors */
-  --muted: #1a1a1a;
-  --muted-dark: #262626;
-  --muted-foreground: #a3a3a3;
+  /* Muted surfaces */
+  --muted: #1d1d1f;
+  --muted-dark: #000000;
+  --muted-foreground: #86868b;
   
-  /* Border colors */
-  --border: #2a2a2a;
-  --border-hover: #404040;
+  /* Minimal borders */
+  --border: #2c2c2e;
+  --border-hover: #3a3a3c;
   
-  /* Primary/Accent colors (Purple brand) */
-  --primary: #8b5cf6;
-  --primary-hover: #a78bfa;
-  --primary-foreground: #ffffff;
+  /* Clean white accents */
+  --primary: #ffffff;
+  --primary-hover: #f5f5f7;
+  --primary-foreground: #000000;
   
-  /* Secondary accent (Pink) */
-  --secondary: #ec4899;
-  --secondary-hover: #f472b6;
-  --secondary-foreground: #ffffff;
+  /* Secondary surfaces */
+  --secondary: #1d1d1f;
+  --secondary-hover: #2c2c2e;
+  --secondary-foreground: #f5f5f7;
   
-  /* Success/Info/Warning/Error */
-  --success: #10b981;
-  --info: #3b82f6;
-  --warning: #f59e0b;
-  --error: #ef4444;
+  /* Apple system colors */
+  --success: #30d158;
+  --info: #0a84ff;
+  --warning: #ff9f0a;
+  --error: #ff453a;
   
   /* Input colors */
-  --input-bg: #1a1a1a;
-  --input-border: #404040;
-  --input-focus: #8b5cf6;
+  --input-bg: #1d1d1f;
+  --input-border: #3a3a3c;
+  --input-focus: #0a84ff;
   
   /* Overlay colors */
-  --overlay: rgba(0, 0, 0, 0.7);
-  --overlay-light: rgba(0, 0, 0, 0.2);
+  --overlay: rgba(0, 0, 0, 0.85);
+  --overlay-light: rgba(0, 0, 0, 0.3);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  /* Shahid/Netflix-style system font stack */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-feature-settings: "kern" 1;
+  background: #000000;
+  color: hsl(var(--foreground));
+  /* Apple TV system font - SF Pro Display */
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* MasterClass-style smooth scrolling */
+  font-weight: 400;
+  line-height: 1.47059;
+  letter-spacing: -0.022em;
   scroll-behavior: smooth;
 }
 
@@ -273,27 +297,28 @@ body[data-locale="ar"] {
   line-height: 20.4692px;
 }
 
-/* MasterClass-style smooth transitions for all elements */
+/* Apple TV Smooth Animations */
 * {
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
 }
 
-/* Custom scrollbar for dark theme */
+/* Apple TV Scrollbar - Minimal & Clean */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #404040;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555555;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Line clamp utilities */
@@ -321,21 +346,54 @@ body[data-locale="ar"] {
   line-clamp: 3;
 }
 
-/* MasterClass-style focus styles */
-:focus {
-  outline: none;
+/* Apple TV Color Utilities - Replace purple/pink with Apple TV colors */
+.bg-apple-accent { background-color: #0a84ff; } /* Apple blue accent */
+.bg-apple-success { background-color: #30d158; } /* Apple green */
+.bg-apple-warning { background-color: #ff9f0a; } /* Apple orange */
+.bg-apple-error { background-color: #ff453a; } /* Apple red */
+.bg-apple-card { background-color: #1d1d1f; }
+.bg-apple-elevated { background-color: #2c2c2e; }
+
+.text-apple-accent { color: #0a84ff; }
+.text-apple-success { color: #30d158; }
+.text-apple-warning { color: #ff9f0a; }
+.text-apple-error { color: #ff453a; }
+
+.border-apple-accent { border-color: #0a84ff; }
+.border-apple-elevated { border-color: #2c2c2e; }
+.border-apple-subtle { border-color: rgba(255, 255, 255, 0.16); }
+
+/* Apple TV Gradients - Subtle instead of vibrant purple/pink */
+.bg-gradient-apple { background: linear-gradient(135deg, #1d1d1f 0%, #2c2c2e 100%); }
+.bg-gradient-apple-accent { background: linear-gradient(135deg, #0a84ff 0%, #0071e3 100%); }
+.bg-gradient-apple-hover { background: linear-gradient(135deg, #2c2c2e 0%, #3a3a3c 100%); }
+
+/* Override purple/pink with Apple TV colors globally */
+.from-purple-500, .from-purple-600 { --tw-gradient-from: #0a84ff !important; }
+.to-pink-500, .to-pink-600 { --tw-gradient-to: #0071e3 !important; }
+.from-purple-400 { --tw-gradient-from: #0a84ff !important; }
+.to-pink-400 { --tw-gradient-to: #0a84ff !important; }
+
+.text-purple-400, .text-purple-500, .text-purple-600 { color: #0a84ff !important; }
+.text-pink-400, .text-pink-500, .text-pink-600 { color: #0a84ff !important; }
+
+.bg-purple-500, .bg-purple-600 { background-color: #0a84ff !important; }
+.bg-pink-500, .bg-pink-600 { background-color: #0a84ff !important; }
+
+.border-purple-500, .border-purple-600 { border-color: #0a84ff !important; }
+.border-pink-500, .border-pink-600 { border-color: #0a84ff !important; }
+
+/* Apple TV Focus Styles */
+*:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
-/* Remove focus ring from buttons */
-button:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-/* Dark theme specific text selection */
+/* Apple TV Selection */
 ::selection {
-  background: var(--accent);
-  color: var(--accent-foreground);
+  background: rgba(0, 122, 255, 0.2);
+  color: inherit;
 }
 
 /* RTL-specific styles */
@@ -492,13 +550,18 @@ button:focus {
   }
 }
 
-/* Fix button cursor issues */
+/* Apple TV Button Styles */
 button {
-  cursor: pointer;
+  font-family: inherit;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-button:disabled {
-  cursor: not-allowed;
+/* Apple TV Input Styles */
+input, textarea, select {
+  font-family: inherit;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Interactive elements should have pointer cursor */
