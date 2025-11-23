@@ -348,6 +348,7 @@ export default function OnlyFansStyleMentorsPage() {
     const [isNavigating, setIsNavigating] = useState(false)
     const [userSubscriptions, setUserSubscriptions] = useState<any[]>([]) // Track user's subscriptions
     const [bookmarks, setBookmarks] = useState<any[]>([]) // Array of bookmarked posts
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false) // Mobile menu state
     const [bookmarkedPostIds, setBookmarkedPostIds] = useState<string[]>([]) // Array of post IDs that are bookmarked
 
     useEffect(() => {
@@ -1056,22 +1057,28 @@ export default function OnlyFansStyleMentorsPage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
-                <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+                <div className="w-16 h-16 border-4 border-[#0a84ff]/30 border-t-[#0a84ff] rounded-full animate-spin" />
             </div>
         )
     }
 
     return (
         <div className="min-h-screen bg-background text-foreground transition-colors">
-            
-
-
+            {/* Mobile Menu Overlay */}
+            {isMobileMenuOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
 
             {/* Twitter-Style Feed */}
             <div className="container mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
                     {/* Left Sidebar - Navigation */}
-                    <div className="hidden lg:block lg:col-span-3 p-4">
+                    <div className={`fixed lg:static inset-y-0 left-0 z-50 w-72 lg:w-auto lg:col-span-3 p-4 bg-background transform transition-transform duration-300 lg:transform-none ${
+                        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+                    }`}>
                         <div className="sticky top-20">
                             <nav className="space-y-2">
                                 {/* Feed/Home Button */}
@@ -1205,7 +1212,16 @@ export default function OnlyFansStyleMentorsPage() {
                     <div className="lg:col-span-6 min-h-screen" style={{ borderLeft: '0.5px solid hsla(0,0%,100%,.1)', borderRight: '0.5px solid hsla(0,0%,100%,.1)' }}>
                         {/* Header */}
                         <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl p-4 transition-colors" style={{ borderBottom: '0.5px solid hsla(0,0%,100%,.1)' }}>
-                            <h2 className="text-2xl font-black text-foreground">
+                            {/* Mobile Menu Button */}
+                            <button
+                                onClick={() => setIsMobileMenuOpen(true)}
+                                className="lg:hidden mr-4 p-2 hover:bg-white/5 rounded-full transition-colors inline-flex items-center justify-center"
+                            >
+                                <svg className="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            </button>
+                            <h2 className="text-2xl font-black text-foreground inline-block">
                                 {activeView === 'feed' && (isArabic ? 'الأخبار' : 'Feed')}
                                 {activeView === 'subscriptions' && (isArabic ? 'اشتراكاتي' : 'My Subscriptions')}
                                 {activeView === 'bookmarks' && (isArabic ? 'المحفوظات' : 'Bookmarks')}
@@ -3763,13 +3779,16 @@ export default function OnlyFansStyleMentorsPage() {
                             </div>
 
                             {/* Suggested Creators */}
-                            <div className="bg-card border border-border rounded-2xl overflow-hidden">
-                                <div className="p-4 border-b border-border">
-                                    <h3 className="font-bold text-xl text-foreground">
+                            <div className="bg-[#1f1f1f] border border-white/10 rounded-2xl overflow-hidden">
+                                <div className="p-5 border-b border-white/10">
+                                    <h3 className="font-bold text-xl text-white flex items-center gap-2">
+                                        <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
                                         {isArabic ? 'منشئون مقترحون' : 'Suggested Creators'}
                                     </h3>
                                 </div>
-                                <div className="divide-y divide-border">
+                                <div className="divide-y divide-white/10">
                                     {/* Show skeleton loading while creators are being fetched */}
                                     {loading ? (
                                         <>
@@ -3781,7 +3800,7 @@ export default function OnlyFansStyleMentorsPage() {
                                         creators.slice(0, 5).map((creator, idx) => (
                                         <div
                                             key={creator.id}
-                                            className="p-4 hover:bg-card-hover transition-all group animate-fade-in"
+                                            className="p-4 hover:bg-white/5 transition-all duration-200 group animate-fade-in"
                                             style={{ animationDelay: `${idx * 50}ms` }}
                                         >
                                             <div 
@@ -3790,48 +3809,48 @@ export default function OnlyFansStyleMentorsPage() {
                                             >
                                                 {/* Profile Image */}
                                                 <div className="relative flex-shrink-0">
-                                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    <div className="absolute -inset-0.5 bg-[#0a84ff] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                                                     {creator.user?.profileImage ? (
                                                         <Image
                                                             src={creator.user.profileImage}
                                                             alt={creator.user?.name || 'Creator'}
-                                                            width={48} height={48} className="rounded-full object-cover w-12 h-12 relative"
+                                                            width={48} height={48} className="rounded-full object-cover w-12 h-12 relative border-2 border-white/10 group-hover:border-[#0a84ff] transition-colors duration-200"
                                                         />
                                                     ) : (
-                                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center relative">
-                                                            <span className="text-lg font-bold text-foreground">
+                                                        <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center relative border-2 border-white/10 group-hover:border-[#0a84ff] transition-colors duration-200">
+                                                            <span className="text-base font-bold text-white">
                                                                 {creator.user?.name?.[0] || 'C'}
                                                             </span>
                                                         </div>
                                                     )}
                                                     {/* Online Indicator */}
                                                     {creator.isOnline && (
-                                                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                                                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#0a84ff] rounded-full border-2 border-[#1f1f1f]" />
                                                     )}
                                                 </div>
 
                                                 {/* Creator Info */}
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-1 mb-0.5">
-                                                        <h4 className="font-bold text-foreground text-sm truncate group-hover:text-purple-400 transition-colors">
+                                                    <div className="flex items-center gap-1.5 mb-0.5">
+                                                        <h4 className="font-semibold text-white text-sm truncate group-hover:text-[#0a84ff] transition-colors duration-200">
                                                             {creator.user?.name || 'Creator'}
                                                         </h4>
                                                         {creator.stats.averageRating >= 4.5 && (
-                                                            <DynamicIcon name="CheckCircle" className="w-3.5 h-3.5 text-purple-500 fill-purple-500 flex-shrink-0" />
+                                                            <DynamicIcon name="CheckCircle" className="w-4 h-4 text-[#0a84ff] fill-[#0a84ff] flex-shrink-0" />
                                                         )}
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                    <div className="flex items-center gap-2 text-xs text-white/50">
                                                         <span className="flex items-center gap-1">
                                                             <DynamicIcon name="Users" className="w-3 h-3" />
                                                             {(creator.totalSubscribers / 1000).toFixed(1)}K
                                                         </span>
                                                         <span>·</span>
                                                         <span className="flex items-center gap-1">
-                                                            <DynamicIcon name="Star" className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                                            <DynamicIcon name="Star" className="w-3 h-3 text-white/50" />
                                                             {creator.stats.averageRating.toFixed(1)}
                                                         </span>
                                                     </div>
-                                                    <div className="text-xs font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mt-1">
+                                                    <div className="text-xs font-semibold text-white/70 mt-1">
                                                         {creator.basicMonthlyPrice} {isArabic ? 'ج.م/شهر' : 'EGP/mo'}
                                                     </div>
                                                 </div>
@@ -3846,7 +3865,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                             // TODO: Handle manage subscription
                                                             toast.success(`${isArabic ? 'مشترك في طبقة' : 'Subscribed to'} ${creator.subscribedTier} ${isArabic ? 'طبقة' : 'tier'}`)
                                                         }}
-                                                        className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold text-xs py-2 rounded-full"
+                                                        className="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs py-2 rounded-full border border-white/20 transition-all duration-200"
                                                         disabled
                                                     >
                                                         <DynamicIcon name="Check" className="w-3 h-3 mr-1" />
@@ -3858,7 +3877,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                             e.stopPropagation()
                                                             handleSubscribeClick(creator)
                                                         }}
-                                                        className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold text-xs py-2 rounded-full"
+                                                        className="flex-1 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white font-semibold text-xs py-2 rounded-full transition-all duration-200"
                                                     >
                                                         <DynamicIcon name="Star" className="w-3 h-3 mr-1" />
                                                         {isArabic ? 'اشترك' : 'Subscribe'}
@@ -3869,7 +3888,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                         e.stopPropagation()
                                                         handleTipClick(creator)
                                                     }}
-                                                    className="bg-card hover:bg-card-hover border border-border text-foreground font-semibold text-xs py-2 px-3 rounded-full"
+                                                    className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white font-semibold text-xs py-2 px-3 rounded-full transition-all duration-200"
                                                 >
                                                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -3881,7 +3900,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                         handleMessageClick(creator)
                                                     }}
                                                     disabled={isNavigating}
-                                                    className="bg-card hover:bg-card-hover border border-border text-foreground font-semibold text-xs py-2 px-3 rounded-full"
+                                                    className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white font-semibold text-xs py-2 px-3 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
                                                     {isNavigating ? (
                                                         <DynamicIcon name="Loader2" className="w-3 h-3 animate-spin" />
@@ -3894,7 +3913,7 @@ export default function OnlyFansStyleMentorsPage() {
                                     )))}
                                 </div>
                                 <button 
-                                    className="w-full p-3 text-purple-400 hover:text-purple-300 hover:bg-white/[0.02] text-sm font-semibold transition-all text-center border-t border-border"
+                                    className="w-full p-3 text-[#0a84ff] hover:text-white hover:bg-white/5 text-sm font-semibold transition-all text-center border-t border-white/10"
                                     onClick={() => setActiveView('feed')}
                                 >
                                     {isArabic ? 'عرض المزيد' : 'Show more'}

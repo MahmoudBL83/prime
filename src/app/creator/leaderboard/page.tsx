@@ -55,7 +55,7 @@ export default function LeaderboardPage() {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600 mx-auto mb-3" />
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0a84ff] mx-auto mb-3" />
                     <p className="text-muted-foreground">Loading leaderboard...</p>
                 </div>
             </div>

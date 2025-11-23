@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signIn } from 'next-auth/react';
@@ -16,6 +17,7 @@ export function SignInModal({ isOpen, onClose, onSignInSuccess }: SignInModalPro
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -145,6 +147,10 @@ export function SignInModal({ isOpen, onClose, onSignInSuccess }: SignInModalPro
                                 {/* Create Account */}
                                 <button
                                     type="button"
+                                    onClick={() => {
+                                        onClose();
+                                        router.push('/register');
+                                    }}
                                     className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-4 rounded-full transition-all border border-white/20"
                                 >
                                     Create New Account

@@ -171,7 +171,7 @@ export default function ChannelPage() {
                 <div className="text-center">
                     <div className="relative">
                         <div className="absolute inset-0 w-16 h-16 border-4 border-purple-500/30 rounded-full animate-ping"></div>
-                        <div className="w-16 h-16 border-4 border-purple-500/50 border-t-purple-400 rounded-full animate-spin mx-auto mb-6"></div>
+                        <div className="w-16 h-16 border-4 border-[#0a84ff]/30 border-t-[#0a84ff] rounded-full animate-spin mx-auto mb-6"></div>
                     </div>
                     <p className="text-purple-200 text-lg font-medium">{isArabic ? 'جاري تحميل القناة...' : 'Loading channel...'}</p>
                 </div>

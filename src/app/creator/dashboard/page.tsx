@@ -215,7 +215,7 @@ export default function ModernCreatorDashboard() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-[#0a84ff] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-muted-foreground font-medium">Loading Dashboard...</p>
         </div>
       </div>

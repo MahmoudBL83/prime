@@ -216,7 +216,7 @@ export default function StudyBuddySwipePage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-20 h-20 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto"></div>
+          <div className="w-20 h-20 border-4 border-[#0a84ff]/30 border-t-[#0a84ff] rounded-full animate-spin mx-auto"></div>
           <p className="mt-6 text-xl text-purple-200">
             {isArabic ? 'جار تحميل المرشحين...' : 'Loading candidates...'}
           </p>

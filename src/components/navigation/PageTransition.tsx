@@ -216,7 +216,7 @@ export function NavigationButtonLoading({
                     exit={{ opacity: 0, x: -10 }}
                     className="absolute left-0 -ml-6"
                 >
-                    <Loader2 className="w-4 h-4 animate-spin text-purple-600" />
+                    <Loader2 className="w-4 h-4 animate-spin text-[#0a84ff]" />
                 </motion.div>
             )}
             <span className={cn(isLoading && 'opacity-75')}>{children}</span>

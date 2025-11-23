@@ -487,6 +487,7 @@ export default function CourseDetailPage() {
                         <div
                             key={episode.id}
                             className="relative group cursor-pointer"
+                            onClick={handleAcceptOffer}
                             onMouseEnter={() => setShowMenu(null)}
                         >
                             {/* Episode Thumbnail */}
@@ -531,6 +532,7 @@ export default function CourseDetailPage() {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
+                                                handleAcceptOffer();
                                                 setShowMenu(null);
                                             }}
                                             className="w-full px-3 py-2.5 text-left text-[13px] text-white/90 hover:bg-white/10 transition-colors"

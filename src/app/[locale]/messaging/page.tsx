@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import {
     Search,
@@ -89,10 +89,11 @@ interface Conversation {
     unreadCount: number
 }
 
-export default function MessengerPage() {
+function MessengerPage() {
     const { data: session } = useSession()
     const router = useRouter()
     const params = useParams()
+    const searchParams = useSearchParams()
     const locale = (params.locale as string) || 'en'
     const isArabic = locale === 'ar'
 
@@ -178,6 +179,22 @@ export default function MessengerPage() {
         checkMobile()
         window.addEventListener('resize', checkMobile)
         
+        // Check for userId parameter to auto-open conversation
+        const userId = searchParams.get('userId')
+        if (userId && conversations.length > 0) {
+            // Find existing conversation with this user
+            const existingConversation = conversations.find(conv => 
+                !conv.isGroup && conv.user.id === userId
+            )
+            
+            if (existingConversation) {
+                handleSelectConversation(existingConversation)
+            } else {
+                // Create new conversation with this user
+                createConversationWithUser(userId)
+            }
+        }
+        
         // Keyboard shortcuts
         const handleKeyDown = (e: KeyboardEvent) => {
             // Ctrl/Cmd + K for search
@@ -207,7 +224,7 @@ export default function MessengerPage() {
             window.removeEventListener('resize', checkMobile)
             window.removeEventListener('keydown', handleKeyDown)
         }
-    }, [session, locale, router, checkMobile])
+    }, [session, locale, router, checkMobile, searchParams, conversations])
 
     useEffect(() => {
         scrollToBottom()
@@ -269,6 +286,47 @@ export default function MessengerPage() {
         } catch (error) {
             console.error('Failed to fetch messages:', error)
             toast.error(isArabic ? 'حدث خطأ في تحميل الرسائل' : 'Error loading messages')
+        }
+    }
+
+    const createConversationWithUser = async (userId: string) => {
+        try {
+            // First, fetch user details
+            const userResponse = await fetch(`/api/users/${userId}`)
+            if (!userResponse.ok) {
+                toast.error(isArabic ? 'المستخدم غير موجود' : 'User not found')
+                return
+            }
+            
+            const userData = await userResponse.json()
+            
+            // Create a temporary conversation object
+            const newConversation: Conversation = {
+                id: `temp-${userId}`,
+                user: {
+                    id: userData.id,
+                    name: userData.name,
+                    image: userData.profileImage || userData.image,
+                    isOnline: false
+                },
+                unreadCount: 0
+            }
+            
+            // Add to conversations list
+            setConversations(prev => [newConversation, ...prev])
+            
+            // Select the conversation
+            setSelectedConversation(newConversation)
+            setMessages([])
+            
+            if (isMobile) {
+                setShowConversationList(false)
+            }
+            
+            toast.success(isArabic ? 'يمكنك الآن بدء المحادثة' : 'You can now start the conversation')
+        } catch (error) {
+            console.error('Failed to create conversation:', error)
+            toast.error(isArabic ? 'فشل إنشاء المحادثة' : 'Failed to create conversation')
         }
     }
 
@@ -2601,5 +2659,21 @@ export default function MessengerPage() {
                 )}
             </AnimatePresence>
         </div>
+    )
+}
+
+// Wrapper component with Suspense for useSearchParams
+export default function MessagingPageWrapper() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-900">
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-[#0a84ff] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-600 dark:text-gray-400">Loading messages...</p>
+                </div>
+            </div>
+        }>
+            <MessengerPage />
+        </Suspense>
     )
 }

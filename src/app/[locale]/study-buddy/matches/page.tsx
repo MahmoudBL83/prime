@@ -146,7 +146,7 @@ export default function StudyBuddyMatchesPage() {
           animate={{ opacity: 1, scale: 1 }}
           className="text-center"
         >
-          <div className="w-20 h-20 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto"></div>
+          <div className="w-20 h-20 border-4 border-[#0a84ff]/30 border-t-[#0a84ff] rounded-full animate-spin mx-auto"></div>
           <p className="mt-6 text-xl text-purple-200">
             {isArabic ? 'جار تحميل التطابقات...' : 'Loading matches...'}
           </p>

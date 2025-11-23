@@ -147,7 +147,7 @@ export default function CohortsDiscoveryPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-[#0a84ff] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }

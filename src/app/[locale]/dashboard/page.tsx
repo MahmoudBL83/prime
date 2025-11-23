@@ -303,7 +303,7 @@ function DashboardContent() {
                     <div className="relative">
                         {/* Decorative loading elements */}
                         <div className="absolute inset-0 w-16 h-16 border-4 border-purple-500/30 rounded-full animate-ping"></div>
-                        <div className="w-16 h-16 border-4 border-purple-500/50 border-t-purple-400 rounded-full animate-spin mx-auto mb-6"></div>
+                        <div className="w-16 h-16 border-4 border-[#0a84ff]/30 border-t-[#0a84ff] rounded-full animate-spin mx-auto mb-6"></div>
                     </div>
                     <p className="text-purple-200 text-lg font-medium">Loading your dashboard...</p>
                     <p className="text-gray-400 text-sm mt-2">Preparing your personalized experience</p>

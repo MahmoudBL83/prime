@@ -2355,7 +2355,7 @@ export default function OnlyFansMentorProfilePage() {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center">
                 <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4" />
+                    <div className="w-16 h-16 border-4 border-[#0a84ff]/30 border-t-[#0a84ff] rounded-full animate-spin mx-auto mb-4" />
                     <p className="text-muted-foreground">
                         {subscriptionLoading 
                             ? (isArabic ? 'جاري التحقق من الاشتراك...' : 'Checking subscription...') 
@@ -2610,7 +2610,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 >
                                                     <Bell className="w-5 h-5 text-foreground" />
                                                     {/* Badge with count */}
-                                                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                                                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#0a84ff] rounded-full flex items-center justify-center">
                                                         <span className="text-xs font-bold text-white">{upcomingSessions.length}</span>
                                                     </div>
                                                 </button>
@@ -2625,7 +2625,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             {upcomingSessions[0].title}
                                                         </div>
                                                         <div className="flex items-center gap-2 text-xs">
-                                                            <Calendar className="w-3 h-3 text-purple-500" />
+                                                            <Calendar className="w-3 h-3 text-[#0a84ff]" />
                                                             <span className="text-muted-foreground">
                                                                 {(() => {
                                                                     const sessionDate = new Date(upcomingSessions[0].date)
@@ -2671,7 +2671,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     document.getElementById('subscription-tiers')?.scrollIntoView({ behavior: 'smooth' })
                                                 }}
                                                 disabled={isSubscribing}
-                                                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold px-8 py-2 rounded-full disabled:opacity-50"
+                                                className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white font-bold px-8 py-2 rounded-full disabled:opacity-50 transition-all"
                                             >
                                                 <Crown className="w-4 h-4 mr-2" />
                                                 {isSubscribing ? (isArabic ? 'جاري...' : 'Loading...') : (isArabic ? 'اشترك' : 'Subscribe')}
@@ -2680,7 +2680,7 @@ export default function OnlyFansMentorProfilePage() {
                                             <div className="flex items-center gap-3">
                                                 <Button
                                                     onClick={() => setIsBookingModalOpen(true)}
-                                                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold px-6 py-2 rounded-full"
+                                                    className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white font-semibold px-6 py-2 rounded-full transition-all"
                                                 >
                                                     <Calendar className="w-4 h-4 mr-2" />
                                                     {isArabic ? 'حجز جلسة' : 'Book Session'}
@@ -2713,9 +2713,9 @@ export default function OnlyFansMentorProfilePage() {
                                 </h1>
                                 {currentSubscription && (
                                     <Badge className={`${
-                                        currentSubscription === 'VIP' ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
-                                        currentSubscription === 'PREMIUM' ? 'bg-gradient-to-r from-purple-500 to-pink-500' :
-                                        'bg-gradient-to-r from-blue-500 to-cyan-500'
+                                        currentSubscription === 'VIP' ? 'bg-[#0a84ff] border-2 border-white/20' :
+                                        currentSubscription === 'PREMIUM' ? 'bg-[#0a84ff]/80' :
+                                        'bg-[#0a84ff]/60'
                                     } text-white border-0`}>
                                         <Crown className="w-3 h-3 mr-1" />
                                         {currentSubscription}
@@ -2776,17 +2776,17 @@ export default function OnlyFansMentorProfilePage() {
                         >
                             {/* Current Subscription Status (not for own profile) */}
                             {!isCreatorView && currentSubscription && (
-                                <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl p-6 mb-6">
+                                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                                                <CheckCircle className="w-6 h-6 text-green-400" />
+                                            <div className="w-10 h-10 rounded-full bg-[#0a84ff]/20 flex items-center justify-center">
+                                                <CheckCircle className="w-5 h-5 text-[#0a84ff]" />
                                             </div>
                                             <div>
-                                                <h3 className="text-lg font-bold text-foreground">
+                                                <h3 className="text-base font-semibold text-white">
                                                     {isArabic ? 'أنت مشترك!' : 'You\'re Subscribed!'}
                                                 </h3>
-                                                <p className="text-sm text-muted-foreground">
+                                                <p className="text-sm text-white/50">
                                                     {isArabic ? `عضوية ${currentSubscription} نشطة` : `${currentSubscription} membership active`}
                                                 </p>
                                             </div>
@@ -2799,7 +2799,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         handleUpgradeSubscription(nextTier as any)
                                                     }}
                                                     disabled={isSubscribing}
-                                                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:opacity-50"
+                                                    className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white disabled:opacity-50"
                                                 >
                                                     <Crown className="w-4 h-4 mr-2" />
                                                     {isArabic ? 'ترقية' : 'Upgrade'}
@@ -2807,7 +2807,7 @@ export default function OnlyFansMentorProfilePage() {
                                             )}
                                             <Button
                                                 onClick={handleCancelSubscription}
-                                                className="bg-white/5 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 border border-border"
+                                                className="bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10"
                                             >
                                                 {isArabic ? 'إلغاء' : 'Cancel'}
                                             </Button>
@@ -2816,200 +2816,102 @@ export default function OnlyFansMentorProfilePage() {
                                 </div>
                             )}
 
-                            {/* Subscription Tiers - OnlyFans Style Full-Width Slider (Hide for own profile) */}
+                            {/* Subscription Tiers - Apple TV Minimal */}
                             {!isCreatorView && (
-                            <div id="subscription-tiers" className="relative mb-6 -mx-6 overflow-hidden bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-yellow-600/10">
-                                {/* Navigation Arrows */}
-                                <div className="absolute top-1/2 left-2 right-2 md:left-4 md:right-4 -translate-y-1/2 flex justify-between pointer-events-none z-20">
-                                    <button
-                                        onClick={() => setActiveTierIndex(Math.max(0, activeTierIndex - 1))}
-                                        disabled={activeTierIndex === 0}
-                                        className="pointer-events-auto w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white disabled:opacity-20 disabled:cursor-not-allowed hover:bg-black/80 transition-all shadow-xl"
-                                    >
-                                        <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveTierIndex(Math.min(2, activeTierIndex + 1))}
-                                        disabled={activeTierIndex === 2}
-                                        className="pointer-events-auto w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white disabled:opacity-20 disabled:cursor-not-allowed hover:bg-black/80 transition-all shadow-xl"
-                                    >
-                                        <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </button>
-                                </div>
-
-                                {/* Pagination Dots */}
-                                <div className="absolute top-6 left-0 right-0 flex justify-center gap-2 z-10">
-                                    {[0, 1, 2].map((index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() => setActiveTierIndex(index)}
-                                            className={`h-1.5 rounded-full transition-all ${
-                                                activeTierIndex === index 
-                                                    ? 'w-8 bg-white shadow-lg' 
-                                                    : 'w-1.5 bg-white/40 hover:bg-white/60'
-                                            }`}
-                                        />
-                                    ))}
-                                </div>
-
-                                {/* Slider Container */}
-                                <div className="overflow-hidden pt-16 pb-8 px-6">
-                                    <motion.div
-                                        className="flex"
-                                        animate={{ x: `${-activeTierIndex * 100}%` }}
-                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                    >
-                                        {/* Basic Tier Slide */}
-                                        {mentor.basicMonthlyPrice && (
-                                            <div className="w-full flex-shrink-0 px-4">
-                                                <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/40 rounded-xl p-5 max-w-xs mx-auto text-center">
-                                                    <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-500/30 rounded-full mb-3">
-                                                        <Sparkles className="w-6 h-6 text-blue-400" />
-                                                    </div>
-                                                    <h4 className="text-xl font-black text-foreground mb-2">Basic</h4>
-                                                    <div className="text-3xl font-black text-foreground mb-1">
-                                                        ${mentor.basicMonthlyPrice}
-                                                    </div>
-                                                    <div className="text-xs text-muted-foreground mb-5">{isArabic ? 'شهرياً' : 'per month'}</div>
-                                                
-                                                    {/* Perks List */}
-                                                    <div className="mb-5 text-left">
-                                                        <ul className="space-y-1.5 text-xs text-foreground">
-                                                            <li className="flex items-center gap-2">
-                                                                <CheckCircle className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                                                                <span>{isArabic ? 'الوصول لجميع المنشورات' : 'All posts & content'}</span>
-                                                            </li>
-                                                            <li className="flex items-center gap-2">
-                                                                <CheckCircle className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                                                                <span>{isArabic ? 'مساحة المجتمع' : 'Community access'}</span>
-                                                            </li>
-                                                            <li className="flex items-center gap-2">
-                                                                <CheckCircle className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                                                                <span>{isArabic ? 'تحديثات أسبوعية' : 'Weekly updates'}</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    
-                                                    <Button 
-                                                        onClick={() => handleSubscribe('BASIC')}
-                                                        disabled={isSubscribing || currentSubscription === 'BASIC'}
-                                                        className="w-full h-10 text-sm font-bold rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-                                                    >
-                                                        {currentSubscription === 'BASIC' 
-                                                            ? (isArabic ? '✓ خطتك الحالية' : '✓ Current Plan')
-                                                            : isSubscribing ? (isArabic ? 'جاري...' : 'Processing...') 
-                                                            : (isArabic ? 'اشترك الآن' : 'Subscribe Now')}
-                                                    </Button>
+                            <div id="subscription-tiers" className="mb-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    {/* Basic Tier */}
+                                    {mentor.basicMonthlyPrice && (
+                                        <div className="bg-white/5 border border-white/10 rounded-xl p-5 hover:border-white/20 transition-all">
+                                            <div className="mb-4">
+                                                <div className="text-sm text-white/50 mb-1">Basic</div>
+                                                <div className="text-2xl font-semibold text-white">
+                                                    ${mentor.basicMonthlyPrice}<span className="text-sm text-white/50 font-normal">/mo</span>
                                                 </div>
                                             </div>
-                                        )}
+                                            
+                                            <div className="space-y-1.5 mb-5 text-sm text-white/60">
+                                                <div>{isArabic ? 'جميع المنشورات' : 'All posts'}</div>
+                                                <div>{isArabic ? 'الوصول للمجتمع' : 'Community access'}</div>
+                                                <div>{isArabic ? 'تحديثات أسبوعية' : 'Weekly updates'}</div>
+                                            </div>
+                                            
+                                            <Button 
+                                                onClick={() => handleSubscribe('BASIC')}
+                                                disabled={isSubscribing || currentSubscription === 'BASIC'}
+                                                className="w-full h-9 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white text-sm rounded-lg disabled:opacity-50"
+                                            >
+                                                {currentSubscription === 'BASIC' 
+                                                    ? (isArabic ? 'الحالية' : 'Current')
+                                                    : isSubscribing ? '...' 
+                                                    : (isArabic ? 'اشترك' : 'Subscribe')}
+                                            </Button>
+                                        </div>
+                                    )}
 
-                                        {/* Premium Tier Slide */}
-                                        {mentor.premiumMonthlyPrice && (
-                                            <div className="w-full flex-shrink-0 px-4">
-                                                <div className="bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-purple-500/20 border-2 border-purple-500/40 rounded-xl p-5 max-w-xs mx-auto text-center relative overflow-hidden">
-                                                    <div className="absolute top-3 right-3 bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
-                                                        {isArabic ? '🔥 الأشهر' : '🔥 POPULAR'}
-                                                    </div>
-                                                    <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-500/30 rounded-full mb-3">
-                                                        <Star className="w-6 h-6 text-purple-400" />
-                                                    </div>
-                                                    <h4 className="text-xl font-black text-foreground mb-2">Premium</h4>
-                                                    <div className="text-3xl font-black text-foreground mb-1">
-                                                        ${mentor.premiumMonthlyPrice}
-                                                    </div>
-                                                    <div className="text-xs text-muted-foreground mb-5">{isArabic ? 'شهرياً' : 'per month'}</div>
-                                                
-                                                    {/* Perks List */}
-                                                    <div className="mb-5 text-left">
-                                                        <ul className="space-y-1.5 text-xs text-foreground">
-                                                            <li className="flex items-center gap-2">
-                                                                <CheckCircle className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
-                                                                <span className="font-semibold">{isArabic ? 'كل مزايا Basic +' : 'Everything in Basic +'}</span>
-                                                            </li>
-                                                            <li className="flex items-center gap-2">
-                                                                <CheckCircle className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
-                                                                <span>{isArabic ? 'جلسات Q&A مباشرة' : 'Monthly live Q&A'}</span>
-                                                            </li>
-                                                            <li className="flex items-center gap-2">
-                                                                <CheckCircle className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
-                                                                <span>{isArabic ? 'دعم ذو أولوية' : 'Priority support'}</span>
-                                                            </li>
-                                                            <li className="flex items-center gap-2">
-                                                                <CheckCircle className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
-                                                                <span>{isArabic ? 'موارد حصرية' : 'Exclusive resources'}</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    
-                                                    <Button 
-                                                        onClick={() => handleSubscribe('PREMIUM')}
-                                                        disabled={isSubscribing || currentSubscription === 'PREMIUM'}
-                                                        className="w-full h-10 text-sm font-bold rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 hover:from-purple-600 hover:via-pink-600 hover:to-purple-600 disabled:opacity-50 shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-                                                    >
-                                                        {currentSubscription === 'PREMIUM' 
-                                                            ? (isArabic ? '✓ خطتك الحالية' : '✓ Current Plan')
-                                                            : isSubscribing ? (isArabic ? 'جاري...' : 'Processing...') 
-                                                            : (isArabic ? 'اشترك الآن' : 'Subscribe Now')}
-                                                    </Button>
+                                    {/* Premium Tier */}
+                                    {mentor.premiumMonthlyPrice && (
+                                        <div className="bg-white/5 border border-white/20 rounded-xl p-5 hover:border-white/30 transition-all relative">
+                                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#0a84ff] text-white text-xs px-2 py-0.5 rounded-full">
+                                                {isArabic ? 'الأشهر' : 'Popular'}
+                                            </div>
+                                            
+                                            <div className="mb-4 mt-1">
+                                                <div className="text-sm text-white/50 mb-1">Premium</div>
+                                                <div className="text-2xl font-semibold text-white">
+                                                    ${mentor.premiumMonthlyPrice}<span className="text-sm text-white/50 font-normal">/mo</span>
                                                 </div>
                                             </div>
-                                        )}
+                                            
+                                            <div className="space-y-1.5 mb-5 text-sm text-white/60">
+                                                <div className="text-white">{isArabic ? 'كل مزايا Basic' : 'All Basic features'}</div>
+                                                <div>{isArabic ? 'جلسات مباشرة' : 'Live Q&A'}</div>
+                                                <div>{isArabic ? 'دعم مميز' : 'Priority support'}</div>
+                                                <div>{isArabic ? 'موارد حصرية' : 'Exclusive resources'}</div>
+                                            </div>
+                                            
+                                            <Button 
+                                                onClick={() => handleSubscribe('PREMIUM')}
+                                                disabled={isSubscribing || currentSubscription === 'PREMIUM'}
+                                                className="w-full h-9 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white text-sm rounded-lg disabled:opacity-50"
+                                            >
+                                                {currentSubscription === 'PREMIUM' 
+                                                    ? (isArabic ? 'الحالية' : 'Current')
+                                                    : isSubscribing ? '...' 
+                                                    : (isArabic ? 'اشترك' : 'Subscribe')}
+                                            </Button>
+                                        </div>
+                                    )}
 
-                                        {/* VIP Tier Slide */}
-                                        {mentor.vipMonthlyPrice && (
-                                            <div className="w-full flex-shrink-0 px-4">
-                                                <div className="bg-gradient-to-br from-yellow-500/20 via-orange-500/20 to-yellow-500/20 border-2 border-yellow-500/40 rounded-xl p-5 max-w-xs mx-auto text-center relative overflow-hidden">
-                                                    <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full shadow-lg">
-                                                        {isArabic ? '👑 VIP' : '👑 ELITE'}
-                                                    </div>
-                                                    <div className="inline-flex items-center justify-center w-12 h-12 bg-yellow-500/30 rounded-full mb-3">
-                                                        <Crown className="w-6 h-6 text-yellow-400" />
-                                                    </div>
-                                                    <h4 className="text-xl font-black text-foreground mb-2">VIP</h4>
-                                                    <div className="text-3xl font-black text-foreground mb-1">
-                                                        ${mentor.vipMonthlyPrice}
-                                                    </div>
-                                                    <div className="text-xs text-muted-foreground mb-5">{isArabic ? 'شهرياً' : 'per month'}</div>
-                                                
-                                                    {/* Perks List */}
-                                                    <div className="mb-5 text-left">
-                                                        <ul className="space-y-1.5 text-xs text-foreground">
-                                                            <li className="flex items-center gap-2">
-                                                                <CheckCircle className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
-                                                                <span className="font-semibold">{isArabic ? 'كل مزايا Premium +' : 'Everything in Premium +'}</span>
-                                                            </li>
-                                                            <li className="flex items-center gap-2">
-                                                                <CheckCircle className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
-                                                                <span>{isArabic ? 'جلسات 1:1' : '1-on-1 coaching'}</span>
-                                                            </li>
-                                                            <li className="flex items-center gap-2">
-                                                                <CheckCircle className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
-                                                                <span>{isArabic ? 'مراسلة مباشرة' : 'Direct messaging'}</span>
-                                                            </li>
-                                                            <li className="flex items-center gap-2">
-                                                                <CheckCircle className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
-                                                                <span>{isArabic ? 'محتوى مخصص' : 'Custom content'}</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    
-                                                    <Button 
-                                                        onClick={() => handleSubscribe('VIP')}
-                                                        disabled={isSubscribing || currentSubscription === 'VIP'}
-                                                        className="w-full h-10 text-sm font-bold rounded-full bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 hover:from-yellow-600 hover:via-orange-600 hover:to-yellow-600 disabled:opacity-50 text-yellow-900 shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-                                                    >
-                                                        {currentSubscription === 'VIP' 
-                                                            ? (isArabic ? '✓ خطتك الحالية' : '✓ Current Plan')
-                                                            : isSubscribing ? (isArabic ? 'جاري...' : 'Processing...') 
-                                                            : (isArabic ? 'اشترك الآن' : 'Subscribe Now')}
-                                                    </Button>
+                                    {/* VIP Tier */}
+                                    {mentor.vipMonthlyPrice && (
+                                        <div className="bg-white/5 border border-white/10 rounded-xl p-5 hover:border-white/20 transition-all">
+                                            <div className="mb-4">
+                                                <div className="text-sm text-white/50 mb-1">VIP</div>
+                                                <div className="text-2xl font-semibold text-white">
+                                                    ${mentor.vipMonthlyPrice}<span className="text-sm text-white/50 font-normal">/mo</span>
                                                 </div>
                                             </div>
-                                        )}
-                                    </motion.div>
+                                            
+                                            <div className="space-y-1.5 mb-5 text-sm text-white/60">
+                                                <div className="text-white">{isArabic ? 'كل مزايا Premium' : 'All Premium features'}</div>
+                                                <div>{isArabic ? 'جلسات 1:1' : '1-on-1 coaching'}</div>
+                                                <div>{isArabic ? 'رسائل مباشرة' : 'Direct messaging'}</div>
+                                                <div>{isArabic ? 'محتوى مخصص' : 'Custom content'}</div>
+                                            </div>
+                                            
+                                            <Button 
+                                                onClick={() => handleSubscribe('VIP')}
+                                                disabled={isSubscribing || currentSubscription === 'VIP'}
+                                                className="w-full h-9 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white text-sm rounded-lg disabled:opacity-50"
+                                            >
+                                                {currentSubscription === 'VIP' 
+                                                    ? (isArabic ? 'الحالية' : 'Current')
+                                                    : isSubscribing ? '...' 
+                                                    : (isArabic ? 'اشترك' : 'Subscribe')}
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             )}
@@ -3034,7 +2936,7 @@ export default function OnlyFansMentorProfilePage() {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: i * 0.05 }}
-                                        className="bg-card border border-border rounded-2xl p-6 hover:border-purple-500/30 transition-all"
+                                        className="bg-card border border-border rounded-2xl p-6 hover:border-[#0a84ff]/30 transition-all"
                                     >
                                         {/* Post Header */}
                                         <div className="flex items-center gap-3 mb-4">
@@ -3045,8 +2947,8 @@ export default function OnlyFansMentorProfilePage() {
                                                     width={48} height={48} className="rounded-full object-cover w-12 h-12"
                                                 />
                                             ) : (
-                                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                                                    <span className="text-lg font-bold text-foreground">{getMentorName()[0]}</span>
+                                                <div className="w-12 h-12 rounded-full bg-[#0a84ff] flex items-center justify-center">
+                                                    <span className="text-lg font-bold text-white">{getMentorName()[0]}</span>
                                                 </div>
                                             )}
                                             <div className="flex-1">
@@ -3055,9 +2957,9 @@ export default function OnlyFansMentorProfilePage() {
                                                     <CheckCircle className="w-4 h-4 text-blue-500 fill-blue-500" />
                                                     {post.tier !== 'FREE' && (
                                                         <Badge className={`${
-                                                            post.tier === 'VIP' ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
-                                                            post.tier === 'PREMIUM' ? 'bg-gradient-to-r from-purple-500 to-pink-500' :
-                                                            'bg-gradient-to-r from-blue-500 to-cyan-500'
+                                                            post.tier === 'VIP' ? 'bg-[#0a84ff] border-2 border-white/20' :
+                                                            post.tier === 'PREMIUM' ? 'bg-[#0a84ff]/80' :
+                                                            'bg-[#0a84ff]/60'
                                                         } text-white border-0 text-xs`}>
                                                             <Crown className="w-3 h-3 mr-1" />
                                                             {post.tier}
@@ -3134,30 +3036,22 @@ export default function OnlyFansMentorProfilePage() {
                                         {isLocked ? (
                                             <div className="relative overflow-hidden rounded-2xl">
                                                 {/* Blurred Preview Background */}
-                                                <div className="absolute inset-0 blur-2xl opacity-30">
+                                                <div className="absolute inset-0 blur-2xl opacity-20">
                                                     {post.media && (
-                                                        <div className="w-full h-full bg-gradient-to-br from-purple-500 via-pink-500 to-yellow-500" />
+                                                        <div className="w-full h-full bg-[#0a84ff]" />
                                                     )}
                                                 </div>
                                                 
                                                 {/* Glassmorphism Overlay */}
-                                                <div className="relative backdrop-blur-3xl bg-gradient-to-br from-black/60 via-black/40 to-black/60 border-2 border-white/10 p-8 md:p-12 min-h-[300px] flex flex-col items-center justify-center">
+                                                <div className="relative backdrop-blur-3xl bg-black/60 border border-white/10 p-8 md:p-12 min-h-[300px] flex flex-col items-center justify-center">
                                                     {/* Animated Lock Icon */}
                                                     <motion.div
                                                         initial={{ scale: 0.8, opacity: 0 }}
                                                         animate={{ scale: 1, opacity: 1 }}
                                                         transition={{ duration: 0.3 }}
-                                                        className={`relative mb-6 p-6 rounded-full ${
-                                                            post.tier === 'VIP' ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20' :
-                                                            post.tier === 'PREMIUM' ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20' :
-                                                            'bg-gradient-to-br from-blue-500/20 to-cyan-500/20'
-                                                        }`}
+                                                        className="relative mb-6 p-6 rounded-full bg-[#0a84ff]/20"
                                                     >
-                                                        <Lock className={`w-12 h-12 ${
-                                                            post.tier === 'VIP' ? 'text-yellow-400' :
-                                                            post.tier === 'PREMIUM' ? 'text-purple-400' :
-                                                            'text-blue-400'
-                                                        }`} />
+                                                        <Lock className="w-12 h-12 text-[#0a84ff]" />
                                                     </motion.div>
 
                                                     {/* Title */}
@@ -3195,15 +3089,9 @@ export default function OnlyFansMentorProfilePage() {
                                                             }
                                                             document.getElementById('subscription-tiers')?.scrollIntoView({ behavior: 'smooth' })
                                                         }}
-                                                        className={`w-full max-w-xs h-14 text-lg font-bold rounded-full shadow-2xl ${
-                                                            post.tier === 'VIP' 
-                                                                ? 'bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 hover:shadow-yellow-500/50' :
-                                                            post.tier === 'PREMIUM' 
-                                                                ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 hover:shadow-purple-500/50' :
-                                                                'bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500 hover:shadow-blue-500/50'
-                                                        } text-white border-0 transition-all hover:scale-105`}
+                                                        className="w-full max-w-xs h-12 font-semibold rounded-full bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white transition-all"
                                                     >
-                                                        <Crown className="w-5 h-5 mr-2" />
+                                                        <Crown className="w-4 h-4 mr-2" />
                                                         {isArabic ? 'اشترك الآن' : 'Subscribe Now'}
                                                     </Button>
 
@@ -3248,14 +3136,14 @@ export default function OnlyFansMentorProfilePage() {
                                                                         e.stopPropagation()
                                                                         handleDownloadContent(post.id, post.media!, 'image')
                                                                     }}
-                                                                    className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                                                                 >
                                                                     <Download className="w-4 h-4 mr-1" />
                                                                     {isArabic ? 'تحميل' : 'Download'}
                                                                 </Button>
                                                             ) : (
                                                                 <div className="bg-black/60 backdrop-blur-sm px-3 py-2 rounded-lg flex items-center gap-2">
-                                                                    <Lock className="w-4 h-4 text-yellow-400" />
+                                                                    <Lock className="w-4 h-4 text-[#0a84ff]" />
                                                                     <span className="text-xs text-white">
                                                                         {isArabic ? 'VIP فقط' : 'VIP Only'}
                                                                     </span>
@@ -3281,14 +3169,14 @@ export default function OnlyFansMentorProfilePage() {
                                                                         e.stopPropagation()
                                                                         handleDownloadContent(post.id, post.media!, 'video')
                                                                     }}
-                                                                    className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                                                                 >
                                                                     <Download className="w-4 h-4 mr-1" />
                                                                     {isArabic ? 'تحميل' : 'Download'}
                                                                 </Button>
                                                             ) : (
                                                                 <div className="bg-black/60 backdrop-blur-sm px-3 py-2 rounded-lg flex items-center gap-2">
-                                                                    <Lock className="w-4 h-4 text-yellow-400" />
+                                                                    <Lock className="w-4 h-4 text-[#0a84ff]" />
                                                                     <span className="text-xs text-white">
                                                                         {isArabic ? 'VIP فقط' : 'VIP Only'}
                                                                     </span>
@@ -3306,9 +3194,9 @@ export default function OnlyFansMentorProfilePage() {
                                                             handleLikePost(post.id)
                                                         }}
                                                         disabled={!session}
-                                                        className="flex items-center gap-2 hover:text-pink-400 transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        className="flex items-center gap-2 hover:text-[#0a84ff] transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
-                                                        <div className="p-2 rounded-full group-hover:bg-pink-500/10">
+                                                        <div className="p-2 rounded-full group-hover:bg-[#0a84ff]/10">
                                                             <Heart className="w-5 h-5" />
                                                         </div>
                                                         <span>{post.likes.toLocaleString()}</span>
@@ -3323,9 +3211,9 @@ export default function OnlyFansMentorProfilePage() {
                                                             }
                                                             toggleComments(post.id)
                                                         }}
-                                                        className="flex items-center gap-2 hover:text-purple-400 transition-colors group"
+                                                        className="flex items-center gap-2 hover:text-[#0a84ff] transition-colors group"
                                                     >
-                                                        <div className="p-2 rounded-full group-hover:bg-purple-500/10">
+                                                        <div className="p-2 rounded-full group-hover:bg-[#0a84ff]/10">
                                                             <MessageSquare className="w-5 h-5" />
                                                         </div>
                                                         <span>{post.comments}</span>
@@ -3341,9 +3229,9 @@ export default function OnlyFansMentorProfilePage() {
                                                             e.stopPropagation()
                                                             handleShare()
                                                         }}
-                                                        className="flex items-center gap-2 hover:text-blue-400 transition-colors group"
+                                                        className="flex items-center gap-2 hover:text-[#0a84ff] transition-colors group"
                                                     >
-                                                        <div className="p-2 rounded-full group-hover:bg-blue-500/10">
+                                                        <div className="p-2 rounded-full group-hover:bg-[#0a84ff]/10">
                                                             <Share2 className="w-5 h-5" />
                                                         </div>
                                                     </button>
@@ -3361,7 +3249,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             {/* Add Comment Input - Only for subscribers */}
                                                             {currentSubscription ? (
                                                                 <div className="flex gap-3 mb-4">
-                                                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
+                                                                    <div className="w-8 h-8 rounded-full bg-[#0a84ff] flex items-center justify-center flex-shrink-0">
                                                                         <span className="text-xs font-bold text-white">
                                                                             {session?.user?.name?.[0] || 'U'}
                                                                         </span>
@@ -3386,7 +3274,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                             size="sm"
                                                                             onClick={() => handleAddComment(post.id)}
                                                                             disabled={!newComment[post.id]?.trim()}
-                                                                            className="bg-purple-500 hover:bg-purple-600 text-white"
+                                                                            className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white"
                                                                         >
                                                                             <Send className="w-3 h-3 mr-1" />
                                                                             {isArabic ? 'إرسال' : 'Post'}
@@ -3394,8 +3282,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3 mb-4">
-                                                                    <p className="text-sm text-foreground text-center">
+                                                                <div className="bg-white/5 border border-white/10 rounded-lg p-3 mb-4">
+                                                                    <p className="text-sm text-white/70 text-center">
                                                                         {isArabic ? 'اشترك للتعليق على المنشورات' : 'Subscribe to comment on posts'}
                                                                     </p>
                                                                 </div>
@@ -3404,7 +3292,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             {/* Comments List */}
                                                             {commentLoading[post.id] ? (
                                                                 <div className="flex items-center justify-center py-8">
-                                                                    <div className="w-8 h-8 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+                                                                    <div className="w-8 h-8 border-4 border-white/20 border-t-[#0a84ff] rounded-full animate-spin" />
                                                                 </div>
                                                             ) : postComments[post.id]?.length > 0 ? (
                                                                 <div className="space-y-3">
@@ -3419,7 +3307,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     className="rounded-full object-cover w-8 h-8"
                                                                                 />
                                                                             ) : (
-                                                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center">
+                                                                                <div className="w-8 h-8 rounded-full bg-[#0a84ff] flex items-center justify-center">
                                                                                     <span className="text-xs font-bold text-white">
                                                                                         {(isArabic && comment.author.arabicName ? comment.author.arabicName : comment.author.name)[0]}
                                                                                     </span>
@@ -5038,9 +4926,9 @@ export default function OnlyFansMentorProfilePage() {
                                         <div className="space-y-6">
                                             {/* Overview Stats */}
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                                <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/20 rounded-xl p-4">
+                                                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                                                     <div className="flex items-center gap-2 mb-2">
-                                                        <TrendingUp className="w-5 h-5 text-purple-500" />
+                                                        <TrendingUp className="w-5 h-5 text-[#0a84ff]" />
                                                         <span className="text-sm font-medium text-foreground">
                                                             {isArabic ? 'نمو المجتمع' : 'Community Growth'}
                                                         </span>
@@ -5050,9 +4938,9 @@ export default function OnlyFansMentorProfilePage() {
                                                         {isArabic ? 'هذا الشهر' : 'This month'}
                                                     </p>
                                                 </div>
-                                                <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20 rounded-xl p-4">
+                                                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                                                     <div className="flex items-center gap-2 mb-2">
-                                                        <Eye className="w-5 h-5 text-blue-500" />
+                                                        <Eye className="w-5 h-5 text-[#0a84ff]" />
                                                         <span className="text-sm font-medium text-foreground">
                                                             {isArabic ? 'المشاهدات' : 'Total Views'}
                                                         </span>
@@ -5062,9 +4950,9 @@ export default function OnlyFansMentorProfilePage() {
                                                         {isArabic ? '+8.1% من الأسبوع الماضي' : '+8.1% from last week'}
                                                     </p>
                                                 </div>
-                                                <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/20 rounded-xl p-4">
+                                                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                                                     <div className="flex items-center gap-2 mb-2">
-                                                        <MessageSquare className="w-5 h-5 text-green-500" />
+                                                        <MessageSquare className="w-5 h-5 text-[#0a84ff]" />
                                                         <span className="text-sm font-medium text-foreground">
                                                             {isArabic ? 'معدل التفاعل' : 'Engagement Rate'}
                                                         </span>
@@ -5074,9 +4962,9 @@ export default function OnlyFansMentorProfilePage() {
                                                         {isArabic ? '+5.2% تحسن' : '+5.2% improvement'}
                                                     </p>
                                                 </div>
-                                                <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/10 border border-orange-500/20 rounded-xl p-4">
+                                                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                                                     <div className="flex items-center gap-2 mb-2">
-                                                        <Clock className="w-5 h-5 text-orange-500" />
+                                                        <Clock className="w-5 h-5 text-[#0a84ff]" />
                                                         <span className="text-sm font-medium text-foreground">
                                                             {isArabic ? 'متوسط وقت القراءة' : 'Avg. Read Time'}
                                                         </span>
@@ -5091,7 +4979,7 @@ export default function OnlyFansMentorProfilePage() {
                                             {/* Top Performing Content */}
                                             <div className="bg-background border border-border rounded-xl p-6">
                                                 <h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                                                    <Trophy className="w-5 h-5 text-yellow-500" />
+                                                    <Trophy className="w-5 h-5 text-[#0a84ff]" />
                                                     {isArabic ? 'أفضل المحتوى أداءً' : 'Top Performing Content'}
                                                 </h4>
                                                 <div className="space-y-3">
@@ -6986,17 +6874,17 @@ export default function OnlyFansMentorProfilePage() {
                             </div>
 
                             {/* Suggested Creators */}
-                            <div className="bg-card border border-border rounded-2xl overflow-hidden">
-                                <div className="p-4 border-b border-border">
-                                    <h3 className="font-bold text-foreground">{isArabic ? 'منشئون آخرون' : 'Other Creators'}</h3>
+                            <div className="bg-[#1a1a1a] dark:bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl">
+                                <div className="p-4 border-b border-white/10">
+                                    <h3 className="font-bold text-white">{isArabic ? 'منشئون آخرون' : 'Other Creators'}</h3>
                                 </div>
                                 {suggestedCreators.length > 0 ? (
-                                    <div className="divide-y divide-border">
+                                    <div className="divide-y divide-white/5">
                                         {suggestedCreators.map((creator: any) => (
                                             <button
                                                 key={creator.id}
                                                 onClick={() => router.push(`/${locale}/mentors/${creator.id}`)}
-                                                className="w-full p-4 hover:bg-card-hover transition-colors text-left"
+                                                className="w-full p-4 hover:bg-white/5 active:bg-white/10 transition-all duration-200 text-left group"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     {creator.user?.profileImage ? (
@@ -7005,10 +6893,10 @@ export default function OnlyFansMentorProfilePage() {
                                                             alt={creator.user.name}
                                                             width={40}
                                                             height={40}
-                                                            className="rounded-full object-cover w-10 h-10"
+                                                            className="rounded-full object-cover w-10 h-10 ring-2 ring-white/10 group-hover:ring-[#0a84ff]/50 transition-all"
                                                         />
                                                     ) : (
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0a84ff] to-[#0066cc] flex items-center justify-center flex-shrink-0 ring-2 ring-white/10 group-hover:ring-[#0a84ff]/50 transition-all">
                                                             <span className="text-sm font-bold text-white">
                                                                 {creator.user?.name?.[0] || 'C'}
                                                             </span>
@@ -7016,28 +6904,28 @@ export default function OnlyFansMentorProfilePage() {
                                                     )}
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-1 mb-1">
-                                                            <h4 className="font-semibold text-foreground text-sm truncate">
+                                                            <h4 className="font-semibold text-white text-sm truncate group-hover:text-[#0a84ff] transition-colors">
                                                                 {isArabic ? creator.user?.arabicName || creator.user?.name : creator.user?.name}
                                                             </h4>
                                                             {creator.averageRating >= 4.5 && (
-                                                                <CheckCircle className="w-3 h-3 text-blue-500 fill-blue-500 flex-shrink-0" />
+                                                                <CheckCircle className="w-3 h-3 text-[#0a84ff] fill-[#0a84ff] flex-shrink-0" />
                                                             )}
                                                         </div>
-                                                        <p className="text-xs text-muted-foreground truncate">
+                                                        <p className="text-xs text-white/60 truncate">
                                                             {creator.expertise || (isArabic ? 'خبير تعليمي' : 'Education Expert')}
                                                         </p>
                                                         <div className="flex items-center gap-2 mt-1">
                                                             <div className="flex items-center gap-1">
-                                                                <Users className="w-3 h-3 text-muted-foreground" />
-                                                                <span className="text-xs text-muted-foreground">
+                                                                <Users className="w-3 h-3 text-white/40" />
+                                                                <span className="text-xs text-white/50">
                                                                     {(creator.totalSubscribers || 0) > 1000 
                                                                         ? `${((creator.totalSubscribers || 0) / 1000).toFixed(1)}K` 
                                                                         : creator.totalSubscribers || 0}
                                                                 </span>
                                                             </div>
                                                             <div className="flex items-center gap-1">
-                                                                <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                                                                <span className="text-xs text-muted-foreground">
+                                                                <Star className="w-3 h-3 text-[#ffd60a] fill-[#ffd60a]" />
+                                                                <span className="text-xs text-white/50">
                                                                     {creator.averageRating?.toFixed(1) || '5.0'}
                                                                 </span>
                                                             </div>
@@ -7048,7 +6936,7 @@ export default function OnlyFansMentorProfilePage() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="p-4 text-center text-sm text-muted-foreground">
+                                    <div className="p-4 text-center text-sm text-white/50">
                                         {isArabic ? 'جاري التحميل...' : 'Loading...'}
                                     </div>
                                 )}

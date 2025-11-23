@@ -76,7 +76,7 @@ export default function VerifyCertificatePage() {
         return (
             <div className="min-h-screen bg-gray-950 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-500 mx-auto mb-4" />
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#0a84ff] mx-auto mb-4" />
                     <p className="text-xl text-gray-400">Verifying certificate...</p>
                 </div>
             </div>
