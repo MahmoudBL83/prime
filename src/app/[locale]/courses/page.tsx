@@ -157,10 +157,15 @@ export default function CoursesPage() {
     const [showMenu, setShowMenu] = useState<string | null>(null);
     const [showSignInModal, setShowSignInModal] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
     const router = useRouter();
     const { data: session } = useSession();
     const locale = useLocaleSafe();
     const isArabic = locale === 'ar';
+
+    // Minimum swipe distance (in px)
+    const minSwipeDistance = 50;
 
     // Categories for course sections
     const categories = [
@@ -184,6 +189,30 @@ export default function CoursesPage() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const onTouchStart = (e: React.TouchEvent) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e: React.TouchEvent) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+        
+        if (isLeftSwipe && heroIndex < courses.length - 1) {
+            setHeroIndex(heroIndex + 1);
+        }
+        if (isRightSwipe && heroIndex > 0) {
+            setHeroIndex(heroIndex - 1);
+        }
+    };
+
     const heroCourse = courses[heroIndex] || mockCourses[0];
 
     const handleCourseClick = (courseId: string) => {
@@ -206,7 +235,12 @@ export default function CoursesPage() {
     return (
         <div className="min-h-screen pt-" style={{ backgroundColor: '#1f1f1f' }}>
             {/* Hero Section - Featured Course */}
-            <div className="relative h-[70vh] w-full overflow-hidden mb-20">
+            <div 
+                className="relative h-[70vh] w-full overflow-hidden mb-20"
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+            >
                 {/* Background Image */}
                 <div className="absolute inset-0">
                     <Image
@@ -303,8 +337,9 @@ export default function CoursesPage() {
                         </svg>
                     </div>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-                        {courses.slice(0, 8).map((course, index) => (
+                    <div className="overflow-x-auto scrollbar-hide -mx-8 px-8">
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 min-w-max md:min-w-0">
+                            {courses.slice(0, 8).map((course, index) => (
                             <div 
                                 key={course.id} 
                                 className="relative group cursor-pointer" 
@@ -379,6 +414,7 @@ export default function CoursesPage() {
                                 </div>
                             </div>
                         ))}
+                        </div>
                     </div>
                 </div>
                 
@@ -405,8 +441,9 @@ export default function CoursesPage() {
                                 </svg>
                             </div>
                             
-                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-                                {categoryCourses.map((course) => (
+                            <div className="overflow-x-auto scrollbar-hide -mx-8 px-8">
+                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 min-w-max md:min-w-0">
+                                    {categoryCourses.map((course) => (
                                     <div 
                                         key={course.id} 
                                         className="relative group cursor-pointer" 
@@ -473,6 +510,7 @@ export default function CoursesPage() {
                                         </div>
                                     </div>
                                 ))}
+                                </div>
                             </div>
                         </div>
                         
@@ -490,6 +528,26 @@ export default function CoursesPage() {
                     -webkit-line-clamp: 1;
                     -webkit-box-orient: vertical;
                     overflow: hidden;
+                }
+                
+                .scrollbar-hide {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+                
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+                
+                @media (max-width: 768px) {
+                    .overflow-x-auto {
+                        scroll-snap-type: x mandatory;
+                        scroll-padding: 2rem;
+                    }
+                    
+                    .overflow-x-auto > div > div {
+                        scroll-snap-align: start;
+                    }
                 }
             `}</style>
 

@@ -22,8 +22,10 @@ export function LanguageSwitcher() {
     const handleLanguageChange = (newLocale: string) => {
         try {
             // Remove the current locale from the pathname and add the new one
-            const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}/, '');
-            window.location.href = `/${newLocale}${pathWithoutLocale}`;
+            // Use a more specific regex to match locale at the start followed by a slash or end of string
+            const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}(\/|$)/, '/');
+            const newPath = pathWithoutLocale === '/' ? `/${newLocale}` : `/${newLocale}${pathWithoutLocale}`;
+            window.location.href = newPath;
         } catch (error) {
             console.error('Language change failed:', error);
         }

@@ -5376,7 +5376,7 @@ export default function OnlyFansMentorProfilePage() {
                                             {isArabic ? 'جاري التحميل...' : 'Loading discussions...'}
                                         </p>
                                     </div>
-                                ) : displayCommunityPosts.length === 0 ? (
+                                ) : communityPosts.length === 0 ? (
                                     <div className="text-center py-12">
                                         <div className="w-20 h-20 rounded-full bg-card flex items-center justify-center mx-auto mb-4">
                                             <MessageSquare className="w-10 h-10 text-muted-foreground" />
@@ -5390,7 +5390,7 @@ export default function OnlyFansMentorProfilePage() {
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
-                                        {displayCommunityPosts.map((post) => (
+                                        {communityPosts.map((post) => (
                                             <motion.div
                                                 key={post.id}
                                                 initial={{ opacity: 0, y: 10 }}
@@ -5399,10 +5399,10 @@ export default function OnlyFansMentorProfilePage() {
                                             >
                                                 {/* Post Header */}
                                                 <div className="flex items-start gap-3 mb-3">
-                                                    {post.author.profileImage ? (
+                                                    {post.author?.profileImage ? (
                                                         <Image
                                                             src={post.author.profileImage}
-                                                            alt={isArabic && post.author.arabicName ? post.author.arabicName : post.author.name}
+                                                            alt={isArabic && post.author?.arabicName ? post.author.arabicName : (post.author?.name || 'User')}
                                                             width={40}
                                                             height={40}
                                                             className="rounded-full object-cover w-10 h-10"
@@ -5410,21 +5410,21 @@ export default function OnlyFansMentorProfilePage() {
                                                     ) : (
                                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center">
                                                             <span className="text-sm font-bold text-white">
-                                                                {(isArabic && post.author.arabicName ? post.author.arabicName : post.author.name)[0]}
+                                                                {(isArabic && post.author?.arabicName ? post.author.arabicName : post.author?.name || 'U')[0]}
                                                             </span>
                                                         </div>
                                                     )}
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2">
                                                             <span className="font-semibold text-foreground">
-                                                                {isArabic && post.author.arabicName ? post.author.arabicName : post.author.name}
+                                                                {isArabic && post.author?.arabicName ? post.author.arabicName : post.author?.name || 'Unknown'}
                                                             </span>
                                                             <Badge className={`${
-                                                                post.author.tier === 'VIP' ? 'bg-yellow-500' :
-                                                                post.author.tier === 'PREMIUM' ? 'bg-purple-500' :
+                                                                post.author?.tier === 'VIP' ? 'bg-yellow-500' :
+                                                                post.author?.tier === 'PREMIUM' ? 'bg-purple-500' :
                                                                 'bg-blue-500'
                                                             } text-white border-0 text-xs`}>
-                                                                {post.author.tier}
+                                                                {post.author?.tier || 'BASIC'}
                                                             </Badge>
                                                             <span className="text-xs text-muted-foreground">• {post.timestamp}</span>
                                                         </div>
