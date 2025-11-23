@@ -19,6 +19,8 @@ model User {
   arabicName            String?
   profileImage          String?
   bio                   String?
+  age                   String?
+  avatar                String?
   interests             String?
   goals                 String?
   skillLevel            String?

@@ -15,6 +15,8 @@ const onboardingSchema = z.object({
         preferredSubjects: z.array(z.string()),
         collaborationStyle: z.enum(['Chat only', 'Video calls', 'In-person', 'Mixed']),
     }).optional(),
+    age: z.string(),
+    avatar: z.string(),
     arabicName: z.string().optional(),
     phone: z.string().optional(),
 })
@@ -65,6 +67,8 @@ export async function POST(req: NextRequest) {
                 goals: JSON.stringify(data.goals),
                 skillLevel: data.skillLevel,
                 learningMode: data.learningMode,
+                age: data.age,
+                avatar: data.avatar,
                 arabicName: data.arabicName,
                 phone: data.phone,
                 onboardingCompleted: true, // Make sure this is explicitly set
@@ -92,6 +96,8 @@ export async function POST(req: NextRequest) {
                 goals: data.goals, // Return the original array
                 skillLevel: updatedUser.skillLevel,
                 learningMode: updatedUser.learningMode,
+                age: updatedUser.age,
+                avatar: updatedUser.avatar,
                 arabicName: updatedUser.arabicName,
                 phone: updatedUser.phone,
             },

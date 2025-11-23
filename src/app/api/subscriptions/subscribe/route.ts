@@ -25,6 +25,23 @@ export async function POST(req: NextRequest) {
             )
         }
 
+        // Ensure we have a valid user record in the database before continuing
+        const sessionEmail = session.user.email
+        let dbUser = await prisma.user.findUnique({ where: { id: session.user.id } })
+
+        if (!dbUser && sessionEmail) {
+            dbUser = await prisma.user.findUnique({ where: { email: sessionEmail } })
+        }
+
+        if (!dbUser) {
+            return NextResponse.json(
+                { error: 'User account not found. Please contact support or re-login.' },
+                { status: 404 }
+            )
+        }
+
+        const userId = dbUser.id
+
         const body = await req.json()
         const { 
             type,           // CATEGORY_A | CATEGORY_B | CATEGORY_C | BUNDLE_AB | BUNDLE_ABC
@@ -62,7 +79,7 @@ export async function POST(req: NextRequest) {
             // For other subscription types, prevent duplicates
             const existingSubscription = await prisma.subscription.findFirst({
                 where: {
-                    userId: session.user.id,
+                    userId,
                     type,
                     status: 'ACTIVE'
                 }
@@ -94,7 +111,7 @@ export async function POST(req: NextRequest) {
 
             const subscription = await tx.subscription.create({
                 data: {
-                    userId: session.user.id,
+                    userId,
                     type,
                     channelId: null, // Set to null to avoid foreign key constraint until channels are created
                     pricePerMonth: pricing.pricePerMonth,
@@ -114,7 +131,7 @@ export async function POST(req: NextRequest) {
             // 2. Auto-enroll based on subscription type
             const enrollments = await autoEnrollUser(
                 tx,
-                session.user.id,
+                userId,
                 type,
                 channelId || creatorId // Use creatorId if channelId is not provided
             )

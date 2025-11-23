@@ -70,13 +70,13 @@ function LoginContent() {
     }
 
     return (
-        <div className="min-h-screen bg-black relative overflow-hidden" dir={dir}>
-            {/* Background with same style as Hero */}
+        <div className="min-h-screen bg-[#1f1f1f] relative overflow-hidden" dir={dir}>
+            {/* Apple TV style background */}
             <div className="absolute inset-0 z-0">
-                <div className="w-full h-full bg-black" />
-                <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black opacity-80" />
-                <div className="absolute inset-0 opacity-20">
-                    <div className="w-full h-full bg-gradient-to-r from-amber-900/20 via-emerald-900/20 to-red-900/20" />
+                <div className="w-full h-full bg-[#1f1f1f]" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#1f1f1f] via-black to-[#1f1f1f] opacity-80" />
+                <div className="absolute inset-0 opacity-10">
+                    <div className="w-full h-full bg-gradient-to-r from-[#0a84ff]/10 via-white/5 to-[#0a84ff]/10" />
                 </div>
 
                 {/* Animated background particles */}
@@ -116,7 +116,7 @@ function LoginContent() {
                         {/* Back button */}
                         <div className="flex justify-start mb-6">
                             <Link
-                                href={`/${locale}`}
+                                href="/"
                                 className="inline-flex items-center text-gray-400 hover:text-white transition-colors group"
                             >
                                 <ArrowLeft className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -134,7 +134,7 @@ function LoginContent() {
                             <h1 className="text-4xl md:text-5xl font-bold mb-2 text-white">
                                 {locale === 'ar' ? 'برايم' : 'Prime'}
                             </h1>
-                            <div className="w-16 h-1 mx-auto rounded-full" style={{ backgroundColor: 'var(--accent)' }}></div>
+                            <div className="w-16 h-1 mx-auto rounded-full bg-[#0a84ff]"></div>
                         </motion.div>
 
                         <motion.h2
@@ -161,7 +161,7 @@ function LoginContent() {
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.8 }}
-                        className="bg-gray-900/50 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-8 shadow-2xl"
+                        className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl"
                     >
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                             {/* Email Field */}
@@ -173,8 +173,7 @@ function LoginContent() {
                                     {...register('email')}
                                     type="email"
                                     placeholder={locale === 'ar' ? 'أدخل بريدك الإلكتروني' : 'Enter your email'}
-                                    className="w-full bg-gray-800/50 border border-gray-700 text-white rounded-lg px-4 py-3 focus:ring-2 focus:border-transparent transition-all placeholder-gray-500"
-                                    style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                                    className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0a84ff] focus:border-transparent transition-all placeholder-gray-500"
                                     disabled={isLoading}
                                 />
                                 {errors.email && (
@@ -192,8 +191,7 @@ function LoginContent() {
                                         {...register('password')}
                                         type={showPassword ? 'text' : 'password'}
                                         placeholder={locale === 'ar' ? 'أدخل كلمة المرور' : 'Enter your password'}
-                                        className="w-full bg-gray-800/50 border border-gray-700 text-white rounded-lg px-4 py-3 pr-12 focus:ring-2 focus:border-transparent transition-all placeholder-gray-500"
-                                        style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                                        className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 pr-12 focus:ring-2 focus:ring-[#0a84ff] focus:border-transparent transition-all placeholder-gray-500"
                                         disabled={isLoading}
                                     />
                                     <button
@@ -213,8 +211,7 @@ function LoginContent() {
                             <motion.button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full text-white py-4 px-6 rounded-lg font-medium text-lg shadow-lg transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-                                style={{ backgroundColor: 'var(--accent)' }}
+                                className="w-full bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white py-4 px-6 rounded-lg font-medium text-lg shadow-lg transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                             >
@@ -228,9 +225,8 @@ function LoginContent() {
                                 <p className="text-gray-400">
                                     {t('dontHaveAccount')}{' '}
                                     <Link
-                                        href={`/${locale}/auth/register`}
-                                        className="font-medium transition-colors hover:opacity-80"
-                                        style={{ color: 'var(--accent)' }}
+                                        href="/auth/register"
+                                        className="text-[#0a84ff] font-medium transition-colors hover:opacity-80"
                                     >
                                         {t('register')}
                                     </Link>
@@ -239,22 +235,7 @@ function LoginContent() {
                         </form>
                     </motion.div>
 
-                    {/* Demo Account Info */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 1.0 }}
-                        className="mt-6 p-4 bg-gray-800/30 border border-gray-700/50 rounded-lg text-center"
-                    >
-                        <p className="text-sm text-gray-400 mb-2">
-                            {locale === 'ar' ? 'حسابات تجريبية للاختبار:' : 'Demo accounts for testing:'}
-                        </p>
-                        <div className="text-xs text-gray-500 space-y-1">
-                            <div>Admin: admin@prime.eg / demo123</div>
-                            <div>Learner: fatma@demo.com / demo123</div>
-                            <div>Creator: dr.sarah@demo.com / demo123</div>
-                        </div>
-                    </motion.div>
+                    
                 </motion.div>
             </div>
         </div>

@@ -19,6 +19,23 @@ export async function POST(
             )
         }
 
+        // Ensure we have a valid user record in the database
+        const sessionEmail = session.user.email
+        let dbUser = await prisma.user.findUnique({ where: { id: session.user.id } })
+
+        if (!dbUser && sessionEmail) {
+            dbUser = await prisma.user.findUnique({ where: { email: sessionEmail } })
+        }
+
+        if (!dbUser) {
+            return NextResponse.json(
+                { error: 'User account not found. Please re-login.' },
+                { status: 404 }
+            )
+        }
+
+        const userId = dbUser.id
+
         const { id: postId } = await params
 
         // Check if post exists
@@ -38,7 +55,7 @@ export async function POST(
             where: {
                 postId_userId: {
                     postId,
-                    userId: session.user.id
+                    userId
                 }
             }
         })
@@ -54,7 +71,7 @@ export async function POST(
         const like = await prisma.postLike.create({
             data: {
                 postId,
-                userId: session.user.id
+                userId
             }
         })
 
@@ -82,6 +99,23 @@ export async function DELETE(
             )
         }
 
+        // Ensure we have a valid user record in the database
+        const sessionEmail = session.user.email
+        let dbUser = await prisma.user.findUnique({ where: { id: session.user.id } })
+
+        if (!dbUser && sessionEmail) {
+            dbUser = await prisma.user.findUnique({ where: { email: sessionEmail } })
+        }
+
+        if (!dbUser) {
+            return NextResponse.json(
+                { error: 'User account not found. Please re-login.' },
+                { status: 404 }
+            )
+        }
+
+        const userId = dbUser.id
+
         const { id: postId } = await params
 
         // Delete like
@@ -89,7 +123,7 @@ export async function DELETE(
             where: {
                 postId_userId: {
                     postId,
-                    userId: session.user.id
+                    userId
                 }
             }
         })

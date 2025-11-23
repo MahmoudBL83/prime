@@ -76,6 +76,210 @@ interface StudyBuddyMatchWithDetails {
     }
 }
 
+// Mock data for demo purposes
+const MOCK_POTENTIAL_MATCHES: StudyBuddy[] = [
+    {
+        id: 'user1',
+        name: 'Ahmed Hassan',
+        arabicName: 'أحمد حسن',
+        interests: ['Technology', 'Business', 'Design'],
+        goals: ['Career Change into Tech', 'Entrepreneurship'],
+        skillLevel: 'Intermediate',
+        learningMode: 'Interactive with group',
+        profileImage: null,
+        compatibilityScore: 92,
+        compatibilityBreakdown: {
+            interestsScore: 95,
+            goalsScore: 90,
+            skillLevelScore: 85,
+            communicationScore: 95,
+            learningStyleScore: 90,
+            scheduleScore: 92,
+            subjectScore: 88,
+            preferencesScore: 94
+        },
+        sharedInterests: ['Technology', 'Business'],
+        sharedGoals: ['Career Change into Tech'],
+        reasonsForMatch: [
+            'Both interested in Technology & Business',
+            'Similar skill levels',
+            'Prefer group learning'
+        ]
+    },
+    {
+        id: 'user2',
+        name: 'Sarah Mohamed',
+        arabicName: 'سارة محمد',
+        interests: ['Languages', 'Education', 'Health'],
+        goals: ['English for Tourism Sector', 'Professional Skill Development'],
+        skillLevel: 'Beginner',
+        learningMode: 'Self-paced',
+        profileImage: null,
+        compatibilityScore: 85,
+        compatibilityBreakdown: {
+            interestsScore: 80,
+            goalsScore: 85,
+            skillLevelScore: 90,
+            communicationScore: 85,
+            learningStyleScore: 82,
+            scheduleScore: 88,
+            subjectScore: 84,
+            preferencesScore: 86
+        },
+        sharedInterests: ['Education'],
+        sharedGoals: ['Professional Skill Development'],
+        reasonsForMatch: [
+            'Both focused on professional development',
+            'Similar learning pace',
+            'Complementary study schedules'
+        ]
+    },
+    {
+        id: 'user3',
+        name: 'Omar Khalil',
+        arabicName: 'عمر خليل',
+        interests: ['Technology', 'Design', 'Languages'],
+        goals: ['Career Change into Tech', 'Freelancing & Remote Work'],
+        skillLevel: 'Advanced',
+        learningMode: 'Mixed',
+        profileImage: null,
+        compatibilityScore: 88,
+        compatibilityBreakdown: {
+            interestsScore: 92,
+            goalsScore: 88,
+            skillLevelScore: 80,
+            communicationScore: 90,
+            learningStyleScore: 85,
+            scheduleScore: 90,
+            subjectScore: 87,
+            preferencesScore: 89
+        },
+        sharedInterests: ['Technology', 'Design'],
+        sharedGoals: ['Career Change into Tech', 'Freelancing & Remote Work'],
+        reasonsForMatch: [
+            'Strong overlap in tech & design interests',
+            'Both pursuing freelance careers',
+            'Flexible learning approaches'
+        ]
+    },
+    {
+        id: 'user4',
+        name: 'Fatima Ali',
+        arabicName: 'فاطمة علي',
+        interests: ['Business', 'Education', 'Health'],
+        goals: ['Entrepreneurship & Startups', 'Professional Skill Development'],
+        skillLevel: 'Intermediate',
+        learningMode: 'Interactive with group',
+        profileImage: null,
+        compatibilityScore: 81,
+        compatibilityBreakdown: {
+            interestsScore: 78,
+            goalsScore: 85,
+            skillLevelScore: 85,
+            communicationScore: 80,
+            learningStyleScore: 82,
+            scheduleScore: 78,
+            subjectScore: 80,
+            preferencesScore: 81
+        },
+        sharedInterests: ['Business', 'Education'],
+        sharedGoals: ['Entrepreneurship & Startups', 'Professional Skill Development'],
+        reasonsForMatch: [
+            'Shared entrepreneurial goals',
+            'Both value collaborative learning',
+            'Similar educational backgrounds'
+        ]
+    },
+    {
+        id: 'user5',
+        name: 'Youssef Ibrahim',
+        arabicName: 'يوسف إبراهيم',
+        interests: ['Technology', 'Business', 'Languages'],
+        goals: ['Thanaweya Amma Preparation', 'University Entrance Prep'],
+        skillLevel: 'Beginner',
+        learningMode: 'Self-paced',
+        profileImage: null,
+        compatibilityScore: 76,
+        compatibilityBreakdown: {
+            interestsScore: 75,
+            goalsScore: 80,
+            skillLevelScore: 90,
+            communicationScore: 70,
+            learningStyleScore: 72,
+            scheduleScore: 75,
+            subjectScore: 74,
+            preferencesScore: 76
+        },
+        sharedInterests: ['Technology', 'Business'],
+        sharedGoals: ['University Entrance Prep'],
+        reasonsForMatch: [
+            'Both preparing for university',
+            'Similar beginner level',
+            'Self-motivated learners'
+        ]
+    }
+]
+
+const MOCK_EXISTING_MATCHES: StudyBuddyMatchWithDetails[] = [
+    {
+        id: 'match1',
+        status: 'accepted',
+        sharedSubjects: ['JavaScript', 'React', 'Node.js'],
+        sharedGoals: ['Career Change into Tech', 'Freelancing & Remote Work'],
+        chatRoomId: 'chat1',
+        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date().toISOString(),
+        otherUser: {
+            id: 'user6',
+            name: 'Mona Saeed',
+            arabicName: 'منى سعيد',
+            profileImage: null,
+            interests: ['Technology', 'Design', 'Business'],
+            goals: ['Career Change into Tech', 'Freelancing & Remote Work'],
+            skillLevel: 'Intermediate',
+            learningMode: 'Mixed'
+        }
+    },
+    {
+        id: 'match2',
+        status: 'accepted',
+        sharedSubjects: ['German A1', 'German Culture', 'Integration'],
+        sharedGoals: ['English for Tourism Sector', 'Professional Skill Development'],
+        chatRoomId: 'chat2',
+        createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date().toISOString(),
+        otherUser: {
+            id: 'user7',
+            name: 'Karim Nasser',
+            arabicName: 'كريم ناصر',
+            profileImage: null,
+            interests: ['Languages', 'Education'],
+            goals: ['Professional Skill Development'],
+            skillLevel: 'Beginner',
+            learningMode: 'Interactive with group'
+        }
+    },
+    {
+        id: 'match3',
+        status: 'pending',
+        sharedSubjects: ['Marketing', 'Business Strategy'],
+        sharedGoals: ['Entrepreneurship & Startups'],
+        chatRoomId: null,
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date().toISOString(),
+        otherUser: {
+            id: 'user8',
+            name: 'Layla Ahmed',
+            arabicName: 'ليلى أحمد',
+            profileImage: null,
+            interests: ['Business', 'Technology'],
+            goals: ['Entrepreneurship & Startups'],
+            skillLevel: 'Advanced',
+            learningMode: 'Self-paced'
+        }
+    }
+]
+
 export default function StudyBuddyPage() {
     const locale = useLocale()
     const router = useRouter()
@@ -97,11 +301,19 @@ export default function StudyBuddyPage() {
 
     useEffect(() => {
         loadUserProfile()
-        if (activeTab === 'discover') {
-            fetchPotentialMatches()
-        } else if (activeTab === 'matches') {
-            fetchExistingMatches()
+        // Initialize with mock data for demo (comment out API calls to keep mock data)
+        if (potentialMatches.length === 0) {
+            setPotentialMatches(MOCK_POTENTIAL_MATCHES)
         }
+        if (existingMatches.length === 0) {
+            setExistingMatches(MOCK_EXISTING_MATCHES)
+        }
+        // Uncomment below to fetch real data from API instead of using mock data
+        // if (activeTab === 'discover') {
+        //     fetchPotentialMatches()
+        // } else if (activeTab === 'matches') {
+        //     fetchExistingMatches()
+        // }
     }, [activeTab])
 
     const loadUserProfile = async () => {
@@ -261,9 +473,9 @@ export default function StudyBuddyPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-950">
+        <div className="min-h-screen" style={{ backgroundColor: '#1f1f1f' }}>
             {/* Header */}
-            <div className="bg-gray-900/80 backdrop-blur-sm border-b border-gray-800">
+            <div className="bg-black/40 backdrop-blur-sm border-b border-white/10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div>
@@ -278,18 +490,18 @@ export default function StudyBuddyPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Tabs */}
                 <div className="mb-8">
-                    <div className="border-b border-gray-800">
+                    <div className="border-b border-white/10">
                         <nav className="-mb-px flex space-x-8">
                             <button
                                 onClick={() => setActiveTab('discover')}
                                 className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'discover'
-                                    ? 'border-purple-500 text-purple-400'
-                                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-700'
+                                    ? 'border-[#0a84ff] text-[#0a84ff]'
+                                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-white/20'
                                     }`}
                             >
                                 Discover Matches
                                 {potentialMatches.length > 0 && (
-                                    <span className="ml-2 bg-purple-500/20 text-purple-400 py-0.5 px-2 rounded-full text-xs">
+                                    <span className="ml-2 bg-[#0a84ff]/20 text-[#0a84ff] py-0.5 px-2 rounded-full text-xs">
                                         {potentialMatches.length}
                                     </span>
                                 )}
@@ -297,13 +509,13 @@ export default function StudyBuddyPage() {
                             <button
                                 onClick={() => setActiveTab('matches')}
                                 className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'matches'
-                                    ? 'border-purple-500 text-purple-400'
-                                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-700'
+                                    ? 'border-[#0a84ff] text-[#0a84ff]'
+                                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-white/20'
                                     }`}
                             >
                                 My Matches
                                 {existingMatches.length > 0 && (
-                                    <span className="ml-2 bg-green-500/20 text-green-400 py-0.5 px-2 rounded-full text-xs">
+                                    <span className="ml-2 bg-[#0a84ff]/20 text-[#0a84ff] py-0.5 px-2 rounded-full text-xs">
                                         {existingMatches.filter(m => m.status === 'accepted').length}
                                     </span>
                                 )}
@@ -338,11 +550,11 @@ export default function StudyBuddyPage() {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.1 }}
-                                        className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 backdrop-blur-sm border border-purple-400/20 rounded-2xl p-4"
+                                        className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-purple-500/20 rounded-xl">
-                                                <Users className="w-5 h-5 text-purple-400" />
+                                            <div className="p-2 bg-[#0a84ff]/20 rounded-xl">
+                                                <Users className="w-5 h-5 text-[#0a84ff]" />
                                             </div>
                                             <div>
                                                 <div className="text-2xl font-bold text-white">{potentialMatches.length}</div>
@@ -355,11 +567,11 @@ export default function StudyBuddyPage() {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.2 }}
-                                        className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 backdrop-blur-sm border border-blue-400/20 rounded-2xl p-4"
+                                        className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-blue-500/20 rounded-xl">
-                                                <TrendingUp className="w-5 h-5 text-blue-400" />
+                                            <div className="p-2 bg-[#0a84ff]/20 rounded-xl">
+                                                <TrendingUp className="w-5 h-5 text-[#0a84ff]" />
                                             </div>
                                             <div>
                                                 <div className="text-2xl font-bold text-white">
@@ -378,11 +590,11 @@ export default function StudyBuddyPage() {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.3 }}
-                                        className="bg-gradient-to-br from-green-500/10 to-green-600/5 backdrop-blur-sm border border-green-400/20 rounded-2xl p-4"
+                                        className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-green-500/20 rounded-xl">
-                                                <Heart className="w-5 h-5 text-green-400" />
+                                            <div className="p-2 bg-[#0a84ff]/20 rounded-xl">
+                                                <Heart className="w-5 h-5 text-[#0a84ff]" />
                                             </div>
                                             <div>
                                                 <div className="text-2xl font-bold text-white">{existingMatches.filter(m => m.status === 'accepted').length}</div>
@@ -414,16 +626,16 @@ export default function StudyBuddyPage() {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.5 }}
-                                    className="mt-6 bg-gradient-to-r from-purple-500/5 to-blue-500/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6"
+                                    className="mt-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6"
                                 >
                                     <div className="flex items-center gap-2 mb-4">
-                                        <Brain className="w-5 h-5 text-purple-400" />
+                                        <Brain className="w-5 h-5 text-[#0a84ff]" />
                                         <h3 className="text-sm font-semibold text-white">How It Works</h3>
                                     </div>
                                     <div className="grid grid-cols-3 gap-3 text-xs">
                                         <div className="flex items-start gap-2">
-                                            <div className="p-1.5 bg-purple-500/20 rounded-lg flex-shrink-0 mt-0.5">
-                                                <TrendingUp className="w-3.5 h-3.5 text-purple-400" />
+                                            <div className="p-1.5 bg-[#0a84ff]/20 rounded-lg flex-shrink-0 mt-0.5">
+                                                <TrendingUp className="w-3.5 h-3.5 text-[#0a84ff]" />
                                             </div>
                                             <div>
                                                 <div className="font-medium text-white mb-1">Smart Discovery</div>
@@ -431,8 +643,8 @@ export default function StudyBuddyPage() {
                                             </div>
                                         </div>
                                         <div className="flex items-start gap-2">
-                                            <div className="p-1.5 bg-blue-500/20 rounded-lg flex-shrink-0 mt-0.5">
-                                                <Heart className="w-3.5 h-3.5 text-blue-400" />
+                                            <div className="p-1.5 bg-[#0a84ff]/20 rounded-lg flex-shrink-0 mt-0.5">
+                                                <Heart className="w-3.5 h-3.5 text-[#0a84ff]" />
                                             </div>
                                             <div>
                                                 <div className="font-medium text-white mb-1">Swipe to Connect</div>
@@ -440,8 +652,8 @@ export default function StudyBuddyPage() {
                                             </div>
                                         </div>
                                         <div className="flex items-start gap-2">
-                                            <div className="p-1.5 bg-green-500/20 rounded-lg flex-shrink-0 mt-0.5">
-                                                <Zap className="w-3.5 h-3.5 text-green-400" />
+                                            <div className="p-1.5 bg-[#0a84ff]/20 rounded-lg flex-shrink-0 mt-0.5">
+                                                <Zap className="w-3.5 h-3.5 text-[#0a84ff]" />
                                             </div>
                                             <div>
                                                 <div className="font-medium text-white mb-1">Start Learning</div>
@@ -491,10 +703,10 @@ export default function StudyBuddyPage() {
                             animate={{ opacity: 1, y: 0 }}
                             className="grid grid-cols-2 lg:grid-cols-4 gap-4"
                         >
-                            <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 backdrop-blur-sm border border-purple-400/20 rounded-2xl p-4">
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-purple-500/20 rounded-xl">
-                                        <Users className="w-6 h-6 text-purple-400" />
+                                    <div className="p-3 bg-[#0a84ff]/20 rounded-xl">
+                                        <Users className="w-6 h-6 text-[#0a84ff]" />
                                     </div>
                                     <div>
                                         <div className="text-2xl font-bold text-white">{existingMatches.length}</div>
@@ -503,10 +715,10 @@ export default function StudyBuddyPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 backdrop-blur-sm border border-green-400/20 rounded-2xl p-4">
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-green-500/20 rounded-xl">
-                                        <CheckCircle className="w-6 h-6 text-green-400" />
+                                    <div className="p-3 bg-[#0a84ff]/20 rounded-xl">
+                                        <CheckCircle className="w-6 h-6 text-[#0a84ff]" />
                                     </div>
                                     <div>
                                         <div className="text-2xl font-bold text-white">
@@ -517,10 +729,10 @@ export default function StudyBuddyPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 backdrop-blur-sm border border-yellow-400/20 rounded-2xl p-4">
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-yellow-500/20 rounded-xl">
-                                        <Clock className="w-6 h-6 text-yellow-400" />
+                                    <div className="p-3 bg-white/20 rounded-xl">
+                                        <Clock className="w-6 h-6 text-white" />
                                     </div>
                                     <div>
                                         <div className="text-2xl font-bold text-white">
@@ -531,10 +743,10 @@ export default function StudyBuddyPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 backdrop-blur-sm border border-blue-400/20 rounded-2xl p-4">
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-blue-500/20 rounded-xl">
-                                        <MessageCircle className="w-6 h-6 text-blue-400" />
+                                    <div className="p-3 bg-[#0a84ff]/20 rounded-xl">
+                                        <MessageCircle className="w-6 h-6 text-[#0a84ff]" />
                                     </div>
                                     <div>
                                         <div className="text-2xl font-bold text-white">
@@ -548,8 +760,8 @@ export default function StudyBuddyPage() {
 
                         {/* Enhanced Matches Grid */}
                         {existingMatches.length === 0 ? (
-                            <Card className="bg-gray-800/80 backdrop-blur-md border-gray-700/50 p-12 text-center">
-                                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center mx-auto mb-6">
+                            <Card className="bg-white/5 backdrop-blur-md border-white/10 p-12 text-center">
+                                <div className="w-24 h-24 rounded-full bg-[#0a84ff] flex items-center justify-center mx-auto mb-6">
                                     <Users className="w-12 h-12 text-white" />
                                 </div>
                                 <h2 className="text-2xl font-bold text-white mb-4">
@@ -560,7 +772,7 @@ export default function StudyBuddyPage() {
                                 </p>
                                 <Button 
                                     onClick={() => setActiveTab('discover')}
-                                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90"
+                                    className="bg-[#0a84ff] hover:bg-[#0a84ff]/90"
                                 >
                                     Start Discovering
                                 </Button>
@@ -581,23 +793,23 @@ export default function StudyBuddyPage() {
                                             className="group relative"
                                         >
                                             {/* Glow Effect */}
-                                            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-3xl opacity-0 group-hover:opacity-30 blur-xl transition-all duration-500"></div>
+                                            <div className="absolute -inset-1 bg-[#0a84ff] rounded-3xl opacity-0 group-hover:opacity-20 blur-xl transition-all duration-500"></div>
                                             
-                                            <Card className="relative bg-gradient-to-br from-gray-900/95 via-gray-800/90 to-gray-900/95 backdrop-blur-xl border-2 border-gray-700/50 group-hover:border-purple-500/50 rounded-3xl p-6 overflow-hidden transition-all duration-300 shadow-2xl group-hover:shadow-purple-500/20">
+                                            <Card className="relative bg-black/40 backdrop-blur-xl border-2 border-white/10 group-hover:border-[#0a84ff]/50 rounded-3xl p-6 overflow-hidden transition-all duration-300 shadow-2xl group-hover:shadow-[#0a84ff]/20">
                                                 {/* Animated Background Gradient */}
-                                                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/0 via-pink-600/5 to-blue-600/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                                <div className="absolute inset-0 bg-gradient-to-br from-[#0a84ff]/0 via-[#0a84ff]/5 to-[#0a84ff]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                 
                                                 {/* Decorative Orbs */}
-                                                <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-all duration-500"></div>
-                                                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-pink-500/10 rounded-full blur-3xl group-hover:bg-pink-500/20 transition-all duration-500"></div>
+                                                <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0a84ff]/10 rounded-full blur-3xl group-hover:bg-[#0a84ff]/20 transition-all duration-500"></div>
+                                                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[#0a84ff]/10 rounded-full blur-3xl group-hover:bg-[#0a84ff]/20 transition-all duration-500"></div>
                                                 
                                                 <div className="relative z-10">
                                                     {/* Header Section */}
                                                     <div className="flex items-start gap-5 mb-6">
                                                         {/* Enhanced Profile Image with Ring */}
                                                         <div className="relative flex-shrink-0">
-                                                            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl opacity-75 group-hover:opacity-100 blur group-hover:blur-md transition-all duration-300"></div>
-                                                            <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-3 border-gray-900 shadow-2xl ring-4 ring-purple-500/30 group-hover:ring-purple-500/50 transition-all duration-300">
+                                                            <div className="absolute -inset-1 bg-[#0a84ff] rounded-2xl opacity-75 group-hover:opacity-100 blur group-hover:blur-md transition-all duration-300"></div>
+                                                            <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-3 border-black shadow-2xl ring-4 ring-[#0a84ff]/30 group-hover:ring-[#0a84ff]/50 transition-all duration-300">
                                                                 {matchedUser.profileImage ? (
                                                                     <Image
                                                                         src={matchedUser.profileImage}
@@ -607,7 +819,7 @@ export default function StudyBuddyPage() {
                                                                         className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
                                                                     />
                                                                 ) : (
-                                                                    <div className="w-full h-full bg-gradient-to-br from-purple-600 via-pink-600 to-blue-600 flex items-center justify-center">
+                                                                    <div className="w-full h-full bg-[#0a84ff] flex items-center justify-center">
                                                                         <Users className="w-10 h-10 text-white" />
                                                                     </div>
                                                                 )}
@@ -626,7 +838,7 @@ export default function StudyBuddyPage() {
 
                                                         {/* User Info */}
                                                         <div className="flex-1 min-w-0">
-                                                            <h3 className="text-xl font-bold text-white mb-1 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-400 transition-all duration-300 truncate">
+                                                            <h3 className="text-xl font-bold text-white mb-1 group-hover:text-[#0a84ff] transition-all duration-300 truncate">
                                                                 {matchedUser.name}
                                                             </h3>
                                                             <div className="flex items-center gap-2 mb-3">
@@ -746,7 +958,7 @@ export default function StudyBuddyPage() {
                                                                 whileHover={{ scale: 1.05, y: -2 }}
                                                                 whileTap={{ scale: 0.95 }}
                                                                 onClick={() => router.push(`/${locale}/study-buddy/workspace?matchId=${match.id}`)}
-                                                                className="w-full flex items-center justify-center gap-2 px-5 py-3.5 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-500 hover:via-pink-500 hover:to-purple-500 text-white rounded-xl transition-all font-bold shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:shadow-xl"
+                                                                className="w-full flex items-center justify-center gap-2 px-5 py-3.5 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-xl transition-all font-bold shadow-lg shadow-[#0a84ff]/30 hover:shadow-[#0a84ff]/50 hover:shadow-xl"
                                                             >
                                                                 <Users className="w-5 h-5" />
                                                                 <span>Open Workspace</span>

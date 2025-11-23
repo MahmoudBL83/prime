@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useLocaleSafe } from '@/hooks/useTranslationsSafe';
 import { Search, Play } from 'lucide-react';
 import Image from 'next/image';
+import { SignInModal } from '@/components/SignInModal';
+import { PaymentModal } from '@/components/PaymentModal';
 
 interface Course {
     id: string;
@@ -22,7 +25,7 @@ interface Course {
 // Mock courses data matching Apple TV style
 const mockCourses: Course[] = [
     {
-        id: '1',
+        id: 'lost-bus-german-survival',
         title: 'The Lost Bus',
         titleAr: 'الحافلة المفقودة',
         category: 'German Language',
@@ -31,10 +34,10 @@ const mockCourses: Course[] = [
         duration: '6 months',
         description: 'To save 22 children, they risk everything—including their lives. Inspired by a true story of survival.',
         descriptionAr: 'لإنقاذ 22 طفلاً، يخاطرون بكل شيء - بما في ذلك حياتهم. مستوحى من قصة حقيقية للبقاء على قيد الحياة.',
-        thumbnail: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&h=450&fit=crop'
+        thumbnail: '/images/courses/apple1.jpg'
     },
     {
-        id: '2',
+        id: 'pluribus-drama-relationships',
         title: 'Pluribus',
         titleAr: 'بلوريبوس',
         category: 'Freelance & Side Hustle',
@@ -42,107 +45,107 @@ const mockCourses: Course[] = [
         year: 2024,
         duration: '4 months',
         description: 'A compelling drama series exploring complex human relationships.',
-        thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=600&fit=crop'
+        thumbnail: '/images/courses/apple2.jpg'
     },
     {
-        id: '3',
+        id: 'high-potential-entrepreneur',
         title: 'High Potential',
         titleAr: 'إمكانات عالية',
         category: 'Entrepreneurship',
         rating: 4.6,
         year: 2024,
         duration: '5 months',
-        thumbnail: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&h=600&fit=crop'
+        thumbnail: '/images/courses/apple3.jpg'
     },
     {
-        id: '4',
+        id: 'morning-show-trading',
         title: 'Morning Show',
         titleAr: 'برنامج الصباح',
         category: 'Trading',
         rating: 4.7,
         year: 2024,
         duration: '6 months',
-        thumbnail: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=600&fit=crop'
+        thumbnail: '/images/courses/apple4.jpg'
     },
     {
-        id: '5',
+        id: 'ted-lasso-coding-ai',
         title: 'Ted Lasso',
         titleAr: 'تيد لاسو',
         category: 'Coding & AI',
         rating: 4.9,
         year: 2024,
         duration: '3 months',
-        thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=600&fit=crop'
+        thumbnail: '/images/courses/apple5.jpg'
     },
     {
-        id: '6',
+        id: 'slow-horses-german-integration',
         title: 'Slow Horses',
         titleAr: 'الخيول البطيئة',
         category: 'German Integration',
         rating: 4.8,
         year: 2024,
         duration: '5 months',
-        thumbnail: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=600&fit=crop'
+        thumbnail: '/images/courses/apple6.jpg'
     },
     {
-        id: '7',
+        id: 'severance-german-advanced',
         title: 'Severance',
         titleAr: 'الفصل',
         category: 'German Language',
         rating: 4.9,
         year: 2024,
         duration: '6 months',
-        thumbnail: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=400&h=600&fit=crop'
+        thumbnail: '/images/courses/apple7.jpg'
     },
     {
-        id: '8',
+        id: 'foundation-freelance-mastery',
         title: 'Foundation',
         titleAr: 'الأساس',
         category: 'Freelance & Side Hustle',
         rating: 4.7,
         year: 2024,
         duration: '8 months',
-        thumbnail: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=400&h=600&fit=crop'
+        thumbnail: '/images/courses/apple8.jpg'
     },
     {
-        id: '9',
+        id: 'invasion-startup-growth',
         title: 'Invasion',
         titleAr: 'الغزو',
         category: 'Entrepreneurship',
         rating: 4.5,
         year: 2024,
         duration: '5 months',
-        thumbnail: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&h=600&fit=crop'
+        thumbnail: '/images/courses/apple9.jpg'
     },
     {
-        id: '10',
+        id: 'master-trader-pro',
         title: 'Master Trader',
         titleAr: 'المتداول المحترف',
         category: 'Trading',
         rating: 4.8,
         year: 2024,
         duration: '4 months',
-        thumbnail: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=600&fit=crop'
+        thumbnail: '/images/courses/apple10.jpg'
     },
     {
-        id: '11',
+        id: 'ai-revolution-machine-learning',
         title: 'AI Revolution',
         titleAr: 'ثورة الذكاء الاصطناعي',
         category: 'Coding & AI',
         rating: 4.9,
         year: 2024,
         duration: '7 months',
-        thumbnail: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=600&fit=crop'
+        thumbnail: '/images/courses/apple1.jpg'
     },
     {
-        id: '12',
+        id: 'german-life-culture',
         title: 'German Life',
         titleAr: 'الحياة الألمانية',
         category: 'German Integration',
         rating: 4.7,
         year: 2024,
         duration: '5 months',
-        thumbnail: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=400&h=600&fit=crop'
+        thumbnail: '/images/courses/apple2.jpg'
     }
 ];
 
@@ -152,7 +155,10 @@ export default function CoursesPage() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [hoveredCard, setHoveredCard] = useState<string | null>(null);
     const [showMenu, setShowMenu] = useState<string | null>(null);
+    const [showSignInModal, setShowSignInModal] = useState(false);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
     const router = useRouter();
+    const { data: session } = useSession();
     const locale = useLocaleSafe();
     const isArabic = locale === 'ar';
 
@@ -184,8 +190,21 @@ export default function CoursesPage() {
         router.push(`/${locale}/courses/${courseId}`);
     };
 
+    const handleAcceptOffer = () => {
+        if (session) {
+            setShowPaymentModal(true);
+        } else {
+            setShowSignInModal(true);
+        }
+    };
+
+    const handleSignInSuccess = () => {
+        setShowSignInModal(false);
+        setShowPaymentModal(true);
+    };
+
     return (
-        <div className="min-h-screen pt-12" style={{ backgroundColor: '#1f1f1f' }}>
+        <div className="min-h-screen pt-" style={{ backgroundColor: '#1f1f1f' }}>
             {/* Hero Section - Featured Course */}
             <div className="relative h-[70vh] w-full overflow-hidden mb-20">
                 {/* Background Image */}
@@ -235,7 +254,7 @@ export default function CoursesPage() {
                         {/* Buttons */}
                         <div className="flex items-center space-x-3 pt-2">
                             <button 
-                                onClick={() => handleCourseClick(heroCourse.id)}
+                                onClick={handleAcceptOffer}
                                 className="apple-tv-button relative flex items-center justify-center gap-2 px-8 py-3 font-semibold text-base text-black rounded-full min-w-[100px] max-w-[340px] w-auto transition-transform duration-100 ease-in hover:scale-[1.02] active:scale-[0.98] z-10"
                                 style={{
                                     height: '48px',
@@ -273,9 +292,9 @@ export default function CoursesPage() {
             </div>
 
             {/* Top 10 TV Shows Section */}
-            <div className="relative z-10 pb-20">
+            <div className="relative z-10 pb-8">
                 <div className="max-w-screen-2xl mx-auto px-8">
-                    <div className="flex items-center space-x-2 mb-6">
+                    <div className="flex items-center space-x-2 mb-4">
                         <h2 className="text-xl font-semibold text-white">
                             Top 10 TV Shows
                         </h2>
@@ -284,7 +303,7 @@ export default function CoursesPage() {
                         </svg>
                     </div>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
                         {courses.slice(0, 8).map((course, index) => (
                             <div 
                                 key={course.id} 
@@ -362,6 +381,11 @@ export default function CoursesPage() {
                         ))}
                     </div>
                 </div>
+                
+                {/* Separator Line */}
+                <div className="max-w-screen-2xl mx-auto px-8 mt-8">
+                    <div className="h-[1px] bg-white/10"></div>
+                </div>
             </div>
 
             {/* Category Sections */}
@@ -370,9 +394,9 @@ export default function CoursesPage() {
                 if (categoryCourses.length === 0) return null;
 
                 return (
-                    <div key={category} className="relative z-10 pb-16">
+                    <div key={category} className="relative z-10 pb-8">
                         <div className="max-w-screen-2xl mx-auto px-8">
-                            <div className="flex items-center space-x-2 mb-6">
+                            <div className="flex items-center space-x-2 mb-4">
                                 <h2 className="text-xl font-semibold text-white">
                                     {category}
                                 </h2>
@@ -381,7 +405,7 @@ export default function CoursesPage() {
                                 </svg>
                             </div>
                             
-                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
                                 {categoryCourses.map((course) => (
                                     <div 
                                         key={course.id} 
@@ -451,6 +475,11 @@ export default function CoursesPage() {
                                 ))}
                             </div>
                         </div>
+                        
+                        {/* Separator Line */}
+                        <div className="max-w-screen-2xl mx-auto px-8 mt-8">
+                            <div className="h-[1px] bg-white/10"></div>
+                        </div>
                     </div>
                 );
             })}
@@ -463,6 +492,21 @@ export default function CoursesPage() {
                     overflow: hidden;
                 }
             `}</style>
+
+            {/* Sign In Modal */}
+            <SignInModal
+                isOpen={showSignInModal}
+                onClose={() => setShowSignInModal(false)}
+                onSignInSuccess={handleSignInSuccess}
+            />
+
+            {/* Payment Modal */}
+            <PaymentModal
+                isOpen={showPaymentModal}
+                onClose={() => setShowPaymentModal(false)}
+                courseTitle={heroCourse.title}
+                price="EGP 59.99/month for the first 6 months, then EGP 119.99/month"
+            />
         </div>
     );
 }

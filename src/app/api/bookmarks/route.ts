@@ -12,6 +12,23 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
+        // Ensure we have a valid user record in the database
+        const sessionEmail = session.user.email
+        let dbUser = await prisma.user.findUnique({ where: { id: session.user.id } })
+
+        if (!dbUser && sessionEmail) {
+            dbUser = await prisma.user.findUnique({ where: { email: sessionEmail } })
+        }
+
+        if (!dbUser) {
+            return NextResponse.json(
+                { error: 'User account not found. Please re-login.' },
+                { status: 404 }
+            )
+        }
+
+        const userId = dbUser.id
+
         const { postId } = await req.json()
 
         if (!postId) {
@@ -22,7 +39,7 @@ export async function POST(req: NextRequest) {
         const existingBookmark = await prisma.postBookmark.findUnique({
             where: {
                 userId_postId: {
-                    userId: session.user.id,
+                    userId,
                     postId: postId
                 }
             }
@@ -35,7 +52,7 @@ export async function POST(req: NextRequest) {
             await prisma.postBookmark.delete({
                 where: {
                     userId_postId: {
-                        userId: session.user.id,
+                        userId,
                         postId: postId
                     }
                 }
@@ -45,7 +62,7 @@ export async function POST(req: NextRequest) {
             // Add bookmark
             await prisma.postBookmark.create({
                 data: {
-                    userId: session.user.id,
+                    userId,
                     postId: postId
                 }
             })
@@ -75,9 +92,26 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
+        // Ensure we have a valid user record in the database
+        const sessionEmail = session.user.email
+        let dbUser = await prisma.user.findUnique({ where: { id: session.user.id } })
+
+        if (!dbUser && sessionEmail) {
+            dbUser = await prisma.user.findUnique({ where: { email: sessionEmail } })
+        }
+
+        if (!dbUser) {
+            return NextResponse.json(
+                { error: 'User account not found. Please re-login.' },
+                { status: 404 }
+            )
+        }
+
+        const userId = dbUser.id
+
         const bookmarks = await prisma.postBookmark.findMany({
             where: {
-                userId: session.user.id
+                userId
             },
             include: {
                 post: {

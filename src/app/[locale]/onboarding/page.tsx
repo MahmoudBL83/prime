@@ -303,8 +303,8 @@ export default function OnboardingPage() {
                 return (
                     <div className="space-y-8">
                         <div className="text-center mb-8">
-                            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'var(--accent)', opacity: 0.2 }}>
-                                <User className="w-10 h-10" style={{ color: 'var(--accent)' }} />
+                            <div className="w-20 h-20 bg-[#0a84ff]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <User className="w-10 h-10 text-[#0a84ff]" />
                             </div>
                             <h3 className="text-2xl font-light text-white mb-2">
                                 {lang === 'ar' ? 'مرحباً بك في برايم' : 'Welcome to Prime'}
@@ -316,7 +316,7 @@ export default function OnboardingPage() {
 
                         <div className="flex justify-center mb-6">
                             <div className="relative">
-                                <div className="w-24 h-24 rounded-full bg-gray-800 border-2 border-gray-700 flex items-center justify-center">
+                                <div className="w-24 h-24 rounded-full bg-white/5 border-2 border-white/10 flex items-center justify-center">
                                     {(() => {
                                         const avatar = AVATAR_OPTIONS.find(a => a.id === watchedValues.avatar);
                                         return avatar ? (
@@ -326,7 +326,7 @@ export default function OnboardingPage() {
                                         );
                                     })()}
                                 </div>
-                                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gray-900 px-3 py-1 rounded-full text-xs text-gray-400 border border-gray-700">
+                                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-xs text-gray-400 border border-white/10">
                                     {lang === 'ar' ? 'معاينة' : 'Preview'}
                                 </div>
                             </div>
@@ -346,8 +346,8 @@ export default function OnboardingPage() {
                                             whileHover={{ scale: 1.02 }}
                                             whileTap={{ scale: 0.98 }}
                                             className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${watchedValues.age === ageRange.value
-                                                ? 'bg-blue-600/20 border-blue-600 text-white'
-                                                : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600'
+                                                ? 'bg-[#0a84ff]/20 border-[#0a84ff] text-white'
+                                                : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
                                                 }`}
                                         >
                                             <span className="text-2xl">{ageRange.icon}</span>
@@ -358,7 +358,7 @@ export default function OnboardingPage() {
                                     ))}
                                 </div>
                                 {errors.age && (
-                                    <p className="text-sm mt-2" style={{ color: 'var(--accent)' }}>{errors.age.message}</p>
+                                    <p className="text-sm mt-2 text-red-400">{errors.age.message}</p>
                                 )}
                             </div>
 
@@ -375,8 +375,8 @@ export default function OnboardingPage() {
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
                                             className={`p-3 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${watchedValues.avatar === avatar.id
-                                                ? `${avatar.color} border-transparent text-white`
-                                                : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600'
+                                                ? 'bg-[#0a84ff] border-[#0a84ff] text-white'
+                                                : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
                                                 }`}
                                         >
                                             <span className="text-2xl">{avatar.emoji}</span>
@@ -387,7 +387,7 @@ export default function OnboardingPage() {
                                     ))}
                                 </div>
                                 {errors.avatar && (
-                                    <p className="text-sm mt-2" style={{ color: 'var(--accent)' }}>{errors.avatar.message}</p>
+                                    <p className="text-sm mt-2 text-red-400">{errors.avatar.message}</p>
                                 )}
                             </div>
                         </div>
@@ -399,8 +399,8 @@ export default function OnboardingPage() {
                 return (
                     <div className="space-y-8">
                         <div className="text-center mb-8">
-                            <div className="w-20 h-20 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Target className="w-10 h-10 text-blue-600" />
+                            <div className="w-20 h-20 bg-[#0a84ff]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Target className="w-10 h-10 text-[#0a84ff]" />
                             </div>
                             <h3 className="text-2xl font-light text-white mb-2">
                                 {lang === 'ar' ? 'ما هي اهتماماتك وأهدافك؟' : 'What are your interests and goals?'}
@@ -427,8 +427,8 @@ export default function OnboardingPage() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                         className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${watchedValues.interests?.includes(interest.id)
-                                            ? 'bg-blue-600/20 border-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                            : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600'
+                                            ? 'bg-[#0a84ff]/20 border-[#0a84ff] text-white shadow-lg shadow-[#0a84ff]/20'
+                                            : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
                                             }`}
                                     >
                                         <motion.span
@@ -445,7 +445,7 @@ export default function OnboardingPage() {
                                 ))}
                             </div>
                             {errors.interests && (
-                                <p className="text-sm mt-2" style={{ color: 'var(--accent)' }}>{errors.interests.message}</p>
+                                <p className="text-sm mt-2 text-red-400">{errors.interests.message}</p>
                             )}
                         </div>
 
@@ -466,8 +466,8 @@ export default function OnboardingPage() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                         className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${watchedValues.goals?.includes(goal.id)
-                                            ? 'bg-green-600/20 border-green-600 text-white shadow-lg shadow-green-600/20'
-                                            : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600'
+                                            ? 'bg-[#0a84ff]/20 border-[#0a84ff] text-white shadow-lg shadow-[#0a84ff]/20'
+                                            : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
                                             }`}
                                     >
                                         <motion.span
@@ -484,7 +484,7 @@ export default function OnboardingPage() {
                                 ))}
                             </div>
                             {errors.goals && (
-                                <p className="text-sm mt-2" style={{ color: 'var(--accent)' }}>{errors.goals.message}</p>
+                                <p className="text-sm mt-2 text-red-400">{errors.goals.message}</p>
                             )}
                         </div>
                     </div>
@@ -494,8 +494,8 @@ export default function OnboardingPage() {
                 return (
                     <div className="space-y-8">
                         <div className="text-center mb-8">
-                            <div className="w-20 h-20 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <BookOpen className="w-10 h-10 text-purple-600" />
+                            <div className="w-20 h-20 bg-[#0a84ff]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <BookOpen className="w-10 h-10 text-[#0a84ff]" />
                             </div>
                             <h3 className="text-2xl font-light text-white mb-2">
                                 {lang === 'ar' ? 'كيف تفضل أن تتعلم؟' : 'How do you prefer to learn?'}
@@ -522,8 +522,8 @@ export default function OnboardingPage() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                         className={`p-6 rounded-xl border-2 transition-all duration-200 text-center ${watchedValues.skillLevel === level
-                                            ? 'bg-purple-600/20 border-purple-600 text-white shadow-lg shadow-purple-600/20'
-                                            : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600'
+                                            ? 'bg-[#0a84ff]/20 border-[#0a84ff] text-white shadow-lg shadow-[#0a84ff]/20'
+                                            : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
                                             }`}
                                     >
                                         <motion.div
@@ -564,8 +564,8 @@ export default function OnboardingPage() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                         className={`p-6 rounded-xl border-2 transition-all duration-200 text-center ${watchedValues.learningMode === mode
-                                            ? 'bg-purple-600/20 border-purple-600 text-white shadow-lg shadow-purple-600/20'
-                                            : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600'
+                                            ? 'bg-[#0a84ff]/20 border-[#0a84ff] text-white shadow-lg shadow-[#0a84ff]/20'
+                                            : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
                                             }`}
                                     >
                                         <motion.div
@@ -595,8 +595,8 @@ export default function OnboardingPage() {
                 return (
                     <div className="space-y-8">
                         <div className="text-center mb-8">
-                            <div className="w-20 h-20 bg-green-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Users className="w-10 h-10 text-green-600" />
+                            <div className="w-20 h-20 bg-[#0a84ff]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Users className="w-10 h-10 text-[#0a84ff]" />
                             </div>
                             <h3 className="text-2xl font-light text-white mb-2">
                                 {lang === 'ar' ? 'رفيق الدراسة' : 'Study Buddy'}
@@ -607,13 +607,13 @@ export default function OnboardingPage() {
                         </div>
 
                         {/* Study Buddy Opt-in */}
-                        <div className="bg-gray-800/50 rounded-xl p-6 mb-6">
+                        <div className="bg-white/5 rounded-xl p-6 mb-6">
                             <div className="flex items-center space-x-4">
                                 <input
                                     type="checkbox"
                                     id="studyBuddyOptIn"
                                     {...register('studyBuddyOptIn')}
-                                    className="w-5 h-5 text-green-600 bg-gray-700 border-gray-600 rounded focus:ring-green-500 focus:ring-2"
+                                    className="w-5 h-5 text-[#0a84ff] bg-white/5 border-white/10 rounded focus:ring-[#0a84ff] focus:ring-2"
                                 />
                                 <label htmlFor="studyBuddyOptIn" className="text-white font-medium cursor-pointer">
                                     {lang === 'ar' ? 'أريد العثور على رفيق دراسة' : 'I want to find a study buddy'}
@@ -633,7 +633,7 @@ export default function OnboardingPage() {
                                     </label>
                                     <select
                                         {...register('studyBuddyPreferences.availability')}
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all"
+                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#0a84ff] focus:border-transparent transition-all"
                                     >
                                         <option value="mornings">{lang === 'ar' ? 'الصباح' : 'Mornings'}</option>
                                         <option value="afternoons">{lang === 'ar' ? 'بعد الظهر' : 'Afternoons'}</option>
@@ -658,8 +658,8 @@ export default function OnboardingPage() {
                                                     whileHover={{ scale: 1.02 }}
                                                     whileTap={{ scale: 0.98 }}
                                                     className={`p-3 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${watchedValues.studyBuddyPreferences?.preferredSubjects?.includes(interest)
-                                                        ? 'bg-green-600/20 border-green-600 text-white'
-                                                        : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600'
+                                                        ? 'bg-[#0a84ff]/20 border-[#0a84ff] text-white'
+                                                        : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
                                                         }`}
                                                 >
                                                     <span className="text-xl">{interestData?.icon}</span>
@@ -685,8 +685,8 @@ export default function OnboardingPage() {
                                                 whileHover={{ scale: 1.02 }}
                                                 whileTap={{ scale: 0.98 }}
                                                 className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${watchedValues.studyBuddyPreferences?.collaborationStyle === style
-                                                    ? 'bg-green-600/20 border-green-600 text-white'
-                                                    : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600'
+                                                    ? 'bg-[#0a84ff]/20 border-[#0a84ff] text-white'
+                                                    : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
                                                     }`}
                                             >
                                                 <div className="text-2xl">
@@ -712,8 +712,8 @@ export default function OnboardingPage() {
                 return (
                     <div className="space-y-8">
                         <div className="text-center mb-8">
-                            <div className="w-20 h-20 bg-yellow-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Award className="w-10 h-10 text-yellow-600" />
+                            <div className="w-20 h-20 bg-[#0a84ff]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Award className="w-10 h-10 text-[#0a84ff]" />
                             </div>
                             <h3 className="text-2xl font-light text-white mb-2">
                                 {lang === 'ar' ? 'راجع ملفك الشخصي' : 'Review your profile'}
@@ -724,7 +724,7 @@ export default function OnboardingPage() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
                                 <h4 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
                                     <User className="w-5 h-5 text-blue-400" />
                                     {lang === 'ar' ? 'المعلومات الأساسية' : 'Basic Info'}
@@ -759,9 +759,9 @@ export default function OnboardingPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
                                 <h4 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-                                    <Target className="w-5 h-5 text-green-400" />
+                                    <Target className="w-5 h-5 text-[#0a84ff]" />
                                     {lang === 'ar' ? 'الاهتمامات والأهداف' : 'Interests & Goals'}
                                 </h4>
                                 <div className="space-y-4">
@@ -771,7 +771,7 @@ export default function OnboardingPage() {
                                             {watchedValues.interests?.map((interest) => {
                                                 const interestData = INTERESTS.find(i => i.id === interest)
                                                 return (
-                                                    <span key={interest} className="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full text-xs font-medium">
+                                                    <span key={interest} className="bg-[#0a84ff]/20 text-[#0a84ff] px-3 py-1 rounded-full text-xs font-medium">
                                                         {lang === 'ar' ? interestData?.nameAr : interestData?.nameEn}
                                                     </span>
                                                 )
@@ -784,7 +784,7 @@ export default function OnboardingPage() {
                                             {watchedValues.goals?.map((goal) => {
                                                 const goalData = LEARNING_GOALS.find(g => g.id === goal)
                                                 return (
-                                                    <span key={goal} className="bg-green-600/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium">
+                                                    <span key={goal} className="bg-[#0a84ff]/20 text-[#0a84ff] px-3 py-1 rounded-full text-xs font-medium">
                                                         {lang === 'ar' ? goalData?.nameAr : goalData?.nameEn}
                                                     </span>
                                                 )
@@ -794,9 +794,9 @@ export default function OnboardingPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
                                 <h4 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-                                    <Users className="w-5 h-5 text-purple-400" />
+                                    <Users className="w-5 h-5 text-[#0a84ff]" />
                                     {lang === 'ar' ? 'تفضيلات الدراسة' : 'Study Preferences'}
                                 </h4>
                                 <div className="space-y-3 text-sm">
@@ -951,9 +951,9 @@ export default function OnboardingPage() {
             {showCelebration && <Celebration />}
             {/* Background Effects */}
             <div className="fixed inset-0 z-0">
-                <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black" />
+                <div className="absolute inset-0 bg-[#1f1f1f]" />
                 <div className="absolute inset-0 opacity-30">
-                    <div className="w-full h-full bg-gradient-to-r from-red-900/10 via-emerald-900/10 to-blue-900/10" />
+                    <div className="w-full h-full bg-gradient-to-r from-[#0a84ff]/10 via-white/5 to-[#0a84ff]/10" />
                 </div>
                 {[...Array(20)].map((_, i) => {
                     // Static positions for particles to avoid hydration mismatch
@@ -994,12 +994,12 @@ export default function OnboardingPage() {
             </div>
 
             {/* Header */}
-            <div className="relative z-10 bg-black/80 backdrop-blur-sm border-b border-gray-800">
+            <div className="relative z-10 bg-black/40 backdrop-blur-sm border-b border-white/10">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--accent)' }}>
-                                <span className="text-white font-bold text-lg">ب</span>
+                            <div className="w-10 h-10 rounded-lg bg-[#0a84ff] flex items-center justify-center">
+                                <span className="text-white font-bold text-lg">P</span>
                             </div>
                             <h1 className="text-2xl font-bold text-white">
                                 {lang === 'ar' ? 'إكمال التسجيل' : 'Complete Your Profile'}
@@ -1013,17 +1013,16 @@ export default function OnboardingPage() {
             </div>
 
             {/* Progress Bar */}
-            <div className="relative z-10 bg-black/60 backdrop-blur-sm border-b border-gray-800">
+            <div className="relative z-10 bg-black/40 backdrop-blur-sm border-b border-white/10">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between py-6">
                         {STEPS.map((step, index) => (
                             <div key={step.id} className="flex items-center flex-1">
                                 <motion.div
                                     className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 ${step.id <= currentStep
-                                        ? 'text-white'
-                                        : 'bg-gray-800 border-gray-700 text-gray-500'
+                                        ? 'bg-[#0a84ff] border-[#0a84ff] text-white'
+                                        : 'bg-white/5 border-white/10 text-gray-500'
                                         }`}
-                                    style={step.id <= currentStep ? { backgroundColor: 'var(--accent)', borderColor: 'var(--accent)' } : undefined}
                                     whileHover={{ scale: 1.05 }}
                                 >
                                     <span className="font-medium">{step.id}</span>
@@ -1031,8 +1030,7 @@ export default function OnboardingPage() {
                                 {index < STEPS.length - 1 && (
                                     <div className="flex-1 h-0.5 mx-4">
                                         <motion.div
-                                            className={`h-full transition-all duration-300 ${step.id < currentStep ? '' : 'bg-gray-700'}`}
-                                            style={step.id < currentStep ? { backgroundColor: 'var(--accent)' } : undefined}
+                                            className={`h-full transition-all duration-300 ${step.id < currentStep ? 'bg-[#0a84ff]' : 'bg-white/10'}`}
                                             initial={{ width: 0 }}
                                             animate={{ width: step.id < currentStep ? '100%' : '0%' }}
                                             transition={{ duration: 0.5 }}
@@ -1056,11 +1054,11 @@ export default function OnboardingPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -30 }}
                                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                                className="bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-8 mb-8"
+                                className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 mb-8"
                             >
                                 <div className="mb-8 text-center">
                                     <div className="flex items-center justify-center gap-3 mb-4">
-                                        <div className="" style={{ color: 'var(--accent)' }}>
+                                        <div className="text-[#0a84ff]">
                                             {STEPS[currentStep - 1].icon}
                                         </div>
                                         <h2 className="text-3xl font-light text-white">
@@ -1082,7 +1080,7 @@ export default function OnboardingPage() {
                                 type="button"
                                 onClick={prevStep}
                                 disabled={currentStep === 1}
-                                className="flex items-center gap-2 px-6 py-3 bg-gray-800 border border-gray-700 rounded-xl text-gray-300 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-gray-300 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                             >
@@ -1095,8 +1093,7 @@ export default function OnboardingPage() {
                                     <motion.button
                                         type="button"
                                         onClick={nextStep}
-                                        className="flex items-center gap-2 px-8 py-3 text-white rounded-xl hover:opacity-90 transition-all"
-                                        style={{ backgroundColor: 'var(--accent)' }}
+                                        className="flex items-center gap-2 px-8 py-3 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-xl transition-all"
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                     >
@@ -1107,7 +1104,7 @@ export default function OnboardingPage() {
                                     <motion.button
                                         type="submit"
                                         disabled={isLoading}
-                                        className="flex items-center gap-2 px-8 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-all"
+                                        className="flex items-center gap-2 px-8 py-3 bg-[#0a84ff] text-white rounded-xl hover:bg-[#0a84ff]/90 disabled:opacity-50 transition-all"
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                     >

@@ -1079,8 +1079,8 @@ export default function OnlyFansStyleMentorsPage() {
                                     onClick={handleSetFeedView}
                                     className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
                                         activeView === 'feed'
-                                            ? 'bg-purple-500/20 text-foreground'
-                                            : 'hover:bg-card-hover text-muted-foreground hover:text-foreground'
+                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
                                     <DynamicIcon name="Home" className="w-6 h-6" />
@@ -1093,8 +1093,8 @@ export default function OnlyFansStyleMentorsPage() {
                                     onClick={handleSetCreatorsView}
                                     className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
                                         activeView === 'creators'
-                                            ? 'bg-purple-500/20 text-foreground'
-                                            : 'hover:bg-card-hover text-muted-foreground hover:text-foreground'
+                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
                                     <DynamicIcon name="Users" className="w-6 h-6" />
@@ -1106,8 +1106,8 @@ export default function OnlyFansStyleMentorsPage() {
                                     onClick={handleSetSubscriptionsView}
                                     className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
                                         activeView === 'subscriptions'
-                                            ? 'bg-purple-500/20 text-foreground'
-                                            : 'hover:bg-card-hover text-muted-foreground hover:text-foreground'
+                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
                                     <DynamicIcon name="Crown" className="w-6 h-6" />
@@ -1119,8 +1119,8 @@ export default function OnlyFansStyleMentorsPage() {
                                     onClick={handleSetBookmarksView}
                                     className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
                                         activeView === 'bookmarks'
-                                            ? 'bg-purple-500/20 text-foreground'
-                                            : 'hover:bg-card-hover text-muted-foreground hover:text-foreground'
+                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
                                     <DynamicIcon name="Bookmark" className="w-6 h-6" />
@@ -1130,7 +1130,7 @@ export default function OnlyFansStyleMentorsPage() {
                                 {/* Reposts */}
                                 <button
                                     onClick={() => toast.success(isArabic ? 'قريباً' : 'Coming soon!')}
-                                    className="w-full flex items-center gap-4 px-4 py-3 rounded-full hover:bg-card-hover text-muted-foreground hover:text-foreground transition-all"
+                                    className="w-full flex items-center gap-4 px-4 py-3 rounded-full hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all"
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -1154,7 +1154,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                 router.push(`/${locale}/login`)
                                             }
                                         }}
-                                        className="w-full flex items-center gap-4 px-4 py-3 rounded-full hover:bg-card-hover text-muted-foreground hover:text-foreground transition-all"
+                                        className="w-full flex items-center gap-4 px-4 py-3 rounded-full hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all"
                                     >
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -1165,13 +1165,13 @@ export default function OnlyFansStyleMentorsPage() {
                                 )}
 
                                 {/* Divider */}
-                                <div className="border-t border-border my-4" />
+                                <div className="h-[0.5px] bg-white/10 my-4" />
 
                                 {/* Become Creator Button - Only show for non-creators */}
                                 {session && !isCreatorAccount && (
                                     <Button
                                         onClick={() => router.push(`/${locale}/creator/apply`)}
-                                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-foreground font-bold py-3 rounded-full text-lg shadow-lg"
+                                        className="w-full bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white font-bold py-3 rounded-full text-lg shadow-lg transition-all"
                                     >
                                         {isArabic ? 'كن منشئاً' : 'Become Creator'}
                                     </Button>
@@ -1180,10 +1180,10 @@ export default function OnlyFansStyleMentorsPage() {
 
                             {/* User Profile Card (if logged in) */}
                             {session && (
-                                <div className="mt-6 p-4 bg-white/[0.02] border border-border rounded-2xl">
+                                <div className="mt-6 p-4 bg-white/[0.02] border border-white/10 rounded-2xl">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                                            <span className="text-lg font-bold text-foreground">
+                                        <div className="w-10 h-10 rounded-full bg-[#0a84ff] flex items-center justify-center">
+                                            <span className="text-lg font-bold text-white">
                                                 {session.user?.name?.[0] || 'U'}
                                             </span>
                                         </div>
@@ -1202,9 +1202,9 @@ export default function OnlyFansStyleMentorsPage() {
                     </div>
 
                     {/* Main Feed - Twitter Style */}
-                    <div className="lg:col-span-6 border-x border-border min-h-screen">
+                    <div className="lg:col-span-6 min-h-screen" style={{ borderLeft: '0.5px solid hsla(0,0%,100%,.1)', borderRight: '0.5px solid hsla(0,0%,100%,.1)' }}>
                         {/* Header */}
-                        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border p-4 transition-colors">
+                        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl p-4 transition-colors" style={{ borderBottom: '0.5px solid hsla(0,0%,100%,.1)' }}>
                             <h2 className="text-2xl font-black text-foreground">
                                 {activeView === 'feed' && (isArabic ? 'الأخبار' : 'Feed')}
                                 {activeView === 'subscriptions' && (isArabic ? 'اشتراكاتي' : 'My Subscriptions')}
@@ -1212,16 +1212,11 @@ export default function OnlyFansStyleMentorsPage() {
                                 {activeView === 'creators' && (isArabic ? 'جميع المبدعين' : 'All Creators')}
                             </h2>
 
-                            {/* Consolidation banner: promote coaching via channels */}
-                            <div className="mt-3 p-3 rounded-xl bg-blue-50 dark:bg-card border border-blue-200 dark:border-border text-sm text-foreground transition-colors">
-                                {isArabic
-                                    ? '💡 احصل على جلسات فردية بالاشتراك في قنوات المنشئ – راجع الفئات لاكتشاف العروض التي تتضمن تدريبًا.'
-                                    : '💡 Get 1-on-1 coaching by subscribing to creator channels — check tiers to find coaching-inclusive plans.'}
-                            </div>
+
                         </div>
 
                         {/* Feed Posts */}
-                        <div className="divide-y divide-border">
+                        <div>
                             {/* Show skeleton loading while posts are being fetched */}
                             {activeView === 'feed' && loadingPosts && (
                                 <>
@@ -1247,7 +1242,7 @@ export default function OnlyFansStyleMentorsPage() {
                                         <div
                                             key={post.id}
                                             className="p-4 hover:bg-white/[0.02] transition-colors animate-fade-in"
-                                            style={{ animationDelay: `${i * 50}ms` }}
+                                            style={{ animationDelay: `${i * 50}ms`, borderBottom: i < posts.length - 1 ? '0.5px solid hsla(0,0%,100%,.1)' : 'none' }}
                                         >
                                             <div className="flex gap-3">
                                                 {/* Profile Image */}

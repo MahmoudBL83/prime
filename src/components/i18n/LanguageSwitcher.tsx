@@ -37,8 +37,8 @@ export function LanguageSwitcher() {
                     onClick={() => handleLanguageChange(loc)}
                     className={`block w-full text-left px-4 py-2.5 text-sm transition-colors ${
                         locale === loc 
-                            ? 'text-foreground bg-purple-600/20 border-l-2 border-purple-500' 
-                            : 'text-muted-foreground hover:text-foreground hover:bg-card-hover'
+                            ? 'text-white bg-white/10' 
+                            : 'text-white/70 hover:text-white hover:bg-white/5'
                     }`}
                 >
                     <div className="flex items-center gap-3">
