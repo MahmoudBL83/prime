@@ -12,19 +12,22 @@ export const prisma =
     globalForPrisma.prisma ??
     new PrismaClient({
         log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
-        // Optimize connection pool
+        // Optimize connection pool for serverless
         datasources: {
             db: {
                 url: databaseUrl,
             },
         },
-        // Reduce connection overhead
-        transactionOptions: {
-            maxWait: 2000,
-            timeout: 5000,
-        },
     })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+
+// Handle serverless connection cleanup
+if (process.env.VERCEL) {
+    // Vercel serverless environment - add connection lifecycle management
+    process.on('beforeExit', async () => {
+        await prisma.$disconnect()
+    })
+}
 
 export default prisma

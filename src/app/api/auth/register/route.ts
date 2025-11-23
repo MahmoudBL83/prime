@@ -4,6 +4,10 @@ import bcrypt from "bcryptjs"
 import { z } from "zod"
 import { UserRole } from "@prisma/client"
 
+// Mark as Edge Runtime compatible or Node runtime
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 const registerSchema = z.object({
     email: z.string().email(),
     password: z.string().min(8),
@@ -16,6 +20,15 @@ const registerSchema = z.object({
 
 export async function POST(req: NextRequest) {
     try {
+        // Check if DATABASE_URL is configured
+        if (!process.env.DATABASE_URL) {
+            console.error("DATABASE_URL is not configured")
+            return NextResponse.json(
+                { error: "Database configuration error" },
+                { status: 500 }
+            )
+        }
+
         const body = await req.json()
         const validation = registerSchema.safeParse(body)
 
@@ -62,9 +75,19 @@ export async function POST(req: NextRequest) {
         })
     } catch (error) {
         console.error("Registration error:", error)
+        
+        // More detailed error logging for debugging
+        if (error instanceof Error) {
+            console.error("Error message:", error.message)
+            console.error("Error stack:", error.stack)
+        }
+        
         return NextResponse.json(
-            { error: "Internal server error" },
+            { error: "Internal server error", details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined },
             { status: 500 }
         )
+    } finally {
+        // Disconnect Prisma in serverless environment to prevent connection pooling issues
+        await prisma.$disconnect()
     }
 }
