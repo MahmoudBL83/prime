@@ -26,7 +26,10 @@ import {
     Heart,
     CheckCircle,
     Crown,
-    Trophy
+    Trophy,
+    AlertCircle,
+    XCircle,
+    Plus
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -149,6 +152,23 @@ interface LearningStats {
     }[]
 }
 
+type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED'
+type TicketPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+type TicketCategory = 'BILLING' | 'TECHNICAL' | 'CONTENT' | 'SAFETY' | 'OTHER'
+
+interface SupportTicket {
+    id: string
+    subject: string
+    status: TicketStatus
+    priority: TicketPriority
+    category: TicketCategory
+    createdAt: string
+    updatedAt: string
+    _count: {
+        messages: number
+    }
+}
+
 function DashboardContent() {
     const { data: session, status } = useSession()
     const router = useRouter()
@@ -165,6 +185,7 @@ function DashboardContent() {
     const [activeTab, setActiveTab] = useState<string>('overview')
     const [myListCourses, setMyListCourses] = useState<Course[]>([])
     const [likedCourses, setLikedCourses] = useState<Course[]>([])
+    const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([])
     const [tabLoading, setTabLoading] = useState(false)
 
     // Direction based on locale
@@ -202,6 +223,12 @@ function DashboardContent() {
                     if (response.ok) {
                         const data = await response.json()
                         setLikedCourses(data.courses)
+                    }
+                } else if (activeTab === 'support' && supportTickets.length === 0) {
+                    const response = await fetch('/api/support/tickets')
+                    if (response.ok) {
+                        const data = await response.json()
+                        setSupportTickets(data.tickets || [])
                     }
                 }
             } catch (error) {
@@ -298,15 +325,15 @@ function DashboardContent() {
     // Show loading during hydration or data fetching
     if (!isClient || status === 'loading' || loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+            <div className="min-h-screen bg-black flex items-center justify-center">
                 <div className="text-center">
                     <div className="relative">
                         {/* Decorative loading elements */}
-                        <div className="absolute inset-0 w-16 h-16 border-4 border-purple-500/30 rounded-full animate-ping"></div>
-                        <div className="w-16 h-16 border-4 border-[#0a84ff]/30 border-t-[#0a84ff] rounded-full animate-spin mx-auto mb-6"></div>
+                        <div className="absolute inset-0 w-16 h-16 border-4 border-white/10 rounded-full animate-ping"></div>
+                        <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-6"></div>
                     </div>
-                    <p className="text-purple-200 text-lg font-medium">Loading your dashboard...</p>
-                    <p className="text-gray-400 text-sm mt-2">Preparing your personalized experience</p>
+                    <p className="text-white text-lg font-medium">Loading your dashboard...</p>
+                    <p className="text-white/60 text-sm mt-2">Preparing your personalized experience</p>
                 </div>
             </div>
         )
@@ -315,8 +342,8 @@ function DashboardContent() {
     // Handle unauthenticated state
     if (!session) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-                <div className="text-purple-200 text-lg">Redirecting to login...</div>
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <div className="text-white text-lg">Redirecting to login...</div>
             </div>
         )
     }
@@ -324,8 +351,8 @@ function DashboardContent() {
     // Handle missing profile
     if (!userProfile) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-                <div className="text-purple-200 text-lg">Setting up your profile...</div>
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <div className="text-white text-lg">Setting up your profile...</div>
             </div>
         )
     }
@@ -334,23 +361,23 @@ function DashboardContent() {
     const welcomeText = isArabic ? `مرحباً، ${displayName}` : `Welcome back, ${displayName}`
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900" dir={dir}>
+        <div className="min-h-screen bg-black" dir={dir}>
             {/* Header */}
             <div className="relative overflow-hidden">
                 {/* Background Elements */}
                 <div className="absolute inset-0">
-                    <div className="absolute top-20 left-20 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl"></div>
-                    <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl"></div>
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-purple-600/10 to-blue-600/10 rounded-full blur-3xl"></div>
+                    <div className="absolute top-20 left-20 w-72 h-72 bg-white/5 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/5 rounded-full blur-3xl"></div>
                 </div>
                 
-                <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/30 to-blue-900/30 py-16 px-6">
+                <div className="relative bg-black/40 backdrop-blur-sm py-16 px-6">
                     <div className="max-w-7xl mx-auto">
                         <div className="mb-8">
                             <div className="flex flex-wrap items-center gap-3 mb-6">
-                                <div className="inline-flex items-center gap-2 bg-purple-600/20 backdrop-blur-sm border border-purple-500/30 rounded-full px-6 py-3">
-                                    <Award className="w-5 h-5 text-purple-400" />
-                                    <span className="text-purple-200 font-medium">
+                                <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
+                                    <Award className="w-5 h-5 text-white" />
+                                    <span className="text-white font-medium">
                                         {isArabic ? 'تجربة تعليمية متميزة' : 'Premium Learning Experience'}
                                     </span>
                                 </div>
@@ -359,12 +386,12 @@ function DashboardContent() {
                                 {userProfile.subscriptionStatus && (
                                     <div className={`inline-flex items-center gap-2 backdrop-blur-sm border rounded-full px-6 py-3 ${
                                         userProfile.subscriptionStatus === 'ACTIVE' 
-                                            ? 'bg-green-600/20 border-green-500/30' 
+                                            ? 'bg-green-500/20 border-green-500/30' 
                                             : userProfile.subscriptionStatus === 'EXPIRED'
-                                            ? 'bg-orange-600/20 border-orange-500/30'
+                                            ? 'bg-orange-500/20 border-orange-500/30'
                                             : userProfile.subscriptionStatus === 'CANCELLED'
-                                            ? 'bg-red-600/20 border-red-500/30'
-                                            : 'bg-gray-600/20 border-gray-500/30'
+                                            ? 'bg-red-500/20 border-red-500/30'
+                                            : 'bg-white/10 border-white/20'
                                     }`}>
                                         <Crown className={`w-5 h-5 ${
                                             userProfile.subscriptionStatus === 'ACTIVE' 
@@ -373,16 +400,16 @@ function DashboardContent() {
                                                 ? 'text-orange-400'
                                                 : userProfile.subscriptionStatus === 'CANCELLED'
                                                 ? 'text-red-400'
-                                                : 'text-gray-400'
+                                                : 'text-white/60'
                                         }`} />
                                         <span className={`font-medium ${
                                             userProfile.subscriptionStatus === 'ACTIVE' 
-                                                ? 'text-green-200' 
+                                                ? 'text-green-300' 
                                                 : userProfile.subscriptionStatus === 'EXPIRED'
-                                                ? 'text-orange-200'
+                                                ? 'text-orange-300'
                                                 : userProfile.subscriptionStatus === 'CANCELLED'
-                                                ? 'text-red-200'
-                                                : 'text-gray-200'
+                                                ? 'text-red-300'
+                                                : 'text-white/70'
                                         }`}>
                                             {userProfile.subscriptionStatus === 'ACTIVE' 
                                                 ? (isArabic ? 'اشتراك نشط' : 'Active Subscription')
@@ -397,10 +424,10 @@ function DashboardContent() {
                                 )}
                             </div>
                             
-                            <h1 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent mb-4 leading-tight">
+                            <h1 className="text-5xl lg:text-6xl font-semibold text-white mb-4 leading-tight">
                                 {welcomeText}
                             </h1>
-                            <p className="text-xl text-purple-100/80 mb-8 leading-relaxed max-w-3xl">
+                            <p className="text-xl text-white/70 mb-8 leading-relaxed max-w-3xl">
                                 {isArabic 
                                     ? 'جاهز لمواصلة رحلة التعلم؟ استكشف دوراتك وتابع تقدمك وتواصل مع مدربيك المفضلين' 
                                     : 'Ready to continue your learning journey? Explore your courses, track progress, and connect with your favorite instructors'
@@ -409,35 +436,35 @@ function DashboardContent() {
                             
                             {/* Enhanced Quick stats */}
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
-                                <div className="text-center bg-gray-900/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 hover:border-purple-400/60 transition-all duration-300">
-                                    <div className="text-3xl lg:text-4xl font-bold text-white mb-2">
+                                <div className="text-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300">
+                                    <div className="text-3xl lg:text-4xl font-semibold text-white mb-2">
                                         {learningStats?.totalCourses || 0}
                                     </div>
-                                    <div className="text-purple-300 text-sm uppercase tracking-wider">
+                                    <div className="text-white/60 text-sm uppercase tracking-wider">
                                         {isArabic ? 'الدورات' : 'Courses'}
                                     </div>
                                 </div>
-                                <div className="text-center bg-gray-900/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 hover:border-blue-400/60 transition-all duration-300">
-                                    <div className="text-3xl lg:text-4xl font-bold text-white mb-2">
+                                <div className="text-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300">
+                                    <div className="text-3xl lg:text-4xl font-semibold text-white mb-2">
                                         {learningStats?.averageRating || 4.8}
                                     </div>
-                                    <div className="text-blue-300 text-sm uppercase tracking-wider">
+                                    <div className="text-white/60 text-sm uppercase tracking-wider">
                                         {isArabic ? 'التقييم' : 'Rating'}
                                     </div>
                                 </div>
-                                <div className="text-center bg-gray-900/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 hover:border-green-400/60 transition-all duration-300">
-                                    <div className="text-3xl lg:text-4xl font-bold text-white mb-2">
+                                <div className="text-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300">
+                                    <div className="text-3xl lg:text-4xl font-semibold text-white mb-2">
                                         {learningStats?.totalLearningHours || 0}h
                                     </div>
-                                    <div className="text-green-300 text-sm uppercase tracking-wider">
+                                    <div className="text-white/60 text-sm uppercase tracking-wider">
                                         {isArabic ? 'ساعات التعلم' : 'Hours Learned'}
                                     </div>
                                 </div>
-                                <div className="text-center bg-gray-900/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 hover:border-yellow-400/60 transition-all duration-300">
-                                    <div className="text-3xl lg:text-4xl font-bold text-white mb-2">
+                                <div className="text-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300">
+                                    <div className="text-3xl lg:text-4xl font-semibold text-white mb-2">
                                         {learningStats?.averageProgress || 0}%
                                     </div>
-                                    <div className="text-yellow-300 text-sm uppercase tracking-wider">
+                                    <div className="text-white/60 text-sm uppercase tracking-wider">
                                         {isArabic ? 'الإنجاز' : 'Completion'}
                                     </div>
                                 </div>
@@ -448,53 +475,7 @@ function DashboardContent() {
             </div>
             
             <div className="max-w-7xl mx-auto px-6 py-8">
-                {/* Tab Navigation */}
-                <div className="bg-gray-900/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-2 mb-8 inline-flex gap-2">
-                    <button
-                        onClick={() => setActiveTab('overview')}
-                        className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
-                            activeTab === 'overview'
-                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
-                                : 'text-gray-400 hover:text-white hover:bg-gray-800/60'
-                        }`}
-                    >
-                        <BarChart3 className="w-5 h-5" />
-                        {isArabic ? 'نظرة عامة' : 'Overview'}
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('my-list')}
-                        className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
-                            activeTab === 'my-list'
-                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
-                                : 'text-gray-400 hover:text-white hover:bg-gray-800/60'
-                        }`}
-                    >
-                        <Bookmark className="w-5 h-5" />
-                        {isArabic ? 'قائمتي' : 'My List'}
-                        {myListCourses.length > 0 && (
-                            <span className="ml-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold">
-                                {myListCourses.length}
-                            </span>
-                        )}
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('liked')}
-                        className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
-                            activeTab === 'liked'
-                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
-                                : 'text-gray-400 hover:text-white hover:bg-gray-800/60'
-                        }`}
-                    >
-                        <Heart className="w-5 h-5" />
-                        {isArabic ? 'الدورات المفضلة' : 'Liked Courses'}
-                        {likedCourses.length > 0 && (
-                            <span className="ml-1 px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 text-xs font-bold">
-                                {likedCourses.length}
-                            </span>
-                        )}
-                    </button>
-                </div>
-
+                
                 {/* Tab Content */}
                 {activeTab === 'overview' && (
                 <>
@@ -502,234 +483,191 @@ function DashboardContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                     {/* My Learning (Category A + B) */}
                     <div 
-                        className="group relative bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-sm rounded-3xl border border-gray-700/50 overflow-hidden hover:border-cyan-400/60 transition-all duration-500 hover:shadow-2xl hover:shadow-cyan-500/20 cursor-pointer" 
+                        className="group relative bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:border-white/30 transition-all duration-500 hover:shadow-2xl hover:shadow-white/5 cursor-pointer" 
                         onClick={() => navigateWithLoading(`/${locale}/dashboard/my-learning`, 'my-learning')}
                     >
                         {/* Loading Overlay */}
                         {isLoading('my-learning') && (
-                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-3xl flex items-center justify-center z-20">
+                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-xl flex items-center justify-center z-20">
                                 <div className="flex flex-col items-center gap-4 text-white">
-                                    <div className="w-8 h-8 border-3 border-cyan-300/30 border-t-cyan-400 rounded-full animate-spin"></div>
+                                    <div className="w-8 h-8 border-3 border-white/20 border-t-white rounded-full animate-spin"></div>
                                     <span className="text-sm font-medium">Loading courses...</span>
                                 </div>
                             </div>
                         )}
                         
                         {/* Decorative Elements */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-full blur-3xl"></div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
                         
                         <div className="relative p-8">
                             <div className="flex items-center justify-between mb-6">
-                                <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                                <div className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                     <BookOpen className="w-7 h-7 text-white" />
                                 </div>
-                                <ChevronRight className="w-6 h-6 text-gray-400 group-hover:translate-x-1 group-hover:text-cyan-400 transition-all duration-300" />
+                                <ChevronRight className="w-6 h-6 text-white/40 group-hover:translate-x-1 group-hover:text-white transition-all duration-300" />
                             </div>
-                            <h3 className="font-bold text-xl mb-3 text-white group-hover:text-cyan-200 transition-colors">
+                            <h3 className="font-semibold text-xl mb-3 text-white group-hover:text-white transition-colors">
                                 {isArabic ? 'دوراتي' : 'My Learning'}
                             </h3>
-                            <p className="text-gray-400 text-sm mb-6 leading-relaxed group-hover:text-gray-300 transition-colors">
+                            <p className="text-white/60 text-sm mb-6 leading-relaxed group-hover:text-white/80 transition-colors">
                                 {isArabic 
                                     ? 'الوصول إلى جميع دوراتك المسجلة'
                                     : 'Access all your enrolled courses'
                                 }
                             </p>
                             <div className="flex items-center gap-2">
-                                <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/30 transition-colors">
+                                <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 transition-colors">
                                     {learningStats?.totalCourses || 0} {isArabic ? 'دورات' : 'courses'}
                                 </Badge>
                             </div>
                         </div>
                         
                         {/* Hover Effect Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-600/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl"></div>
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl"></div>
                     </div>
 
                     {/* My Meetings */}
                     <div 
-                        className="group relative bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-sm rounded-3xl border border-gray-700/50 overflow-hidden hover:border-purple-400/60 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/20 cursor-pointer" 
+                        className="group relative bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:border-white/30 transition-all duration-500 hover:shadow-2xl hover:shadow-white/5 cursor-pointer" 
                         onClick={() => navigateWithLoading(`/${locale}/dashboard/meetings`, 'meetings')}
                     >
                         {/* Loading Overlay */}
                         {isLoading('meetings') && (
-                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-3xl flex items-center justify-center z-20">
+                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-xl flex items-center justify-center z-20">
                                 <div className="flex flex-col items-center gap-4 text-white">
-                                    <div className="w-8 h-8 border-3 border-purple-300/30 border-t-purple-400 rounded-full animate-spin"></div>
+                                    <div className="w-8 h-8 border-3 border-white/20 border-t-white rounded-full animate-spin"></div>
                                     <span className="text-sm font-medium">Loading meetings...</span>
                                 </div>
                             </div>
                         )}
                         
                         {/* Decorative Elements */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-full blur-3xl"></div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
                         
                         <div className="relative p-8">
                             <div className="flex items-center justify-between mb-6">
-                                <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                                <div className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                     <Calendar className="w-7 h-7 text-white" />
                                 </div>
-                                <ChevronRight className="w-6 h-6 text-gray-400 group-hover:translate-x-1 group-hover:text-purple-400 transition-all duration-300" />
+                                <ChevronRight className="w-6 h-6 text-white/40 group-hover:translate-x-1 group-hover:text-white transition-all duration-300" />
                             </div>
-                            <h3 className="font-bold text-xl mb-3 text-white group-hover:text-purple-200 transition-colors">
+                            <h3 className="font-semibold text-xl mb-3 text-white group-hover:text-white transition-colors">
                                 {isArabic ? 'اجتماعاتي' : 'My Meetings'}
                             </h3>
-                            <p className="text-gray-400 text-sm mb-6 leading-relaxed group-hover:text-gray-300 transition-colors">
+                            <p className="text-white/60 text-sm mb-6 leading-relaxed group-hover:text-white/80 transition-colors">
                                 {isArabic 
                                     ? 'عرض وإدارة جلساتك المحجوزة مع المدربين'
                                     : 'View and manage your scheduled sessions'
                                 }
                             </p>
                             <div className="flex items-center gap-2">
-                                <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/30 transition-colors">
+                                <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 transition-colors">
                                     {learningStats?.upcomingMeetingsCount || 0} {isArabic ? 'قادمة' : 'upcoming'}
                                 </Badge>
                             </div>
                         </div>
                         
                         {/* Hover Effect Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl"></div>
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl"></div>
                     </div>
 
                     {/* Study Buddy */}
                     <div 
-                        className="group relative bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-sm rounded-3xl border border-gray-700/50 overflow-hidden hover:border-green-400/60 transition-all duration-500 hover:shadow-2xl hover:shadow-green-500/20 cursor-pointer" 
+                        className="group relative bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:border-white/30 transition-all duration-500 hover:shadow-2xl hover:shadow-white/5 cursor-pointer" 
                         onClick={handleStudyBuddyClick}
                     >
                         {/* Loading Overlay */}
                         {isLoading('study-buddy') && (
-                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-3xl flex items-center justify-center z-20">
+                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-xl flex items-center justify-center z-20">
                                 <div className="flex flex-col items-center gap-4 text-white">
-                                    <div className="w-8 h-8 border-3 border-green-300/30 border-t-green-400 rounded-full animate-spin"></div>
+                                    <div className="w-8 h-8 border-3 border-white/20 border-t-white rounded-full animate-spin"></div>
                                     <span className="text-sm font-medium">Finding study buddies...</span>
                                 </div>
                             </div>
                         )}
                         
                         {/* Decorative Elements */}
-                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-green-500/20 to-emerald-500/20 rounded-full blur-2xl"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full blur-2xl"></div>
                         
                         <div className="relative p-8">
                             <div className="flex items-center justify-between mb-6">
-                                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                                <div className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                     <Users className="w-7 h-7 text-white" />
                                 </div>
-                                <ChevronRight className="w-6 h-6 text-gray-400 group-hover:translate-x-1 group-hover:text-green-400 transition-all duration-300" />
+                                <ChevronRight className="w-6 h-6 text-white/40 group-hover:translate-x-1 group-hover:text-white transition-all duration-300" />
                             </div>
-                            <h3 className="font-bold text-xl mb-3 text-white group-hover:text-green-200 transition-colors">
+                            <h3 className="font-semibold text-xl mb-3 text-white group-hover:text-white transition-colors">
                                 {isArabic ? 'رفيق الدراسة' : 'Study Buddy'}
                             </h3>
-                            <p className="text-gray-400 text-sm mb-6 leading-relaxed group-hover:text-gray-300 transition-colors">
+                            <p className="text-white/60 text-sm mb-6 leading-relaxed group-hover:text-white/80 transition-colors">
                                 {isArabic 
                                     ? 'ابحث عن شريك التعلم المثالي'
                                     : 'Find the perfect learning partner'
                                 }
                             </p>
                             <div className="flex items-center gap-2">
-                                <Badge className="bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/30 transition-colors">
+                                <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 transition-colors">
                                     {learningStats?.studyBuddyMatches || 0} {isArabic ? 'مطابقة' : 'matches'}
                                 </Badge>
                             </div>
                         </div>
                         
                         {/* Hover Effect Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-green-600/10 to-emerald-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl"></div>
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl"></div>
                     </div>
 
                     {/* My Progress */}
                     <div 
-                        className="group relative bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-sm rounded-3xl border border-gray-700/50 overflow-hidden hover:border-blue-400/60 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/20 cursor-pointer" 
+                        className="group relative bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:border-white/30 transition-all duration-500 hover:shadow-2xl hover:shadow-white/5 cursor-pointer" 
                         onClick={() => navigateWithLoading(`/${locale}/dashboard/progress`, 'progress')}
                     >
                         {/* Loading Overlay */}
                         {isLoading('progress') && (
-                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-3xl flex items-center justify-center z-20">
+                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-xl flex items-center justify-center z-20">
                                 <div className="flex flex-col items-center gap-4 text-white">
-                                    <div className="w-8 h-8 border-3 border-blue-300/30 border-t-blue-400 rounded-full animate-spin"></div>
+                                    <div className="w-8 h-8 border-3 border-white/20 border-t-white rounded-full animate-spin"></div>
                                     <span className="text-sm font-medium">Loading progress...</span>
                                 </div>
                             </div>
                         )}
                         
                         {/* Decorative Elements */}
-                        <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-bl from-blue-500/20 to-indigo-500/20 rounded-full blur-2xl"></div>
+                        <div className="absolute top-0 right-0 w-28 h-28 bg-white/5 rounded-full blur-2xl"></div>
                         
                         <div className="relative p-8">
                             <div className="flex items-center justify-between mb-6">
-                                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                                <div className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                     <TrendingUp className="w-7 h-7 text-white" />
                                 </div>
-                                <ChevronRight className="w-6 h-6 text-gray-400 group-hover:translate-x-1 group-hover:text-blue-400 transition-all duration-300" />
+                                <ChevronRight className="w-6 h-6 text-white/40 group-hover:translate-x-1 group-hover:text-white transition-all duration-300" />
                             </div>
-                            <h3 className="font-bold text-xl mb-3 text-white group-hover:text-blue-200 transition-colors">
+                            <h3 className="font-semibold text-xl mb-3 text-white group-hover:text-white transition-colors">
                                 {isArabic ? 'تقدمي' : 'My Progress'}
                             </h3>
-                            <p className="text-gray-400 text-sm mb-6 leading-relaxed group-hover:text-gray-300 transition-colors">
+                            <p className="text-white/60 text-sm mb-6 leading-relaxed group-hover:text-white/80 transition-colors">
                                 {isArabic 
                                     ? 'تتبع تقدمك التعليمي وإنجازاتك'
                                     : 'Track your learning progress'
                                 }
                             </p>
                             <div className="mb-2">
-                                <div className="w-full bg-gray-700/50 rounded-full h-2 mb-2">
+                                <div className="w-full bg-white/10 rounded-full h-2 mb-2">
                                     <div 
-                                        className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-500" 
+                                        className="bg-white/80 h-2 rounded-full transition-all duration-500" 
                                         style={{ width: `${learningStats?.averageProgress || 0}%` }}
                                     ></div>
                                 </div>
-                                <p className="text-xs text-blue-300 font-medium">
+                                <p className="text-xs text-white/70 font-medium">
                                     {learningStats?.averageProgress || 0}% {isArabic ? 'مكتمل' : 'complete'}
                                 </p>
                             </div>
                         </div>
                         
                         {/* Hover Effect Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-indigo-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl"></div>
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl"></div>
                     </div>
 
-                    {/* My Creators (Category C - Membership Channels) */}
-                    <div 
-                        className="group relative bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-sm rounded-3xl border border-gray-700/50 overflow-hidden hover:border-pink-400/60 transition-all duration-500 hover:shadow-2xl hover:shadow-pink-500/20 cursor-pointer" 
-                        onClick={() => navigateWithLoading(`/${locale}/mentors`, 'my-creators')}
-                    >
-                        {/* Loading Overlay */}
-                        {isLoading('my-creators') && (
-                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-3xl flex items-center justify-center z-20">
-                                <div className="flex flex-col items-center gap-4 text-white">
-                                    <div className="w-8 h-8 border-3 border-pink-300/30 border-t-pink-400 rounded-full animate-spin"></div>
-                                    <span className="text-sm font-medium">Loading creators...</span>
-                                </div>
-                            </div>
-                        )}
-                        
-                        {/* Decorative Elements */}
-                        <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-pink-500/20 to-purple-500/20 rounded-full blur-2xl"></div>
-                        
-                        <div className="relative p-8">
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                                    <Crown className="w-7 h-7 text-white" />
-                                </div>
-                                <ChevronRight className="w-6 h-6 text-gray-400 group-hover:translate-x-1 group-hover:text-pink-400 transition-all duration-300" />
-                            </div>
-                            <h3 className="font-bold text-xl mb-3 text-white group-hover:text-pink-200 transition-colors">
-                                {isArabic ? 'قنوات المبدعين' : 'My Creators'}
-                            </h3>
-                            <p className="text-gray-400 text-sm mb-6 leading-relaxed group-hover:text-gray-300 transition-colors">
-                                {isArabic 
-                                    ? 'اشتراكاتك في قنوات المبدعين'
-                                    : 'Your creator membership channels'
-                                }
-                            </p>
-                            <div className="flex items-center gap-2">
-                                <Badge className="bg-pink-500/20 text-pink-300 border-pink-500/30 hover:bg-pink-500/30 transition-colors">
-                                    {isArabic ? 'جديد' : 'New'}
-                                </Badge>
-                            </div>
-                        </div>
-                        
-                        {/* Hover Effect Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-pink-600/10 to-purple-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl"></div>
-                    </div>
+                    
                 </div>
 
                 {/* Main Content Grid */}
@@ -737,17 +675,17 @@ function DashboardContent() {
                     {/* Left Column - Continue Learning & Recommended */}
                     <div className="lg:col-span-2 space-y-8">
                         {/* Continue Learning */}
-                        <div className="relative bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-sm rounded-3xl border border-gray-700/50 overflow-hidden hover:border-purple-400/60 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/20">
+                        <div className="relative bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:border-white/30 transition-all duration-500 hover:shadow-2xl hover:shadow-white/5">
                             {/* Decorative Elements */}
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-full blur-3xl"></div>
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
                             
                             <div className="relative p-8">
                                 <div className="flex flex-row items-center justify-between mb-8">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                        <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
                                             <Play className="w-6 h-6 text-white" />
                                         </div>
-                                        <h2 className="text-2xl font-bold text-white">
+                                        <h2 className="text-2xl font-semibold text-white">
                                             {isArabic ? 'تابع التعلم' : 'Continue Learning'}
                                         </h2>
                                     </div>
@@ -1601,6 +1539,147 @@ function DashboardContent() {
                                             onClick={() => router.push(`/${locale}/courses`)}
                                         >
                                             {isArabic ? 'تصفح الدورات' : 'Browse Courses'}
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Support Tickets Tab */}
+                {activeTab === 'support' && (
+                    <div className="space-y-8">
+                        <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden hover:border-white/20 transition-all duration-500 hover:shadow-2xl hover:shadow-white/10">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-white/10 rounded-full blur-3xl"></div>
+                            
+                            <div className="relative p-8">
+                                <div className="flex items-center justify-between mb-8">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/10">
+                                            <MessageSquare className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-semibold text-white">
+                                                {isArabic ? 'تذاكر الدعم' : 'Support Tickets'}
+                                            </h2>
+                                            <p className="text-white/60 text-sm">
+                                                {isArabic ? `${supportTickets.length} تذكرة` : `${supportTickets.length} tickets`}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        onClick={() => navigateWithLoading(`/${locale}/support/new`, 'new-ticket')}
+                                        className="bg-white/10 hover:bg-white/20 text-white border border-white/10 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl backdrop-blur-sm"
+                                        disabled={isLoading('new-ticket')}
+                                    >
+                                        {isLoading('new-ticket') && (
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                                        )}
+                                        <Plus className="w-5 h-5 mr-2" />
+                                        {isArabic ? 'تذكرة جديدة' : 'New Ticket'}
+                                    </Button>
+                                </div>
+
+                                {tabLoading ? (
+                                    <div className="text-center py-12">
+                                        <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+                                        <p className="text-white/60">{isArabic ? 'جاري التحميل...' : 'Loading...'}</p>
+                                    </div>
+                                ) : supportTickets.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {supportTickets.map((ticket) => {
+                                            const statusConfig = {
+                                                OPEN: { label: isArabic ? 'مفتوحة' : 'Open', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30', icon: AlertCircle },
+                                                IN_PROGRESS: { label: isArabic ? 'قيد المعالجة' : 'In Progress', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', icon: Clock },
+                                                RESOLVED: { label: isArabic ? 'محلولة' : 'Resolved', color: 'bg-green-500/20 text-green-400 border-green-500/30', icon: CheckCircle },
+                                                CLOSED: { label: isArabic ? 'مغلقة' : 'Closed', color: 'bg-white/10 text-white/60 border-white/20', icon: XCircle },
+                                            }
+                                            
+                                            const priorityConfig = {
+                                                LOW: { label: isArabic ? 'منخفضة' : 'Low', color: 'text-white/50' },
+                                                MEDIUM: { label: isArabic ? 'متوسطة' : 'Medium', color: 'text-yellow-400' },
+                                                HIGH: { label: isArabic ? 'عالية' : 'High', color: 'text-orange-400' },
+                                                URGENT: { label: isArabic ? 'عاجلة' : 'Urgent', color: 'text-red-400' },
+                                            }
+
+                                            const categoryConfig = {
+                                                BILLING: { label: isArabic ? 'الفواتير' : 'Billing', emoji: '💳' },
+                                                TECHNICAL: { label: isArabic ? 'تقني' : 'Technical', emoji: '🔧' },
+                                                CONTENT: { label: isArabic ? 'المحتوى' : 'Content', emoji: '📝' },
+                                                SAFETY: { label: isArabic ? 'الأمان' : 'Safety', emoji: '🛡️' },
+                                                OTHER: { label: isArabic ? 'أخرى' : 'Other', emoji: '❓' },
+                                            }
+
+                                            const StatusIcon = statusConfig[ticket.status].icon
+                                            
+                                            return (
+                                                <div
+                                                    key={ticket.id}
+                                                    className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:bg-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-white/5 transition-all duration-300 cursor-pointer group"
+                                                    onClick={() => navigateWithLoading(`/${locale}/support/${ticket.id}`, `ticket-${ticket.id}`)}
+                                                >
+                                                    <div className="flex items-start justify-between mb-4">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <span className="text-xl">{categoryConfig[ticket.category].emoji}</span>
+                                                                <h3 className="text-lg font-semibold text-white group-hover:text-white/90 transition-colors">
+                                                                    {ticket.subject}
+                                                                </h3>
+                                                            </div>
+                                                            <div className="flex items-center gap-3 flex-wrap">
+                                                                <Badge className={`${statusConfig[ticket.status].color} border rounded-md`}>
+                                                                    <StatusIcon className="w-3 h-3 mr-1" />
+                                                                    {statusConfig[ticket.status].label}
+                                                                </Badge>
+                                                                <Badge className="bg-white/10 text-white/70 border border-white/20 rounded-md">
+                                                                    {categoryConfig[ticket.category].label}
+                                                                </Badge>
+                                                                <span className={`text-sm font-medium ${priorityConfig[ticket.priority].color}`}>
+                                                                    {priorityConfig[ticket.priority].label}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <ChevronRight className="w-5 h-5 text-white/40 group-hover:translate-x-1 group-hover:text-white/60 transition-all" />
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center justify-between text-sm text-white/50">
+                                                        <div className="flex items-center gap-4">
+                                                            <span className="flex items-center gap-1">
+                                                                <MessageSquare className="w-4 h-4" />
+                                                                {ticket._count.messages} {isArabic ? 'رسالة' : 'messages'}
+                                                            </span>
+                                                            <span className="flex items-center gap-1">
+                                                                <Clock className="w-4 h-4" />
+                                                                {new Date(ticket.createdAt).toLocaleDateString(isArabic ? 'ar' : 'en')}
+                                                            </span>
+                                                        </div>
+                                                        {isLoading(`ticket-${ticket.id}`) && (
+                                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
+                                            <MessageSquare className="w-8 h-8 text-white/40" />
+                                        </div>
+                                        <p className="text-white/60 mb-4">
+                                            {isArabic ? 'لا توجد تذاكر دعم' : 'No support tickets'}
+                                        </p>
+                                        <Button
+                                            variant="outline"
+                                            className="border-white/20 text-white/80 hover:bg-white/10 hover:border-white/30 rounded-xl backdrop-blur-sm"
+                                            onClick={() => navigateWithLoading(`/${locale}/support/new`, 'create-ticket')}
+                                            disabled={isLoading('create-ticket')}
+                                        >
+                                            {isLoading('create-ticket') && (
+                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                                            )}
+                                            {isArabic ? 'إنشاء تذكرة' : 'Create Ticket'}
                                         </Button>
                                     </div>
                                 )}

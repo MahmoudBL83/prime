@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { PaymentStatus, Prisma, SubscriptionType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { paymobService } from '@/lib/paymob'
 
@@ -27,127 +28,165 @@ export async function POST(req: NextRequest) {
             order: orderData,
             created_at: createdAt,
             source_data: sourceData,
+            pending,
+            error_occured: errorOccured,
         } = payload
 
-        console.log('Processing webhook:', { transactionId, success, amountCents })
+        const merchantOrderId = payload.merchant_order_id || orderData?.merchant_order_id
 
-        // Find the pending subscription using the order ID
-        const subscription = await prisma.subscription.findFirst({
-            where: {
-                status: 'pending',
-                // We'll need to store the Paymob order ID in the subscription
-                // For now, we'll find the most recent pending subscription
-            },
+        if (!merchantOrderId) {
+            console.error('Missing merchant order id in webhook payload')
+            return NextResponse.json({ error: 'Merchant order missing' }, { status: 400 })
+        }
+
+        const paymentTransaction = await prisma.paymentTransaction.findUnique({
+            where: { merchantOrderId },
             include: {
-                user: true,
                 channel: {
-                    include: {
-                        creator: true,
-                    },
+                    include: { creator: true },
                 },
             },
         })
 
-        if (!subscription) {
-            console.error('No pending subscription found for transaction:', transactionId)
-            return NextResponse.json({ error: 'Subscription not found' }, { status: 404 })
+        if (!paymentTransaction) {
+            console.error('No pending payment transaction found for merchant order:', merchantOrderId)
+            return NextResponse.json({ error: 'Transaction not found' }, { status: 404 })
         }
 
-        // Process the payment result
-        if (success) {
-            // Calculate subscription end date (1 month from start)
-            const startDate = new Date(subscription.startDate)
-            const endDate = new Date(startDate)
-            endDate.setMonth(endDate.getMonth() + 1)
+        if (!success) {
+            await prisma.paymentTransaction.update({
+                where: { id: paymentTransaction.id },
+                data: {
+                    status: PaymentStatus.FAILED,
+                    failureReason: errorOccured ? 'Payment error reported by Paymob' : payload.data?.message ?? 'Payment failed',
+                    failedAt: new Date(createdAt || Date.now()),
+                    paymobTransactionId: transactionId?.toString(),
+                },
+            })
 
-            await prisma.$transaction(async (tx) => {
-                // Update subscription status
+            return NextResponse.json({ success: false })
+        }
+
+        await prisma.$transaction(async (tx) => {
+            const now = new Date()
+            const subscriptionWhere: Prisma.SubscriptionWhereInput = {
+                userId: paymentTransaction.userId,
+                type: paymentTransaction.subscriptionType,
+                status: 'active',
+                endDate: { gte: new Date() },
+            }
+
+            subscriptionWhere.channelId = paymentTransaction.channelId ? paymentTransaction.channelId : null
+
+            const activeSubscription = await tx.subscription.findFirst({
+                where: subscriptionWhere,
+            })
+
+            let subscriptionId = activeSubscription?.id
+
+            if (activeSubscription) {
+                const extensionAnchor = activeSubscription.endDate && activeSubscription.endDate > now
+                    ? activeSubscription.endDate
+                    : now
+                const newEndDate = new Date(extensionAnchor)
+                newEndDate.setMonth(newEndDate.getMonth() + 1)
+
                 await tx.subscription.update({
-                    where: { id: subscription.id },
+                    where: { id: activeSubscription.id },
                     data: {
+                        endDate: newEndDate,
+                        pricePerMonth: paymentTransaction.amount,
+                        paymentMethodId: sourceData?.sub_type || sourceData?.type || 'card',
+                        paymobOrderId: paymentTransaction.paymobOrderId,
+                        paymobTransactionId: transactionId?.toString(),
+                    },
+                })
+            } else {
+                const startDate = now
+                const endDate = new Date(startDate)
+                endDate.setMonth(endDate.getMonth() + 1)
+
+                const created = await tx.subscription.create({
+                    data: {
+                        userId: paymentTransaction.userId,
+                        type: paymentTransaction.subscriptionType,
+                        channelId: paymentTransaction.channelId ?? null,
+                        pricePerMonth: paymentTransaction.amount,
                         status: 'active',
+                        startDate,
                         endDate,
-                        paymentMethodId: sourceData?.sub_type || 'card',
-                        subscriptionId: transactionId.toString(),
+                        paymentMethodId: sourceData?.sub_type || sourceData?.type || 'card',
+                        paymobOrderId: paymentTransaction.paymobOrderId,
+                        paymobTransactionId: transactionId?.toString(),
                     },
                 })
+                subscriptionId = created.id
 
-                // Update creator earnings if it's a Category C subscription
-                if (subscription.type === 'CATEGORY_C' && subscription.channel) {
-                    const creatorEarnings = subscription.pricePerMonth * 0.7 // 70% to creator
-
-                    await tx.creator.update({
-                        where: { id: subscription.channel.creatorId },
-                        data: {
-                            totalEarnings: {
-                                increment: creatorEarnings,
-                            },
-                            totalSubscribers: {
-                                increment: 1,
-                            },
-                        },
-                    })
-                }
-
-                // Log the successful payment
-                await tx.payout.create({
-                    data: {
-                        creatorId: subscription.channel?.creatorId || '',
-                        amount: subscription.pricePerMonth,
-                        currency: currency || 'EGP',
-                        status: 'pending',
-                        periodStart: startDate,
-                        periodEnd: endDate,
-                        bankTransferId: transactionId.toString(),
-                    },
-                })
-
-                // Create enrollment for Category A subscriptions
-                if (subscription.type === 'CATEGORY_A') {
-                    // Get all available courses for Category A
+                // For Category A subscriptions grant enrollments
+                if (paymentTransaction.subscriptionType === SubscriptionType.CATEGORY_A) {
                     const courses = await tx.course.findMany({
-                        where: {
-                            category: 'CATEGORY_A',
-                            status: 'PUBLISHED',
-                        },
+                        where: { category: 'CATEGORY_A', status: 'PUBLISHED' },
+                        select: { id: true },
                     })
 
-                    // Create enrollments for all courses
                     for (const course of courses) {
                         await tx.enrollment.upsert({
                             where: {
                                 userId_courseId: {
-                                    userId: subscription.userId,
+                                    userId: paymentTransaction.userId,
                                     courseId: course.id,
                                 },
                             },
-                            update: {
-                                lastAccessedAt: new Date(),
-                            },
+                            update: { lastAccessedAt: now },
                             create: {
-                                userId: subscription.userId,
+                                userId: paymentTransaction.userId,
                                 courseId: course.id,
                                 progress: 0,
-                                lastAccessedAt: new Date(),
+                                lastAccessedAt: now,
                             },
                         })
                     }
                 }
-            })
+            }
 
-            console.log(`Payment successful for subscription ${subscription.id}`)
-        } else {
-            // Payment failed
-            await prisma.subscription.update({
-                where: { id: subscription.id },
+            // Update payment transaction
+            await tx.paymentTransaction.update({
+                where: { id: paymentTransaction.id },
                 data: {
-                    status: 'cancelled',
-                    cancelledAt: new Date(),
+                    status: PaymentStatus.PAID,
+                    paidAt: new Date(createdAt || now),
+                    paymobTransactionId: transactionId?.toString(),
+                    paymentMethod: sourceData?.sub_type || sourceData?.type || 'card',
+                    failureReason: null,
+                    subscriptionId,
                 },
             })
 
-            console.log(`Payment failed for subscription ${subscription.id}`)
-        }
+            // Creator earnings + payout placeholder
+            if (paymentTransaction.subscriptionType === SubscriptionType.CATEGORY_C && paymentTransaction.channel) {
+                const creatorEarnings = paymentTransaction.amount * 0.7
+
+                await tx.creator.update({
+                    where: { id: paymentTransaction.channel.creatorId },
+                    data: {
+                        totalEarnings: { increment: creatorEarnings },
+                        totalSubscribers: { increment: 1 },
+                    },
+                })
+
+                await tx.payout.create({
+                    data: {
+                        creatorId: paymentTransaction.channel.creatorId,
+                        amount: creatorEarnings,
+                        currency: currency || 'EGP',
+                        status: 'pending',
+                        periodStart: now,
+                        periodEnd: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+                        bankTransferId: transactionId?.toString(),
+                    },
+                })
+            }
+        })
 
         return NextResponse.json({ success: true })
     } catch (error) {

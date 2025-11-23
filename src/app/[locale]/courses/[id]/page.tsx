@@ -736,6 +736,7 @@ export default function CourseDetailPage() {
                 isOpen={showSignInModal}
                 onClose={() => setShowSignInModal(false)}
                 onSignInSuccess={handleSignInSuccess}
+                locale={locale}
             />
 
             {/* Payment Modal */}

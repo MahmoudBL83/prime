@@ -20,7 +20,9 @@ import {
     Award,
     TrendingUp,
     Star,
-    ArrowLeft
+    ArrowLeft,
+    ChevronLeft,
+    Home
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'

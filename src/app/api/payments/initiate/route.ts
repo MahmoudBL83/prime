@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
+import { PaymentStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { paymobService } from '@/lib/paymob'
 import { z } from 'zod'
@@ -58,8 +59,8 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        // Generate unique order ID
-        const orderId = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        // Generate unique merchant order ID (used to correlate webhook events)
+        const merchantOrderId = `sub_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
 
         // Split user name into first and last name
         const nameParts = user.name.split(' ')
@@ -70,7 +71,7 @@ export async function POST(req: NextRequest) {
         const paymentRequest = {
             amount: Math.round(amount * 100), // Convert to cents
             currency,
-            orderId,
+            orderId: merchantOrderId,
             userEmail: user.email,
             userPhone: user.phone || undefined,
             billingData: {
@@ -86,38 +87,32 @@ export async function POST(req: NextRequest) {
         // Create payment with Paymob
         const paymentResult = await paymobService.createPaymentRequest(paymentRequest)
 
-        // Store payment transaction in database
-        await prisma.$transaction(async (tx) => {
-            // Create subscription record
-            await tx.subscription.create({
-                data: {
-                    userId: session.user.id,
-                    type: subscriptionType,
-                    channelId: subscriptionType === 'CATEGORY_C' ? channelId : null,
-                    pricePerMonth: amount,
-                    status: 'pending',
-                    startDate: new Date(),
-                    // End date will be set after successful payment
-                },
-            })
-
-            // Log payment transaction
-            await tx.session.create({
-                data: {
-                    userId: session.user.id,
-                    token: paymentResult.paymentKey,
-                    expiresAt: new Date(Date.now() + 3600 * 1000), // 1 hour expiry
+        const transaction = await prisma.paymentTransaction.create({
+            data: {
+                userId: session.user.id,
+                subscriptionType,
+                channelId: subscriptionType === 'CATEGORY_C' ? channelId : null,
+                amount,
+                currency,
+            status: PaymentStatus.PENDING,
+                merchantOrderId,
+                paymobOrderId: paymentResult.paymobOrderId,
+                paymobPaymentKey: paymentResult.paymentKey,
+                paymobIframeUrl: paymentResult.iframeUrl,
+                metadata: {
                     userAgent: req.headers.get('user-agent') || undefined,
                     ipAddress: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined,
                 },
-            })
+            },
         })
 
         return NextResponse.json({
             success: true,
             paymentKey: paymentResult.paymentKey,
-            orderId: paymentResult.orderId,
             iframeUrl: paymentResult.iframeUrl,
+            transactionId: transaction.id,
+            merchantOrderId,
+            paymobOrderId: paymentResult.paymobOrderId,
         })
     } catch (error) {
         console.error('Payment initiation error:', error)

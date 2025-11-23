@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -8,7 +8,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, ChevronRight, ChevronLeft, User, Phone, Globe, BookOpen, Users, Target, Award, Heart, Brain, Code, Briefcase, Palette, Languages, GraduationCap, TrendingUp, Coffee, Clock, UserCheck, MessageCircle, Video, MapPin, Shuffle } from 'lucide-react'
+import { CheckCircle, ChevronRight, ChevronLeft, User, Phone, Globe, BookOpen, Users, Target, Award, Heart, Brain, Code, Briefcase, Palette, Languages, GraduationCap, TrendingUp, Coffee, Clock, UserCheck, MessageCircle, Video, MapPin, Shuffle, Shield, ShieldCheck, ShieldAlert } from 'lucide-react'
+import { useOnboardingProgress } from '@/hooks/useOnboardingProgress'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'edge'
@@ -30,8 +31,18 @@ const onboardingSchema = z.object({
 
 type OnboardingForm = z.infer<typeof onboardingSchema>
 
+const guardianSchema = z.object({
+    name: z.string().min(3, 'ادخل اسم الوصي'),
+    email: z.string().email('بريد إلكتروني غير صالح'),
+    phone: z.string().optional(),
+    relationship: z.string().optional(),
+})
+
+type GuardianForm = z.infer<typeof guardianSchema>
+
 interface Step {
     id: number
+    key: string
     title: string
     titleAr: string
     description: string
@@ -42,6 +53,7 @@ interface Step {
 const STEPS: Step[] = [
     {
         id: 1,
+        key: 'profile',
         title: "Welcome to PRIME",
         titleAr: "مرحباً بك في برايم",
         description: "Let's personalize your learning journey",
@@ -50,6 +62,7 @@ const STEPS: Step[] = [
     },
     {
         id: 2,
+        key: 'interests',
         title: "Your Interests",
         titleAr: "اهتماماتك",
         description: "What subjects excite you most?",
@@ -58,6 +71,7 @@ const STEPS: Step[] = [
     },
     {
         id: 3,
+        key: 'goals',
         title: "Your Goals",
         titleAr: "أهدافك",
         description: "What do you want to achieve?",
@@ -66,6 +80,7 @@ const STEPS: Step[] = [
     },
     {
         id: 4,
+        key: 'learning',
         title: "Learning Style",
         titleAr: "أسلوب التعلم",
         description: "How do you prefer to learn?",
@@ -74,11 +89,21 @@ const STEPS: Step[] = [
     },
     {
         id: 5,
+        key: 'study-buddy',
         title: "Study Buddy",
         titleAr: "رفيق الدراسة",
         description: "Connect with like-minded learners",
         descriptionAr: "تواصل مع متعلمين مثلك",
         icon: <Users className="w-6 h-6" />
+    },
+    {
+        id: 6,
+        key: 'safety',
+        title: "Safety & Guardian",
+        titleAr: "السلامة والوصي",
+        description: "Verify guardian approval for minors",
+        descriptionAr: "تأكيد موافقة الوصي للطلاب القُصر",
+        icon: <Shield className="w-6 h-6" />
     }
 ]
 
@@ -136,7 +161,7 @@ export default function OnboardingPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [lang, setLang] = useState<'en' | 'ar'>('ar')
 
-    const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<OnboardingForm>({
+    const { register, handleSubmit: handleOnboardingSubmit, watch, setValue, formState: { errors } } = useForm<OnboardingForm>({
         resolver: zodResolver(onboardingSchema),
         defaultValues: {
             interests: [],
@@ -153,6 +178,102 @@ export default function OnboardingPage() {
     })
 
     const watchedValues = watch()
+
+    const { register: guardianRegister, handleSubmit: handleGuardianSubmit, reset: resetGuardian, formState: { errors: guardianErrors } } = useForm<GuardianForm>({
+        resolver: zodResolver(guardianSchema),
+        defaultValues: {
+            name: '',
+            email: '',
+            phone: '',
+            relationship: '',
+        },
+    })
+
+    const [guardianVerificationCode, setGuardianVerificationCode] = useState('')
+    const [guardianSubmitting, setGuardianSubmitting] = useState(false)
+    const [guardianVerifying, setGuardianVerifying] = useState(false)
+
+    const { status: onboardingStatus, loading: statusLoading, error: statusError, updateStep, initiateGuardian, verifyGuardian } = useOnboardingProgress()
+
+    const guardianRequired = Boolean(onboardingStatus?.guardianRequired && onboardingStatus?.guardianLink?.status !== 'VERIFIED')
+    const guardianVerified = onboardingStatus?.guardianLink?.status === 'VERIFIED'
+
+    const handleStepComplete = useCallback(async (stepId: number) => {
+        const step = STEPS.find((s) => s.id === stepId)
+        if (!step) return
+
+        const payloadMap: Record<string, any> = {
+            profile: {
+                arabicName: watchedValues.arabicName,
+                phone: watchedValues.phone,
+            },
+            interests: {
+                interests: watchedValues.interests,
+            },
+            goals: {
+                goals: watchedValues.goals,
+            },
+            learning: {
+                skillLevel: watchedValues.skillLevel,
+                learningMode: watchedValues.learningMode,
+            },
+            'study-buddy': {
+                studyBuddyOptIn: watchedValues.studyBuddyOptIn,
+                studyBuddyPreferences: watchedValues.studyBuddyPreferences,
+            },
+        }
+
+        const data = payloadMap[step.key]
+        if (!data) return
+
+        try {
+            await updateStep({
+                stepKey: step.key,
+                data,
+                completed: true,
+                locale: lang,
+            })
+        } catch (error) {
+            console.error('Failed to update onboarding progress step:', error)
+        }
+    }, [lang, updateStep, watchedValues])
+
+    const submitGuardianDetails = handleGuardianSubmit(async (formValues) => {
+        setGuardianSubmitting(true)
+        try {
+            await initiateGuardian({
+                name: formValues.name,
+                email: formValues.email,
+                phone: formValues.phone,
+                relationship: formValues.relationship,
+                locale: lang,
+            })
+            toast.success(lang === 'ar' ? 'تم إرسال دعوة الوصي' : 'Guardian invitation sent')
+            resetGuardian()
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : (lang === 'ar' ? 'حدث خطأ، حاول مجدداً' : 'Something went wrong'))
+        } finally {
+            setGuardianSubmitting(false)
+        }
+    })
+
+    const handleGuardianVerification = async () => {
+        if (!guardianVerificationCode) {
+            toast.error(lang === 'ar' ? 'ادخل رمز التحقق' : 'Enter the verification code')
+            return
+        }
+
+        setGuardianVerifying(true)
+        try {
+            await verifyGuardian(guardianVerificationCode.trim())
+            toast.success(lang === 'ar' ? 'تم تأكيد الوصي' : 'Guardian verified successfully')
+            setGuardianVerificationCode('')
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : (lang === 'ar' ? 'تعذر التحقق' : 'Verification failed'))
+        } finally {
+            setGuardianVerifying(false)
+        }
+    }
 
     useEffect(() => {
         if (status === 'loading') return
@@ -253,8 +374,9 @@ export default function OnboardingPage() {
         }
     }
 
-    const nextStep = () => {
+    const nextStep = async () => {
         if (currentStep < STEPS.length) {
+            await handleStepComplete(currentStep)
             setCurrentStep(currentStep + 1)
         }
     }
@@ -724,6 +846,179 @@ export default function OnboardingPage() {
                     </div>
                 )
 
+            case 6:
+                return (
+                    <div className="space-y-8">
+                        {statusLoading ? (
+                            <div className="animate-pulse space-y-4">
+                                <div className="h-24 bg-card rounded-2xl" />
+                                <div className="h-48 bg-card rounded-2xl" />
+                            </div>
+                        ) : (
+                            <>
+                                <div className={`border rounded-2xl p-6 flex items-start gap-4 ${guardianVerified ? 'border-green-500/40 bg-green-500/5' : guardianRequired ? 'border-yellow-500/40 bg-yellow-500/5' : 'border-border bg-card'}`}>
+                                    <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: guardianVerified ? 'rgba(34,197,94,0.2)' : 'rgba(234,179,8,0.2)' }}>
+                                        {guardianVerified ? (
+                                            <ShieldCheck className="w-6 h-6 text-green-400" />
+                                        ) : (
+                                            <ShieldAlert className="w-6 h-6 text-yellow-400" />
+                                        )}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h4 className="text-xl font-semibold text-foreground">
+                                            {guardianVerified
+                                                ? (lang === 'ar' ? 'تم التحقق من الوصي' : 'Guardian Verified')
+                                                : guardianRequired
+                                                    ? (lang === 'ar' ? 'مطلوب موافقة الوصي' : 'Guardian approval required')
+                                                    : (lang === 'ar' ? 'لا حاجة لوصي' : 'No guardian required')}
+                                        </h4>
+                                        <p className="text-muted-foreground">
+                                            {guardianVerified
+                                                ? (lang === 'ar' ? 'يمكنك الآن الوصول الكامل لجميع الميزات.' : 'Full access unlocked for your account.')
+                                                : guardianRequired
+                                                    ? (lang === 'ar'
+                                                        ? 'لأن عمرك أقل من 18 سنة، نحتاج إلى موافقة الوصي لإكمال الحساب.'
+                                                        : 'Because you are under 18, we need a guardian to approve your account.')
+                                                    : (lang === 'ar' ? 'يمكنك إكمال التسجيل بدون خطوات إضافية.' : 'You can complete onboarding without extra steps.')}
+                                        </p>
+                                        {statusError && (
+                                            <p className="text-sm text-red-400">
+                                                {statusError}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {guardianRequired ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="border border-border rounded-2xl p-6 bg-card">
+                                            <h5 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                                                <UserCheck className="w-5 h-5" />
+                                                {lang === 'ar' ? 'تفاصيل الوصي' : 'Guardian details'}
+                                            </h5>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-sm text-muted-foreground mb-1">
+                                                        {lang === 'ar' ? 'اسم الوصي' : 'Guardian Name'}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        {...guardianRegister('name')}
+                                                        className="w-full bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2"
+                                                        dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                                                    />
+                                                    {guardianErrors.name && (
+                                                        <p className="text-sm text-red-400 mt-1">{guardianErrors.name.message}</p>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm text-muted-foreground mb-1">
+                                                        {lang === 'ar' ? 'البريد الإلكتروني للوصي' : 'Guardian Email'}
+                                                    </label>
+                                                    <input
+                                                        type="email"
+                                                        {...guardianRegister('email')}
+                                                        className="w-full bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2"
+                                                        dir="ltr"
+                                                    />
+                                                    {guardianErrors.email && (
+                                                        <p className="text-sm text-red-400 mt-1">{guardianErrors.email.message}</p>
+                                                    )}
+                                                </div>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-sm text-muted-foreground mb-1">
+                                                            {lang === 'ar' ? 'رقم الهاتف' : 'Phone'}
+                                                        </label>
+                                                        <input
+                                                            type="tel"
+                                                            {...guardianRegister('phone')}
+                                                            className="w-full bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2"
+                                                            dir="ltr"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm text-muted-foreground mb-1">
+                                                            {lang === 'ar' ? 'صلة القرابة' : 'Relationship'}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            {...guardianRegister('relationship')}
+                                                            className="w-full bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2"
+                                                            dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={submitGuardianDetails}
+                                                    disabled={guardianSubmitting}
+                                                    className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl py-3 transition disabled:opacity-50"
+                                                >
+                                                    {guardianSubmitting ? (
+                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                    ) : (
+                                                        <ShieldCheck className="w-5 h-5" />
+                                                    )}
+                                                    {guardianSubmitting
+                                                        ? (lang === 'ar' ? 'جاري الإرسال...' : 'Sending...')
+                                                        : (lang === 'ar' ? 'إرسال دعوة للوصي' : 'Send guardian invitation')}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="border border-border rounded-2xl p-6 bg-card flex flex-col gap-4">
+                                            <h5 className="text-lg font-semibold text-foreground">
+                                                {lang === 'ar' ? 'رمز التحقق من الوصي' : 'Guardian verification code'}
+                                            </h5>
+                                            <p className="text-sm text-muted-foreground">
+                                                {lang === 'ar'
+                                                    ? 'اطلب من الوصي إدخال الرمز الذي وصله عبر البريد الإلكتروني.'
+                                                    : 'Ask your guardian to share the code they received by email.'}
+                                            </p>
+                                            <input
+                                                type="text"
+                                                value={guardianVerificationCode}
+                                                onChange={(e) => setGuardianVerificationCode(e.target.value.toUpperCase())}
+                                                className="w-full bg-background border border-border rounded-xl px-4 py-3 tracking-widest text-center text-lg"
+                                                placeholder="A1B2C3"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={handleGuardianVerification}
+                                                disabled={guardianVerifying}
+                                                className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white rounded-xl py-3 transition disabled:opacity-50"
+                                            >
+                                                {guardianVerifying ? (
+                                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                ) : (
+                                                    <CheckCircle className="w-5 h-5" />
+                                                )}
+                                                {guardianVerifying
+                                                    ? (lang === 'ar' ? 'يتم التحقق...' : 'Verifying...')
+                                                    : (lang === 'ar' ? 'تأكيد الرمز' : 'Verify code')}
+                                            </button>
+                                            {onboardingStatus?.guardianLink?.expiresAt && (
+                                                <div className="text-xs text-muted-foreground text-center">
+                                                    {lang === 'ar' ? 'تنتهي صلاحية الرمز في' : 'Code expires on'}{' '}
+                                                    {new Date(onboardingStatus.guardianLink.expiresAt).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-EG')}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-center text-muted-foreground">
+                                        <p>
+                                            {lang === 'ar'
+                                                ? 'لا حاجة لخطوات إضافية. اضغط إكمال لإنهاء التسجيل.'
+                                                : 'No additional verification required. Click complete to finish onboarding.'}
+                                        </p>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+                )
+
             default:
                 return null
         }
@@ -825,7 +1120,7 @@ export default function OnboardingPage() {
             {/* Main Content */}
             <div className="relative z-10">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <form onSubmit={handleSubmit(onSubmit)}>
+                    <form onSubmit={handleOnboardingSubmit(onSubmit)}>
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={currentStep}

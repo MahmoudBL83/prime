@@ -40,6 +40,7 @@ model User {
   studyBuddyMatches     StudyBuddyMatch[]      @relation("UserMatches")
   studyBuddyMatches2    StudyBuddyMatch[]      @relation("UserMatches2")
   subscriptions         Subscription[]
+  paymentTransactions   PaymentTransaction[]
   videoProgress         VideoProgress[]
   videoAnalytics        VideoAnalytics[]
   playlistItems         PlaylistItem[]
@@ -62,6 +63,13 @@ model User {
   notifications            Notification[]
   notificationSettings     NotificationSetting?
   studyPreferences         StudyPreferences?
+  guardianLinks            GuardianLink[]
+  verificationLogs         UserVerification[]
+  moderationEvents         ModerationEvent[]
+  onboardingProgress       OnboardingProgress?
+  supportTickets           SupportTicket[]         @relation("UserTickets")
+  assignedTickets          SupportTicket[]         @relation("AssignedTickets")
+  supportMessages          SupportTicketMessage[]
 
   // Video Call Relations
   hostedVideoSessions  VideoCallSession[] @relation("HostVideoSessions")
@@ -457,6 +465,7 @@ model CreatorChannel {
   channelSubscriptions ChannelSubscription[]
   memberMessages       MemberMessage[]
   memberPolls          MemberPoll[]
+  paymentTransactions  PaymentTransaction[]
 }
 
 // Old ChannelPost model - will be removed, using new one from blueprint
@@ -488,11 +497,45 @@ model Subscription {
   billingCycle         String? // 'monthly' or 'yearly'
   stripeSubscriptionId String?          @unique
   stripeCustomerId     String?
+  paymobOrderId        String?          @unique
+  paymobTransactionId  String?          @unique
+  autoRenew            Boolean          @default(true)
   metadata             String? // JSON string for storing additional data like creatorId, tier, etc.
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
   channel              CreatorChannel?  @relation(fields: [channelId], references: [id])
   user                 User             @relation(fields: [userId], references: [id])
+  paymentTransactions  PaymentTransaction[]
+}
+
+model PaymentTransaction {
+  id                  String            @id @default(cuid())
+  userId              String
+  subscriptionId      String?
+  subscriptionType    SubscriptionType
+  channelId           String?
+  amount              Float
+  currency            String            @default("EGP")
+  status              PaymentStatus     @default(PENDING)
+  merchantOrderId     String            @unique
+  paymobOrderId       String            @unique
+  paymobPaymentKey    String
+  paymobIframeUrl     String?
+  paymobTransactionId String?
+  paymentMethod       String?
+  failureReason       String?
+  metadata            Json?
+  paidAt              DateTime?
+  failedAt            DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription        Subscription?     @relation(fields: [subscriptionId], references: [id])
+  channel             CreatorChannel?   @relation(fields: [channelId], references: [id])
+
+  @@index([userId])
+  @@index([channelId])
+  @@index([status])
 }
 
 model StudyBuddyMatch {
@@ -592,6 +635,81 @@ model StudyPreferences {
   @@index([communicationStyle])
   @@index([learningStyle])
   @@index([skillLevelPreference])
+}
+
+model GuardianLink {
+  id               String         @id @default(cuid())
+  userId           String
+  guardianName     String
+  guardianEmail    String
+  guardianPhone    String?
+  relationship     String?
+  status           GuardianStatus @default(PENDING)
+  verificationCode String         @unique
+  verifiedAt       DateTime?
+  expiresAt        DateTime?
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+model UserVerification {
+  id            String             @id @default(cuid())
+  userId        String
+  type          VerificationType
+  status        VerificationStatus @default(PENDING)
+  method        String?
+  referenceId   String?
+  verifiedAt    DateTime?
+  expiresAt     DateTime?
+  failureReason String?
+  metadata      Json?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@index([status])
+}
+
+model OnboardingProgress {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  steps          Json
+  completed      Boolean  @default(false)
+  completedAt    DateTime?
+  lastStep       String?
+  lastCheckpoint DateTime @default(now())
+  locale         String?  @default("en")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ModerationEvent {
+  id          String               @id @default(cuid())
+  userId      String
+  eventType   ModerationEventType
+  severity    ModerationSeverity   @default(LOW)
+  status      ModerationStatus     @default(OPEN)
+  reason      String?
+  source      String?
+  metadata    Json?
+  createdAt   DateTime             @default(now())
+  resolvedAt  DateTime?
+  resolvedBy  String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
 }
 
 // Study Session Management
@@ -816,6 +934,112 @@ enum ReminderType {
   THIRTY_MINUTES_BEFORE
   FIFTEEN_MINUTES_BEFORE
   SESSION_START
+}
+
+enum GuardianStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum VerificationType {
+  IDENTITY
+  AGE
+  PHONE
+  EMAIL
+  GUARDIAN
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum ModerationEventType {
+  ONBOARDING_REVIEW
+  CHAT_FLAG
+  CONTENT_FLAG
+  BEHAVIOR_FLAG
+}
+
+enum ModerationSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ModerationStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketCategory {
+  BILLING
+  TECHNICAL
+  CONTENT
+  SAFETY
+  OTHER
+}
+
+model SupportTicket {
+  id             String         @id @default(cuid())
+  userId         String
+  subject        String
+  description    String
+  category       TicketCategory @default(OTHER)
+  priority       TicketPriority @default(MEDIUM)
+  status         TicketStatus   @default(OPEN)
+  referenceType  String?
+  referenceId    String?
+  assignedToId   String?
+  lastMessageAt  DateTime       @default(now())
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  user       User @relation("UserTickets", fields: [userId], references: [id], onDelete: Cascade)
+  assignedTo User? @relation("AssignedTickets", fields: [assignedToId], references: [id])
+  messages   SupportTicketMessage[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([assignedToId])
+  @@index([category])
+  @@index([priority])
+}
+
+model SupportTicketMessage {
+  id             String        @id @default(cuid())
+  ticketId       String
+  authorId       String
+  content        String
+  isInternal     Boolean       @default(false)
+  attachmentUrls String?
+  createdAt      DateTime      @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([authorId])
 }
 
 model Enrollment {
@@ -1884,6 +2108,7 @@ enum MeetingStatus {
 enum PaymentStatus {
   PENDING
   PAID
+  CANCELLED
   REFUNDED
   FAILED
 }

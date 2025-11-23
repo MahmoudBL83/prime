@@ -1,64 +1,52 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import Link from 'next/link'
-import Image from 'next/image'
+import { useSession } from 'next-auth/react'
 import { 
     BookOpen, 
     Clock, 
     CheckCircle, 
-    PlayCircle, 
+    Play, 
+    TrendingUp, 
     Award,
-    TrendingUp,
-    Sparkles,
-    Zap,
-    Users,
-    Calendar,
-    ArrowRight,
     Star,
-    Download,
-    Share2
+    Calendar,
+    Users,
+    Filter,
+    Search,
+    ChevronRight,
+    Sparkles,
+    Crown,
+    BarChart3,
+    Bookmark,
+    Heart,
+    ChevronLeft,
+    Home
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import toast from 'react-hot-toast'
+import Image from 'next/image'
 
 interface Course {
-    id: string
+    enrollmentId?: string
+    courseId?: string
+    id?: string
     title: string
-    titleAr?: string
-    thumbnail?: string
+    titleAr: string
+    thumbnail: string
     instructor: {
         name: string
-        arabicName?: string
-        image?: string
+        arabicName: string
+        image: string
     }
     progress?: number
     lastAccessedAt?: string
     completedAt?: string
-    enrollmentId?: string
     totalLessons: number
     duration: number
     category: string
     rating?: number
     totalEnrollments?: number
     skillLevel?: string
-    certificateId?: string // Added for certificate functionality
-}
-
-interface Subscription {
-    id: string
-    type: string
-    status: string
-    endDate: string
-    channelId?: string
-    channelName?: string
-    creatorName?: string
-    creatorImage?: string
 }
 
 interface Stats {
@@ -71,112 +59,76 @@ interface Stats {
     averageProgress: number
 }
 
-interface MyLearningData {
-    stats: Stats
-    subscriptions: Subscription[]
+interface Subscription {
+    id: string
+    type: string
+    status: string
+    startDate: string
+    endDate: string
+    autoRenew: boolean
+    channelId?: string
+    channelName?: string
+    channelDescription?: string
+    creatorName?: string
+    creatorArabicName?: string
+    creatorImage?: string
+    totalCourses: number
+}
+
+interface LearningData {
+    stats: Stats;
+    subscriptions: Subscription[];
     courses: {
-        continueWatching: Course[]
-        completed: Course[]
-        recommended: Course[]
-    }
+        continueWatching: Course[];
+        completed: Course[];
+        recommended: Course[];
+        myList: Course[];
+        liked: Course[];
+    };
 }
 
 export default function MyLearningPage() {
-    const { data: session, status } = useSession()
     const router = useRouter()
     const params = useParams()
-    const locale = params.locale as string || 'en'
-    
-    const [data, setData] = useState<MyLearningData | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [activeTab, setActiveTab] = useState<'continue' | 'completed' | 'explore'>('continue')
-    
+    const { data: session } = useSession()
+    const locale = params.locale as string
     const isArabic = locale === 'ar'
 
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState<LearningData | null>(null);
+    const [activeTab, setActiveTab] = useState<'continue' | 'completed' | 'recommended' | 'my-list' | 'liked'>('continue');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
     useEffect(() => {
-        if (status === 'unauthenticated') {
-            router.push(`/${locale}/auth/login?callbackUrl=/${locale}/dashboard/my-learning`)
-            return
+        if (session) {
+            fetchLearningData()
         }
+    }, [session])
 
-        if (status === 'authenticated') {
-            fetchMyLearning()
-        }
-    }, [status, router, locale])
-
-    const fetchMyLearning = async () => {
+    const fetchLearningData = async () => {
+        setLoading(true)
         try {
             const response = await fetch('/api/my-learning')
             if (response.ok) {
                 const learningData = await response.json()
                 setData(learningData)
             } else {
-                toast.error('Failed to load your learning data')
+                console.error('Failed to fetch learning data')
             }
         } catch (error) {
-            console.error('Error fetching my learning:', error)
-            toast.error('An error occurred')
+            console.error('Error fetching learning data:', error)
         } finally {
             setLoading(false)
         }
     }
 
-    const formatDate = (dateString?: string) => {
-        if (!dateString) return ''
-        const date = new Date(dateString)
-        return new Intl.DateTimeFormat(locale, { 
-            month: 'short', 
-            day: 'numeric',
-            year: 'numeric'
-        }).format(date)
+    const handleCourseClick = (courseId: string) => {
+        router.push(`/${locale}/courses/${courseId}`)
     }
 
-    const handleCertificateDownload = async (enrollmentId: string) => {
-        try {
-            toast.loading(isArabic ? 'جار إنشاء الشهادة...' : 'Generating certificate...')
-            
-            // First, try to generate certificate if it doesn't exist
-            const generateResponse = await fetch('/api/certificates/generate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    enrollmentId,
-                    courseId: data?.courses.completed.find(c => c.enrollmentId === enrollmentId)?.id
-                })
-            })
-
-            if (!generateResponse.ok) {
-                const error = await generateResponse.json()
-                toast.dismiss()
-                toast.error(error.error || (isArabic ? 'فشل إنشاء الشهادة' : 'Failed to generate certificate'))
-                return
-            }
-
-            const { certificate } = await generateResponse.json()
-
-            toast.dismiss()
-            toast.loading(isArabic ? 'جار تنزيل ملف PDF...' : 'Downloading PDF...')
-
-            // Download PDF directly
-            const downloadUrl = `/api/certificates/${certificate.id}/download?locale=${locale}`
-            const link = document.createElement('a')
-            link.href = downloadUrl
-            link.download = `Certificate-${certificate.certificateNumber}.pdf`
-            document.body.appendChild(link)
-            link.click()
-            document.body.removeChild(link)
-
-            // Small delay to show success message after download starts
-            setTimeout(() => {
-                toast.dismiss()
-                toast.success(isArabic ? 'تم تنزيل الشهادة بنجاح!' : 'Certificate downloaded successfully!')
-            }, 500)
-
-        } catch (error) {
-            console.error('Certificate download error:', error)
-            toast.dismiss()
-            toast.error(isArabic ? 'حدث خطأ أثناء تنزيل الشهادة' : 'Error downloading certificate')
-        }
+    const handleContinueLearning = (courseId: string) => {
+        router.push(`/${locale}/courses/${courseId}/learn`)
     }
 
     const formatDuration = (minutes: number) => {
@@ -188,42 +140,63 @@ export default function MyLearningPage() {
         return `${mins}m`
     }
 
-    const getSubscriptionBadge = (type: string) => {
-        const badges: Record<string, { text: string, color: string }> = {
-            'CATEGORY_A': { 
-                text: isArabic ? 'المكتبة الشاملة' : 'All-Access', 
-                color: 'bg-purple-500/20 text-purple-300 border-purple-400/30' 
-            },
-            'CATEGORY_B': { 
-                text: isArabic ? 'الدورات المميزة' : 'Signature', 
-                color: 'bg-amber-500/20 text-amber-300 border-amber-400/30' 
-            },
-            'CATEGORY_C': { 
-                text: isArabic ? 'قناة منشئ' : 'Creator Channel', 
-                color: 'bg-green-500/20 text-green-300 border-green-400/30' 
-            },
-            'BUNDLE_AB': { 
-                text: isArabic ? 'باقة A+B' : 'Bundle A+B', 
-                color: 'bg-pink-500/20 text-pink-300 border-pink-400/30' 
-            },
-            'BUNDLE_ABC': { 
-                text: isArabic ? 'الباقة الشاملة' : 'Ultimate', 
-                color: 'bg-indigo-500/20 text-indigo-300 border-indigo-400/30' 
-            }
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString)
+        return new Intl.DateTimeFormat(isArabic ? 'ar-EG' : 'en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        }).format(date)
+    }
+
+    const getFilteredCourses = () => {
+        let courses: Course[] = [];
+        
+        switch (activeTab) {
+            case 'continue':
+                courses = data?.courses.continueWatching || [];
+                break;
+            case 'completed':
+                courses = data?.courses.completed || [];
+                break;
+            case 'recommended':
+                courses = data?.courses.recommended || [];
+                break;
+            case 'my-list':
+                courses = data?.courses.myList || [];
+                break;
+            case 'liked':
+                courses = data?.courses.liked || [];
+                break;
         }
-        return badges[type] || badges['CATEGORY_A']
+
+        // Filter by search
+        if (searchQuery) {
+            courses = courses.filter(course => 
+                course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                course.titleAr?.includes(searchQuery)
+            )
+        }
+
+        // Filter by category
+        if (selectedCategory !== 'all') {
+            courses = courses.filter(course => course.category === selectedCategory)
+        }
+
+        return courses
     }
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+            <div className="min-h-screen bg-black flex items-center justify-center">
                 <div className="text-center">
-                    <div className="relative">
-                        <div className="absolute inset-0 w-16 h-16 border-4 border-purple-500/30 rounded-full animate-ping"></div>
-                        <div className="w-16 h-16 border-4 border-purple-500/50 border-t-purple-400 rounded-full animate-spin mx-auto mb-6"></div>
-                    </div>
-                    <p className="text-purple-200 text-lg font-medium">{isArabic ? 'جاري التحميل...' : 'Loading your learning...'}</p>
-                    <p className="text-gray-400 text-sm mt-2">{isArabic ? 'تحضير دوراتك' : 'Preparing your courses'}</p>
+                    <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-6"></div>
+                    <p className="text-white text-lg font-medium">
+                        {isArabic ? 'جاري تحميل دوراتك...' : 'Loading your courses...'}
+                    </p>
+                    <p className="text-white/60 text-sm mt-2">
+                        {isArabic ? 'جاري تحضير تجربتك التعليمية' : 'Preparing your learning experience'}
+                    </p>
                 </div>
             </div>
         )
@@ -231,106 +204,111 @@ export default function MyLearningPage() {
 
     if (!data) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center p-6">
-                <Card className="max-w-md bg-gray-800/60 backdrop-blur-md border-gray-700/50 text-white">
-                    <CardContent className="p-8 text-center">
-                        <BookOpen className="w-16 h-16 mx-auto mb-4 text-purple-400" />
-                        <h2 className="text-2xl font-bold mb-2">
-                            {isArabic ? 'لا توجد اشتراكات نشطة' : 'No Active Subscriptions'}
-                        </h2>
-                        <p className="text-gray-300 mb-6">
-                            {isArabic 
-                                ? 'اشترك في خطة للبدء في التعلم والوصول إلى مئات الدورات!'
-                                : 'Subscribe to a plan to start learning and access hundreds of courses!'}
-                        </p>
-                        <Link href={`/${locale}/subscribe`}>
-                            <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:opacity-90">
-                                {isArabic ? 'عرض الخطط' : 'View Plans'}
-                            </Button>
-                        </Link>
-                    </CardContent>
-                </Card>
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-white text-lg">
+                        {isArabic ? 'فشل في تحميل البيانات' : 'Failed to load data'}
+                    </p>
+                </div>
             </div>
         )
     }
 
+    const filteredCourses = getFilteredCourses()
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900" dir={isArabic ? 'rtl' : 'ltr'}>
-            {/* Header */}
+        <div className="min-h-screen bg-black" dir={isArabic ? 'rtl' : 'ltr'}>
+            {/* Breadcrumb */}
+            <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10">
+                <div className="max-w-7xl mx-auto px-6 py-4">
+                    <button
+                        onClick={() => router.push(`/${locale}/dashboard`)}
+                        className="flex items-center gap-2 text-white/60 hover:text-white transition-colors group"
+                    >
+                        <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                        <Home className="w-4 h-4" />
+                        <span className="text-sm font-medium">
+                            {isArabic ? 'العودة إلى لوحة التحكم' : 'Back to Dashboard'}
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            {/* Header Section */}
             <div className="relative overflow-hidden">
                 {/* Background Elements */}
                 <div className="absolute inset-0">
-                    <div className="absolute top-20 left-20 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl"></div>
-                    <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl"></div>
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-purple-600/10 to-blue-600/10 rounded-full blur-3xl"></div>
+                    <div className="absolute top-20 left-20 w-72 h-72 bg-white/5 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
                 </div>
-                
-                <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/30 to-blue-900/30 py-16 px-6 border-b border-white/10">
+
+                <div className="relative bg-black/40 backdrop-blur-sm py-16 px-6">
                     <div className="max-w-7xl mx-auto">
                         <div className="mb-8">
-                            {/* Back to Dashboard Button */}
-                            <Link href={`/${locale}/dashboard`}>
-                                <Button 
-                                    variant="ghost" 
-                                    className="text-purple-200 hover:text-white hover:bg-purple-600/20 mb-6 -ml-2"
-                                >
-                                    <ArrowRight className={`w-4 h-4 ${isArabic ? '' : 'rotate-180'}`} />
-                                    <span className="ml-2">{isArabic ? 'العودة إلى لوحة التحكم' : 'Back to Dashboard'}</span>
-                                </Button>
-                            </Link>
-
-                            {/* Badge */}
-                            <div className="inline-flex items-center gap-2 bg-cyan-600/20 backdrop-blur-sm border border-cyan-500/30 rounded-full px-6 py-3 mb-6">
-                                <BookOpen className="w-5 h-5 text-cyan-400" />
-                                <span className="text-cyan-200 font-medium">
-                                    {isArabic ? 'مركز التعلم الخاص بك' : 'Your Learning Hub'}
+                            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3 mb-6">
+                                <Sparkles className="w-5 h-5 text-white" />
+                                <span className="text-white font-medium">
+                                    {isArabic ? 'رحلتك التعليمية' : 'Your Learning Journey'}
                                 </span>
                             </div>
                             
-                            {/* Large Gradient Title */}
-                            <h1 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent mb-4 leading-tight">
-                                {isArabic ? 'تعلمي' : 'My Learning'}
+                            <h1 className="text-5xl lg:text-6xl font-semibold text-white mb-4 leading-tight">
+                                {isArabic ? 'دوراتي' : 'My Learning'}
                             </h1>
-                            
-                            {/* Description */}
-                            <p className="text-xl text-purple-100/80 mb-8 leading-relaxed max-w-3xl">
+                            <p className="text-xl text-white/70 mb-8 leading-relaxed max-w-3xl">
                                 {isArabic 
-                                    ? `لديك وصول إلى ${data.stats.totalAccessibleCourses} دورة عبر اشتراكاتك النشطة. واصل رحلة التعلم وحقق أهدافك!`
-                                    : `You have access to ${data.stats.totalAccessibleCourses} courses across your active subscriptions. Continue your learning journey and achieve your goals!`}
+                                    ? 'تتبع تقدمك واستمر في رحلتك التعليمية'
+                                    : 'Track your progress and continue your learning journey'
+                                }
                             </p>
-                            
-                            {/* Quick Stats - Mini Version */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                                <div className="text-center bg-gray-900/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-4 hover:border-cyan-400/60 transition-all duration-300">
-                                    <div className="text-2xl lg:text-3xl font-bold text-white mb-1">
-                                        {data.stats.totalAccessibleCourses}
+
+                            {/* Stats Grid */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+                                <div className="text-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                                    <div className="flex items-center justify-center gap-2 mb-2">
+                                        <BookOpen className="w-5 h-5 text-white/60" />
+                                        <div className="text-3xl font-semibold text-white">
+                                            {data.stats.totalEnrolled}
+                                        </div>
                                     </div>
-                                    <div className="text-cyan-300 text-xs uppercase tracking-wider">
-                                        {isArabic ? 'إجمالي الدورات' : 'Total Courses'}
+                                    <div className="text-white/60 text-sm uppercase tracking-wider">
+                                        {isArabic ? 'دورات مسجلة' : 'Enrolled'}
                                     </div>
                                 </div>
-                                <div className="text-center bg-gray-900/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-4 hover:border-orange-400/60 transition-all duration-300">
-                                    <div className="text-2xl lg:text-3xl font-bold text-white mb-1">
-                                        {data.stats.inProgress}
+
+                                <div className="text-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                                    <div className="flex items-center justify-center gap-2 mb-2">
+                                        <Play className="w-5 h-5 text-white/60" />
+                                        <div className="text-3xl font-semibold text-white">
+                                            {data.stats.inProgress}
+                                        </div>
                                     </div>
-                                    <div className="text-orange-300 text-xs uppercase tracking-wider">
+                                    <div className="text-white/60 text-sm uppercase tracking-wider">
                                         {isArabic ? 'قيد التقدم' : 'In Progress'}
                                     </div>
                                 </div>
-                                <div className="text-center bg-gray-900/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-4 hover:border-green-400/60 transition-all duration-300">
-                                    <div className="text-2xl lg:text-3xl font-bold text-white mb-1">
-                                        {data.stats.completed}
+
+                                <div className="text-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                                    <div className="flex items-center justify-center gap-2 mb-2">
+                                        <CheckCircle className="w-5 h-5 text-white/60" />
+                                        <div className="text-3xl font-semibold text-white">
+                                            {data.stats.completed}
+                                        </div>
                                     </div>
-                                    <div className="text-green-300 text-xs uppercase tracking-wider">
+                                    <div className="text-white/60 text-sm uppercase tracking-wider">
                                         {isArabic ? 'مكتملة' : 'Completed'}
                                     </div>
                                 </div>
-                                <div className="text-center bg-gray-900/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-4 hover:border-purple-400/60 transition-all duration-300">
-                                    <div className="text-2xl lg:text-3xl font-bold text-white mb-1">
-                                        {data.stats.averageProgress}%
+
+                                <div className="text-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                                    <div className="flex items-center justify-center gap-2 mb-2">
+                                        <Clock className="w-5 h-5 text-white/60" />
+                                        <div className="text-3xl font-semibold text-white">
+                                            {data.stats.totalHoursLearned}h
+                                        </div>
                                     </div>
-                                    <div className="text-purple-300 text-xs uppercase tracking-wider">
-                                        {isArabic ? 'متوسط الإنجاز' : 'Avg Progress'}
+                                    <div className="text-white/60 text-sm uppercase tracking-wider">
+                                        {isArabic ? 'ساعات التعلم' : 'Hours Learned'}
                                     </div>
                                 </div>
                             </div>
@@ -339,355 +317,410 @@ export default function MyLearningPage() {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 py-8">
+            {/* Main Content */}
+            <div className="max-w-7xl mx-auto px-6 py-12">
                 {/* Active Subscriptions */}
                 {data.subscriptions.length > 0 && (
                     <div className="mb-12">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center">
-                                    <Zap className="w-6 h-6 text-white" />
-                                </div>
-                                {isArabic ? 'اشتراكاتك النشطة' : 'Your Active Subscriptions'}
+                            <h2 className="text-2xl font-semibold text-white flex items-center gap-3">
+                                <Crown className="w-6 h-6 text-white" />
+                                {isArabic ? 'اشتراكاتك النشطة' : 'Active Subscriptions'}
                             </h2>
-                            <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
-                                {data.subscriptions.length} {isArabic ? 'نشطة' : 'active'}
-                            </Badge>
+                            <div className="text-white/60 text-sm">
+                                {data.subscriptions.length} {isArabic ? 'اشتراك نشط' : 'Active'}
+                            </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {data.subscriptions.map((sub) => {
-                                const badge = getSubscriptionBadge(sub.type)
-                                // Link to individual channel page if channelId exists, otherwise to channels browse page
-                                const channelUrl = sub.channelId 
-                                    ? `/${locale}/channels/${sub.channelId}` 
-                                    : sub.type === 'CATEGORY_C' 
-                                        ? `/${locale}/channels` 
-                                        : `/${locale}/subscribe`
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {data.subscriptions.map(sub => {
+                                const daysRemaining = Math.ceil((new Date(sub.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+                                const isExpiringSoon = daysRemaining <= 7
+                                
                                 return (
-                                    <Link key={sub.id} href={channelUrl}>
-                                        <div className="relative group bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 hover:border-purple-400/60 hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 cursor-pointer">
-                                            {/* Decorative gradient */}
-                                            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
-                                            
-                                            <div className="relative z-10">
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <Badge className={`${badge.color} border`}>
-                                                        {badge.text}
-                                                    </Badge>
-                                                    <div className="flex items-center gap-2">
-                                                        <div className={`w-2 h-2 rounded-full ${sub.status === 'ACTIVE' ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`}></div>
-                                                        <span className={`text-xs font-medium ${sub.status === 'ACTIVE' ? 'text-green-400' : 'text-gray-400'}`}>
-                                                            {sub.status === 'ACTIVE' 
-                                                                ? (isArabic ? 'نشط' : 'Active')
-                                                                : (isArabic ? 'ملغى' : 'Cancelled')}
-                                                        </span>
+                                    <div 
+                                        key={sub.id}
+                                        className="group bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:border-white/30 transition-all duration-300 cursor-pointer"
+                                        onClick={() => sub.channelId && router.push(`/${locale}/channels/${sub.channelId}`)}
+                                    >
+                                        {/* Header with gradient overlay */}
+                                        <div className="relative bg-gradient-to-br from-white/5 to-transparent p-6 border-b border-white/10">
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="flex items-center gap-4 flex-1">
+                                                    {sub.creatorImage && (
+                                                        <div className="relative">
+                                                            <Image
+                                                                src={sub.creatorImage}
+                                                                alt={sub.creatorName || ''}
+                                                                width={64}
+                                                                height={64}
+                                                                className="rounded-full ring-2 ring-white/20"
+                                                            />
+                                                            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
+                                                                <Crown className="w-3 h-3 text-white" />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="text-white font-semibold text-lg mb-1 truncate">
+                                                            {sub.channelName}
+                                                        </h3>
+                                                        <p className="text-white/60 text-sm mb-2">
+                                                            {isArabic ? sub.creatorArabicName : sub.creatorName}
+                                                        </p>
+                                                        {sub.channelDescription && (
+                                                            <p className="text-white/50 text-xs line-clamp-1">
+                                                                {sub.channelDescription}
+                                                            </p>
+                                                        )}
                                                     </div>
                                                 </div>
-                                                {sub.channelName && (
-                                                    <h3 className="text-white font-bold text-lg mb-2 group-hover:text-purple-300 transition-colors">{sub.channelName}</h3>
-                                                )}
-                                                {sub.creatorName && (
-                                                    <div className="flex items-center gap-2 mb-4">
-                                                        {sub.creatorImage ? (
-                                                            <Image src={sub.creatorImage} alt={sub.creatorName} width={24} height={24} className="rounded-full" />
-                                                        ) : (
-                                                            <Users className="w-5 h-5 text-gray-400" />
-                                                        )}
-                                                        <p className="text-sm text-gray-400">{sub.creatorName}</p>
-                                                    </div>
-                                                )}
-                                                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-700/50">
-                                                    <div className="flex items-center gap-1 text-xs text-gray-400">
-                                                        <Clock className="w-3 h-3" />
-                                                        <span>{isArabic ? 'ينتهي في' : 'Ends'} {formatDate(sub.endDate)}</span>
-                                                    </div>
-                                                    <ArrowRight className={`w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-all group-hover:translate-x-1 ${isArabic ? 'rotate-180' : ''}`} />
+                                                
+                                                {/* Status Badge */}
+                                                <div className="flex flex-col items-end gap-2">
+                                                    <span className={`text-xs font-medium px-3 py-1.5 rounded-full border ${
+                                                        sub.status === 'ACTIVE' 
+                                                            ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                                                            : 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                                                    }`}>
+                                                        {sub.status}
+                                                    </span>
+                                                    {sub.autoRenew && (
+                                                        <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                                                            {isArabic ? 'تجديد تلقائي' : 'Auto-renew'}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
-                                    </Link>
+
+                                        {/* Body with subscription details */}
+                                        <div className="p-6">
+                                            {/* Subscription Info Grid */}
+                                            <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-white/10">
+                                                <div>
+                                                    <p className="text-white/50 text-xs uppercase tracking-wider mb-1">
+                                                        {isArabic ? 'مدة الاشتراك' : 'Billing Period'}
+                                                    </p>
+                                                    <p className="text-white font-medium">
+                                                        {sub.type === 'CATEGORY_C_MONTHLY' ? (isArabic ? 'شهري' : 'Monthly') :
+                                                         sub.type === 'CATEGORY_C_YEARLY' ? (isArabic ? 'سنوي' : 'Yearly') :
+                                                         sub.type.includes('MONTHLY') ? (isArabic ? 'شهري' : 'Monthly') :
+                                                         (isArabic ? 'سنوي' : 'Yearly')}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-white/50 text-xs uppercase tracking-wider mb-1">
+                                                        {isArabic ? 'نوع العضوية' : 'Membership'}
+                                                    </p>
+                                                    <p className="text-white font-medium flex items-center gap-1 justify-end">
+                                                        <Crown className="w-4 h-4 text-white/60" />
+                                                        {isArabic ? 'مشترك' : 'Subscriber'}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Timeline */}
+                                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                                <div>
+                                                    <p className="text-white/50 text-xs uppercase tracking-wider mb-1 flex items-center gap-1">
+                                                        <Calendar className="w-3 h-3" />
+                                                        {isArabic ? 'بدأ في' : 'Started'}
+                                                    </p>
+                                                    <p className="text-white/80 text-sm">
+                                                        {formatDate(sub.startDate)}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-white/50 text-xs uppercase tracking-wider mb-1 flex items-center gap-1">
+                                                        <Calendar className="w-3 h-3" />
+                                                        {isArabic ? 'ينتهي في' : 'Expires'}
+                                                    </p>
+                                                    <p className={`text-sm font-medium ${isExpiringSoon ? 'text-orange-400' : 'text-white/80'}`}>
+                                                        {formatDate(sub.endDate)}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Days Remaining */}
+                                            <div className={`flex items-center gap-2 px-4 py-3 rounded-lg ${
+                                                isExpiringSoon 
+                                                    ? 'bg-orange-500/10 border border-orange-500/20' 
+                                                    : 'bg-white/5 border border-white/10'
+                                            }`}>
+                                                <Clock className={`w-4 h-4 ${isExpiringSoon ? 'text-orange-400' : 'text-white/60'}`} />
+                                                <div className="flex-1">
+                                                    <p className={`text-sm font-medium ${isExpiringSoon ? 'text-orange-400' : 'text-white'}`}>
+                                                        {daysRemaining} {isArabic ? 'يوم متبقي' : 'days remaining'}
+                                                    </p>
+                                                    {isExpiringSoon && (
+                                                        <p className="text-orange-400/70 text-xs mt-0.5">
+                                                            {isArabic ? 'ينتهي قريباً!' : 'Expiring soon!'}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                                            </div>
+                                        </div>
+                                    </div>
                                 )
                             })}
                         </div>
                     </div>
                 )}
 
-                {/* Course Library Section */}
-                <div className="mb-6">
-                    <h2 className="text-3xl font-bold text-white flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                            <BookOpen className="w-6 h-6 text-white" />
-                        </div>
-                        {isArabic ? 'مكتبة الدورات' : 'Course Library'}
-                    </h2>
-                    <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
-                        <TabButton
-                            active={activeTab === 'continue'}
+                {/* Tabs Navigation */}
+                <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl p-2 mb-8 sticky top-0 z-10">
+                    <div className="flex overflow-x-auto gap-2 no-scrollbar">
+                        <button
                             onClick={() => setActiveTab('continue')}
-                            icon={<PlayCircle className="w-5 h-5" />}
-                            label={isArabic ? 'واصل المشاهدة' : 'Continue Watching'}
-                            count={data.courses.continueWatching.length}
-                        />
-                        <TabButton
-                            active={activeTab === 'completed'}
+                            className={`px-8 py-4 rounded-xl font-medium whitespace-nowrap transition-all duration-300 ${
+                                activeTab === 'continue'
+                                    ? 'bg-white/20 text-white shadow-lg border border-white/30'
+                                    : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
+                            }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Play className="w-5 h-5" />
+                                <span>{isArabic ? 'متابعة المشاهدة' : 'Continue Watching'}</span>
+                                {data.courses.continueWatching.length > 0 && (
+                                    <span className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
+                                        {data.courses.continueWatching.length}
+                                    </span>
+                                )}
+                            </div>
+                        </button>
+                        <button
                             onClick={() => setActiveTab('completed')}
-                            icon={<Award className="w-5 h-5" />}
-                            label={isArabic ? 'مكتمل' : 'Completed'}
-                            count={data.courses.completed.length}
-                        />
-                        <TabButton
-                            active={activeTab === 'explore'}
-                            onClick={() => setActiveTab('explore')}
-                            icon={<TrendingUp className="w-5 h-5" />}
-                            label={isArabic ? 'استكشف' : 'Explore'}
-                            count={data.courses.recommended.length}
-                        />
+                            className={`px-8 py-4 rounded-xl font-medium whitespace-nowrap transition-all duration-300 ${
+                                activeTab === 'completed'
+                                    ? 'bg-white/20 text-white shadow-lg border border-white/30'
+                                    : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
+                            }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <CheckCircle className="w-5 h-5" />
+                                <span>{isArabic ? 'مكتملة' : 'Completed'}</span>
+                                {data.courses.completed.length > 0 && (
+                                    <span className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
+                                        {data.courses.completed.length}
+                                    </span>
+                                )}
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('recommended')}
+                            className={`px-8 py-4 rounded-xl font-medium whitespace-nowrap transition-all duration-300 ${
+                                activeTab === 'recommended'
+                                    ? 'bg-white/20 text-white shadow-lg border border-white/30'
+                                    : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
+                            }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Sparkles className="w-5 h-5" />
+                                <span>{isArabic ? 'موصى به' : 'Recommended'}</span>
+                                {data.courses.recommended.length > 0 && (
+                                    <span className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
+                                        {data.courses.recommended.length}
+                                    </span>
+                                )}
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('my-list')}
+                            className={`px-8 py-4 rounded-xl font-medium whitespace-nowrap transition-all duration-300 ${
+                                activeTab === 'my-list'
+                                    ? 'bg-white/20 text-white shadow-lg border border-white/30'
+                                    : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
+                            }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Bookmark className="w-5 h-5" />
+                                <span>{isArabic ? 'قائمتي' : 'My List'}</span>
+                                {data.courses.myList.length > 0 && (
+                                    <span className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
+                                        {data.courses.myList.length}
+                                    </span>
+                                )}
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('liked')}
+                            className={`px-8 py-4 rounded-xl font-medium whitespace-nowrap transition-all duration-300 ${
+                                activeTab === 'liked'
+                                    ? 'bg-white/20 text-white shadow-lg border border-white/30'
+                                    : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
+                            }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Heart className="w-5 h-5" />
+                                <span>{isArabic ? 'المفضلة' : 'Liked'}</span>
+                                {data.courses.liked.length > 0 && (
+                                    <span className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
+                                        {data.courses.liked.length}
+                                    </span>
+                                )}
+                            </div>
+                        </button>
                     </div>
                 </div>
 
-                {/* Course Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {activeTab === 'continue' && data.courses.continueWatching.map((course) => (
-                        <CourseCard key={course.enrollmentId} course={course} locale={locale} type="continue" />
-                    ))}
-                    {activeTab === 'completed' && data.courses.completed.map((course) => (
-                        <CourseCard 
-                            key={course.enrollmentId} 
-                            course={course} 
-                            locale={locale} 
-                            type="completed" 
-                            onCertificateDownload={handleCertificateDownload}
+                {/* Search and Filters */}
+                <div className="flex flex-col md:flex-row gap-4 mb-8">
+                    <div className="flex-1 relative">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+                        <input
+                            type="text"
+                            placeholder={isArabic ? 'ابحث عن دورة...' : 'Search courses...'}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-12 text-white placeholder:text-white/40 focus:outline-none focus:border-white/30"
                         />
-                    ))}
-                    {activeTab === 'explore' && data.courses.recommended.map((course) => (
-                        <CourseCard key={course.id} course={course} locale={locale} type="explore" />
-                    ))}
+                    </div>
+
                 </div>
 
-                {/* Empty State */}
-                {((activeTab === 'continue' && data.courses.continueWatching.length === 0) ||
-                  (activeTab === 'completed' && data.courses.completed.length === 0) ||
-                  (activeTab === 'explore' && data.courses.recommended.length === 0)) && (
-                    <div className="text-center py-20">
-                        <div className="relative inline-block mb-6">
-                            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-full blur-2xl"></div>
-                            <div className="relative bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-full p-8">
-                                <BookOpen className="w-16 h-16 text-gray-400" />
+                {/* Courses Grid */}
+                {filteredCourses.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredCourses.map((course) => (
+                            <div
+                                key={course.enrollmentId || course.id}
+                                className="group bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:border-white/30 transition-all duration-300 cursor-pointer"
+                                onClick={() => handleCourseClick(course.courseId || course.id || '')}
+                            >
+                                {/* Thumbnail */}
+                                <div className="relative aspect-video overflow-hidden">
+                                    <Image
+                                        src={course.thumbnail || '/images/default-course.jpg'}
+                                        alt={course.title}
+                                        fill
+                                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                    {course.progress !== undefined && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                                            <div 
+                                                className="h-full bg-white transition-all duration-300"
+                                                style={{ width: `${course.progress}%` }}
+                                            />
+                                        </div>
+                                    )}
+                                    {activeTab === 'continue' && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                handleContinueLearning(course.courseId || '')
+                                            }}
+                                            className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
+                                                <Play className="w-8 h-8 text-white ml-1" />
+                                            </div>
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Content */}
+                                <div className="p-6">
+                                    <h3 className="text-white font-semibold text-lg mb-2 line-clamp-2">
+                                        {isArabic ? course.titleAr : course.title}
+                                    </h3>
+
+                                    {/* Instructor */}
+                                    <div className="flex items-center gap-2 mb-4">
+                                        {course.instructor.image && (
+                                            <Image
+                                                src={course.instructor.image}
+                                                alt={course.instructor.name}
+                                                width={24}
+                                                height={24}
+                                                className="rounded-full"
+                                            />
+                                        )}
+                                        <p className="text-white/60 text-sm">
+                                            {isArabic ? course.instructor.arabicName : course.instructor.name}
+                                        </p>
+                                    </div>
+
+                                    {/* Meta Info */}
+                                    <div className="flex items-center gap-4 text-white/50 text-sm mb-4">
+                                        <div className="flex items-center gap-1">
+                                            <BookOpen className="w-4 h-4" />
+                                            <span>{course.totalLessons} {isArabic ? 'درس' : 'lessons'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <Clock className="w-4 h-4" />
+                                            <span>{formatDuration(course.duration)}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Progress/Status */}
+                                    {activeTab === 'continue' && course.progress !== undefined && (
+                                        <div>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-white/60 text-sm">
+                                                    {isArabic ? 'التقدم' : 'Progress'}
+                                                </span>
+                                                <span className="text-white font-medium text-sm">
+                                                    {course.progress}%
+                                                </span>
+                                            </div>
+                                            {course.lastAccessedAt && (
+                                                <p className="text-white/40 text-xs">
+                                                    {isArabic ? 'آخر وصول' : 'Last accessed'}: {formatDate(course.lastAccessedAt)}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {activeTab === 'completed' && course.completedAt && (
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2 text-green-400">
+                                                <Award className="w-5 h-5" />
+                                                <span className="text-sm font-medium">
+                                                    {isArabic ? 'مكتمل' : 'Completed'}
+                                                </span>
+                                            </div>
+                                            <span className="text-white/40 text-xs">
+                                                {formatDate(course.completedAt)}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {activeTab === 'recommended' && course.rating && (
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-1">
+                                                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                                                <span className="text-white font-medium text-sm">{course.rating}</span>
+                                            </div>
+                                            {course.totalEnrollments && (
+                                                <div className="flex items-center gap-1 text-white/50 text-xs">
+                                                    <Users className="w-4 h-4" />
+                                                    <span>{course.totalEnrollments}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-16">
+                        <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-12 max-w-md mx-auto">
+                            <BookOpen className="w-16 h-16 text-white/40 mx-auto mb-4" />
+                            <h3 className="text-white text-xl font-semibold mb-2">
+                                {isArabic ? 'لا توجد دورات' : 'No Courses Found'}
+                            </h3>
+                            <p className="text-white/60">
+                                {isArabic 
+                                    ? 'لم يتم العثور على دورات تطابق معايير البحث'
+                                    : 'No courses match your search criteria'
+                                }
+                            </p>
                         </div>
-                        <h3 className="text-2xl font-bold text-white mb-3">
-                            {activeTab === 'continue' && (isArabic ? 'لا توجد دورات قيد التقدم' : 'No courses in progress')}
-                            {activeTab === 'completed' && (isArabic ? 'لم تكمل أي دورات بعد' : 'No completed courses yet')}
-                            {activeTab === 'explore' && (isArabic ? 'تم استكشاف جميع الدورات!' : 'All courses explored!')}
-                        </h3>
-                        <p className="text-gray-400 mb-8 max-w-md mx-auto">
-                            {activeTab === 'explore' && (isArabic 
-                                ? 'لقد بدأت جميع الدورات المتاحة. عمل رائع!'
-                                : "You've started all available courses. Great work!")}
-                            {activeTab !== 'explore' && (isArabic 
-                                ? 'ابدأ التعلم لرؤية الدورات هنا'
-                                : 'Start learning to see courses here')}
-                        </p>
-                        {activeTab === 'explore' && (
-                            <Link href={`/${locale}/subscribe`}>
-                                <Button className="bg-gradient-to-r from-purple-600 to-blue-600">
-                                    {isArabic ? 'ترقية الاشتراك' : 'Upgrade Subscription'}
-                                </Button>
-                            </Link>
-                        )}
                     </div>
                 )}
             </div>
         </div>
-    )
-}
-
-// Tab Button Component
-function TabButton({ active, onClick, icon, label, count }: any) {
-    return (
-        <button
-            onClick={onClick}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all whitespace-nowrap ${
-                active 
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/30' 
-                    : 'bg-gray-800/60 border border-gray-700/50 text-gray-300 hover:bg-gray-800/80 hover:border-gray-600/50'
-            }`}
-        >
-            {icon}
-            <span>{label}</span>
-            {count > 0 && (
-                <Badge className={active ? 'bg-white/20 text-white border-none' : 'bg-gray-700/50 text-gray-400 border-gray-600/30'}>
-                    {count}
-                </Badge>
-            )}
-        </button>
-    )
-}
-
-// Course Card Component
-function CourseCard({ course, locale, type, onCertificateDownload }: { 
-    course: Course, 
-    locale: string, 
-    type: 'continue' | 'completed' | 'explore',
-    onCertificateDownload?: (enrollmentId: string) => void
-}) {
-    const isArabic = locale === 'ar'
-    const title = isArabic && course.titleAr ? course.titleAr : course.title
-    const instructorName = isArabic && course.instructor.arabicName ? course.instructor.arabicName : course.instructor.name
-
-    return (
-        <Link href={`/${locale}/courses/${course.id}/learn`}>
-            <div className="bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-2xl overflow-hidden hover:bg-gray-800/80 hover:border-purple-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 group cursor-pointer">
-                {/* Thumbnail */}
-                <div className="relative aspect-video bg-gradient-to-br from-gray-700/50 to-gray-800/50 overflow-hidden">
-                    {course.thumbnail ? (
-                        <Image 
-                            src={course.thumbnail} 
-                            alt={title}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                            <BookOpen className="w-16 h-16 text-white/50" />
-                        </div>
-                    )}
-                    
-                    {/* Progress Overlay for Continue Watching */}
-                    {type === 'continue' && course.progress !== undefined && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-2">
-                            <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs text-white">{Math.round(course.progress)}%</span>
-                                <PlayCircle className="w-4 h-4 text-white" />
-                            </div>
-                            <Progress value={course.progress} className="h-1" />
-                        </div>
-                    )}
-
-                    {/* Completed Badge */}
-                    {type === 'completed' && (
-                        <div className="absolute top-3 right-3 bg-green-500 rounded-full p-2">
-                            <CheckCircle className="w-5 h-5 text-white" />
-                        </div>
-                    )}
-
-                    {/* Category Badge for Explore */}
-                    {type === 'explore' && (
-                        <div className="absolute top-3 left-3">
-                            <Badge className="bg-purple-500/80 backdrop-blur-sm text-white border-none">
-                                {course.category === 'CATEGORY_A' && (isArabic ? 'فئة أ' : 'Category A')}
-                                {course.category === 'CATEGORY_B' && (isArabic ? 'فئة ب' : 'Category B')}
-                                {course.category === 'CATEGORY_C' && (isArabic ? 'فئة ج' : 'Category C')}
-                            </Badge>
-                        </div>
-                    )}
-                </div>
-
-                {/* Content */}
-                <div className="p-4">
-                    <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 group-hover:text-purple-300 transition-colors">
-                        {title}
-                    </h3>
-                    
-                    {/* Instructor */}
-                    <div className="flex items-center gap-2 mb-3">
-                        {course.instructor.image ? (
-                            <Image 
-                                src={course.instructor.image} 
-                                alt={instructorName}
-                                width={24}
-                                height={24}
-                                className="rounded-full"
-                            />
-                        ) : (
-                            <Users className="w-5 h-5 text-gray-400" />
-                        )}
-                        <span className="text-sm text-gray-400">{instructorName}</span>
-                    </div>
-
-                    {/* Meta Info */}
-                    <div className="flex items-center gap-4 text-xs text-gray-400 mb-3">
-                        <div className="flex items-center gap-1">
-                            <BookOpen className="w-4 h-4" />
-                            <span>{course.totalLessons} {isArabic ? 'دروس' : 'lessons'}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            <span>{Math.floor(course.duration / 60)}h</span>
-                        </div>
-                        {course.rating && (
-                            <div className="flex items-center gap-1">
-                                <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                                <span>{course.rating.toFixed(1)}</span>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Last Accessed / Completed Date */}
-                    {type === 'continue' && course.lastAccessedAt && (
-                        <p className="text-xs text-gray-500 flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {isArabic ? 'آخر وصول:' : 'Last accessed:'} {new Date(course.lastAccessedAt).toLocaleDateString(locale)}
-                        </p>
-                    )}
-                    {type === 'completed' && course.completedAt && (
-                        <p className="text-xs text-green-400 flex items-center gap-1">
-                            <Award className="w-3 h-3" />
-                            {isArabic ? 'اكتمل في:' : 'Completed on:'} {new Date(course.completedAt).toLocaleDateString(locale)}
-                        </p>
-                    )}
-
-                    {/* CTA Button */}
-                    <div className="mt-4 space-y-2">
-                        {type !== 'completed' && (
-                            <Button 
-                                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:opacity-90 text-white"
-                                size="sm"
-                            >
-                                {type === 'continue' && (
-                                    <>
-                                        <PlayCircle className="w-4 h-4 mr-2" />
-                                        {isArabic ? 'واصل التعلم' : 'Continue Learning'}
-                                    </>
-                                )}
-                                {type === 'explore' && (
-                                    <>
-                                        {isArabic ? 'ابدأ الدورة' : 'Start Course'}
-                                        <ArrowRight className="w-4 h-4 ml-2" />
-                                    </>
-                                )}
-                            </Button>
-                        )}
-
-                        {/* Completed Course Actions */}
-                        {type === 'completed' && (
-                            <>
-                                <Button 
-                                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:opacity-90 text-white"
-                                    size="sm"
-                                >
-                                    <Award className="w-4 h-4 mr-2" />
-                                    {isArabic ? 'مراجعة' : 'Review'}
-                                </Button>
-                                
-                                {/* Certificate Download Button */}
-                                <Button 
-                                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:opacity-90 text-white"
-                                    size="sm"
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        onCertificateDownload?.(course.enrollmentId!)
-                                    }}
-                                >
-                                    <Download className="w-4 h-4 mr-2" />
-                                    {isArabic ? 'تحميل الشهادة' : 'Download Certificate'}
-                                </Button>
-                            </>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </Link>
     )
 }

@@ -80,7 +80,6 @@ export function Navigation() {
             key: 'nav-mentors',
             description: 'Connect with expert mentors'
         },
-
     ];
 
     return (

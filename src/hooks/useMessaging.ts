@@ -198,7 +198,8 @@ export function useMessaging(): UseMessagingReturn {
 
             const response = await fetch(`/api/messaging/conversations/${conversationId}/messages?${params}`);
             if (response.ok) {
-                const data = await response.json();
+                const payload = await response.json();
+                const data = Array.isArray(payload) ? payload : payload.data || [];
                 setMessages(prev => [...data, ...prev]);
             }
         } catch (error) {

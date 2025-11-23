@@ -19,7 +19,9 @@ import {
   DollarSign,
   Package,
   ArrowUpCircle,
-  ArrowDownCircle
+  ArrowDownCircle,
+  ChevronLeft,
+  Home
 } from 'lucide-react';
 import { useTranslationsSafe } from '@/hooks/useTranslationsSafe';
 import toast from 'react-hot-toast';
@@ -234,6 +236,20 @@ export default function SubscriptionManagementPage() {
   return (
     <div className="min-h-screen bg-gray-950 py-12 px-4" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="max-w-6xl mx-auto">
+        {/* Breadcrumb */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+          >
+            <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <Home className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              {isRtl ? 'العودة إلى لوحة التحكم' : 'Back to Dashboard'}
+            </span>
+          </button>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">

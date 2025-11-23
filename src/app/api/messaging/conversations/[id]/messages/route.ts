@@ -4,10 +4,41 @@ import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 
+const attachmentSchema = z.object({
+    fileName: z.string().min(1),
+    fileSize: z.number().int().nonnegative(),
+    fileType: z.string().min(1),
+    fileUrl: z.string().min(1),
+    thumbnailUrl: z.string().min(1).optional(),
+});
+
 const createMessageSchema = z.object({
     content: z.string().min(1).max(5000),
     messageType: z.enum(['TEXT', 'IMAGE', 'VIDEO', 'AUDIO', 'FILE', 'VOICE_NOTE', 'SYSTEM']).default('TEXT'),
     replyToId: z.string().optional(),
+    attachments: z.array(attachmentSchema).optional(),
+});
+
+const serializeMessage = (message: any) => ({
+    ...message,
+    createdAt: message.createdAt.toISOString(),
+    updatedAt: message.updatedAt.toISOString(),
+    timestamp: message.createdAt.toISOString(),
+    attachments: message.attachments?.map((attachment: any) => ({
+        ...attachment,
+        createdAt: attachment.createdAt?.toISOString(),
+    })) || [],
+    reactions: message.reactions?.map((reaction: any) => ({
+        ...reaction,
+        createdAt: reaction.createdAt.toISOString(),
+    })) || [],
+    replyTo: message.replyTo
+        ? {
+            ...message.replyTo,
+            createdAt: message.replyTo.createdAt.toISOString(),
+            updatedAt: message.replyTo.updatedAt.toISOString(),
+        }
+        : null,
 });
 
 // GET /api/messaging/conversations/[id]/messages - Get messages for a conversation
@@ -64,18 +95,42 @@ export async function GET(
                         },
                     },
                 },
+                attachments: true,
+                reactions: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                arabicName: true,
+                                profileImage: true,
+                            },
+                        },
+                    },
+                },
             },
             orderBy: { createdAt: 'desc' },
-            take: limit,
+            take: limit + 1,
         });
 
-        // Transform messages to include timestamp field
-        const transformedMessages = messages.map(message => ({
-            ...message,
-            timestamp: message.createdAt.toISOString(),
-        })).reverse();
+        const hasMore = messages.length > limit;
+        const trimmedMessages = hasMore ? messages.slice(0, limit) : messages;
+        const orderedMessages = [...trimmedMessages].sort(
+            (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+        );
+        const transformedMessages = orderedMessages.map(serializeMessage);
+        const nextCursor = hasMore
+            ? orderedMessages[0]?.createdAt.toISOString()
+            : null;
 
-        return NextResponse.json({ success: true, data: transformedMessages });
+        return NextResponse.json({
+            success: true,
+            data: transformedMessages,
+            pagination: {
+                hasMore,
+                nextCursor,
+            },
+        });
     } catch (error) {
         console.error('Error fetching messages:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -96,7 +151,7 @@ export async function POST(
 
         const { id } = await params;
         const body = await req.json();
-        const { content, messageType, replyToId } = createMessageSchema.parse(body);
+        const { content, messageType, replyToId, attachments } = createMessageSchema.parse(body);
 
         // Check if user is participant in conversation
         const participant = await prisma.conversationParticipant.findFirst({
@@ -119,6 +174,17 @@ export async function POST(
                 content,
                 messageType,
                 replyToId,
+                attachments: attachments?.length
+                    ? {
+                        create: attachments.map((attachment) => ({
+                            fileName: attachment.fileName,
+                            fileSize: attachment.fileSize,
+                            fileType: attachment.fileType,
+                            fileUrl: attachment.fileUrl,
+                            thumbnailUrl: attachment.thumbnailUrl,
+                        })),
+                    }
+                    : undefined,
             },
             include: {
                 sender: {
@@ -140,7 +206,18 @@ export async function POST(
                     },
                 },
                 attachments: true,
-                reactions: true,
+                reactions: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                arabicName: true,
+                                profileImage: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -155,12 +232,7 @@ export async function POST(
         });
 
         // Transform message to include timestamp field
-        const transformedMessage = {
-            ...message,
-            timestamp: message.createdAt.toISOString(),
-        };
-
-        return NextResponse.json(transformedMessage, { status: 201 });
+        return NextResponse.json(serializeMessage(message), { status: 201 });
     } catch (error) {
         console.error('Error sending message:', error);
 

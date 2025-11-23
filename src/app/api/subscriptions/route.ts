@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
+import { PaymentStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { PaymobService } from '@/lib/paymob'
 
@@ -116,35 +117,41 @@ export async function POST(request: NextRequest) {
         const paymobService = new PaymobService()
         const paymentResult = await paymobService.createPaymentRequest(paymentRequest)
 
-        // Store pending subscription in database
-        const subscription = await prisma.subscription.create({
+        const transaction = await prisma.paymentTransaction.create({
             data: {
                 userId: session.user.id,
-                type: subscriptionType,
+                subscriptionType,
                 channelId: subscriptionType === 'CATEGORY_C' ? channelId : null,
-                pricePerMonth: priceInEGP,
-                status: 'PENDING',
-                startDate,
-                endDate,
-                paymentMethodId: paymentResult.paymentKey,
-                subscriptionId: orderId
-            }
+                amount: priceInEGP,
+                currency: 'EGP',
+                status: PaymentStatus.PENDING,
+                merchantOrderId: orderId,
+                paymobOrderId: paymentResult.paymobOrderId,
+                paymobPaymentKey: paymentResult.paymentKey,
+                paymobIframeUrl: paymentResult.iframeUrl,
+                metadata: {
+                    plan,
+                    requestedStart: startDate,
+                    requestedEnd: endDate,
+                },
+            },
         })
 
         return NextResponse.json({
             success: true,
-            subscription: {
-                id: subscription.id,
+            transaction: {
+                id: transaction.id,
                 type: subscriptionType,
                 plan,
-                price: priceInEGP,
+                amount: priceInEGP,
                 currency: 'EGP',
-                endDate: endDate.toISOString()
+                merchantOrderId: transaction.merchantOrderId,
+                paymobOrderId: transaction.paymobOrderId,
             },
             payment: {
                 paymentKey: paymentResult.paymentKey,
                 iframeUrl: paymentResult.iframeUrl,
-                orderId: paymentResult.orderId
+                transactionId: transaction.id
             }
         })
 

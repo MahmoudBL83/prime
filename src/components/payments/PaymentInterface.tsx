@@ -42,6 +42,14 @@ type PaymentForm = {
     currency: string
 }
 
+type PaymentInitiationResponse = {
+    transactionId: string
+    merchantOrderId: string
+    paymobOrderId: string
+    iframeUrl: string
+    paymentKey: string
+}
+
 interface PaymentInterfaceProps {
     onSuccess?: () => void
     onError?: (error: string) => void
@@ -51,7 +59,7 @@ export function PaymentInterface({ onSuccess, onError }: PaymentInterfaceProps) 
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
     const [paymentStep, setPaymentStep] = useState<'form' | 'processing' | 'success' | 'error'>('form')
-    const [paymentData, setPaymentData] = useState<any>(null)
+    const [paymentData, setPaymentData] = useState<PaymentInitiationResponse | null>(null)
     const [iframeUrl, setIframeUrl] = useState<string>('')
 
     const {
@@ -127,10 +135,7 @@ export function PaymentInterface({ onSuccess, onError }: PaymentInterfaceProps) 
             const data = JSON.parse(event.data)
 
             if (data.success) {
-                setPaymentStep('success')
-                onSuccess?.()
-                toast.success('Payment successful! Your subscription is now active.')
-                setTimeout(() => router.push('/dashboard'), 2000)
+                checkPaymentStatus()
             } else {
                 setPaymentStep('error')
                 onError?.('Payment failed')
@@ -145,13 +150,13 @@ export function PaymentInterface({ onSuccess, onError }: PaymentInterfaceProps) 
     }
 
     const checkPaymentStatus = async () => {
-        if (!paymentData?.orderId) return
+        if (!paymentData?.transactionId) return
 
         try {
             const response = await fetch('/api/payments/status', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ transactionId: paymentData.orderId }),
+                body: JSON.stringify({ transactionId: paymentData.transactionId }),
             })
 
             const result = await response.json()

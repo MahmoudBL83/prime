@@ -56,6 +56,40 @@ export async function GET(req: NextRequest) {
             }
         })
 
+        // Get user's course interactions (My List and Liked)
+        const courseInteractions = await prisma.courseInteraction.findMany({
+            where: {
+                userId: session.user.id,
+                OR: [
+                    { inMyList: true },
+                    { liked: true }
+                ]
+            },
+            include: {
+                course: {
+                    include: {
+                        creator: {
+                            include: {
+                                user: {
+                                    select: {
+                                        name: true,
+                                        arabicName: true,
+                                        profileImage: true
+                                    }
+                                }
+                            }
+                        },
+                        _count: {
+                            select: {
+                                lessons: true,
+                                enrollments: true
+                            }
+                        }
+                    }
+                }
+            }
+        })
+
         // Get user's subscriptions for display
         const subscriptions = await prisma.subscription.findMany({
             where: {
@@ -78,6 +112,11 @@ export async function GET(req: NextRequest) {
                                         arabicName: true,
                                         profileImage: true
                                     }
+                                },
+                                _count: {
+                                    select: {
+                                        courses: true
+                                    }
                                 }
                             }
                         }
@@ -96,6 +135,15 @@ export async function GET(req: NextRequest) {
         const notStarted = accessibleCourses.filter(course => 
             !enrollments.some(e => e.courseId === course.id)
         )
+
+        // Get My List and Liked courses
+        const myListCourses = courseInteractions
+            .filter(i => i.inMyList)
+            .map(i => i.course)
+        
+        const likedCourses = courseInteractions
+            .filter(i => i.liked === true)
+            .map(i => i.course)
 
         // Calculate statistics
         const stats = {
@@ -119,11 +167,16 @@ export async function GET(req: NextRequest) {
                 id: sub.id,
                 type: sub.type,
                 status: sub.status,
+                startDate: sub.startDate,
                 endDate: sub.endDate,
-                channelId: sub.channel?.id, // Add channelId for navigation
+                autoRenew: sub.autoRenew,
+                channelId: sub.channel?.id,
                 channelName: sub.channel?.name,
+                channelDescription: sub.channel?.description,
                 creatorName: sub.channel?.creator?.user?.name,
-                creatorImage: sub.channel?.creator?.user?.profileImage
+                creatorArabicName: sub.channel?.creator?.user?.arabicName,
+                creatorImage: sub.channel?.creator?.user?.profileImage,
+                totalCourses: sub.channel?.creator?._count?.courses || 0
             })),
             courses: {
                 continueWatching: inProgress.slice(0, 10).map(e => ({
@@ -171,6 +224,40 @@ export async function GET(req: NextRequest) {
                     },
                     rating: course.rating,
                     totalEnrollments: course.totalEnrollments,
+                    totalLessons: course._count.lessons,
+                    duration: course.duration,
+                    category: course.contentCategory,
+                    skillLevel: course.skillLevel
+                })),
+                myList: myListCourses.map(course => ({
+                    id: course.id,
+                    title: course.title,
+                    titleAr: course.titleAr,
+                    thumbnail: course.thumbnail,
+                    instructor: {
+                        name: course.creator.user.name,
+                        arabicName: course.creator.user.arabicName,
+                        image: course.creator.user.profileImage
+                    },
+                    rating: course.rating,
+                    totalEnrollments: course._count.enrollments,
+                    totalLessons: course._count.lessons,
+                    duration: course.duration,
+                    category: course.contentCategory,
+                    skillLevel: course.skillLevel
+                })),
+                liked: likedCourses.map(course => ({
+                    id: course.id,
+                    title: course.title,
+                    titleAr: course.titleAr,
+                    thumbnail: course.thumbnail,
+                    instructor: {
+                        name: course.creator.user.name,
+                        arabicName: course.creator.user.arabicName,
+                        image: course.creator.user.profileImage
+                    },
+                    rating: course.rating,
+                    totalEnrollments: course._count.enrollments,
                     totalLessons: course._count.lessons,
                     duration: course.duration,
                     category: course.contentCategory,

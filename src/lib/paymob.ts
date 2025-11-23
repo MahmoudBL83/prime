@@ -132,7 +132,8 @@ export class PaymobService {
 
     async createPaymentRequest(request: PaymentRequest): Promise<{
         paymentKey: string
-        orderId: string
+        paymobOrderId: string
+        merchantOrderId: string
         iframeUrl: string
     }> {
         try {
@@ -154,7 +155,8 @@ export class PaymobService {
 
             return {
                 paymentKey,
-                orderId: order.id.toString(),
+                paymobOrderId: order.id.toString(),
+                merchantOrderId: request.orderId,
                 iframeUrl,
             }
         } catch (error) {

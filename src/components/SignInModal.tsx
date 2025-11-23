@@ -10,9 +10,10 @@ interface SignInModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSignInSuccess: () => void;
+    locale?: string;
 }
 
-export function SignInModal({ isOpen, onClose, onSignInSuccess }: SignInModalProps) {
+export function SignInModal({ isOpen, onClose, onSignInSuccess, locale = 'en' }: SignInModalProps) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -149,7 +150,7 @@ export function SignInModal({ isOpen, onClose, onSignInSuccess }: SignInModalPro
                                     type="button"
                                     onClick={() => {
                                         onClose();
-                                        router.push('/register');
+                                        router.push(`/${locale}/auth/register`);
                                     }}
                                     className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-4 rounded-full transition-all border border-white/20"
                                 >

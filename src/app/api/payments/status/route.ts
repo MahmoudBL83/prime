@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
+import { PaymentStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
-import { paymobService } from '@/lib/paymob'
 import { z } from 'zod'
 
 const checkStatusSchema = z.object({
@@ -28,22 +28,19 @@ export async function POST(req: NextRequest) {
 
         const { transactionId } = validation.data
 
-        // Check payment status with Paymob
-        const paymentStatus = await paymobService.getPaymentStatus(transactionId)
-
-        // Find the associated subscription
-        const subscription = await prisma.subscription.findFirst({
+        const transaction = await prisma.paymentTransaction.findFirst({
             where: {
-                subscriptionId: transactionId,
+                id: transactionId,
                 userId: session.user.id,
             },
             include: {
-                user: true,
-                channel: {
+                subscription: {
                     include: {
-                        creator: {
+                        channel: {
                             include: {
-                                user: true,
+                                creator: {
+                                    include: { user: true },
+                                },
                             },
                         },
                     },
@@ -51,48 +48,44 @@ export async function POST(req: NextRequest) {
             },
         })
 
-        if (!subscription) {
-            return NextResponse.json({ error: 'Subscription not found' }, { status: 404 })
+        if (!transaction) {
+            return NextResponse.json({ error: 'Transaction not found' }, { status: 404 })
         }
 
-        // Return comprehensive status information
-        const statusResponse = {
-            transactionId,
-            success: paymentStatus.success,
-            amount: paymentStatus.amount_cents / 100, // Convert from cents
-            currency: paymentStatus.currency,
-            status: paymentStatus.success ? 'completed' : 'failed',
-            createdAt: paymentStatus.created_at,
-            processedAt: paymentStatus.processed_at,
-            subscription: {
-                id: subscription.id,
-                type: subscription.type,
-                status: subscription.status,
-                startDate: subscription.startDate,
-                endDate: subscription.endDate,
-                pricePerMonth: subscription.pricePerMonth,
-                channel: subscription.channel
-                    ? {
-                        id: subscription.channel.id,
-                        name: subscription.channel.name,
-                        nameAr: subscription.channel.nameAr,
-                        creator: {
-                            name: subscription.channel.creator.user.name,
-                            arabicName: subscription.channel.creator.user.arabicName,
-                        },
-                    }
-                    : null,
-            },
-            paymentMethod: {
-                type: paymentStatus.source_data?.type || 'card',
-                subType: paymentStatus.source_data?.sub_type || 'unknown',
-                pan: paymentStatus.source_data?.pan
-                    ? `****${paymentStatus.source_data.pan.slice(-4)}`
-                    : null,
-            },
-        }
-
-        return NextResponse.json(statusResponse)
+        return NextResponse.json({
+            transactionId: transaction.id,
+            merchantOrderId: transaction.merchantOrderId,
+            paymobOrderId: transaction.paymobOrderId,
+            status: transaction.status,
+            success: transaction.status === PaymentStatus.PAID,
+            amount: transaction.amount,
+            currency: transaction.currency,
+            paidAt: transaction.paidAt,
+            failedAt: transaction.failedAt,
+            failureReason: transaction.failureReason,
+            paymentMethod: transaction.paymentMethod,
+            subscription: transaction.subscription
+                ? {
+                    id: transaction.subscription.id,
+                    type: transaction.subscription.type,
+                    status: transaction.subscription.status,
+                    startDate: transaction.subscription.startDate,
+                    endDate: transaction.subscription.endDate,
+                    pricePerMonth: transaction.subscription.pricePerMonth,
+                    channel: transaction.subscription.channel
+                        ? {
+                            id: transaction.subscription.channel.id,
+                            name: transaction.subscription.channel.name,
+                            nameAr: transaction.subscription.channel.nameAr,
+                            creator: {
+                                name: transaction.subscription.channel.creator.user.name,
+                                arabicName: transaction.subscription.channel.creator.user.arabicName,
+                            },
+                        }
+                        : null,
+                }
+                : null,
+        })
     } catch (error) {
         console.error('Payment status check error:', error)
         return NextResponse.json(
@@ -136,22 +129,32 @@ export async function GET(req: NextRequest) {
         })
 
         // Get recent payment transactions
-        const recentTransactions = await prisma.subscription.findMany({
+        const recentTransactions = await prisma.paymentTransaction.findMany({
             where: {
                 userId: session.user.id,
-                subscriptionId: {
-                    not: null,
-                },
             },
             select: {
                 id: true,
-                type: true,
                 status: true,
-                pricePerMonth: true,
-                subscriptionId: true,
-                startDate: true,
-                endDate: true,
-                createdAt: true,
+                amount: true,
+                currency: true,
+                merchantOrderId: true,
+                paymobOrderId: true,
+                paymobTransactionId: true,
+                subscription: {
+                    select: {
+                        id: true,
+                        type: true,
+                        status: true,
+                        channel: {
+                            select: {
+                                id: true,
+                                name: true,
+                                nameAr: true,
+                            },
+                        },
+                    },
+                },
                 channel: {
                     select: {
                         id: true,
@@ -159,6 +162,9 @@ export async function GET(req: NextRequest) {
                         nameAr: true,
                     },
                 },
+                createdAt: true,
+                paidAt: true,
+                failedAt: true,
             },
             orderBy: {
                 createdAt: 'desc',

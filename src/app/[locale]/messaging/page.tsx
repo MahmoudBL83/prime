@@ -1,10 +1,14 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react'
+import type { MouseEvent as ReactMouseEvent } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import {
+    Archive,
+    Bell,
+    BellOff,
     Search,
     Phone,
     Video,
@@ -33,13 +37,31 @@ import {
     Plus,
     Play,
     Users,
-    Flag
+    Flag,
+    Loader2,
+    Trash2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import VideoCallModal from '@/components/VideoCallModal'
 import VoiceCallModal from '@/components/VoiceCallModal'
 import ReportModal from '@/components/ReportModal'
+
+interface MessageReaction {
+    emoji: string
+    userId: string
+    userName?: string
+}
+
+interface MessageAttachment {
+    id: string
+    fileName: string
+    fileSize: number
+    fileType: string
+    fileUrl: string
+    thumbnailUrl?: string | null
+    createdAt?: Date
+}
 
 interface Message {
     id: string
@@ -48,19 +70,23 @@ interface Message {
     senderName?: string
     senderImage?: string | null
     createdAt: Date
+    updatedAt?: Date
     read: boolean
-    type: 'text' | 'image' | 'video' | 'audio' | 'file'
+    type?: 'text' | 'image' | 'video' | 'audio' | 'file' | 'voice_note' | 'system'
     replyTo?: string
-    reactions?: { emoji: string; userId: string }[]
+    reactions?: MessageReaction[]
+    attachments?: MessageAttachment[]
     fileUrl?: string
     fileName?: string
+    isPinned?: boolean
+    isStarred?: boolean
 }
 
 interface GroupMember {
     id: string
     name: string
     image: string | null
-    role: 'admin' | 'member'
+    role: 'admin' | 'member' | 'moderator'
     isOnline: boolean
 }
 
@@ -73,6 +99,9 @@ interface Conversation {
     cohortId?: string
     members?: GroupMember[]
     admins?: string[]
+    isArchived?: boolean
+    isMuted?: boolean
+    lastReadAt?: Date | null
     user: {
         id: string
         name: string
@@ -87,6 +116,229 @@ interface Conversation {
         senderId: string
     }
     unreadCount: number
+}
+
+interface ApiParticipant {
+    id: string
+    userId: string
+    role: 'ADMIN' | 'MODERATOR' | 'MEMBER'
+    joinedAt: string
+    lastReadAt?: string | null
+    isActive: boolean
+    isArchived: boolean
+    isMuted: boolean
+    user: {
+        id: string
+        name: string
+        email: string
+        profileImage?: string | null
+        arabicName?: string | null
+    }
+}
+
+interface ApiConversation {
+    id: string
+    type: 'DIRECT' | 'GROUP'
+    title?: string | null
+    description?: string | null
+    avatar?: string | null
+    createdAt: string
+    updatedAt: string
+    participants: ApiParticipant[]
+    lastMessage?: {
+        id: string
+        content: string
+        senderId: string
+        createdAt: string
+        updatedAt: string
+        sender?: {
+            id: string
+            name?: string | null
+            profileImage?: string | null
+        }
+    } | null
+    isArchived?: boolean
+    isMuted?: boolean
+    lastReadAt?: string | null
+}
+
+interface ApiMessage {
+    id: string
+    conversationId: string
+    senderId: string
+    content: string
+    createdAt: string
+    updatedAt: string
+    messageType: 'TEXT' | 'IMAGE' | 'VIDEO' | 'AUDIO' | 'FILE' | 'VOICE_NOTE' | 'SYSTEM'
+    replyTo?: {
+        id: string
+        content: string
+        createdAt: string
+        updatedAt: string
+        sender?: {
+            id: string
+            name?: string | null
+        }
+    } | null
+    attachments?: Array<{
+        id: string
+        fileName: string
+        fileSize: number
+        fileType: string
+        fileUrl: string
+        thumbnailUrl?: string | null
+        createdAt?: string
+    }>
+    reactions?: Array<{
+        id: string
+        emoji: string
+        userId: string
+        createdAt: string
+        user?: {
+            id: string
+            name?: string | null
+        }
+    }>
+    sender?: {
+        id: string
+        name?: string | null
+        email?: string | null
+        profileImage?: string | null
+    }
+    isPinned?: boolean
+    isStarred?: boolean
+    isDeleted?: boolean
+}
+
+interface ComposerAttachment {
+    id: string
+    fileName: string
+    fileType: string
+    fileSize: number
+    previewUrl: string
+    status: 'uploading' | 'ready' | 'error'
+    error?: string
+    uploaded?: {
+        fileName: string
+        fileType: string
+        fileSize: number
+        fileUrl: string
+        thumbnailUrl?: string
+        messageType: ApiMessage['messageType']
+    }
+    messageType: ApiMessage['messageType']
+}
+
+interface CallSession {
+    id: string
+    sessionToken: string
+    hostId: string
+    hostName?: string | null
+    hostImage?: string | null
+    inviteeId: string
+    inviteeName?: string | null
+    inviteeImage?: string | null
+    title?: string | null
+    description?: string | null
+    status: string
+    callType: 'video' | 'voice'
+}
+
+const mapConversation = (conversation: ApiConversation, currentUserId: string): Conversation => {
+    const isGroup = conversation.type === 'GROUP'
+    const otherParticipant = conversation.participants.find(participant => participant.userId !== currentUserId)
+    const lastReadAtDate = conversation.lastReadAt ? new Date(conversation.lastReadAt) : null
+
+    const lastMessage = conversation.lastMessage
+        ? {
+            content: conversation.lastMessage.content,
+            createdAt: new Date(conversation.lastMessage.createdAt),
+            read:
+                conversation.lastMessage.senderId === currentUserId ||
+                (lastReadAtDate ? lastReadAtDate >= new Date(conversation.lastMessage.createdAt) : false),
+            senderId: conversation.lastMessage.senderId,
+        }
+        : undefined
+
+    const unreadCount = lastMessage && !lastMessage.read ? 1 : 0
+
+    const baseConversation: Conversation = {
+        id: conversation.id,
+        isGroup,
+        unreadCount,
+        user: {
+            id: otherParticipant?.user.id || conversation.id,
+            name: otherParticipant?.user.name || otherParticipant?.user.email || 'User',
+            image: otherParticipant?.user.profileImage || null,
+            isOnline: false,
+            lastSeen: otherParticipant?.lastReadAt ? new Date(otherParticipant.lastReadAt) : undefined,
+        },
+        lastMessage,
+        isArchived: conversation.isArchived,
+        isMuted: conversation.isMuted,
+        lastReadAt: lastReadAtDate,
+    }
+
+    if (isGroup) {
+        return {
+            ...baseConversation,
+            user: {
+                id: conversation.id,
+                name: conversation.title || 'Group',
+                image: conversation.avatar || null,
+                isOnline: false,
+                lastSeen: new Date(conversation.updatedAt),
+            },
+            groupName: conversation.title || 'Group',
+            groupImage: conversation.avatar || null,
+            groupDescription: conversation.description || undefined,
+            members: conversation.participants.map(participant => ({
+                id: participant.user.id,
+                name: participant.user.name || participant.user.email || 'Member',
+                image: participant.user.profileImage || null,
+                role: (participant.role?.toLowerCase() as GroupMember['role']) || 'member',
+                isOnline: false,
+            })),
+        }
+    }
+
+    return baseConversation
+}
+
+const mapMessage = (message: ApiMessage): Message => {
+    const createdAt = new Date(message.createdAt)
+    const updatedAt = new Date(message.updatedAt)
+
+    return {
+        id: message.id,
+        content: message.isDeleted ? 'This message was deleted' : message.content,
+        senderId: message.senderId,
+        senderName: message.sender?.name || undefined,
+        senderImage: message.sender?.profileImage || null,
+        createdAt,
+        updatedAt,
+        read: false,
+        type: message.messageType.toLowerCase() as Message['type'],
+        replyTo: message.replyTo?.id,
+        reactions: message.reactions?.map(reaction => ({
+            emoji: reaction.emoji,
+            userId: reaction.userId,
+            userName: reaction.user?.name || undefined,
+        })) || [],
+        attachments: message.attachments?.map(attachment => ({
+            id: attachment.id,
+            fileName: attachment.fileName,
+            fileSize: attachment.fileSize,
+            fileType: attachment.fileType,
+            fileUrl: attachment.fileUrl,
+            thumbnailUrl: attachment.thumbnailUrl || null,
+            createdAt: attachment.createdAt ? new Date(attachment.createdAt) : undefined,
+        })) || [],
+        fileUrl: message.attachments?.[0]?.fileUrl,
+        fileName: message.attachments?.[0]?.fileName,
+        isPinned: message.isPinned,
+        isStarred: message.isStarred,
+    }
 }
 
 function MessengerPage() {
@@ -116,6 +368,7 @@ function MessengerPage() {
     const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null)
     const [showMessageMenu, setShowMessageMenu] = useState<string | null>(null)
     const [selectedImage, setSelectedImage] = useState<string | null>(null)
+    const [attachments, setAttachments] = useState<ComposerAttachment[]>([])
     const [recording, setRecording] = useState(false)
     const [otherUserTyping, setOtherUserTyping] = useState(false)
     const [showEmojiPickerMain, setShowEmojiPickerMain] = useState(false)
@@ -132,11 +385,12 @@ function MessengerPage() {
     const [selectedCohort, setSelectedCohort] = useState<string | null>(null)
     const [showAddMembersModal, setShowAddMembersModal] = useState(false)
     const [groupMessages, setGroupMessages] = useState<{[key: string]: Message[]}>({})
+    const [conversationMenu, setConversationMenu] = useState<{ conversation: Conversation; x: number; y: number } | null>(null)
     
     // Call modals state
     const [showVideoCallModal, setShowVideoCallModal] = useState(false)
     const [showVoiceCallModal, setShowVoiceCallModal] = useState(false)
-    const [callSession, setCallSession] = useState<any>(null)
+    const [callSession, setCallSession] = useState<CallSession | null>(null)
     
     // Report modal state
     const [showReportModal, setShowReportModal] = useState(false)
@@ -154,77 +408,498 @@ function MessengerPage() {
     const [inviteLink, setInviteLink] = useState('')
     const [generatingLink, setGeneratingLink] = useState(false)
     
+    const isMountedRef = useRef(true)
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+    const recordingChunksRef = useRef<Blob[]>([])
+    const recordingStreamRef = useRef<MediaStream | null>(null)
+    const recordingTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-    // Memoize mobile check
+    const [recordingDuration, setRecordingDuration] = useState(0)
+
     const checkMobile = useCallback(() => {
         setIsMobile(window.innerWidth < 768)
     }, [])
 
-    // Memoize scroll to bottom
     const scrollToBottom = useCallback(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [])
 
+    const hasReadyAttachments = useMemo(
+        () => attachments.some(attachment => attachment.status === 'ready' && !!attachment.uploaded),
+        [attachments]
+    )
+
+    const hasUploadingAttachments = useMemo(
+        () => attachments.some(attachment => attachment.status === 'uploading'),
+        [attachments]
+    )
+
+    const formatRecordingDuration = useCallback((totalSeconds: number) => {
+        const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0')
+        const seconds = (totalSeconds % 60).toString().padStart(2, '0')
+        return `${minutes}:${seconds}`
+    }, [])
+
     useEffect(() => {
         if (!session) {
-            router.push(`/${locale}/login`)
+            router.push(`/${locale}/auth/login`)
             return
         }
-        fetchConversations()
-        fetchCohorts()
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setShowEmojiPickerMain(false)
+                setShowReactionPicker(null)
+                setShowMessageMenu(null)
+                setConversationMenu(null)
+            }
+        }
+
         checkMobile()
         window.addEventListener('resize', checkMobile)
-        
-        // Check for userId parameter to auto-open conversation
-        const userId = searchParams.get('userId')
-        if (userId && conversations.length > 0) {
-            // Find existing conversation with this user
-            const existingConversation = conversations.find(conv => 
-                !conv.isGroup && conv.user.id === userId
-            )
-            
-            if (existingConversation) {
-                handleSelectConversation(existingConversation)
-            } else {
-                // Create new conversation with this user
-                createConversationWithUser(userId)
-            }
-        }
-        
-        // Keyboard shortcuts
-        const handleKeyDown = (e: KeyboardEvent) => {
-            // Ctrl/Cmd + K for search
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault()
-                const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement
-                searchInput?.focus()
-            }
-            // Ctrl/Cmd + N for new message
-            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-                e.preventDefault()
-                setShowNewMessageModal(true)
-            }
-            // Escape to close modals
-            if (e.key === 'Escape') {
-                setShowNewMessageModal(false)
-                setShowEmojiPickerMain(false)
-                setShowInfo(false)
-                setShowSettingsModal(false)
-                setShowCreateGroupModal(false)
-                setShowGroupInfoModal(false)
-            }
-        }
-        
         window.addEventListener('keydown', handleKeyDown)
+
+        fetchConversations()
+        fetchCohorts()
+        fetchAllUsers()
+
         return () => {
             window.removeEventListener('resize', checkMobile)
             window.removeEventListener('keydown', handleKeyDown)
         }
-    }, [session, locale, router, checkMobile, searchParams, conversations])
+    }, [session, locale, router, checkMobile])
+
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false
+            if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+                mediaRecorderRef.current.stop()
+            }
+            if (recordingStreamRef.current) {
+                recordingStreamRef.current.getTracks().forEach(track => track.stop())
+                recordingStreamRef.current = null
+            }
+            if (recordingTimerRef.current) {
+                clearInterval(recordingTimerRef.current)
+                recordingTimerRef.current = null
+            }
+        }
+    }, [])
+
+    useEffect(() => {
+        if (!session?.user?.id) return
+
+        const conversationId = searchParams.get('conversationId')
+        if (conversationId && conversations.length) {
+            const matchedConversation = conversations.find(conv => conv.id === conversationId)
+            if (matchedConversation) {
+                setSelectedConversation(matchedConversation)
+                fetchMessages(matchedConversation.id)
+                if (isMobile) {
+                    setShowConversationList(false)
+                }
+            }
+        }
+    }, [session?.user?.id, searchParams, conversations, isMobile])
+
+    // Memoize send message handler
+    const cleanupAttachmentPreview = useCallback((url: string) => {
+        if (url.startsWith('blob:')) {
+            URL.revokeObjectURL(url)
+        }
+    }, [])
+
+    const getMessageTypeFromFile = useCallback((file: File): ApiMessage['messageType'] => {
+        if (file.type.startsWith('image/')) return 'IMAGE'
+        if (file.type.startsWith('video/')) return 'VIDEO'
+        if (file.type.startsWith('audio/')) return 'AUDIO'
+        return 'FILE'
+    }, [])
+
+    const updateConversationLocally = useCallback((conversationId: string, updates: Partial<Conversation>) => {
+        setConversations(prev => prev.map(conv => (conv.id === conversationId ? { ...conv, ...updates } : conv)))
+        setSelectedConversation(prev => (prev?.id === conversationId ? { ...prev, ...updates } : prev))
+    }, [])
+
+    const handleConversationContextMenu = useCallback((event: ReactMouseEvent<HTMLButtonElement>, conversation: Conversation) => {
+        event.preventDefault()
+
+        const MENU_WIDTH = 260
+        const MENU_HEIGHT = 240
+        const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024
+        const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 768
+        const offsetX = Math.min(event.clientX, viewportWidth - MENU_WIDTH - 12)
+        const offsetY = Math.min(event.clientY, viewportHeight - MENU_HEIGHT - 12)
+
+        setConversationMenu({
+            conversation,
+            x: Math.max(12, offsetX),
+            y: Math.max(12, offsetY),
+        })
+    }, [])
+
+    const handleToggleMuteConversation = useCallback(async (conversation: Conversation) => {
+        const nextMuteState = !(conversation.isMuted ?? false)
+        setConversationMenu(null)
+        try {
+            const response = await fetch(`/api/messaging/conversations/${conversation.id}/mute`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isMuted: nextMuteState }),
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to update mute state')
+            }
+
+            updateConversationLocally(conversation.id, { isMuted: nextMuteState })
+            toast.success(nextMuteState ? (isArabic ? 'تم كتم الإشعارات' : 'Notifications muted') : (isArabic ? 'تم إلغاء كتم الإشعارات' : 'Notifications unmuted'))
+        } catch (error) {
+            console.error('Failed to toggle mute state:', error)
+            toast.error(isArabic ? 'تعذّر تحديث الإشعارات' : 'Unable to update mute state')
+        }
+    }, [isArabic, updateConversationLocally])
+
+    const handleToggleArchiveConversation = useCallback(async (conversation: Conversation) => {
+        const nextArchiveState = !(conversation.isArchived ?? false)
+        setConversationMenu(null)
+        try {
+            const response = await fetch(`/api/messaging/conversations/${conversation.id}/archive`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isArchived: nextArchiveState }),
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to update archive state')
+            }
+
+            updateConversationLocally(conversation.id, { isArchived: nextArchiveState })
+            toast.success(nextArchiveState ? (isArabic ? 'تم نقل المحادثة إلى الأرشيف' : 'Chat archived') : (isArabic ? 'تمت إعادة المحادثة للبريد الوارد' : 'Chat moved back to inbox'))
+        } catch (error) {
+            console.error('Failed to toggle archive state:', error)
+            toast.error(isArabic ? 'تعذّر تحديث الأرشفة' : 'Unable to update archive state')
+        }
+    }, [isArabic, updateConversationLocally])
+
+    const handleDeleteConversation = useCallback(async (conversation: Conversation) => {
+        setConversationMenu(null)
+        try {
+            const response = await fetch(`/api/messaging/conversations/${conversation.id}`, {
+                method: 'DELETE',
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to delete conversation')
+            }
+
+            setConversations(prev => prev.filter(conv => conv.id !== conversation.id))
+            if (selectedConversation?.id === conversation.id) {
+                setSelectedConversation(null)
+                setMessages([])
+                if (isMobile) {
+                    setShowConversationList(true)
+                }
+            }
+
+            toast.success(isArabic ? 'تم حذف المحادثة' : 'Chat deleted')
+        } catch (error) {
+            console.error('Failed to delete conversation:', error)
+            toast.error(isArabic ? 'تعذّر حذف المحادثة' : 'Unable to delete chat')
+        }
+    }, [isArabic, isMobile, selectedConversation])
+
+    const uploadAttachment = useCallback(async (attachmentId: string, file: File, messageType: ApiMessage['messageType']) => {
+        if (!selectedConversation) return
+
+        try {
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('conversationId', selectedConversation.id)
+            formData.append('messageType', messageType)
+
+            const response = await fetch('/api/messaging/upload', {
+                method: 'POST',
+                body: formData,
+            })
+
+            if (!response.ok) {
+                throw new Error('Upload failed')
+            }
+
+            const data = await response.json()
+
+            setAttachments(prev => prev.map(attachment =>
+                attachment.id === attachmentId
+                    ? {
+                        ...attachment,
+                        status: 'ready',
+                        uploaded: {
+                            fileName: data.fileName,
+                            fileType: data.fileType,
+                            fileSize: data.fileSize,
+                            fileUrl: data.fileUrl,
+                            thumbnailUrl: data.thumbnailUrl,
+                            messageType,
+                        },
+                    }
+                    : attachment
+            ))
+        } catch (error) {
+            console.error('Failed to upload attachment:', error)
+            setAttachments(prev => prev.map(attachment =>
+                attachment.id === attachmentId
+                    ? { ...attachment, status: 'error', error: 'Upload failed' }
+                    : attachment
+            ))
+        }
+    }, [selectedConversation])
+
+    const cleanupRecordingResources = useCallback(() => {
+        if (recordingTimerRef.current) {
+            clearInterval(recordingTimerRef.current)
+            recordingTimerRef.current = null
+        }
+
+        if (recordingStreamRef.current) {
+            recordingStreamRef.current.getTracks().forEach(track => track.stop())
+            recordingStreamRef.current = null
+        }
+    }, [])
+
+    const stopRecordingSession = useCallback(() => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.stop()
+        }
+        mediaRecorderRef.current = null
+        cleanupRecordingResources()
+        setRecording(false)
+        setRecordingDuration(0)
+    }, [cleanupRecordingResources])
+
+    const handleVoiceRecord = useCallback(async () => {
+        if (!selectedConversation) {
+            toast.error(isArabic ? 'اختر محادثة أولاً' : 'Select a conversation first')
+            return
+        }
+
+        if (recording) {
+            stopRecordingSession()
+            return
+        }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+            recordingStreamRef.current = stream
+
+            const recorder = new MediaRecorder(stream)
+            recordingChunksRef.current = []
+
+            recorder.ondataavailable = event => {
+                if (event.data.size > 0) {
+                    recordingChunksRef.current.push(event.data)
+                }
+            }
+
+            recorder.onstop = () => {
+                if (!isMountedRef.current) {
+                    recordingChunksRef.current = []
+                    return
+                }
+                const audioBlob = new Blob(recordingChunksRef.current, { type: 'audio/webm' })
+                recordingChunksRef.current = []
+                if (audioBlob.size === 0) {
+                    return
+                }
+
+                const timestamp = Date.now()
+                const fileName = `voice-note-${timestamp}.webm`
+                const voiceFile = new File([audioBlob], fileName, { type: 'audio/webm' })
+                const id = `${timestamp}-${Math.random().toString(36).slice(2)}`
+                const previewUrl = URL.createObjectURL(audioBlob)
+
+                setAttachments(prev => ([
+                    ...prev,
+                    {
+                        id,
+                        fileName,
+                        fileSize: voiceFile.size,
+                        fileType: voiceFile.type,
+                        previewUrl,
+                        status: 'uploading',
+                        messageType: 'VOICE_NOTE',
+                    },
+                ]))
+
+                uploadAttachment(id, voiceFile, 'VOICE_NOTE')
+            }
+
+            mediaRecorderRef.current = recorder
+            recorder.start()
+            setRecording(true)
+            setRecordingDuration(0)
+            recordingTimerRef.current = setInterval(() => {
+                setRecordingDuration(prev => prev + 1)
+            }, 1000)
+        } catch (error) {
+            console.error('Failed to access microphone:', error)
+            toast.error(isArabic ? 'يتعذّر الوصول إلى الميكروفون' : 'Microphone access denied')
+            cleanupRecordingResources()
+            setRecording(false)
+        }
+    }, [selectedConversation, recording, isArabic, uploadAttachment, cleanupRecordingResources, stopRecordingSession])
+
+    const handleFileSelection = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+        if (!selectedConversation) {
+            toast.error(isArabic ? 'اختر محادثة أولاً' : 'Select a conversation first')
+            return
+        }
+
+        const files = event.target.files ? Array.from(event.target.files) : []
+        if (files.length === 0) {
+            return
+        }
+
+        files.forEach(file => {
+            const id = `${Date.now()}-${file.name}-${Math.random().toString(36).slice(2)}`
+            const previewUrl = URL.createObjectURL(file)
+            const messageType = getMessageTypeFromFile(file)
+
+            setAttachments(prev => [
+                ...prev,
+                {
+                    id,
+                    fileName: file.name,
+                    fileSize: file.size,
+                    fileType: file.type,
+                    previewUrl,
+                    status: 'uploading',
+                    messageType,
+                },
+            ])
+
+            uploadAttachment(id, file, messageType)
+        })
+
+        event.target.value = ''
+    }, [selectedConversation, getMessageTypeFromFile, uploadAttachment, isArabic])
+
+    const removeAttachment = useCallback((attachmentId: string) => {
+        setAttachments(prev => {
+            const target = prev.find(att => att.id === attachmentId)
+            if (target) {
+                cleanupAttachmentPreview(target.previewUrl)
+            }
+            return prev.filter(att => att.id !== attachmentId)
+        })
+    }, [cleanupAttachmentPreview])
+
+    const handleSendMessage = useCallback(async () => {
+        if (!selectedConversation || !session?.user?.id) return
+
+        const readyAttachments = attachments.filter(attachment => attachment.status === 'ready' && attachment.uploaded)
+
+        if (!messageInput.trim() && !recording && readyAttachments.length === 0) {
+            toast.error(isArabic ? 'أدخل رسالة أو أرفق ملفاً' : 'Type a message or add an attachment')
+            return
+        }
+
+        if (hasUploadingAttachments) {
+            toast.error(isArabic ? 'انتظر اكتمال رفع الملفات' : 'Please wait for uploads to finish')
+            return
+        }
+
+        setSending(true)
+        try {
+            const tempContent = messageInput || (readyAttachments.length > 0 ? (isArabic ? 'مرفق' : 'Attachment') : '')
+            const replyToId = replyingTo?.id
+            const payloadAttachments = readyAttachments.map(attachment => ({
+                fileName: attachment.uploaded!.fileName,
+                fileSize: attachment.uploaded!.fileSize,
+                fileType: attachment.uploaded!.fileType,
+                fileUrl: attachment.uploaded!.fileUrl,
+                thumbnailUrl: attachment.uploaded!.thumbnailUrl,
+            }))
+
+            const payload = {
+                content: tempContent,
+                messageType: recording
+                    ? 'AUDIO' as ApiMessage['messageType']
+                    : (readyAttachments[0]?.uploaded?.messageType || 'TEXT'),
+                replyToId,
+                attachments: payloadAttachments,
+            }
+
+            const tempId = `temp-${Date.now()}`
+
+            const optimisticMessage: Message = {
+                id: tempId,
+                content: tempContent,
+                senderId: session.user.id,
+                senderName: session.user.name || 'You',
+                senderImage: session.user.image || null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                read: true,
+                type: payload.messageType.toLowerCase() as Message['type'],
+                replyTo: replyToId,
+                attachments: payloadAttachments.map(attachment => ({
+                    id: `temp-attachment-${attachment.fileName}`,
+                    fileName: attachment.fileName,
+                    fileSize: attachment.fileSize,
+                    fileType: attachment.fileType,
+                    fileUrl: attachment.fileUrl,
+                    thumbnailUrl: attachment.thumbnailUrl || null,
+                })),
+            }
+
+            setMessages(prev => [...prev, optimisticMessage])
+
+            const response = await fetch(`/api/messaging/conversations/${selectedConversation.id}/messages`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to send message')
+            }
+
+            const newMessage = await response.json()
+
+            setMessages(prev => prev.map(message =>
+                message.id === tempId ? mapMessage(newMessage) : message
+            ))
+
+            attachments.forEach(attachment => cleanupAttachmentPreview(attachment.previewUrl))
+            setAttachments([])
+            setMessageInput('')
+            setReplyingTo(null)
+            scrollToBottom()
+        } catch (error) {
+            console.error('Error sending message:', error)
+            toast.error(isArabic ? 'فشل في إرسال الرسالة' : 'Failed to send message')
+        } finally {
+            setSending(false)
+        }
+    }, [
+        selectedConversation,
+        session,
+        attachments,
+        messageInput,
+        recording,
+        replyingTo,
+        isArabic,
+        hasUploadingAttachments,
+        cleanupAttachmentPreview,
+        scrollToBottom,
+    ])
 
     useEffect(() => {
         scrollToBottom()
@@ -258,11 +933,19 @@ function MessengerPage() {
     }
 
     const fetchConversations = async () => {
+        if (!session?.user?.id) return
+
         try {
-            const response = await fetch('/api/messages/conversations')
+            const response = await fetch('/api/messaging/conversations')
             if (response.ok) {
-                const data = await response.json()
-                setConversations(data.conversations || [])
+                const payload = await response.json()
+                const rawConversations = Array.isArray(payload)
+                    ? payload
+                    : payload.data || payload.conversations || []
+                const normalized = rawConversations.map((conversation: ApiConversation) =>
+                    mapConversation(conversation, session.user!.id)
+                )
+                setConversations(normalized)
             } else {
                 toast.error(isArabic ? 'فشل تحميل المحادثات' : 'Failed to load conversations')
             }
@@ -276,10 +959,11 @@ function MessengerPage() {
 
     const fetchMessages = async (conversationId: string) => {
         try {
-            const response = await fetch(`/api/messages/${conversationId}`)
+            const response = await fetch(`/api/messaging/conversations/${conversationId}/messages`)
             if (response.ok) {
-                const data = await response.json()
-                setMessages(data.messages || [])
+                const payload = await response.json()
+                const data = Array.isArray(payload) ? payload : payload.data || []
+                setMessages(data.map((message: ApiMessage) => mapMessage(message)))
             } else {
                 toast.error(isArabic ? 'فشل تحميل الرسائل' : 'Failed to load messages')
             }
@@ -290,40 +974,58 @@ function MessengerPage() {
     }
 
     const createConversationWithUser = async (userId: string) => {
-        try {
-            // First, fetch user details
-            const userResponse = await fetch(`/api/users/${userId}`)
-            if (!userResponse.ok) {
-                toast.error(isArabic ? 'المستخدم غير موجود' : 'User not found')
-                return
-            }
-            
-            const userData = await userResponse.json()
-            
-            // Create a temporary conversation object
-            const newConversation: Conversation = {
-                id: `temp-${userId}`,
-                user: {
-                    id: userData.id,
-                    name: userData.name,
-                    image: userData.profileImage || userData.image,
-                    isOnline: false
-                },
-                unreadCount: 0
-            }
-            
-            // Add to conversations list
-            setConversations(prev => [newConversation, ...prev])
-            
-            // Select the conversation
-            setSelectedConversation(newConversation)
-            setMessages([])
-            
+        if (!session?.user?.id) return
+
+        // Reuse existing direct conversation if it already exists
+        const existingConversation = conversations.find(
+            conv => !conv.isGroup && conv.user.id === userId
+        )
+
+        if (existingConversation) {
+            setSelectedConversation(existingConversation)
+            fetchMessages(existingConversation.id)
             if (isMobile) {
                 setShowConversationList(false)
             }
-            
-            toast.success(isArabic ? 'يمكنك الآن بدء المحادثة' : 'You can now start the conversation')
+            toast.success(isArabic ? 'تم فتح المحادثة' : 'Conversation opened')
+            return existingConversation
+        }
+
+        try {
+            const response = await fetch('/api/messaging/conversations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'DIRECT',
+                    participantIds: [userId],
+                }),
+            })
+
+            if (!response.ok) {
+                toast.error(isArabic ? 'فشل إنشاء المحادثة' : 'Failed to create conversation')
+                return
+            }
+
+            const data = await response.json()
+            const mapped = mapConversation(data, session.user.id)
+
+            setConversations(prev => {
+                const exists = prev.some(conv => conv.id === mapped.id)
+                if (exists) {
+                    return prev.map(conv => (conv.id === mapped.id ? mapped : conv))
+                }
+                return [mapped, ...prev]
+            })
+
+            setSelectedConversation(mapped)
+            setMessages([])
+
+            if (isMobile) {
+                setShowConversationList(false)
+            }
+
+            toast.success(isArabic ? 'تم فتح المحادثة' : 'Conversation ready')
+            return mapped
         } catch (error) {
             console.error('Failed to create conversation:', error)
             toast.error(isArabic ? 'فشل إنشاء المحادثة' : 'Failed to create conversation')
@@ -344,50 +1046,6 @@ function MessengerPage() {
         setShowConversationList(true)
         setSelectedConversation(null)
     }, [])
-
-    // Memoize send message handler
-    const handleSendMessage = useCallback(async () => {
-        if (!messageInput.trim() || !selectedConversation) return
-
-        setSending(true)
-        const tempContent = messageInput
-        setMessageInput('')
-        
-        try {
-            const response = await fetch('/api/messages/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    conversationId: selectedConversation.id,
-                    content: tempContent,
-                    messageType: 'text',
-                    replyToId: replyingTo?.id || null,
-                }),
-            })
-
-            if (response.ok) {
-                const data = await response.json()
-                setMessages(prev => [...prev, data.message])
-                setReplyingTo(null)
-                
-                // Update conversation last message
-                setConversations(prev => prev.map(conv => 
-                    conv.id === selectedConversation.id
-                        ? { ...conv, lastMessage: { content: tempContent, createdAt: new Date(), read: false, senderId: session?.user?.id || 'me' } }
-                        : conv
-                ))
-            } else {
-                toast.error(isArabic ? 'فشل إرسال الرسالة' : 'Failed to send message')
-                setMessageInput(tempContent) // Restore message on error
-            }
-        } catch (error) {
-            console.error('Failed to send message:', error)
-            toast.error(isArabic ? 'حدث خطأ في إرسال الرسالة' : 'Error sending message')
-            setMessageInput(tempContent) // Restore message on error
-        } finally {
-            setSending(false)
-        }
-    }, [messageInput, selectedConversation, replyingTo, session?.user?.id, isArabic])
 
     // Memoize key press handler
     const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
@@ -424,10 +1082,10 @@ function MessengerPage() {
         if (!userId) return
         
         try {
-            const response = await fetch('/api/messages/react', {
+            const response = await fetch(`/api/messaging/messages/${messageId}/reaction`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ messageId, emoji }),
+                body: JSON.stringify({ emoji }),
             })
 
             if (response.ok) {
@@ -448,14 +1106,14 @@ function MessengerPage() {
                                 ...msg,
                                 reactions: reactions.map(r => 
                                     r.userId === currentUserId 
-                                        ? { emoji: data.reaction.emoji as string, userId: currentUserId }
+                                        ? { emoji: data.reaction.emoji as string, userId: currentUserId, userName: session?.user?.name }
                                         : r
                                 )
                             }
                         } else {
                             return {
                                 ...msg,
-                                reactions: [...reactions, { emoji: data.reaction.emoji as string, userId: currentUserId }]
+                                reactions: [...reactions, { emoji: data.reaction.emoji as string, userId: currentUserId, userName: session?.user?.name }]
                             }
                         }
                     }
@@ -469,7 +1127,7 @@ function MessengerPage() {
             toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
         }
         setShowReactionPicker(null)
-    }, [session?.user?.id, isArabic])
+    }, [session?.user?.id, session?.user?.name, isArabic])
 
     // Memoize reply handler
     const handleReply = useCallback((message: Message) => {
@@ -480,7 +1138,7 @@ function MessengerPage() {
     // Memoize delete message handler
     const handleDeleteMessage = useCallback(async (messageId: string) => {
         try {
-            const response = await fetch(`/api/messages/delete/${messageId}`, {
+            const response = await fetch(`/api/messaging/messages/${messageId}`, {
                 method: 'DELETE',
             })
 
@@ -510,45 +1168,6 @@ function MessengerPage() {
         setShowMessageMenu(null)
     }, [])
 
-    // Memoize image upload handler
-    const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (file) {
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                const newMessage: Message = {
-                    id: Date.now().toString(),
-                    content: reader.result as string,
-                    senderId: session?.user?.id || 'me',
-                    createdAt: new Date(),
-                    read: false,
-                    type: 'image'
-                }
-                setMessages(prev => [...prev, newMessage])
-            }
-            reader.readAsDataURL(file)
-        }
-    }, [session?.user?.id])
-
-    // Memoize voice record handler
-    const handleVoiceRecord = useCallback(() => {
-        setRecording(prev => !prev)
-        if (!recording) {
-            toast.success('Recording started')
-        } else {
-            toast.success('Voice message sent')
-            const newMessage: Message = {
-                id: Date.now().toString(),
-                content: 'Voice message',
-                senderId: session?.user?.id || 'me',
-                createdAt: new Date(),
-                read: false,
-                type: 'audio'
-            }
-            setMessages(prev => [...prev, newMessage])
-        }
-    }, [recording, session?.user?.id])
-
     // Memoize quick reaction handler
     const handleQuickReaction = useCallback((messageId: string) => {
         handleReaction(messageId, '❤️')
@@ -565,7 +1184,11 @@ function MessengerPage() {
     }, [])
 
     // Memoize time formatting functions
-    const formatTime = useCallback((date: Date) => {
+    const formatTime = useCallback((date?: Date | null): string | null => {
+        if (!date || !(date instanceof Date) || Number.isNaN(date.getTime())) {
+            return null
+        }
+
         const now = new Date()
         const diff = now.getTime() - date.getTime()
         const hours = Math.floor(diff / 3600000)
@@ -806,9 +1429,11 @@ function MessengerPage() {
         let filtered = conversations
 
         if (activeTab === 'groups') {
-            filtered = conversations.filter(conv => conv.isGroup)
-        } else if (activeTab === 'inbox') {
-            filtered = conversations.filter(conv => !conv.isGroup)
+            filtered = conversations.filter(conv => conv.isGroup && !(conv.isArchived))
+        } else if (activeTab === 'archived') {
+            filtered = conversations.filter(conv => conv.isArchived)
+        } else {
+            filtered = conversations.filter(conv => !conv.isGroup && !(conv.isArchived))
         }
 
         return filtered.filter(conv =>
@@ -816,6 +1441,24 @@ function MessengerPage() {
             (conv.isGroup && conv.groupName?.toLowerCase().includes(searchQuery.toLowerCase()))
         )
     }, [conversations, searchQuery, activeTab])
+
+    const canSendMessage = messageInput.trim().length > 0 || hasReadyAttachments
+    const sendDisabled = sending || hasUploadingAttachments
+
+    const defaultParticipantName = isArabic ? 'المشارك' : 'Participant'
+    const otherParticipantName = callSession
+        ? ((callSession.hostId === session?.user?.id
+            ? callSession.inviteeName
+            : callSession.hostName) ?? defaultParticipantName)
+        : defaultParticipantName
+    const otherParticipantImage = callSession
+        ? (callSession.hostId === session?.user?.id
+            ? callSession.inviteeImage ?? null
+            : callSession.hostImage ?? null)
+        : null
+    const neutralIconTone = isDarkMode
+        ? 'text-gray-300 hover:text-white focus-visible:text-white'
+        : 'text-gray-500 hover:text-blue-600 focus-visible:text-blue-600'
 
     if (!session) return null
 
@@ -828,7 +1471,7 @@ function MessengerPage() {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => router.back()}
-                            className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
+                            className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${neutralIconTone}`}
                             title={isArabic ? 'رجوع' : 'Go back'}
                         >
                             <X className="w-5 h-5" />
@@ -840,21 +1483,21 @@ function MessengerPage() {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setIsDarkMode(!isDarkMode)}
-                            className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
+                            className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${neutralIconTone}`}
                             title={isDarkMode ? (isArabic ? 'الوضع الفاتح' : 'Light mode') : (isArabic ? 'الوضع الداكن' : 'Dark mode')}
                         >
                             {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                         </button>
                         <button 
                             onClick={() => setShowSettingsModal(true)}
-                            className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
+                            className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${neutralIconTone}`}
                             title={isArabic ? 'الإعدادات' : 'Settings'}
                         >
                             <Settings className="w-5 h-5" />
                         </button>
                         <button 
                             onClick={() => setShowNewMessageModal(true)}
-                            className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
+                            className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${neutralIconTone}`}
                             title={isArabic ? 'رسالة جديدة' : 'New message'}
                         >
                             <Edit className="w-5 h-5" />
@@ -945,6 +1588,7 @@ function MessengerPage() {
                                 <button
                                     key={conversation.id}
                                     onClick={() => handleSelectConversation(conversation)}
+                                    onContextMenu={(event) => handleConversationContextMenu(event, conversation)}
                                     className={`w-full p-3 flex items-center gap-3 transition-colors ${
                                         selectedConversation?.id === conversation.id
                                             ? isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
@@ -1051,7 +1695,7 @@ function MessengerPage() {
                                 {isMobile && (
                                     <button
                                         onClick={handleBackToList}
-                                        className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
+                                        className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${neutralIconTone}`}
                                     >
                                         <ArrowLeft className="w-5 h-5" />
                                     </button>
@@ -1089,8 +1733,16 @@ function MessengerPage() {
                                         {selectedConversation.isGroup
                                             ? `${selectedConversation.members?.length || 0} ${isArabic ? 'أعضاء' : 'members'}`
                                             : selectedConversation.user.isOnline
-                                            ? isArabic ? 'متصل الآن' : 'Active now'
-                                            : isArabic ? `آخر ظهور ${formatTime(selectedConversation.user.lastSeen!)}` : `Active ${formatTime(selectedConversation.user.lastSeen!)} ago`
+                                            ? (isArabic ? 'متصل الآن' : 'Active now')
+                                            : (() => {
+                                                const lastSeenLabel = formatTime(selectedConversation.user.lastSeen || null)
+                                                if (!lastSeenLabel) {
+                                                    return isArabic ? 'نشط مؤخراً' : 'Active recently'
+                                                }
+                                                return isArabic
+                                                    ? `آخر ظهور ${lastSeenLabel}`
+                                                    : `Active ${lastSeenLabel} ago`
+                                            })()
                                         }
                                     </p>
                                 </div>
@@ -1198,36 +1850,127 @@ function MessengerPage() {
                                                 )}
 
                                                 <div className="relative">
-                                                    {/* Image Message */}
-                                                    {message.type === 'image' ? (
-                                                        <div className="rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-lg transition-shadow" onClick={() => setSelectedImage(message.content)}>
-                                                            <img src={message.content} alt="Shared image" className="max-w-xs max-h-96 object-cover" />
-                                                        </div>
-                                                    ) : message.type === 'audio' ? (
-                                                        <div className={`px-4 py-3 rounded-2xl flex items-center gap-3 shadow-sm ${
-                                                            isOwnMessage ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white' : isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'
-                                                        }`}>
-                                                            <button className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
-                                                                <Play className="w-4 h-4 ml-0.5" fill="currentColor" />
-                                                            </button>
-                                                            <div className="flex-1">
-                                                                <div className="h-1 bg-white/30 rounded-full overflow-hidden">
-                                                                    <div className="h-full w-2/3 bg-white/60 rounded-full"></div>
+                                                    {(() => {
+                                                        const attachmentItems = message.attachments || []
+                                                        const hasAttachments = attachmentItems.length > 0
+                                                        const isPlaceholderContent = hasAttachments && (message.content === 'Attachment' || message.content === 'مرفق')
+                                                        const shouldShowContent = message.content && (!hasAttachments || !isPlaceholderContent)
+
+                                                        if (hasAttachments) {
+                                                            return (
+                                                                <div className="space-y-2">
+                                                                    {attachmentItems.map(attachment => {
+                                                                        const isImage = attachment.fileType?.startsWith('image/')
+                                                                        const isVideo = attachment.fileType?.startsWith('video/')
+                                                                        const isAudio = attachment.fileType?.startsWith('audio/')
+
+                                                                        if (isImage) {
+                                                                            return (
+                                                                                <div
+                                                                                    key={attachment.id}
+                                                                                    className="rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-lg transition-shadow"
+                                                                                    onClick={() => setSelectedImage(attachment.fileUrl)}
+                                                                                >
+                                                                                    <img src={attachment.fileUrl} alt={attachment.fileName} className="max-w-xs max-h-96 object-cover" />
+                                                                                </div>
+                                                                            )
+                                                                        }
+
+                                                                        if (isVideo) {
+                                                                            return (
+                                                                                <div key={attachment.id} className="rounded-2xl overflow-hidden shadow-md bg-black/20">
+                                                                                    <video controls className="max-w-xs">
+                                                                                        <source src={attachment.fileUrl} type={attachment.fileType || 'video/mp4'} />
+                                                                                    </video>
+                                                                                </div>
+                                                                            )
+                                                                        }
+
+                                                                        if (isAudio) {
+                                                                            return (
+                                                                                <div
+                                                                                    key={attachment.id}
+                                                                                    className={`px-4 py-3 rounded-2xl flex items-center gap-3 shadow-sm ${
+                                                                                        isOwnMessage ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white' : isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'
+                                                                                    }`}
+                                                                                >
+                                                                                    <Play className="w-4 h-4" />
+                                                                                    <audio controls className="w-40">
+                                                                                        <source src={attachment.fileUrl} type={attachment.fileType || 'audio/mpeg'} />
+                                                                                    </audio>
+                                                                                </div>
+                                                                            )
+                                                                        }
+
+                                                                        return (
+                                                                            <a
+                                                                                key={attachment.id}
+                                                                                href={attachment.fileUrl}
+                                                                                target="_blank"
+                                                                                rel="noreferrer"
+                                                                                className={`block px-4 py-3 rounded-2xl shadow-sm border text-sm ${
+                                                                                    isDarkMode ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-200 bg-white text-gray-900'
+                                                                                }`}
+                                                                            >
+                                                                                <div className="flex items-center gap-3">
+                                                                                    <Paperclip className="w-4 h-4 text-blue-500" />
+                                                                                    <div className="flex-1 min-w-0">
+                                                                                        <p className="font-semibold truncate">{attachment.fileName}</p>
+                                                                                        <p className="text-xs text-gray-500 truncate">
+                                                                                            {Math.round((attachment.fileSize || 0) / 1024)} KB · {attachment.fileType || 'file'}
+                                                                                        </p>
+                                                                                    </div>
+                                                                                    <span className="text-xs font-semibold text-blue-500">{isArabic ? 'فتح' : 'Open'}</span>
+                                                                                </div>
+                                                                            </a>
+                                                                        )
+                                                                    })}
+
+                                                                    {shouldShowContent && (
+                                                                        <div
+                                                                            className={`px-4 py-2.5 rounded-2xl shadow-sm ${
+                                                                                isOwnMessage
+                                                                                    ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
+                                                                                    : isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'
+                                                                            }`}
+                                                                        >
+                                                                            <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{message.content}</p>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
+                                                            )
+                                                        }
+
+                                                        if (message.type === 'audio') {
+                                                            return (
+                                                                <div className={`px-4 py-3 rounded-2xl flex items-center gap-3 shadow-sm ${
+                                                                    isOwnMessage ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white' : isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'
+                                                                }`}>
+                                                                    <button className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+                                                                        <Play className="w-4 h-4 ml-0.5" fill="currentColor" />
+                                                                    </button>
+                                                                    <div className="flex-1">
+                                                                        <div className="h-1 bg-white/30 rounded-full overflow-hidden">
+                                                                            <div className="h-full w-2/3 bg-white/60 rounded-full"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <span className="text-xs font-medium">0:15</span>
+                                                                </div>
+                                                            )
+                                                        }
+
+                                                        return (
+                                                            <div
+                                                                className={`px-4 py-2.5 rounded-2xl shadow-sm ${
+                                                                    isOwnMessage
+                                                                        ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
+                                                                        : isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'
+                                                                }`}
+                                                            >
+                                                                <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{message.content}</p>
                                                             </div>
-                                                            <span className="text-xs font-medium">0:15</span>
-                                                        </div>
-                                                    ) : (
-                                                        <div
-                                                            className={`px-4 py-2.5 rounded-2xl shadow-sm ${
-                                                                isOwnMessage
-                                                                    ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
-                                                                    : isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'
-                                                            }`}
-                                                        >
-                                                            <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{message.content}</p>
-                                                        </div>
-                                                    )}
+                                                        )
+                                                    })()}
 
                                                     {/* Reactions Display */}
                                                     {message.reactions && message.reactions.length > 0 && (
@@ -1448,21 +2191,75 @@ function MessengerPage() {
                                 </div>
                             )}
 
+                            {attachments.length > 0 && (
+                                <div className="mb-3 flex flex-wrap gap-3">
+                                    {attachments.map(attachment => (
+                                        <div key={attachment.id} className="relative w-28">
+                                            <div className={`rounded-2xl overflow-hidden border ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} h-24 flex items-center justify-center`}>
+                                                {attachment.fileType.startsWith('image/') ? (
+                                                    <img
+                                                        src={attachment.previewUrl}
+                                                        alt={attachment.fileName}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className={`flex flex-col items-center justify-center text-xs ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                                        <Paperclip className="w-5 h-5 mb-1" />
+                                                        <span className="px-2 truncate text-center">
+                                                            {attachment.fileName}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {attachment.status === 'uploading' && (
+                                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-xs gap-2">
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                        {isArabic ? 'جاري الرفع' : 'Uploading'}
+                                                    </div>
+                                                )}
+                                                {attachment.status === 'error' && (
+                                                    <div className="absolute inset-0 bg-red-500/80 flex items-center justify-center text-white text-xs text-center px-2">
+                                                        {attachment.error || (isArabic ? 'فشل الرفع' : 'Upload failed')}
+                                                    </div>
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeAttachment(attachment.id)}
+                                                    className="absolute -top-2 -right-2 bg-black/70 hover:bg-black rounded-full p-1 text-white"
+                                                    title={isArabic ? 'إزالة' : 'Remove'}
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                            <p className={`mt-1 text-xs truncate text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                {attachment.fileName}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
                             <div className={`flex items-end gap-2 rounded-full px-4 py-2 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
                                 <input
                                     ref={fileInputRef}
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.txt"
+                                    multiple
                                     className="hidden"
-                                    onChange={handleImageUpload}
+                                    onChange={handleFileSelection}
                                 />
-                                <button className={`p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className={`p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
+                                    title={isArabic ? 'إضافة مرفق' : 'Add attachment'}
+                                >
                                     <Plus className="w-5 h-5" />
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={() => fileInputRef.current?.click()}
                                     className={`p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
-                                    title="Attach image"
+                                    title={isArabic ? 'إرفاق صورة' : 'Attach image'}
                                 >
                                     <ImageIcon className="w-5 h-5" />
                                 </button>
@@ -1494,6 +2291,11 @@ function MessengerPage() {
                                 >
                                     <Smile className="w-5 h-5" />
                                 </button>
+                                {recording && (
+                                    <span className="text-xs font-semibold text-red-400 px-2">
+                                        {formatRecordingDuration(recordingDuration)}
+                                    </span>
+                                )}
                                 {recording ? (
                                     <button
                                         onClick={handleVoiceRecord}
@@ -1501,13 +2303,17 @@ function MessengerPage() {
                                     >
                                         <Mic className="w-5 h-5" />
                                     </button>
-                                ) : messageInput.trim() ? (
+                                ) : canSendMessage ? (
                                     <button
                                         onClick={handleSendMessage}
-                                        disabled={sending}
-                                        className="p-2 rounded-full bg-blue-500 hover:bg-blue-600 transition-colors text-white disabled:opacity-50"
+                                        disabled={sendDisabled}
+                                        className="p-2 rounded-full bg-blue-500 hover:bg-blue-600 transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        <Send className="w-5 h-5" />
+                                        {sendDisabled ? (
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                        ) : (
+                                            <Send className="w-5 h-5" />
+                                        )}
                                     </button>
                                 ) : (
                                     <button 
@@ -1557,18 +2363,28 @@ function MessengerPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <button className={`w-full p-3 rounded-lg ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}>
-                                <Phone className={`w-5 h-5 mx-auto mb-1 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                                <span className={`text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                                    {isArabic ? 'مكالمة صوتية' : 'Audio Call'}
-                                </span>
-                            </button>
-                            <button className={`w-full p-3 rounded-lg ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}>
-                                <Video className={`w-5 h-5 mx-auto mb-1 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                                <span className={`text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                                    {isArabic ? 'مكالمة فيديو' : 'Video Call'}
-                                </span>
-                            </button>
+                            {!selectedConversation.isGroup && (
+                                <>
+                                    <button
+                                        onClick={handleInitiateVoiceCall}
+                                        className={`w-full p-3 rounded-lg ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
+                                    >
+                                        <Phone className={`w-5 h-5 mx-auto mb-1 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                                        <span className={`text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            {isArabic ? 'مكالمة صوتية' : 'Audio Call'}
+                                        </span>
+                                    </button>
+                                    <button
+                                        onClick={handleInitiateVideoCall}
+                                        className={`w-full p-3 rounded-lg ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
+                                    >
+                                        <Video className={`w-5 h-5 mx-auto mb-1 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                                        <span className={`text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            {isArabic ? 'مكالمة فيديو' : 'Video Call'}
+                                        </span>
+                                    </button>
+                                </>
+                            )}
                         </div>
 
                         {/* Group Actions */}
@@ -1817,26 +2633,16 @@ function MessengerPage() {
                                                 const existingConv = conversations.find(
                                                     conv => !conv.isGroup && conv.user.id === user.id
                                                 )
-                                                
+
                                                 if (existingConv) {
                                                     handleSelectConversation(existingConv)
-                                                } else {
-                                                    // Create new conversation locally
-                                                    const newConv: Conversation = {
-                                                        id: `temp-${user.id}`,
-                                                        user: {
-                                                            id: user.id,
-                                                            name: user.name || user.email,
-                                                            image: user.profileImage || null,
-                                                            isOnline: false
-                                                        },
-                                                        unreadCount: 0
-                                                    }
-                                                    setConversations(prev => [newConv, ...prev])
-                                                    setSelectedConversation(newConv)
-                                                    setMessages([])
+                                                    setShowNewMessageModal(false)
+                                                    setSearchUsers('')
+                                                    setAllUsers([])
+                                                    return
                                                 }
-                                                
+
+                                                await createConversationWithUser(user.id)
                                                 setShowNewMessageModal(false)
                                                 setSearchUsers('')
                                                 setAllUsers([])
@@ -2179,8 +2985,8 @@ function MessengerPage() {
                     sessionId={callSession.id}
                     sessionToken={callSession.sessionToken}
                     isHost={callSession.hostId === session?.user?.id}
-                    otherUserName={callSession.inviteeName}
-                    otherUserImage={callSession.inviteeImage}
+                    otherUserName={otherParticipantName}
+                    otherUserImage={otherParticipantImage}
                     isArabic={isArabic}
                 />
             )}
@@ -2196,8 +3002,8 @@ function MessengerPage() {
                     sessionId={callSession.id}
                     sessionToken={callSession.sessionToken}
                     isHost={callSession.hostId === session?.user?.id}
-                    otherUserName={callSession.inviteeName}
-                    otherUserImage={callSession.inviteeImage}
+                    otherUserName={otherParticipantName}
+                    otherUserImage={otherParticipantImage}
                     isArabic={isArabic}
                 />
             )}
@@ -2635,7 +3441,7 @@ function MessengerPage() {
                                     isDarkMode ? 'bg-gray-800/50' : 'bg-gray-100'
                                 }`}>
                                     <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                                        {isArabic ? 'منصة التعليم المصرية' : 'Egyptian EdTech Platform'}
+                                        {isArabic ? 'برايم' : 'Prime'}
                                     </p>
                                     <p className={`text-xs ${isDarkMode ? 'text-gray-600' : 'text-gray-400'} mt-1`}>
                                         Messenger v2.0
@@ -2652,6 +3458,83 @@ function MessengerPage() {
                                     }`}
                                 >
                                     {isArabic ? 'إغلاق' : 'Close'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {conversationMenu && (
+                    <motion.div
+                        key="conversation-menu"
+                        className="fixed inset-0 z-40"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setConversationMenu(null)}
+                        onContextMenu={(event) => {
+                            event.preventDefault()
+                            setConversationMenu(null)
+                        }}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                            className={`absolute w-64 rounded-2xl shadow-2xl border ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}
+                            style={{ top: conversationMenu.y, left: conversationMenu.x }}
+                            onClick={(event) => event.stopPropagation()}
+                        >
+                            <div className="py-2">
+                                <p className={`px-4 pb-2 text-xs uppercase tracking-wide ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                    {isArabic ? 'خيارات المحادثة' : 'Conversation Options'}
+                                </p>
+                                <button
+                                    onClick={() => {
+                                        handleSelectConversation(conversationMenu.conversation)
+                                        setConversationMenu(null)
+                                    }}
+                                    className={`w-full px-4 py-2 flex items-center gap-3 text-sm transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-100' : 'hover:bg-gray-100 text-gray-800'}`}
+                                >
+                                    <MessageCircle className="w-4 h-4 text-blue-500" />
+                                    <span>{isArabic ? 'فتح المحادثة' : 'Open chat'}</span>
+                                </button>
+                                <button
+                                    onClick={() => handleToggleMuteConversation(conversationMenu.conversation)}
+                                    className={`w-full px-4 py-2 flex items-center gap-3 text-sm transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-100' : 'hover:bg-gray-100 text-gray-800'}`}
+                                >
+                                    {(conversationMenu.conversation.isMuted ?? false) ? (
+                                        <Bell className="w-4 h-4 text-blue-400" />
+                                    ) : (
+                                        <BellOff className="w-4 h-4 text-blue-400" />
+                                    )}
+                                    <span>
+                                        {(conversationMenu.conversation.isMuted ?? false)
+                                            ? (isArabic ? 'إلغاء كتم المحادثة' : 'Unmute conversation')
+                                            : (isArabic ? 'كتم المحادثة' : 'Mute conversation')}
+                                    </span>
+                                </button>
+                                <button
+                                    onClick={() => handleToggleArchiveConversation(conversationMenu.conversation)}
+                                    className={`w-full px-4 py-2 flex items-center gap-3 text-sm transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-100' : 'hover:bg-gray-100 text-gray-800'}`}
+                                >
+                                    <Archive className="w-4 h-4 text-purple-400" />
+                                    <span>
+                                        {(conversationMenu.conversation.isArchived ?? false)
+                                            ? (isArabic ? 'إرجاع إلى الوارد' : 'Move to inbox')
+                                            : (isArabic ? 'أرشفة المحادثة' : 'Archive chat')}
+                                    </span>
+                                </button>
+                                <div className={`my-2 border-t ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`} />
+                                <button
+                                    onClick={() => handleDeleteConversation(conversationMenu.conversation)}
+                                    className="w-full px-4 py-2 flex items-center gap-3 text-sm text-red-500 hover:bg-red-500/10"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    <span>{isArabic ? 'حذف المحادثة' : 'Delete chat'}</span>
                                 </button>
                             </div>
                         </motion.div>

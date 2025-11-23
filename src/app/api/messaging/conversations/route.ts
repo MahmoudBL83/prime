@@ -11,6 +11,32 @@ const createConversationSchema = z.object({
     participantIds: z.array(z.string()).min(1),
 });
 
+const transformConversation = (conversation: any, currentUserId: string) => {
+    const currentParticipant = conversation.participants.find(
+        (participant: any) => participant.userId === currentUserId
+    );
+
+    return {
+        ...conversation,
+        participants: conversation.participants.map((participant: any) => ({
+            ...participant,
+            joinedAt: participant.joinedAt.toISOString(),
+            lastReadAt: participant.lastReadAt?.toISOString() || null,
+        })),
+        lastMessage: conversation.messages[0]
+            ? {
+                ...conversation.messages[0],
+                timestamp: conversation.messages[0].createdAt.toISOString(),
+                createdAt: conversation.messages[0].createdAt.toISOString(),
+            }
+            : null,
+        isArchived: currentParticipant?.isArchived ?? false,
+        isMuted: currentParticipant?.isMuted ?? false,
+        lastReadAt: currentParticipant?.lastReadAt?.toISOString() || null,
+        messages: undefined,
+    };
+};
+
 // GET /api/messaging/conversations - Get user's conversations
 export async function GET(req: NextRequest) {
     try {
@@ -41,7 +67,14 @@ export async function GET(req: NextRequest) {
                         isActive: true,
                     },
                     select: {
+                        id: true,
+                        userId: true,
+                        role: true,
+                        joinedAt: true,
                         lastReadAt: true,
+                        isActive: true,
+                        isArchived: true,
+                        isMuted: true,
                         user: {
                             select: {
                                 id: true,
@@ -82,15 +115,9 @@ export async function GET(req: NextRequest) {
         });
 
         // Transform the response to include lastMessage with proper timestamp
-        const transformedConversations = conversations.map(conversation => ({
-            ...conversation,
-            lastMessage: conversation.messages[0] ? {
-                ...conversation.messages[0],
-                timestamp: conversation.messages[0].createdAt.toISOString(),
-                createdAt: conversation.messages[0].createdAt.toISOString(),
-            } : null,
-            messages: undefined, // Remove messages array from response, keep only lastMessage
-        }));
+        const transformedConversations = conversations.map((conversation) =>
+            transformConversation(conversation, session.user.id)
+        );
 
         console.log('Returning conversations:', transformedConversations.length);
         return NextResponse.json(transformedConversations);
@@ -164,7 +191,15 @@ export async function POST(req: NextRequest) {
                         where: {
                             isActive: true,
                         },
-                        include: {
+                        select: {
+                            id: true,
+                            userId: true,
+                            role: true,
+                            joinedAt: true,
+                            lastReadAt: true,
+                            isActive: true,
+                            isArchived: true,
+                            isMuted: true,
                             user: {
                                 select: {
                                     id: true,
@@ -202,16 +237,9 @@ export async function POST(req: NextRequest) {
             if (existingConversation) {
                 console.log('Found existing conversation:', existingConversation.id);
                 // Transform the response to match expected format
-                const transformedConversation = {
-                    ...existingConversation,
-                    lastMessage: existingConversation.messages[0] ? {
-                        ...existingConversation.messages[0],
-                        timestamp: existingConversation.messages[0].createdAt.toISOString(),
-                        createdAt: existingConversation.messages[0].createdAt.toISOString(),
-                    } : null,
-                    messages: undefined,
-                };
-                return NextResponse.json(transformedConversation);
+                return NextResponse.json(
+                    transformConversation(existingConversation, session.user.id)
+                );
             } else {
                 console.log('No existing conversation found, creating new one');
             }
@@ -238,7 +266,15 @@ export async function POST(req: NextRequest) {
                     where: {
                         isActive: true,
                     },
-                    include: {
+                    select: {
+                        id: true,
+                        userId: true,
+                        role: true,
+                        joinedAt: true,
+                        lastReadAt: true,
+                        isActive: true,
+                        isArchived: true,
+                        isMuted: true,
                         user: {
                             select: {
                                 id: true,
@@ -276,17 +312,10 @@ export async function POST(req: NextRequest) {
         console.log('Successfully created conversation:', conversation.id);
         
         // Transform the response to match expected format
-        const transformedConversation = {
-            ...conversation,
-            lastMessage: conversation.messages[0] ? {
-                ...conversation.messages[0],
-                timestamp: conversation.messages[0].createdAt.toISOString(),
-                createdAt: conversation.messages[0].createdAt.toISOString(),
-            } : null,
-            messages: undefined,
-        };
-        
-        return NextResponse.json(transformedConversation, { status: 201 });
+        return NextResponse.json(
+            transformConversation(conversation, session.user.id),
+            { status: 201 }
+        );
     } catch (error) {
         console.error('Error creating conversation:', error);
 
