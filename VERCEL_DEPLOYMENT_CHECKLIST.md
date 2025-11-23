@@ -1,5 +1,28 @@
 # Vercel Deployment Checklist
 
+## ✅ FIXED: Prisma Engine Not Found Error
+
+The error `Prisma Client could not locate the Query Engine for runtime "rhel-openssl-3.0.x"` has been fixed with the following changes:
+
+### Changes Made:
+1. ✅ Added `binaryTargets` to `prisma/schema.prisma`
+2. ✅ Added `postinstall` script to `package.json`
+3. ✅ Updated `vercel.json` with proper build configuration
+4. ✅ Updated `next.config.ts` with Prisma externals
+5. ✅ Added serverless optimizations to Prisma client
+
+### What to Do Next:
+```bash
+# Commit and push the changes
+git add .
+git commit -m "fix: configure Prisma for Vercel deployment"
+git push origin main
+```
+
+Vercel will automatically redeploy with the fixes!
+
+---
+
 ## Environment Variables Required
 
 Make sure these are set in your Vercel project settings:

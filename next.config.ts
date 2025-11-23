@@ -36,6 +36,14 @@ const nextConfig: NextConfig = {
       '@': require('path').resolve(__dirname, './src'),
     };
 
+    // Fix for Prisma in serverless environments
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push({
+        '@prisma/client': 'commonjs @prisma/client',
+      });
+    }
+
     return config;
   },
 
