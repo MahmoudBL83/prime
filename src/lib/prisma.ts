@@ -8,26 +8,20 @@ const globalForPrisma = globalThis as unknown as {
 // This prevents build-time errors on Vercel
 const databaseUrl = process.env.DATABASE_URL || 'file:./dummy.db'
 
-export const prisma =
-    globalForPrisma.prisma ??
-    new PrismaClient({
+// Create Prisma Client with explicit configuration for serverless
+const createPrismaClient = () => {
+    return new PrismaClient({
         log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
-        // Optimize connection pool for serverless
         datasources: {
             db: {
                 url: databaseUrl,
             },
         },
     })
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient()
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
-
-// Handle serverless connection cleanup
-if (process.env.VERCEL) {
-    // Vercel serverless environment - add connection lifecycle management
-    process.on('beforeExit', async () => {
-        await prisma.$disconnect()
-    })
-}
 
 export default prisma

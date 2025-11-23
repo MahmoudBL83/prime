@@ -4,6 +4,9 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
+  // Output configuration for serverless deployment
+  output: 'standalone',
+  
   // Optimization for faster compilation
   experimental: {
     optimizePackageImports: [
@@ -12,6 +15,10 @@ const nextConfig: NextConfig = {
       'next-auth',
       '@prisma/client',
     ],
+    // Ensure Prisma binaries are included
+    outputFileTracingIncludes: {
+      '/api/**/*': ['./node_modules/.prisma/client/**/*'],
+    },
   },
   
   // Compiler optimizations
