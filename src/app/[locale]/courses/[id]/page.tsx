@@ -392,7 +392,7 @@ export default function CourseDetailPage() {
     return (
         <div className="min-h-screen pt-" style={{ backgroundColor: '#1f1f1f' }}>
             {/* Hero Section */}
-            <div className="relative h-[70vh] w-full overflow-hidden mb-12">
+            <div className="relative h-screen w-full overflow-hidden mb-12">
                 {/* Background Image */}
                 <div className="absolute inset-0">
                     <Image

@@ -1158,7 +1158,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                     }
                                                 }
                                             } else {
-                                                router.push(`/${locale}/login`)
+                                                router.push(`/${locale}/auth/login`)
                                             }
                                         }}
                                         className="w-full flex items-center gap-4 px-4 py-3 rounded-full hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all"
@@ -1765,7 +1765,7 @@ export default function OnlyFansStyleMentorsPage() {
                                             {isArabic ? 'سجل الدخول لرؤية اشتراكاتك' : 'Sign in to see your subscriptions'}
                                         </p>
                                         <Button
-                                            onClick={() => router.push(`/${locale}/login`)}
+                                            onClick={() => router.push(`/${locale}/auth/login`)}
                                             className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-foreground font-bold px-6 py-3 rounded-full"
                                         >
                                             {isArabic ? 'تسجيل الدخول' : 'Sign In'}
@@ -1943,7 +1943,7 @@ export default function OnlyFansStyleMentorsPage() {
                                             {isArabic ? 'سجل الدخول لرؤية المحفوظات' : 'Sign in to see your bookmarks'}
                                         </p>
                                         <Button
-                                            onClick={() => router.push(`/${locale}/login`)}
+                                            onClick={() => router.push(`/${locale}/auth/login`)}
                                             className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-foreground font-bold px-6 py-3 rounded-full"
                                         >
                                             {isArabic ? 'تسجيل الدخول' : 'Sign In'}

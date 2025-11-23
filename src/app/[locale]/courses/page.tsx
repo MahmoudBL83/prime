@@ -146,6 +146,196 @@ const mockCourses: Course[] = [
         year: 2024,
         duration: '5 months',
         thumbnail: '/images/courses/apple2.jpg'
+    },
+    {
+        id: 'python-mastery',
+        title: 'Python Mastery',
+        titleAr: 'إتقان بايثون',
+        category: 'Coding & AI',
+        rating: 4.8,
+        year: 2024,
+        duration: '4 months',
+        thumbnail: '/images/courses/apple11.jpg'
+    },
+    {
+        id: 'freelance-success',
+        title: 'Freelance Success',
+        titleAr: 'نجاح العمل الحر',
+        category: 'Freelance & Side Hustle',
+        rating: 4.6,
+        year: 2024,
+        duration: '3 months',
+        thumbnail: '/images/courses/apple12.jpg'
+    },
+    {
+        id: 'startup-funding',
+        title: 'Startup Funding',
+        titleAr: 'تمويل الشركات الناشئة',
+        category: 'Entrepreneurship',
+        rating: 4.7,
+        year: 2024,
+        duration: '6 months',
+        thumbnail: '/images/courses/apple13.jpg'
+    },
+    {
+        id: 'forex-trading-pro',
+        title: 'Forex Trading Pro',
+        titleAr: 'احترافية تداول العملات',
+        category: 'Trading',
+        rating: 4.9,
+        year: 2024,
+        duration: '5 months',
+        thumbnail: '/images/courses/apple3.jpg'
+    },
+    {
+        id: 'german-b2-course',
+        title: 'German B2 Course',
+        titleAr: 'دورة الألمانية B2',
+        category: 'German Language',
+        rating: 4.8,
+        year: 2024,
+        duration: '7 months',
+        thumbnail: '/images/courses/apple4.jpg'
+    },
+    {
+        id: 'web-development-bootcamp',
+        title: 'Web Development Bootcamp',
+        titleAr: 'معسكر تطوير الويب',
+        category: 'Coding & AI',
+        rating: 4.9,
+        year: 2024,
+        duration: '8 months',
+        thumbnail: '/images/courses/apple5.jpg'
+    },
+    {
+        id: 'content-creation-mastery',
+        title: 'Content Creation Mastery',
+        titleAr: 'إتقان إنشاء المحتوى',
+        category: 'Freelance & Side Hustle',
+        rating: 4.5,
+        year: 2024,
+        duration: '4 months',
+        thumbnail: '/images/courses/apple6.jpg'
+    },
+    {
+        id: 'business-growth-strategies',
+        title: 'Business Growth Strategies',
+        titleAr: 'استراتيجيات نمو الأعمال',
+        category: 'Entrepreneurship',
+        rating: 4.7,
+        year: 2024,
+        duration: '5 months',
+        thumbnail: '/images/courses/apple7.jpg'
+    },
+    {
+        id: 'crypto-trading-fundamentals',
+        title: 'Crypto Trading Fundamentals',
+        titleAr: 'أساسيات تداول العملات المشفرة',
+        category: 'Trading',
+        rating: 4.6,
+        year: 2024,
+        duration: '3 months',
+        thumbnail: '/images/courses/apple8.jpg'
+    },
+    {
+        id: 'german-citizenship-prep',
+        title: 'German Citizenship Prep',
+        titleAr: 'التحضير للجنسية الألمانية',
+        category: 'German Integration',
+        rating: 4.8,
+        year: 2024,
+        duration: '6 months',
+        thumbnail: '/images/courses/apple9.jpg'
+    },
+    {
+        id: 'machine-learning-basics',
+        title: 'Machine Learning Basics',
+        titleAr: 'أساسيات تعلم الآلة',
+        category: 'Coding & AI',
+        rating: 4.9,
+        year: 2024,
+        duration: '7 months',
+        thumbnail: '/images/courses/apple10.jpg'
+    },
+    {
+        id: 'digital-marketing-blueprint',
+        title: 'Digital Marketing Blueprint',
+        titleAr: 'مخطط التسويق الرقمي',
+        category: 'Freelance & Side Hustle',
+        rating: 4.7,
+        year: 2024,
+        duration: '5 months',
+        thumbnail: '/images/courses/apple11.jpg'
+    },
+    {
+        id: 'scaling-your-startup',
+        title: 'Scaling Your Startup',
+        titleAr: 'توسيع شركتك الناشئة',
+        category: 'Entrepreneurship',
+        rating: 4.8,
+        year: 2024,
+        duration: '6 months',
+        thumbnail: '/images/courses/apple12.jpg'
+    },
+    {
+        id: 'day-trading-mastery',
+        title: 'Day Trading Mastery',
+        titleAr: 'إتقان التداول اليومي',
+        category: 'Trading',
+        rating: 4.9,
+        year: 2024,
+        duration: '4 months',
+        thumbnail: '/images/courses/apple13.jpg'
+    },
+    {
+        id: 'german-c1-advanced',
+        title: 'German C1 Advanced',
+        titleAr: 'الألمانية C1 متقدم',
+        category: 'German Language',
+        rating: 4.8,
+        year: 2024,
+        duration: '8 months',
+        thumbnail: '/images/courses/apple1.jpg'
+    },
+    {
+        id: 'full-stack-developer',
+        title: 'Full Stack Developer',
+        titleAr: 'مطور متكامل',
+        category: 'Coding & AI',
+        rating: 4.9,
+        year: 2024,
+        duration: '10 months',
+        thumbnail: '/images/courses/apple2.jpg'
+    },
+    {
+        id: 'freelance-graphic-design',
+        title: 'Freelance Graphic Design',
+        titleAr: 'التصميم الجرافيكي الحر',
+        category: 'Freelance & Side Hustle',
+        rating: 4.6,
+        year: 2024,
+        duration: '4 months',
+        thumbnail: '/images/courses/apple3.jpg'
+    },
+    {
+        id: 'ecommerce-empire',
+        title: 'E-commerce Empire',
+        titleAr: 'إمبراطورية التجارة الإلكترونية',
+        category: 'Entrepreneurship',
+        rating: 4.7,
+        year: 2024,
+        duration: '6 months',
+        thumbnail: '/images/courses/apple4.jpg'
+    },
+    {
+        id: 'options-trading-advanced',
+        title: 'Options Trading Advanced',
+        titleAr: 'تداول الخيارات المتقدم',
+        category: 'Trading',
+        rating: 4.8,
+        year: 2024,
+        duration: '5 months',
+        thumbnail: '/images/courses/apple5.jpg'
     }
 ];
 
@@ -159,6 +349,7 @@ export default function CoursesPage() {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    const [scrollPositions, setScrollPositions] = useState<{ [key: string]: number }>({});
     const router = useRouter();
     const { data: session } = useSession();
     const locale = useLocaleSafe();
@@ -232,11 +423,26 @@ export default function CoursesPage() {
         setShowPaymentModal(true);
     };
 
+    const scroll = (direction: 'left' | 'right', containerId: string) => {
+        const container = document.getElementById(containerId);
+        if (container) {
+            const scrollAmount = container.clientWidth * 0.8;
+            const newPosition = direction === 'left' 
+                ? container.scrollLeft - scrollAmount 
+                : container.scrollLeft + scrollAmount;
+            
+            container.scrollTo({
+                left: newPosition,
+                behavior: 'smooth'
+            });
+        }
+    };
+
     return (
         <div className="min-h-screen pt-" style={{ backgroundColor: '#1f1f1f' }}>
             {/* Hero Section - Featured Course */}
             <div 
-                className="relative h-[70vh] w-full overflow-hidden mb-20"
+                className="relative h-screen w-full overflow-hidden mb-12"
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
@@ -298,7 +504,10 @@ export default function CoursesPage() {
                                 <span className="absolute inset-0 bg-white rounded-full -z-10"></span>
                                 Accept Offer
                             </button>
-                            <button className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all backdrop-blur-sm">
+                            <button 
+                                onClick={handleAcceptOffer}
+                                className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all backdrop-blur-sm"
+                            >
                                 <span className="text-white text-xl font-light leading-none">+</span>
                             </button>
                         </div>
@@ -328,37 +537,63 @@ export default function CoursesPage() {
             {/* Top 10 TV Shows Section */}
             <div className="relative z-10 pb-8">
                 <div className="max-w-screen-2xl mx-auto px-8">
-                    <div className="flex items-center space-x-2 mb-4">
-                        <h2 className="text-xl font-semibold text-white">
-                            Top 10 TV Shows
-                        </h2>
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                        </svg>
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-2">
+                            <h2 className="text-xl font-semibold text-white">
+                                Top 10 TV Shows
+                            </h2>
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </div>
+                        {/* Navigation Arrows */}
+                        <div className="hidden md:flex items-center gap-2">
+                            <button
+                                onClick={() => scroll('left', 'top-10-scroll')}
+                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center transition-all"
+                            >
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <button
+                                onClick={() => scroll('right', 'top-10-scroll')}
+                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center transition-all"
+                            >
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     
-                    <div className="overflow-x-auto scrollbar-hide -mx-8 px-8">
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 min-w-max md:min-w-0">
+                    <div id="top-10-scroll" className="overflow-x-auto scrollbar-hide -mx-8 px-8">
+                        <div className="flex gap-3" style={{ width: 'max-content' }}>
                             {courses.slice(0, 8).map((course, index) => (
                             <div 
                                 key={course.id} 
-                                className="relative group cursor-pointer" 
+                                className="relative group cursor-pointer w-[180px] flex-shrink-0" 
                                 onMouseEnter={() => setHoveredCard(course.id)}
                                 onMouseLeave={() => {
                                     setHoveredCard(null);
                                     setShowMenu(null);
                                 }}
                             >
-                                {/* Rank Number */}
-                                <div className="absolute -left-3 top-1/2 transform -translate-y-1/2 text-9xl font-black text-white/10 group-hover:text-white/20 transition-all z-0 pointer-events-none select-none" style={{ 
-                                    WebkitTextStroke: '2px rgba(255,255,255,0.3)',
-                                    textShadow: '0 0 20px rgba(0,0,0,0.8)'
-                                }}>
-                                    {index + 1}
-                                </div>
-                                
                                 {/* Course Thumbnail */}
                                 <div className="relative aspect-[2/3] overflow-hidden" onClick={() => handleCourseClick(course.id)} style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
+                                    {/* Rank Number - Apple TV Style */}
+                                    <div 
+                                        className="absolute top-1 left-3 z-10 text-white font-bold pointer-events-none select-none"
+                                        style={{
+                                            fontSize: '40px',
+                                            fontWeight: 700,
+                                            marginTop: '4px',
+                                            WebkitMask: 'linear-gradient(180deg, #fff 0, #fff 50%, hsla(0, 0%, 100%, .12))',
+                                            mask: 'linear-gradient(180deg, #fff 0, #fff 50%, hsla(0, 0%, 100%, .12))'
+                                        }}
+                                    >
+                                        {index + 1}
+                                    </div>
                                     <Image
                                         src={course.thumbnail || '/placeholder.jpg'}
                                         alt={course.title}
@@ -432,21 +667,42 @@ export default function CoursesPage() {
                 return (
                     <div key={category} className="relative z-10 pb-8">
                         <div className="max-w-screen-2xl mx-auto px-8">
-                            <div className="flex items-center space-x-2 mb-4">
-                                <h2 className="text-xl font-semibold text-white">
-                                    {category}
-                                </h2>
-                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                                </svg>
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center space-x-2">
+                                    <h2 className="text-xl font-semibold text-white">
+                                        {category}
+                                    </h2>
+                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                                {/* Navigation Arrows */}
+                                <div className="hidden md:flex items-center gap-2">
+                                    <button
+                                        onClick={() => scroll('left', `category-${category.replace(/\s+/g, '-').toLowerCase()}`)}
+                                        className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center transition-all"
+                                    >
+                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={() => scroll('right', `category-${category.replace(/\s+/g, '-').toLowerCase()}`)}
+                                        className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center transition-all"
+                                    >
+                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                             
-                            <div className="overflow-x-auto scrollbar-hide -mx-8 px-8">
-                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 min-w-max md:min-w-0">
+                            <div id={`category-${category.replace(/\s+/g, '-').toLowerCase()}`} className="overflow-x-auto scrollbar-hide -mx-8 px-8">
+                                <div className="flex gap-3" style={{ width: 'max-content' }}>
                                     {categoryCourses.map((course) => (
                                     <div 
                                         key={course.id} 
-                                        className="relative group cursor-pointer" 
+                                        className="relative group cursor-pointer w-[180px] flex-shrink-0" 
                                         onMouseEnter={() => setHoveredCard(course.id)}
                                         onMouseLeave={() => {
                                             setHoveredCard(null);
