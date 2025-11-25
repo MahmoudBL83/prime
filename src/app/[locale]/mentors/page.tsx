@@ -3840,34 +3840,10 @@ export default function OnlyFansStyleMentorsPage() {
                                             />
 
                                             {/* Image Container */}
-                                            <div className="relative w-full h-24 overflow-hidden bg-gradient-to-br from-purple-500/20 to-pink-500/20">
-                                                {(
-                                                    <img
-                                                        src={`/images/mentors/${(idx % 7) + 1}.jpg`}
-                                                        alt={creator.user?.name || 'Creator'}
-                                                        className="w-full h-full object-cover"
-                                                        onError={(e) => {
-                                                            const target = e.target as HTMLImageElement;
-                                                            if (target.src.endsWith('.jpg')) {
-                                                                target.src = `/images/mentors/${(idx % 7) + 1}.webp`;
-                                                            } else if (target.src.endsWith('.webp')) {
-                                                                target.src = `/images/mentors/${(idx % 7) + 1}.png`;
-                                                            } else {
-                                                                target.style.display = 'none';
-                                                                const parent = target.parentElement;
-                                                                if (parent) {
-                                                                    parent.innerHTML = `
-                                                                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-pink-500/20">
-                                                                            <span class="text-3xl font-bold text-white/90">
-                                                                                ${creator.user?.name?.[0] || 'C'}
-                                                                            </span>
-                                                                        </div>
-                                                                    `;
-                                                                }
-                                                            }
-                                                        }}
-                                                    />
-                                                )}
+                                            <div className="relative w-full h-24 overflow-hidden bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 flex items-center justify-center">
+                                                <svg className="w-12 h-12 text-white/90" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                                                </svg>
 
                                                 {/* Online Status - Top Right */}
                                                 {creator.isOnline && (
