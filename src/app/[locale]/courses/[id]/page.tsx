@@ -47,7 +47,7 @@ const coursesData: { [key: string]: Course } = {
         duration: '6 months',
         description: 'To save 22 children, they risk everything—including their lives. Inspired by a true story of survival.',
         descriptionAr: 'لإنقاذ 22 طفلاً، يخاطرون بكل شيء - بما في ذلك حياتهم. مستوحى من قصة حقيقية للبقاء على قيد الحياة.',
-        thumbnail: '/images/courses/apple1.jpg',
+        thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-23 at 22.43.43_7cec6116.jpg',
         episodes: [
             {
                 id: '1',
@@ -57,7 +57,7 @@ const coursesData: { [key: string]: Course } = {
                 description: 'An unprecedented emergency sends Fairbanks into lockdown. Frank gathers...',
                 descriptionAr: 'حالة طوارئ غير مسبوقة تدخل فيربانكس في حالة إغلاق. فرانك يجمع...',
                 duration: '1h',
-                thumbnail: '/images/courses/apple1.jpg'
+                thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-23 at 22.43.43_7cec6116.jpg'
             },
             {
                 id: '2',
@@ -67,7 +67,7 @@ const coursesData: { [key: string]: Course } = {
                 description: 'Luke tries to get back home as the manhunt for Havlock intensifies. Frank weighs...',
                 descriptionAr: 'يحاول لوك العودة إلى المنزل بينما تشتد عملية مطاردة هافلوك. فرانك يزن...',
                 duration: '55 min',
-                thumbnail: '/images/courses/apple1.jpg'
+                thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-25 at 14.32.11_b498b0d9.jpg'
             },
             {
                 id: '3',
@@ -77,7 +77,7 @@ const coursesData: { [key: string]: Course } = {
                 description: 'Sarah\'s disappearance adds urgency to Frank\'s search. Havlock\'s master plan tak...',
                 descriptionAr: 'اختفاء سارة يضيف إلحاحًا لبحث فرانك. خطة هافلوك الرئيسية تأخذ...',
                 duration: '1h 1 min',
-                thumbnail: '/images/courses/apple1.jpg'
+                thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-25 at 14.30.27_09d6241b.jpg'
             },
             {
                 id: '4',
@@ -87,7 +87,7 @@ const coursesData: { [key: string]: Course } = {
                 description: 'A state trooper goes missing, widening Frank\'s investigation. Armed locals join th...',
                 descriptionAr: 'يختفي جندي الولاية، مما يوسع تحقيق فرانك. المحليون المسلحون ينضمون...',
                 duration: '55 min',
-                thumbnail: '/images/courses/apple1.jpg'
+                thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-25 at 14.32.16_9169e54d.jpg'
             },
             {
                 id: '5',
@@ -97,7 +97,7 @@ const coursesData: { [key: string]: Course } = {
                 description: 'Frank focuses on tracking down Luke. The CIA\'s involvement ramps up as Havlock\'s...',
                 descriptionAr: 'يركز فرانك على تتبع لوك. تتصاعد مشاركة وكالة المخابرات المركزية حيث هافلوك...',
                 duration: '52 min',
-                thumbnail: '/images/courses/apple1.jpg'
+                thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-25 at 14.32.17_825387de.jpg'
             }
         ]
     },
@@ -111,7 +111,7 @@ const coursesData: { [key: string]: Course } = {
         duration: '4 months',
         description: 'A compelling drama series exploring complex human relationships.',
         descriptionAr: 'مسلسل دراما مقنع يستكشف العلاقات الإنسانية المعقدة.',
-        thumbnail: '/images/courses/apple2.jpg',
+        thumbnail: '/images/courses/Freelance & Side Hustle Posters/between.png',
         episodes: [
             {
                 id: '1',
@@ -121,7 +121,7 @@ const coursesData: { [key: string]: Course } = {
                 description: 'Introduction to the complex world of relationships...',
                 descriptionAr: 'مقدمة لعالم العلاقات المعقد...',
                 duration: '58 min',
-                thumbnail: '/images/courses/apple2.jpg'
+                thumbnail: '/images/courses/Freelance & Side Hustle Posters/between.png'
             },
             {
                 id: '2',
@@ -131,7 +131,7 @@ const coursesData: { [key: string]: Course } = {
                 description: 'Deepening bonds and hidden secrets emerge...',
                 descriptionAr: 'تعميق الروابط وظهور الأسرار الخفية...',
                 duration: '55 min',
-                thumbnail: '/images/courses/apple2.jpg'
+                thumbnail: '/images/courses/Freelance & Side Hustle Posters/driving deliveries in berlin.png'
             }
         ]
     },
@@ -145,7 +145,7 @@ const coursesData: { [key: string]: Course } = {
         duration: '6 months',
         description: 'Advanced German language course with immersive content.',
         descriptionAr: 'دورة متقدمة في اللغة الألمانية مع محتوى غامر.',
-        thumbnail: '/images/courses/apple7.jpg',
+        thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-23 at 23.38.13_cf3432e6.jpg',
         episodes: [
             {
                 id: '1',
@@ -155,7 +155,7 @@ const coursesData: { [key: string]: Course } = {
                 description: 'Complex German grammar structures...',
                 descriptionAr: 'هياكل القواعد الألمانية المعقدة...',
                 duration: '1h 5min',
-                thumbnail: '/images/courses/apple7.jpg'
+                thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-23 at 23.38.13_cf3432e6.jpg'
             }
         ]
     },
@@ -169,7 +169,7 @@ const coursesData: { [key: string]: Course } = {
         duration: '8 months',
         description: 'Build your freelance career from the ground up.',
         descriptionAr: 'ابن حياتك المهنية المستقلة من الصفر.',
-        thumbnail: '/images/courses/apple8.jpg',
+        thumbnail: '/images/courses/Freelance & Side Hustle Posters/E-Commerce Day One.png',
         episodes: [
             {
                 id: '1',
@@ -179,7 +179,7 @@ const coursesData: { [key: string]: Course } = {
                 description: 'First steps in freelancing...',
                 descriptionAr: 'الخطوات الأولى في العمل الحر...',
                 duration: '1h',
-                thumbnail: '/images/courses/apple8.jpg'
+                thumbnail: '/images/courses/Freelance & Side Hustle Posters/E-Commerce Day One.png'
             }
         ]
     },
@@ -193,7 +193,7 @@ const coursesData: { [key: string]: Course } = {
         duration: '3 months',
         description: 'Master AI and coding with this comprehensive course.',
         descriptionAr: 'أتقن الذكاء الاصطناعي والبرمجة مع هذه الدورة الشاملة.',
-        thumbnail: '/images/courses/apple5.jpg',
+        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.11_07d95353.jpg',
         episodes: [
             {
                 id: '1',
@@ -312,6 +312,11 @@ export default function CourseDetailPage() {
     const [showSignInModal, setShowSignInModal] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [isInList, setIsInList] = useState(false);
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    const [mouseStart, setMouseStart] = useState<number | null>(null);
+    const [mouseEnd, setMouseEnd] = useState<number | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
     const router = useRouter();
     const params = useParams();
     const { data: session } = useSession();
@@ -385,6 +390,70 @@ export default function CourseDetailPage() {
         }
     };
 
+    // Minimum swipe distance (in px)
+    const minSwipeDistance = 50;
+
+    const onTouchStart = (e: React.TouchEvent) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e: React.TouchEvent) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+        
+        // TODO: Navigate to next/previous course
+        if (isLeftSwipe) {
+            console.log('Swipe left - next course');
+        }
+        if (isRightSwipe) {
+            console.log('Swipe right - previous course');
+        }
+    };
+
+    const onMouseDown = (e: React.MouseEvent) => {
+        setMouseEnd(null);
+        setMouseStart(e.clientX);
+        setIsDragging(true);
+    };
+
+    const onMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging) return;
+        setMouseEnd(e.clientX);
+    };
+
+    const onMouseUp = () => {
+        if (!isDragging) return;
+        setIsDragging(false);
+        
+        if (!mouseStart || !mouseEnd) return;
+        
+        const distance = mouseStart - mouseEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+        
+        // TODO: Navigate to next/previous course
+        if (isLeftSwipe) {
+            console.log('Mouse drag left - next course');
+        }
+        if (isRightSwipe) {
+            console.log('Mouse drag right - previous course');
+        }
+    };
+
+    const onMouseLeave = () => {
+        if (isDragging) {
+            setIsDragging(false);
+        }
+    };
+
     if (!course) {
         return <div className="min-h-screen" style={{ backgroundColor: '#1f1f1f' }} />;
     }
@@ -392,7 +461,16 @@ export default function CourseDetailPage() {
     return (
         <div className="min-h-screen pt-" style={{ backgroundColor: '#1f1f1f' }}>
             {/* Hero Section */}
-            <div className="relative h-screen w-full overflow-hidden mb-12">
+            <div 
+                className="relative h-screen w-full overflow-hidden mb-12 cursor-grab active:cursor-grabbing"
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+                onMouseDown={onMouseDown}
+                onMouseMove={onMouseMove}
+                onMouseUp={onMouseUp}
+                onMouseLeave={onMouseLeave}
+            >
                 {/* Background Image */}
                 <div className="absolute inset-0">
                     <Image

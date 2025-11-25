@@ -34,7 +34,7 @@ const mockCourses: Course[] = [
         duration: '6 months',
         description: 'To save 22 children, they risk everything—including their lives. Inspired by a true story of survival.',
         descriptionAr: 'لإنقاذ 22 طفلاً، يخاطرون بكل شيء - بما في ذلك حياتهم. مستوحى من قصة حقيقية للبقاء على قيد الحياة.',
-        thumbnail: '/images/courses/apple1.jpg'
+        thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-23 at 22.43.43_7cec6116.jpg'
     },
     {
         id: 'pluribus-drama-relationships',
@@ -45,7 +45,7 @@ const mockCourses: Course[] = [
         year: 2024,
         duration: '4 months',
         description: 'A compelling drama series exploring complex human relationships.',
-        thumbnail: '/images/courses/apple2.jpg'
+        thumbnail: '/images/courses/Freelance & Side Hustle Posters/between.png'
     },
     {
         id: 'high-potential-entrepreneur',
@@ -55,7 +55,7 @@ const mockCourses: Course[] = [
         rating: 4.6,
         year: 2024,
         duration: '5 months',
-        thumbnail: '/images/courses/apple3.jpg'
+        thumbnail: '/images/courses/Entrepreneurship Posters/first launch.png'
     },
     {
         id: 'morning-show-trading',
@@ -65,7 +65,7 @@ const mockCourses: Course[] = [
         rating: 4.7,
         year: 2024,
         duration: '6 months',
-        thumbnail: '/images/courses/apple4.jpg'
+        thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.12_063b614c.jpg'
     },
     {
         id: 'ted-lasso-coding-ai',
@@ -75,7 +75,7 @@ const mockCourses: Course[] = [
         rating: 4.9,
         year: 2024,
         duration: '3 months',
-        thumbnail: '/images/courses/apple5.jpg'
+        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.11_07d95353.jpg'
     },
     {
         id: 'slow-horses-german-integration',
@@ -85,7 +85,7 @@ const mockCourses: Course[] = [
         rating: 4.8,
         year: 2024,
         duration: '5 months',
-        thumbnail: '/images/courses/apple6.jpg'
+        thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.13_973f42cd.jpg'
     },
     {
         id: 'severance-german-advanced',
@@ -95,7 +95,7 @@ const mockCourses: Course[] = [
         rating: 4.9,
         year: 2024,
         duration: '6 months',
-        thumbnail: '/images/courses/apple7.jpg'
+        thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-23 at 23.38.13_cf3432e6.jpg'
     },
     {
         id: 'foundation-freelance-mastery',
@@ -105,7 +105,7 @@ const mockCourses: Course[] = [
         rating: 4.7,
         year: 2024,
         duration: '8 months',
-        thumbnail: '/images/courses/apple8.jpg'
+        thumbnail: '/images/courses/Freelance & Side Hustle Posters/driving deliveries in berlin.png'
     },
     {
         id: 'invasion-startup-growth',
@@ -115,7 +115,7 @@ const mockCourses: Course[] = [
         rating: 4.5,
         year: 2024,
         duration: '5 months',
-        thumbnail: '/images/courses/apple9.jpg'
+        thumbnail: '/images/courses/Entrepreneurship Posters/investor room 101.png'
     },
     {
         id: 'master-trader-pro',
@@ -125,7 +125,7 @@ const mockCourses: Course[] = [
         rating: 4.8,
         year: 2024,
         duration: '4 months',
-        thumbnail: '/images/courses/apple10.jpg'
+        thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.14_770af3af.jpg'
     },
     {
         id: 'ai-revolution-machine-learning',
@@ -135,7 +135,7 @@ const mockCourses: Course[] = [
         rating: 4.9,
         year: 2024,
         duration: '7 months',
-        thumbnail: '/images/courses/apple1.jpg'
+        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.13_c74bbc50.jpg'
     },
     {
         id: 'german-life-culture',
@@ -145,7 +145,7 @@ const mockCourses: Course[] = [
         rating: 4.7,
         year: 2024,
         duration: '5 months',
-        thumbnail: '/images/courses/apple2.jpg'
+        thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.13_d9d3d1dd.jpg'
     },
     {
         id: 'python-mastery',
@@ -155,7 +155,7 @@ const mockCourses: Course[] = [
         rating: 4.8,
         year: 2024,
         duration: '4 months',
-        thumbnail: '/images/courses/apple11.jpg'
+        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 15.04.46_5f562939.jpg'
     },
     {
         id: 'freelance-success',
@@ -165,7 +165,7 @@ const mockCourses: Course[] = [
         rating: 4.6,
         year: 2024,
         duration: '3 months',
-        thumbnail: '/images/courses/apple12.jpg'
+        thumbnail: '/images/courses/Freelance & Side Hustle Posters/E-Commerce Day One.png'
     },
     {
         id: 'startup-funding',
@@ -175,7 +175,7 @@ const mockCourses: Course[] = [
         rating: 4.7,
         year: 2024,
         duration: '6 months',
-        thumbnail: '/images/courses/apple13.jpg'
+        thumbnail: '/images/courses/Entrepreneurship Posters/WhatsApp Image 2025-11-25 at 14.32.14_9bb85000.jpg'
     },
     {
         id: 'forex-trading-pro',
@@ -185,7 +185,7 @@ const mockCourses: Course[] = [
         rating: 4.9,
         year: 2024,
         duration: '5 months',
-        thumbnail: '/images/courses/apple3.jpg'
+        thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.12_063b614c.jpg'
     },
     {
         id: 'german-b2-course',
@@ -195,7 +195,7 @@ const mockCourses: Course[] = [
         rating: 4.8,
         year: 2024,
         duration: '7 months',
-        thumbnail: '/images/courses/apple4.jpg'
+        thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-25 at 14.30.27_09d6241b.jpg'
     },
     {
         id: 'web-development-bootcamp',
@@ -205,7 +205,7 @@ const mockCourses: Course[] = [
         rating: 4.9,
         year: 2024,
         duration: '8 months',
-        thumbnail: '/images/courses/apple5.jpg'
+        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.11_07d95353.jpg'
     },
     {
         id: 'content-creation-mastery',
@@ -215,7 +215,7 @@ const mockCourses: Course[] = [
         rating: 4.5,
         year: 2024,
         duration: '4 months',
-        thumbnail: '/images/courses/apple6.jpg'
+        thumbnail: '/images/courses/Freelance & Side Hustle Posters/SKILL INTO INCOME.png'
     },
     {
         id: 'business-growth-strategies',
@@ -225,7 +225,7 @@ const mockCourses: Course[] = [
         rating: 4.7,
         year: 2024,
         duration: '5 months',
-        thumbnail: '/images/courses/apple7.jpg'
+        thumbnail: '/images/courses/Entrepreneurship Posters/WhatsApp Image 2025-11-25 at 14.32.15_34d01093.jpg'
     },
     {
         id: 'crypto-trading-fundamentals',
@@ -235,7 +235,7 @@ const mockCourses: Course[] = [
         rating: 4.6,
         year: 2024,
         duration: '3 months',
-        thumbnail: '/images/courses/apple8.jpg'
+        thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.14_770af3af.jpg'
     },
     {
         id: 'german-citizenship-prep',
@@ -245,7 +245,7 @@ const mockCourses: Course[] = [
         rating: 4.8,
         year: 2024,
         duration: '6 months',
-        thumbnail: '/images/courses/apple9.jpg'
+        thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.14_39554e98.jpg'
     },
     {
         id: 'machine-learning-basics',
@@ -255,7 +255,7 @@ const mockCourses: Course[] = [
         rating: 4.9,
         year: 2024,
         duration: '7 months',
-        thumbnail: '/images/courses/apple10.jpg'
+        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.13_c74bbc50.jpg'
     },
     {
         id: 'digital-marketing-blueprint',
@@ -265,7 +265,7 @@ const mockCourses: Course[] = [
         rating: 4.7,
         year: 2024,
         duration: '5 months',
-        thumbnail: '/images/courses/apple11.jpg'
+        thumbnail: '/images/courses/Freelance & Side Hustle Posters/WhatsApp Image 2025-11-25 at 14.32.12_063b614c.jpg'
     },
     {
         id: 'scaling-your-startup',
@@ -275,7 +275,7 @@ const mockCourses: Course[] = [
         rating: 4.8,
         year: 2024,
         duration: '6 months',
-        thumbnail: '/images/courses/apple12.jpg'
+        thumbnail: '/images/courses/Entrepreneurship Posters/WhatsApp Image 2025-11-25 at 15.04.46_5f562939.jpg'
     },
     {
         id: 'day-trading-mastery',
@@ -285,7 +285,7 @@ const mockCourses: Course[] = [
         rating: 4.9,
         year: 2024,
         duration: '4 months',
-        thumbnail: '/images/courses/apple13.jpg'
+        thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.12_063b614c.jpg'
     },
     {
         id: 'german-c1-advanced',
@@ -295,7 +295,7 @@ const mockCourses: Course[] = [
         rating: 4.8,
         year: 2024,
         duration: '8 months',
-        thumbnail: '/images/courses/apple1.jpg'
+        thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-25 at 14.32.11_b498b0d9.jpg'
     },
     {
         id: 'full-stack-developer',
@@ -305,7 +305,7 @@ const mockCourses: Course[] = [
         rating: 4.9,
         year: 2024,
         duration: '10 months',
-        thumbnail: '/images/courses/apple2.jpg'
+        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 15.04.46_5f562939.jpg'
     },
     {
         id: 'freelance-graphic-design',
@@ -315,7 +315,7 @@ const mockCourses: Course[] = [
         rating: 4.6,
         year: 2024,
         duration: '4 months',
-        thumbnail: '/images/courses/apple3.jpg'
+        thumbnail: '/images/courses/Freelance & Side Hustle Posters/WhatsApp Image 2025-11-25 at 14.32.12_2ac19e78.jpg'
     },
     {
         id: 'ecommerce-empire',
@@ -325,7 +325,7 @@ const mockCourses: Course[] = [
         rating: 4.7,
         year: 2024,
         duration: '6 months',
-        thumbnail: '/images/courses/apple4.jpg'
+        thumbnail: '/images/courses/Entrepreneurship Posters/first launch.png'
     },
     {
         id: 'options-trading-advanced',
@@ -335,7 +335,7 @@ const mockCourses: Course[] = [
         rating: 4.8,
         year: 2024,
         duration: '5 months',
-        thumbnail: '/images/courses/apple5.jpg'
+        thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.14_770af3af.jpg'
     }
 ];
 
@@ -349,6 +349,9 @@ export default function CoursesPage() {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    const [mouseStart, setMouseStart] = useState<number | null>(null);
+    const [mouseEnd, setMouseEnd] = useState<number | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
     const [scrollPositions, setScrollPositions] = useState<{ [key: string]: number }>({});
     const router = useRouter();
     const { data: session } = useSession();
@@ -408,6 +411,41 @@ export default function CoursesPage() {
         }
     };
 
+    const onMouseDown = (e: React.MouseEvent) => {
+        setMouseEnd(null);
+        setMouseStart(e.clientX);
+        setIsDragging(true);
+    };
+
+    const onMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging) return;
+        setMouseEnd(e.clientX);
+    };
+
+    const onMouseUp = () => {
+        if (!isDragging) return;
+        setIsDragging(false);
+        
+        if (!mouseStart || !mouseEnd) return;
+        
+        const distance = mouseStart - mouseEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+        
+        if (isLeftSwipe && heroIndex < courses.length - 1) {
+            setHeroIndex(heroIndex + 1);
+        }
+        if (isRightSwipe && heroIndex > 0) {
+            setHeroIndex(heroIndex - 1);
+        }
+    };
+
+    const onMouseLeave = () => {
+        if (isDragging) {
+            setIsDragging(false);
+        }
+    };
+
     const heroCourse = courses[heroIndex] || mockCourses[0];
 
     const handleCourseClick = (courseId: string) => {
@@ -448,10 +486,14 @@ export default function CoursesPage() {
 
             {/* Hero Section - Featured Course */}
             <div 
-                className="relative h-screen w-full overflow-hidden mb-12"
+                className="relative h-screen w-full overflow-hidden mb-12 cursor-grab active:cursor-grabbing"
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
+                onMouseDown={onMouseDown}
+                onMouseMove={onMouseMove}
+                onMouseUp={onMouseUp}
+                onMouseLeave={onMouseLeave}
             >
                 {/* Background Image */}
                 <div className="absolute inset-0">

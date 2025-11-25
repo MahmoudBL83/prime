@@ -1056,14 +1056,14 @@ export default function OnlyFansStyleMentorsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
+            <div className="min-h-screen bg-[#1f1f1f] flex items-center justify-center">
                 <div className="w-16 h-16 border-4 border-[#0a84ff]/30 border-t-[#0a84ff] rounded-full animate-spin" />
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-background text-foreground transition-colors">
+        <div className="min-h-screen bg-[#1f1f1f] text-foreground transition-colors">
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
                 <div 
@@ -1076,10 +1076,10 @@ export default function OnlyFansStyleMentorsPage() {
             <div className="container mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
                     {/* Left Sidebar - Navigation */}
-                    <div className={`fixed lg:static inset-y-0 left-0 z-50 w-72 lg:w-auto lg:col-span-3 p-4 bg-background transform transition-transform duration-300 lg:transform-none ${
+                    <div className={`fixed lg:static inset-y-0 left-0 z-50 w-72 lg:w-auto lg:col-span-3 p-4 bg-transparent transform transition-transform duration-300 lg:transform-none ${
                         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
                     }`}>
-                        <div className="sticky top-20">
+                        <div className="lg:sticky lg:top-24">
                             <nav className="space-y-2">
                                 {/* Feed/Home Button */}
                                 <button
@@ -1121,29 +1121,33 @@ export default function OnlyFansStyleMentorsPage() {
                                     <span className="text-lg font-bold">{isArabic ? 'اشتراكاتي' : 'Subscriptions'}</span>
                                 </button>
 
-                                {/* Bookmarks */}
-                                <button
-                                    onClick={handleSetBookmarksView}
-                                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
-                                        activeView === 'bookmarks'
-                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
-                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
-                                    }`}
-                                >
-                                    <DynamicIcon name="Bookmark" className="w-6 h-6" />
-                                    <span className="text-lg font-bold">{isArabic ? 'المحفوظات' : 'Bookmarks'}</span>
-                                </button>
+                                {/* Bookmarks - Only show for signed in users */}
+                                {session && (
+                                    <button
+                                        onClick={handleSetBookmarksView}
+                                        className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
+                                            activeView === 'bookmarks'
+                                                ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                                : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    >
+                                        <DynamicIcon name="Bookmark" className="w-6 h-6" />
+                                        <span className="text-lg font-bold">{isArabic ? 'المحفوظات' : 'Bookmarks'}</span>
+                                    </button>
+                                )}
 
-                                {/* Reposts */}
-                                <button
-                                    onClick={() => toast.success(isArabic ? 'قريباً' : 'Coming soon!')}
-                                    className="w-full flex items-center gap-4 px-4 py-3 rounded-full hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all"
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                    </svg>
-                                    <span className="text-lg font-bold">{isArabic ? 'إعادة النشر' : 'Reposts'}</span>
-                                </button>
+                                {/* Reposts - Only show for signed in users */}
+                                {session && (
+                                    <button
+                                        onClick={() => toast.success(isArabic ? 'قريباً' : 'Coming soon!')}
+                                        className="w-full flex items-center gap-4 px-4 py-3 rounded-full hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        <span className="text-lg font-bold">{isArabic ? 'إعادة النشر' : 'Reposts'}</span>
+                                    </button>
+                                )}
 
                                 {/* Profile - Creator Only */}
                                 {isCreatorAccount && (
@@ -1423,28 +1427,31 @@ export default function OnlyFansStyleMentorsPage() {
                                                     <span>{post._count?.likes || 0}</span>
                                                 </button>
 
-                                                <button 
-                                                    onClick={async (e) => {
-                                                        e.stopPropagation()
-                                                        await handleBookmark(post.id)
-                                                    }}
-                                                    className={`flex items-center gap-2 transition-colors group ${
-                                                        bookmarkedPostIds.includes(post.id) 
-                                                            ? 'text-blue-500' 
-                                                            : 'hover:text-blue-400'
-                                                    }`}
-                                                >
-                                                    <div className="p-2 rounded-full group-hover:bg-blue-500/10">
-                                                        <DynamicIcon 
-                                                            name="Bookmark" 
-                                                            className={`w-4 h-4 transition-all ${
-                                                                bookmarkedPostIds.includes(post.id) 
-                                                                    ? 'fill-blue-500' 
-                                                                    : ''
-                                                            }`} 
-                                                        />
-                                                    </div>
-                                                </button>
+                                                {/* Bookmark button - Only show for signed in users */}
+                                                {session && (
+                                                    <button 
+                                                        onClick={async (e) => {
+                                                            e.stopPropagation()
+                                                            await handleBookmark(post.id)
+                                                        }}
+                                                        className={`flex items-center gap-2 transition-colors group ${
+                                                            bookmarkedPostIds.includes(post.id) 
+                                                                ? 'text-blue-500' 
+                                                                : 'hover:text-blue-400'
+                                                        }`}
+                                                    >
+                                                        <div className="p-2 rounded-full group-hover:bg-blue-500/10">
+                                                            <DynamicIcon 
+                                                                name="Bookmark" 
+                                                                className={`w-4 h-4 transition-all ${
+                                                                    bookmarkedPostIds.includes(post.id) 
+                                                                        ? 'fill-blue-500' 
+                                                                        : ''
+                                                                }`} 
+                                                            />
+                                                        </div>
+                                                    </button>
+                                                )}
 
                                                 <button 
                                                     onClick={(e) => {
@@ -1960,62 +1967,100 @@ export default function OnlyFansStyleMentorsPage() {
                                             <div
                                                 key={creator.id}
                                                 onClick={() => handleCreatorClick(creator.id)}
-                                                className="bg-card border border-border rounded-2xl p-4 hover:border-purple-500/50 transition-all cursor-pointer group animate-fade-in"
-                                                style={{ animationDelay: `${idx * 50}ms` }}
+                                                className="lockup-card relative cursor-pointer overflow-hidden animate-fade-in"
+                                                style={{ 
+                                                    animationDelay: `${idx * 50}ms`,
+                                                    border: '1px solid hsla(0, 0%, 100%, .16)',
+                                                    borderRadius: '14px',
+                                                    display: 'block',
+                                                    textDecoration: 'none',
+                                                    width: '100%'
+                                                }}
                                             >
-                                                <div className="flex items-center gap-3 mb-3">
-                                                    <div className="relative">
-                                                        {creator.user.profileImage ? (
-                                                            <Image
-                                                                src={creator.user.profileImage}
-                                                                alt={creator.user.name}
-                                                                width={56} height={56} className="rounded-full object-cover w-14 h-14"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                                                                <span className="text-xl font-bold text-foreground">{creator.user.name[0]}</span>
-                                                            </div>
-                                                        )}
-                                                        {creator.isOnline && (
-                                                            <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-background" />
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-1">
-                                                            <h3 className="font-bold text-foreground group-hover:text-purple-400 transition-colors">{creator.user.name}</h3>
-                                                            {creator.stats.averageRating >= 4.5 && (
-                                                                <DynamicIcon name="CheckCircle" className="w-4 h-4 text-purple-500 fill-purple-500" />
-                                                            )}
-                                                        </div>
-                                                        <p className="text-sm text-muted-foreground">{creator.expertise}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center justify-between text-sm mb-3">
-                                                    <span className="text-muted-foreground flex items-center gap-1">
-                                                        <DynamicIcon name="Users" className="w-4 h-4" />
-                                                        {(creator.totalSubscribers / 1000).toFixed(1)}K
-                                                    </span>
-                                                    <span className="text-muted-foreground flex items-center gap-1">
-                                                        <DynamicIcon name="Star" className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                                                        {creator.stats.averageRating.toFixed(1)}
-                                                    </span>
-                                                    <span className="font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                                        {creator.basicMonthlyPrice} EGP/mo
-                                                    </span>
-                                                </div>
-                                                <Button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        handleSubscribeClick(creator)
+                                                {/* Hover Scrim Overlay */}
+                                                <div 
+                                                    className="lockup-scrim absolute inset-0 pointer-events-none"
+                                                    style={{
+                                                        backgroundColor: 'rgba(51, 51, 51, .3)',
+                                                        borderRadius: '14px',
+                                                        opacity: 0,
+                                                        transition: 'opacity 0.1s ease-in',
+                                                        zIndex: 10
                                                     }}
-                                                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-2 rounded-full"
-                                                >
-                                                    <DynamicIcon name="Crown" className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'اشترك' : 'Subscribe'}
-                                                </Button>
+                                                />
+                                                
+                                                {/* Card Image */}
+                                                <div className="relative aspect-[16/10] overflow-hidden" style={{ borderRadius: 'inherit' }}>
+                                                    {(
+                                                        <img
+                                                            src={`/images/mentors/${(idx % 7) + 1}.jpg`}
+                                                            alt={creator.user.name}
+                                                            className="w-full h-full object-cover transition-transform duration-300"
+                                                            onError={(e) => {
+                                                                const img = e.target as HTMLImageElement;
+                                                                // Try different extensions if jpg fails
+                                                                if (img.src.includes('.jpg')) {
+                                                                    img.src = `/images/mentors/${(idx % 7) + 1}.webp`;
+                                                                } else if (img.src.includes('.webp')) {
+                                                                    img.src = `/images/mentors/${(idx % 7) + 1}.png`;
+                                                                } else {
+                                                                    // Final fallback to gradient
+                                                                    img.style.display = 'none';
+                                                                    const parent = img.parentElement;
+                                                                    if (parent) {
+                                                                        parent.innerHTML = `
+                                                                            <div class="w-full h-full bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 flex items-center justify-center">
+                                                                                <span class="text-6xl font-bold text-white">${creator.user.name[0]}</span>
+                                                                            </div>
+                                                                        `;
+                                                                    }
+                                                                }
+                                                            }}
+                                                        />
+                                                    )}
+                                                    
+                                                    {/* Gradient Overlay */}
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                                                    
+                                                    {/* Category Tag - Top Left */}
+                                                    <div className="absolute top-3 left-3 z-20">
+                                                        <span className="px-2.5 py-1 bg-white/90 backdrop-blur-sm text-black text-xs font-semibold rounded">
+                                                            {creator.expertise.toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    {/* Online Status - Top Right */}
+                                                    {creator.isOnline && (
+                                                        <div className="absolute top-3 right-3 z-20">
+                                                            <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
+                                                        </div>
+                                                    )}
+                                                    
+                                                    {/* Content - Bottom */}
+                                                    <div className="absolute bottom-0 left-0 right-0 p-3 z-20">
+                                                        <h3 className="text-white font-bold text-lg mb-1 line-clamp-1">
+                                                            {creator.user.name}
+                                                        </h3>
+                                                        <div className="flex items-center justify-between text-xs text-white/80">
+                                                            <span className="flex items-center gap-1">
+                                                                <DynamicIcon name="Users" className="w-3.5 h-3.5" />
+                                                                {(creator.totalSubscribers / 1000).toFixed(1)}K
+                                                            </span>
+                                                            <span className="font-bold text-white">
+                                                                {creator.basicMonthlyPrice} EGP/mo
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
+                                    
+                                    <style jsx>{`
+                                        .lockup-card:hover .lockup-scrim {
+                                            opacity: 1 !important;
+                                        }
+                                    `}</style>
                                 </div>
                             )}
 
@@ -3779,7 +3824,7 @@ export default function OnlyFansStyleMentorsPage() {
                             </div>
 
                             {/* Suggested Creators */}
-                            <div className="bg-[#1f1f1f] border border-white/10 rounded-2xl overflow-hidden">
+                            <div className="bg-transparent border border-white/10 rounded-2xl overflow-hidden">
                                 <div className="p-5 border-b border-white/10">
                                     <h3 className="font-bold text-xl text-white flex items-center gap-2">
                                         <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3788,7 +3833,7 @@ export default function OnlyFansStyleMentorsPage() {
                                         {isArabic ? 'منشئون مقترحون' : 'Suggested Creators'}
                                     </h3>
                                 </div>
-                                <div className="divide-y divide-white/10">
+                                <div className="p-4 space-y-3">
                                     {/* Show skeleton loading while creators are being fetched */}
                                     {loading ? (
                                         <>
@@ -3800,115 +3845,92 @@ export default function OnlyFansStyleMentorsPage() {
                                         creators.slice(0, 5).map((creator, idx) => (
                                         <div
                                             key={creator.id}
-                                            className="p-4 hover:bg-white/5 transition-all duration-200 group animate-fade-in"
-                                            style={{ animationDelay: `${idx * 50}ms` }}
+                                            className="lockup-card group cursor-pointer animate-fade-in"
+                                            style={{ 
+                                                animationDelay: `${idx * 50}ms`,
+                                                border: '1px solid hsla(0,0%,100%,.16)',
+                                                borderRadius: '10px',
+                                                overflow: 'hidden',
+                                                position: 'relative'
+                                            }}
+                                            onClick={() => handleCreatorClick(creator.id)}
                                         >
+                                            {/* Lockup Scrim Overlay */}
                                             <div 
-                                                className="flex items-center gap-3 mb-3 cursor-pointer"
-                                                onClick={() => handleCreatorClick(creator.id)}
-                                            >
-                                                {/* Profile Image */}
-                                                <div className="relative flex-shrink-0">
-                                                    <div className="absolute -inset-0.5 bg-[#0a84ff] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                                                    {creator.user?.profileImage ? (
-                                                        <Image
-                                                            src={creator.user.profileImage}
-                                                            alt={creator.user?.name || 'Creator'}
-                                                            width={48} height={48} className="rounded-full object-cover w-12 h-12 relative border-2 border-white/10 group-hover:border-[#0a84ff] transition-colors duration-200"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center relative border-2 border-white/10 group-hover:border-[#0a84ff] transition-colors duration-200">
-                                                            <span className="text-base font-bold text-white">
-                                                                {creator.user?.name?.[0] || 'C'}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                    {/* Online Indicator */}
-                                                    {creator.isOnline && (
-                                                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#0a84ff] rounded-full border-2 border-[#1f1f1f]" />
-                                                    )}
-                                                </div>
+                                                className="lockup-scrim"
+                                                style={{
+                                                    position: 'absolute',
+                                                    inset: 0,
+                                                    background: 'rgba(51, 51, 51, .3)',
+                                                    opacity: 0,
+                                                    transition: 'opacity 0.1s ease-in',
+                                                    pointerEvents: 'none',
+                                                    zIndex: 10
+                                                }}
+                                            />
 
-                                                {/* Creator Info */}
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-1.5 mb-0.5">
-                                                        <h4 className="font-semibold text-white text-sm truncate group-hover:text-[#0a84ff] transition-colors duration-200">
-                                                            {creator.user?.name || 'Creator'}
-                                                        </h4>
-                                                        {creator.stats.averageRating >= 4.5 && (
-                                                            <DynamicIcon name="CheckCircle" className="w-4 h-4 text-[#0a84ff] fill-[#0a84ff] flex-shrink-0" />
-                                                        )}
-                                                    </div>
-                                                    <div className="flex items-center gap-2 text-xs text-white/50">
-                                                        <span className="flex items-center gap-1">
-                                                            <DynamicIcon name="Users" className="w-3 h-3" />
-                                                            {(creator.totalSubscribers / 1000).toFixed(1)}K
-                                                        </span>
-                                                        <span>·</span>
-                                                        <span className="flex items-center gap-1">
-                                                            <DynamicIcon name="Star" className="w-3 h-3 text-white/50" />
-                                                            {creator.stats.averageRating.toFixed(1)}
-                                                        </span>
-                                                    </div>
-                                                    <div className="text-xs font-semibold text-white/70 mt-1">
-                                                        {creator.basicMonthlyPrice} {isArabic ? 'ج.م/شهر' : 'EGP/mo'}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Action Buttons */}
-                                            <div className="flex items-center gap-2">
-                                                {creator.isSubscribed ? (
-                                                    <Button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            // TODO: Handle manage subscription
-                                                            toast.success(`${isArabic ? 'مشترك في طبقة' : 'Subscribed to'} ${creator.subscribedTier} ${isArabic ? 'طبقة' : 'tier'}`)
+                                            {/* Image Container */}
+                                            <div className="relative w-full h-24 overflow-hidden bg-gradient-to-br from-purple-500/20 to-pink-500/20">
+                                                {(
+                                                    <img
+                                                        src={`/images/mentors/${(idx % 7) + 1}.jpg`}
+                                                        alt={creator.user?.name || 'Creator'}
+                                                        className="w-full h-full object-cover"
+                                                        onError={(e) => {
+                                                            const target = e.target as HTMLImageElement;
+                                                            if (target.src.endsWith('.jpg')) {
+                                                                target.src = `/images/mentors/${(idx % 7) + 1}.webp`;
+                                                            } else if (target.src.endsWith('.webp')) {
+                                                                target.src = `/images/mentors/${(idx % 7) + 1}.png`;
+                                                            } else {
+                                                                target.style.display = 'none';
+                                                                const parent = target.parentElement;
+                                                                if (parent) {
+                                                                    parent.innerHTML = `
+                                                                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-pink-500/20">
+                                                                            <span class="text-3xl font-bold text-white/90">
+                                                                                ${creator.user?.name?.[0] || 'C'}
+                                                                            </span>
+                                                                        </div>
+                                                                    `;
+                                                                }
+                                                            }
                                                         }}
-                                                        className="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs py-2 rounded-full border border-white/20 transition-all duration-200"
-                                                        disabled
-                                                    >
-                                                        <DynamicIcon name="Check" className="w-3 h-3 mr-1" />
-                                                        {isArabic ? `مشترك (${creator.subscribedTier})` : `Subscribed (${creator.subscribedTier})`}
-                                                    </Button>
-                                                ) : (
-                                                    <Button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            handleSubscribeClick(creator)
-                                                        }}
-                                                        className="flex-1 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white font-semibold text-xs py-2 rounded-full transition-all duration-200"
-                                                    >
-                                                        <DynamicIcon name="Star" className="w-3 h-3 mr-1" />
-                                                        {isArabic ? 'اشترك' : 'Subscribe'}
-                                                    </Button>
+                                                    />
                                                 )}
-                                                <Button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        handleTipClick(creator)
-                                                    }}
-                                                    className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white font-semibold text-xs py-2 px-3 rounded-full transition-all duration-200"
-                                                >
-                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                </Button>
-                                                <Button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        handleMessageClick(creator)
-                                                    }}
-                                                    disabled={isNavigating}
-                                                    className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white font-semibold text-xs py-2 px-3 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                >
-                                                    {isNavigating ? (
-                                                        <DynamicIcon name="Loader2" className="w-3 h-3 animate-spin" />
-                                                    ) : (
-                                                        <DynamicIcon name="MessageCircle" className="w-3 h-3" />
-                                                    )}
-                                                </Button>
+
+                                                {/* Online Status - Top Right */}
+                                                {creator.isOnline && (
+                                                    <div className="absolute top-1.5 right-1.5 z-20">
+                                                        <div className="w-2 h-2 bg-[#0a84ff] rounded-full border border-white/50" />
+                                                    </div>
+                                                )}
                                             </div>
+
+                                            {/* Content - Bottom */}
+                                            <div className="relative p-2.5 bg-transparent">
+                                                <div className="flex items-center gap-1.5 mb-1">
+                                                    <h4 className="font-semibold text-white text-xs truncate flex-1">
+                                                        {creator.user?.name || 'Creator'}
+                                                    </h4>
+                                                    {creator.stats.averageRating >= 4.5 && (
+                                                        <DynamicIcon name="CheckCircle" className="w-3.5 h-3.5 text-[#0a84ff] fill-[#0a84ff] flex-shrink-0" />
+                                                    )}
+                                                </div>
+
+                                                <div className="flex items-center justify-between text-[10px] text-white/50">
+                                                    <span>{(creator.totalSubscribers / 1000).toFixed(1)}K {isArabic ? 'مشترك' : 'subs'}</span>
+                                                    <span className="font-semibold text-white/80">
+                                                        {creator.basicMonthlyPrice} {isArabic ? 'ج.م' : 'EGP'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <style jsx>{`
+                                                .lockup-card:hover .lockup-scrim {
+                                                    opacity: 1;
+                                                }
+                                            `}</style>
                                         </div>
                                     )))}
                                 </div>
