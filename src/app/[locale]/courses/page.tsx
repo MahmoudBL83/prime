@@ -353,6 +353,8 @@ export default function CoursesPage() {
     const [mouseEnd, setMouseEnd] = useState<number | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [scrollPositions, setScrollPositions] = useState<{ [key: string]: number }>({});
+    const [showLeftArrow, setShowLeftArrow] = useState<{ [key: string]: boolean }>({});
+    const [showRightArrow, setShowRightArrow] = useState<{ [key: string]: boolean }>({});
     const router = useRouter();
     const { data: session } = useSession();
     const locale = useLocaleSafe();
@@ -468,7 +470,9 @@ export default function CoursesPage() {
     const scroll = (direction: 'left' | 'right', containerId: string) => {
         const container = document.getElementById(containerId);
         if (container) {
-            const scrollAmount = container.clientWidth * 0.8;
+            // Card width (180px) + gap (12px = 3 in Tailwind)
+            const cardWidth = 180 + 12;
+            const scrollAmount = cardWidth;
             const newPosition = direction === 'left' 
                 ? container.scrollLeft - scrollAmount 
                 : container.scrollLeft + scrollAmount;
@@ -480,8 +484,40 @@ export default function CoursesPage() {
         }
     };
 
+    const handleScroll = (containerId: string) => {
+        const container = document.getElementById(containerId);
+        if (container) {
+            const { scrollLeft, scrollWidth, clientWidth } = container;
+            const hasOverflow = scrollWidth > clientWidth;
+            
+            setShowLeftArrow(prev => ({
+                ...prev,
+                [containerId]: hasOverflow && scrollLeft > 10
+            }));
+            
+            setShowRightArrow(prev => ({
+                ...prev,
+                [containerId]: hasOverflow && scrollLeft < scrollWidth - clientWidth - 10
+            }));
+        }
+    };
+
+    useEffect(() => {
+        // Check scroll state on mount and window resize
+        const checkAllScrollStates = () => {
+            handleScroll('top-10-scroll');
+            categories.forEach(category => {
+                handleScroll(`category-${category.replace(/\s+/g, '-').toLowerCase()}`);
+            });
+        };
+
+        checkAllScrollStates();
+        window.addEventListener('resize', checkAllScrollStates);
+        return () => window.removeEventListener('resize', checkAllScrollStates);
+    }, [courses]);
+
     return (
-        <div dir={direction} className="min-h-screen" style={{ backgroundColor: '#1f1f1f' }}>
+        <div dir={direction} className="min-h-screen bg-background">
             
 
             {/* Hero Section - Featured Course */}
@@ -587,35 +623,43 @@ export default function CoursesPage() {
                 <div className="max-w-screen-2xl mx-auto px-8">
                     <div className="flex items-center justify-between mb-4">
                         <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse text-right' : ''}`}>
-                            <h2 className="text-xl font-semibold text-white">
+                            <h2 className="text-xl font-semibold text-foreground">
                                 Top 10 TV Shows
                             </h2>
-                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                             </svg>
                         </div>
-                        {/* Navigation Arrows */}
-                        <div className="hidden md:flex items-center gap-2">
-                            <button
-                                onClick={() => scroll('left', 'top-10-scroll')}
-                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center transition-all"
-                            >
-                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-                            <button
-                                onClick={() => scroll('right', 'top-10-scroll')}
-                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center transition-all"
-                            >
-                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
-                        </div>
                     </div>
                     
-                    <div id="top-10-scroll" className="overflow-x-auto scrollbar-hide -mx-8 px-8">
+                    <div className="relative -mx-8 px-8">
+                        {/* Navigation Arrows */}
+                        {showLeftArrow['top-10-scroll'] && (
+                            <button
+                                onClick={() => scroll('left', 'top-10-scroll')}
+                                className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-16 hover:bg-black/20 dark:hover:bg-white/10 flex items-center justify-center transition-all rounded-lg"
+                            >
+                                <svg className="w-3 h-8 text-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 31" fill="currentColor">
+                                    <path d="M5.275 29.46a1.61 1.61 0 0 0 1.456 1.077c1.018 0 1.772-.737 1.772-1.737 0-.526-.277-1.186-.449-1.62l-4.68-11.912L8.05 3.363c.172-.442.45-1.116.45-1.625A1.7 1.7 0 0 0 6.728.002a1.6 1.6 0 0 0-1.456 1.09L.675 12.774c-.301.775-.677 1.744-.677 2.495 0 .754.376 1.705.677 2.498L5.272 29.46Z" />
+                                </svg>
+                            </button>
+                        )}
+                        {showRightArrow['top-10-scroll'] && (
+                            <button
+                                onClick={() => scroll('right', 'top-10-scroll')}
+                                className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-16 hover:bg-black/20 dark:hover:bg-white/10 flex items-center justify-center transition-all rounded-lg"
+                            >
+                                <svg className="w-3 h-8 text-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 31" fill="currentColor" style={{ transform: 'scaleX(-1)' }}>
+                                    <path d="M5.275 29.46a1.61 1.61 0 0 0 1.456 1.077c1.018 0 1.772-.737 1.772-1.737 0-.526-.277-1.186-.449-1.62l-4.68-11.912L8.05 3.363c.172-.442.45-1.116.45-1.625A1.7 1.7 0 0 0 6.728.002a1.6 1.6 0 0 0-1.456 1.09L.675 12.774c-.301.775-.677 1.744-.677 2.495 0 .754.376 1.705.677 2.498L5.272 29.46Z" />
+                                </svg>
+                            </button>
+                        )}
+                    
+                        <div 
+                            id="top-10-scroll" 
+                            className="overflow-x-auto overflow-hidden scrollbar-hide"
+                            onScroll={() => handleScroll('top-10-scroll')}
+                        >
                         <div className="flex gap-3" style={{ width: 'max-content' }}>
                             {courses.slice(0, 8).map((course, index) => (
                             <div 
@@ -665,13 +709,13 @@ export default function CoursesPage() {
 
                                     {/* Actions Dropdown Menu */}
                                     {showMenu === course.id && (
-                                        <div className={`absolute bottom-12 ${cardMenuPositionClass} bg-neutral-800/95 backdrop-blur-md overflow-hidden shadow-xl z-20 w-[140px]`} style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
+                                        <div className={`absolute bottom-12 ${cardMenuPositionClass} bg-neutral-800/95 dark:bg-neutral-800/95 backdrop-blur-md overflow-hidden shadow-xl z-20 w-[140px]`} style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setShowMenu(null);
                                                 }}
-                                                className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
+                                                className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 dark:text-white/90 hover:bg-white/10 dark:hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
                                             >
                                                 <span>Share</span>
                                                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -685,7 +729,7 @@ export default function CoursesPage() {
                                                     navigator.clipboard.writeText(`${window.location.origin}/${locale}/courses/${course.id}`);
                                                     setShowMenu(null);
                                                 }}
-                                                className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
+                                                className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 dark:text-white/90 hover:bg-white/10 dark:hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
                                             >
                                                 <span>Copy Link</span>
                                                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -697,6 +741,7 @@ export default function CoursesPage() {
                                 </div>
                             </div>
                         ))}
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -717,35 +762,43 @@ export default function CoursesPage() {
                         <div className="max-w-screen-2xl mx-auto px-8">
                             <div className="flex items-center justify-between mb-4">
                                 <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse text-right' : ''}`}>
-                                    <h2 className="text-xl font-semibold text-white">
+                                    <h2 className="text-xl font-semibold text-foreground">
                                         {category}
                                     </h2>
-                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                                     </svg>
                                 </div>
-                                {/* Navigation Arrows */}
-                                <div className="hidden md:flex items-center gap-2">
-                                    <button
-                                        onClick={() => scroll('left', `category-${category.replace(/\s+/g, '-').toLowerCase()}`)}
-                                        className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center transition-all"
-                                    >
-                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                                        </svg>
-                                    </button>
-                                    <button
-                                        onClick={() => scroll('right', `category-${category.replace(/\s+/g, '-').toLowerCase()}`)}
-                                        className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center transition-all"
-                                    >
-                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </button>
-                                </div>
                             </div>
                             
-                            <div id={`category-${category.replace(/\s+/g, '-').toLowerCase()}`} className="overflow-x-auto scrollbar-hide -mx-8 px-8">
+                            <div className="relative -mx-8 px-8">
+                                {/* Navigation Arrows */}
+                                {showLeftArrow[`category-${category.replace(/\s+/g, '-').toLowerCase()}`] && (
+                                    <button
+                                        onClick={() => scroll('left', `category-${category.replace(/\s+/g, '-').toLowerCase()}`)}
+                                        className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-16 hover:bg-black/20 dark:hover:bg-white/10 flex items-center justify-center transition-all rounded-lg"
+                                    >
+                                        <svg className="w-3 h-8 text-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 31" fill="currentColor">
+                                            <path d="M5.275 29.46a1.61 1.61 0 0 0 1.456 1.077c1.018 0 1.772-.737 1.772-1.737 0-.526-.277-1.186-.449-1.62l-4.68-11.912L8.05 3.363c.172-.442.45-1.116.45-1.625A1.7 1.7 0 0 0 6.728.002a1.6 1.6 0 0 0-1.456 1.09L.675 12.774c-.301.775-.677 1.744-.677 2.495 0 .754.376 1.705.677 2.498L5.272 29.46Z" />
+                                        </svg>
+                                    </button>
+                                )}
+                                {showRightArrow[`category-${category.replace(/\s+/g, '-').toLowerCase()}`] && (
+                                    <button
+                                        onClick={() => scroll('right', `category-${category.replace(/\s+/g, '-').toLowerCase()}`)}
+                                        className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-16 hover:bg-black/20 dark:hover:bg-white/10 flex items-center justify-center transition-all rounded-lg"
+                                    >
+                                        <svg className="w-3 h-8 text-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 31" fill="currentColor" style={{ transform: 'scaleX(-1)' }}>
+                                            <path d="M5.275 29.46a1.61 1.61 0 0 0 1.456 1.077c1.018 0 1.772-.737 1.772-1.737 0-.526-.277-1.186-.449-1.62l-4.68-11.912L8.05 3.363c.172-.442.45-1.116.45-1.625A1.7 1.7 0 0 0 6.728.002a1.6 1.6 0 0 0-1.456 1.09L.675 12.774c-.301.775-.677 1.744-.677 2.495 0 .754.376 1.705.677 2.498L5.272 29.46Z" />
+                                        </svg>
+                                    </button>
+                                )}
+                            
+                                <div 
+                                    id={`category-${category.replace(/\s+/g, '-').toLowerCase()}`} 
+                                    className="overflow-x-auto overflow-hidden scrollbar-hide"
+                                    onScroll={() => handleScroll(`category-${category.replace(/\s+/g, '-').toLowerCase()}`)}
+                                >
                                 <div className="flex gap-3" style={{ width: 'max-content' }}>
                                     {categoryCourses.map((course) => (
                                     <div 
@@ -782,13 +835,13 @@ export default function CoursesPage() {
 
                                             {/* Actions Dropdown Menu */}
                                             {showMenu === course.id && (
-                                                <div className={`absolute bottom-12 ${cardMenuPositionClass} bg-neutral-800/95 backdrop-blur-md overflow-hidden shadow-xl z-20 w-[140px]`} style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
+                                                <div className={`absolute bottom-12 ${cardMenuPositionClass} bg-neutral-800/95 dark:bg-neutral-800/95 backdrop-blur-md overflow-hidden shadow-xl z-20 w-[140px]`} style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             setShowMenu(null);
                                                         }}
-                                                        className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
+                                                        className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 dark:text-white/90 hover:bg-white/10 dark:hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
                                                     >
                                                         <span>Share</span>
                                                         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -802,7 +855,7 @@ export default function CoursesPage() {
                                                             navigator.clipboard.writeText(`${window.location.origin}/${locale}/courses/${course.id}`);
                                                             setShowMenu(null);
                                                         }}
-                                                        className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
+                                                        className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 dark:text-white/90 hover:bg-white/10 dark:hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
                                                     >
                                                         <span>Copy Link</span>
                                                         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -814,6 +867,7 @@ export default function CoursesPage() {
                                         </div>
                                     </div>
                                 ))}
+                                </div>
                                 </div>
                             </div>
                         </div>
@@ -897,10 +951,16 @@ export default function CoursesPage() {
                 .scrollbar-hide {
                     -ms-overflow-style: none;
                     scrollbar-width: none;
+                    scroll-snap-type: x mandatory;
+                    scroll-padding: 2rem;
                 }
                 
                 .scrollbar-hide::-webkit-scrollbar {
                     display: none;
+                }
+                
+                .scrollbar-hide > div > div {
+                    scroll-snap-align: start;
                 }
                 
                 @media (max-width: 768px) {

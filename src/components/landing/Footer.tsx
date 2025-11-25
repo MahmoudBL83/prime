@@ -1,74 +1,54 @@
 'use client';
 
-import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
-import { Link } from '@/i18n/navigation';
-import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
+import { useLocale } from 'next-intl';
+import { usePathname, useRouter } from '@/i18n/navigation';
 
 export function Footer() {
-    const t = useTranslations('footer');
-    const tCommon = useTranslations('common');
     const locale = useLocale();
+    const pathname = usePathname();
+    const router = useRouter();
     const currentYear = new Date().getFullYear();
 
-    // Footer translations
-    const footerTranslations = {
-        about: t('about'),
-        help: t('help'),
-        terms: t('terms'),
-        privacy: t('privacy'),
-        contact: t('contact'),
-        copyright: `© ${currentYear} Prime. ${t('allRightsReserved')}`
+    const handleLanguageChange = (newLocale: string) => {
+        router.replace(pathname, { locale: newLocale });
     };
 
     return (
-        <footer className="bg-background dark:bg-black border-t border-border dark:border-white/10">
-            <div className="max-w-screen-2xl mx-auto px-8 py-12">
-                {/* Footer Links */}
-                <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-8">
-                    <Link href="/about" className="text-sm text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white transition-colors">
-                        {footerTranslations.about}
-                    </Link>
-                    <Link href="/help" className="text-sm text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white transition-colors">
-                        {footerTranslations.help}
-                    </Link>
-                    <Link href="/terms" className="text-sm text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white transition-colors">
-                        {footerTranslations.terms}
-                    </Link>
-                    <Link href="/privacy" className="text-sm text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white transition-colors">
-                        {footerTranslations.privacy}
-                    </Link>
-                    <Link href="/contact" className="text-sm text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white transition-colors">
-                        {footerTranslations.contact}
-                    </Link>
-                </div>
+        <footer className="bg-background dark:bg-[#1d1d1f] py-4">
+            <div className="max-w-screen-2xl mx-auto px-8">
+                <div className="flex flex-col items-start">
+                    {/* Copyright */}
+                    <div className="text-xs text-muted-foreground dark:text-[#6e6e73] mb-2">
+                        Copyright © {currentYear} <span className="font-semibold">Prime Inc.</span> All rights reserved.
+                    </div>
+                    {/* Footer Links */}
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-xs">
+                        <a href={`/${locale}/terms`} className="text-muted-foreground dark:text-[#6e6e73] hover:underline">
+                            Internet Service Terms
+                        </a>
+                        <span className="text-muted-foreground dark:text-[#6e6e73]">|</span>
+                        <a href={`/${locale}/privacy`} className="text-muted-foreground dark:text-[#6e6e73] hover:underline">
+                            Prime TV & Privacy
+                        </a>
+                        <span className="text-muted-foreground dark:text-[#6e6e73]">|</span>
+                        <a href={`/${locale}/cookies`} className="text-muted-foreground dark:text-[#6e6e73] hover:underline">
+                            Cookie Policy
+                        </a>
+                        <span className="text-muted-foreground dark:text-[#6e6e73]">|</span>
+                        <a href={`/${locale}/support`} className="text-muted-foreground dark:text-[#6e6e73] hover:underline">
+                            Support
+                        </a>
+                        <span className="text-muted-foreground dark:text-[#6e6e73]">|</span>
+                        <a href={`/${locale}/about`} className="text-muted-foreground dark:text-[#6e6e73] hover:underline">
+                            About
+                        </a>
+                        <span className="text-muted-foreground dark:text-[#6e6e73]">|</span>
+                        <a href={`/${locale}/contact`} className="text-muted-foreground dark:text-[#6e6e73] hover:underline">
+                            Contact
+                        </a>
+                    </div>
 
-                {/* Language Switcher */}
-                <div className="flex justify-center mb-6">
-                    <LanguageSwitcher />
-                </div>
-
-                {/* Social Links */}
-                <div className="flex justify-center gap-6 mb-8">
-                    <a href="#" className="text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white transition-colors">
-                        <Facebook className="w-5 h-5" />
-                    </a>
-                    <a href="#" className="text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white transition-colors">
-                        <Twitter className="w-5 h-5" />
-                    </a>
-                    <a href="#" className="text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white transition-colors">
-                        <Instagram className="w-5 h-5" />
-                    </a>
-                    <a href="#" className="text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white transition-colors">
-                        <Youtube className="w-5 h-5" />
-                    </a>
-                </div>
-
-                {/* Copyright */}
-                <div className="text-center">
-                    <p className="text-xs text-muted-foreground/60 dark:text-white/40">
-                        {footerTranslations.copyright}
-                    </p>
+                    
                 </div>
             </div>
         </footer>

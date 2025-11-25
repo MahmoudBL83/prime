@@ -122,12 +122,10 @@ export function Navigation() {
                         {/* Right: Theme, Language, Messaging & Account */}
                         <div className={`flex items-center ${locale === 'ar' ? 'space-x-reverse space-x-6' : 'space-x-6'}`}>
                             {/* Theme Toggle */}
-                            <div className="hidden lg:block">
-                                <ThemeToggle />
-                            </div>
+                            <ThemeToggle />
 
-                            {/* Language Switcher */}
-                            <div className="hidden lg:block relative">
+                            {/* Language Switcher - Temporarily Hidden */}
+                            {/* <div className="relative">
                                 <button
                                     onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
                                     className="flex items-center text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white transition-colors"
@@ -149,7 +147,7 @@ export function Navigation() {
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
-                            </div>
+                            </div> */}
 
                             {/* Show messaging and profile only when logged in */}
                             {session?.data?.user ? (
