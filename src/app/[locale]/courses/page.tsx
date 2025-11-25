@@ -354,6 +354,10 @@ export default function CoursesPage() {
     const { data: session } = useSession();
     const locale = useLocaleSafe();
     const isArabic = locale === 'ar';
+    const direction: 'ltr' | 'rtl' = isArabic ? 'rtl' : 'ltr';
+    const dropdownTextAlign = isArabic ? 'text-right' : 'text-left';
+    const cardMenuPositionClass = isArabic ? 'left-2 right-auto' : 'right-2';
+    const rankBadgePositionClass = isArabic ? 'right-3 left-auto' : 'left-3';
 
     // Minimum swipe distance (in px)
     const minSwipeDistance = 50;
@@ -439,7 +443,9 @@ export default function CoursesPage() {
     };
 
     return (
-        <div className="min-h-screen pt-" style={{ backgroundColor: '#1f1f1f' }}>
+        <div dir={direction} className="min-h-screen" style={{ backgroundColor: '#1f1f1f' }}>
+            
+
             {/* Hero Section - Featured Course */}
             <div 
                 className="relative h-screen w-full overflow-hidden mb-12"
@@ -461,16 +467,16 @@ export default function CoursesPage() {
                 </div>
 
                 {/* Hero Content */}
-                <div className="relative h-full max-w-screen-2xl mx-auto px-8 flex flex-col justify-end pb-16">
-                    <div className="max-w-xl space-y-3">
+                <div className={`relative h-full max-w-screen-2xl mx-auto px-8 flex flex-col justify-end pb-16 ${isArabic ? 'items-end' : ''}`}>
+                    <div className={`max-w-xl space-y-3 ${isArabic ? 'text-right' : 'text-left'}`}>
                         {/* Title */}
                         <h1 className="text-5xl font-bold text-white tracking-tight leading-tight">
                             {isArabic && heroCourse.titleAr ? heroCourse.titleAr : heroCourse.title}
                         </h1>
                         
                         {/* Metadata - Movies • Thriller • Drama • 18+ */}
-                        <div className="flex items-center space-x-3 text-sm text-white/90">
-                            <div className="flex items-center space-x-1">
+                        <div className={`flex items-center text-sm text-white/90 gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                            <div className={`flex items-center gap-1 ${isArabic ? 'flex-row-reverse' : ''}`}>
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
                                 </svg>
@@ -492,7 +498,7 @@ export default function CoursesPage() {
                         </p>
 
                         {/* Buttons */}
-                        <div className="flex items-center space-x-3 pt-2">
+                        <div className={`flex items-center gap-3 pt-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
                             <button 
                                 onClick={handleAcceptOffer}
                                 className="apple-tv-button relative flex items-center justify-center gap-2 px-8 py-3 font-semibold text-base text-black rounded-full min-w-[100px] max-w-[340px] w-auto transition-transform duration-100 ease-in hover:scale-[1.02] active:scale-[0.98] z-10"
@@ -521,7 +527,7 @@ export default function CoursesPage() {
                 </div>
 
                 {/* Pagination Dots */}
-                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                <div className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
                     {courses.slice(0, 5).map((_, index) => (
                         <button
                             key={index}
@@ -538,7 +544,7 @@ export default function CoursesPage() {
             <div className="relative z-10 pb-8">
                 <div className="max-w-screen-2xl mx-auto px-8">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-2">
+                        <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse text-right' : ''}`}>
                             <h2 className="text-xl font-semibold text-white">
                                 Top 10 TV Shows
                             </h2>
@@ -583,7 +589,7 @@ export default function CoursesPage() {
                                 <div className="relative aspect-[2/3] overflow-hidden" onClick={() => handleCourseClick(course.id)} style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
                                     {/* Rank Number - Apple TV Style */}
                                     <div 
-                                        className="absolute top-1 left-3 z-10 text-white font-bold pointer-events-none select-none"
+                                        className={`absolute top-1 ${rankBadgePositionClass} z-10 text-white font-bold pointer-events-none select-none`}
                                         style={{
                                             fontSize: '40px',
                                             fontWeight: 700,
@@ -606,7 +612,7 @@ export default function CoursesPage() {
                                             e.stopPropagation();
                                             setShowMenu(showMenu === course.id ? null : course.id);
                                         }}
-                                        className="absolute bottom-2 right-2 w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center transition-all z-10"
+                                        className={`absolute bottom-2 ${cardMenuPositionClass} w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center transition-all z-10`}
                                     >
                                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 16 16">
                                             <circle cx="3" cy="8" r="1.5"/>
@@ -617,13 +623,13 @@ export default function CoursesPage() {
 
                                     {/* Actions Dropdown Menu */}
                                     {showMenu === course.id && (
-                                        <div className="absolute bottom-12 right-2 bg-neutral-800/95 backdrop-blur-md overflow-hidden shadow-xl z-20 w-[140px]" style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
+                                        <div className={`absolute bottom-12 ${cardMenuPositionClass} bg-neutral-800/95 backdrop-blur-md overflow-hidden shadow-xl z-20 w-[140px]`} style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setShowMenu(null);
                                                 }}
-                                                className="w-full px-3 py-2.5 text-left text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between"
+                                                className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
                                             >
                                                 <span>Share</span>
                                                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -637,7 +643,7 @@ export default function CoursesPage() {
                                                     navigator.clipboard.writeText(`${window.location.origin}/${locale}/courses/${course.id}`);
                                                     setShowMenu(null);
                                                 }}
-                                                className="w-full px-3 py-2.5 text-left text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between"
+                                                className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
                                             >
                                                 <span>Copy Link</span>
                                                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -668,7 +674,7 @@ export default function CoursesPage() {
                     <div key={category} className="relative z-10 pb-8">
                         <div className="max-w-screen-2xl mx-auto px-8">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center space-x-2">
+                                <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse text-right' : ''}`}>
                                     <h2 className="text-xl font-semibold text-white">
                                         {category}
                                     </h2>
@@ -723,7 +729,7 @@ export default function CoursesPage() {
                                                     e.stopPropagation();
                                                     setShowMenu(showMenu === course.id ? null : course.id);
                                                 }}
-                                                className="absolute bottom-2 right-2 w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center transition-all z-10"
+                                                className={`absolute bottom-2 ${cardMenuPositionClass} w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center transition-all z-10`}
                                             >
                                                 <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 16 16">
                                                     <circle cx="3" cy="8" r="1.5"/>
@@ -734,13 +740,13 @@ export default function CoursesPage() {
 
                                             {/* Actions Dropdown Menu */}
                                             {showMenu === course.id && (
-                                                <div className="absolute bottom-12 right-2 bg-neutral-800/95 backdrop-blur-md overflow-hidden shadow-xl z-20 w-[140px]" style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
+                                                <div className={`absolute bottom-12 ${cardMenuPositionClass} bg-neutral-800/95 backdrop-blur-md overflow-hidden shadow-xl z-20 w-[140px]`} style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             setShowMenu(null);
                                                         }}
-                                                        className="w-full px-3 py-2.5 text-left text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between"
+                                                        className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
                                                     >
                                                         <span>Share</span>
                                                         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -754,7 +760,7 @@ export default function CoursesPage() {
                                                             navigator.clipboard.writeText(`${window.location.origin}/${locale}/courses/${course.id}`);
                                                             setShowMenu(null);
                                                         }}
-                                                        className="w-full px-3 py-2.5 text-left text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between"
+                                                        className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
                                                     >
                                                         <span>Copy Link</span>
                                                         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -777,6 +783,66 @@ export default function CoursesPage() {
                     </div>
                 );
             })}
+
+            {/* Hero Banner Component */}
+            <div className="relative z-10 pb-8">
+                <div className="max-w-screen-2xl mx-auto px-8">
+                    <div className="relative overflow-hidden" style={{ height: '400px', borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
+                        {/* Background Image */}
+                        <div className="absolute inset-0">
+                            <Image
+                                src="/images/courses/courses-hero.jpg"
+                                alt="Courses Hero"
+                                fill
+                                className="object-cover"
+                                priority
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+                            <div className={`absolute inset-0 ${isArabic ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-black/80 via-transparent to-transparent`} />
+                        </div>
+
+                        {/* Hero Content */}
+                        <div className={`relative h-full px-8 flex flex-col justify-center ${isArabic ? 'items-end' : 'items-start'}`}>
+                            <div className={`max-w-2xl space-y-4 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                {/* Apple TV Logo */}
+                                <div className="flex items-center gap-1 mb-2">
+                                    <svg className="w-8 h-8" viewBox="0 0 32 32" fill="white">
+                                        <path d="M22.184 8.82c-1.44 0-2.736.68-3.64.68-.944 0-2.4-.72-3.944-.72-3.04 0-6.4 2.52-6.4 7.28 0 4.64 3.68 9.84 6.68 9.84 1.32 0 2.32-.68 3.4-.68 1.04 0 2.08.72 3.52.72 2.88 0 5.2-4.72 5.2-4.84-.12 0-4.04-1.56-4.04-5.84 0-3.72 3.04-5.48 3.16-5.6-1.96-2.84-4.92-2.84-4.92-2.84zm-1.6-2.68c.96-1.16 1.68-2.76 1.44-4.4-1.52.08-3.32 1.04-4.36 2.28-.88 1.04-1.72 2.68-1.44 4.24 1.68.12 3.4-.84 4.36-2.12z"/>
+                                    </svg>
+                                    <span className="text-white text-2xl font-semibold">tv+</span>
+                                </div>
+                                
+                                {/* Title */}
+                                <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight" style={{ fontSize: '22px' }}>
+                                    {isArabic ? 'عرض لفترة محدودة. 59.99 جنيه مصري / شهر لمدة 6 أشهر' : 'Limited-time offer. $59.99/mo for 6 months.'}
+                                </h1>
+
+                                {/* CTA Button */}
+                                <div className={`flex items-center gap-3 pt-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                    <button 
+                                        onClick={handleAcceptOffer}
+                                        className="bg-white hover:bg-white/90 text-black font-semibold px-8 py-3 rounded-full transition-all"
+                                    >
+                                        {isArabic ? 'قبول العرض' : 'Accept Offer'}
+                                    </button>
+                                </div>
+
+                                {/* Offer Details */}
+                                <p className="text-xs text-white/70 leading-relaxed">
+                                    {isArabic 
+                                        ? 'EGP 59.99/شهر للـ 6 أشهر الأولى، ثم EGP 119.99/شهر' 
+                                        : '$59.99/month for the first 6 months, then $119.99/month'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {/* Separator Line */}
+                <div className="max-w-screen-2xl mx-auto px-8 mt-8">
+                    <div className="h-[1px] bg-white/10"></div>
+                </div>
+            </div>
 
             <style jsx global>{`
                 .line-clamp-1 {
