@@ -19,8 +19,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
     const { locale } = await params;
     const title = locale === 'ar'
-        ? "برايم - منصة التعلم الرقمي المصرية"
-        : "Prime - Egyptian Digital Learning Platform";
+        ? "برايم"
+        : "Prime";
+
+    const icons = {
+        icon: '/images/logo.jpg',
+        apple: '/images/logo.jpg',
+    };
 
     const description = locale === 'ar'
         ? "منصة تعليمية شاملة للطلاب والمتعلمين في مصر"
@@ -29,6 +34,7 @@ export async function generateMetadata({
     return {
         title,
         description,
+        icons,
         keywords: locale === 'ar'
             ? "تعليم, دورات, برمجة, تصميم, مصر, منصة تعليمية"
             : locale === 'de'

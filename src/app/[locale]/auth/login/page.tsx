@@ -131,10 +131,12 @@ function LoginContent() {
                             transition={{ duration: 0.8, delay: 0.2 }}
                             className="mb-6"
                         >
-                            <h1 className="text-4xl md:text-5xl font-bold mb-2 text-white">
-                                {locale === 'ar' ? 'برايم' : 'Prime'}
-                            </h1>
-                            <div className="w-16 h-1 mx-auto rounded-full bg-[#0a84ff]"></div>
+                            <img 
+                                src="/images/logo.jpg" 
+                                alt="Prime" 
+                                className="h-16 w-auto mx-auto"
+                                style={{ borderRadius: '12px' }}
+                            />
                         </motion.div>
 
                         <motion.h2

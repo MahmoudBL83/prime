@@ -1,34 +1,21 @@
-/**
- * Creator Application Page
- * Apply to become a content creator on the platform
- */
-
 'use client'
 
 import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
-import { useTranslations } from 'next-intl'
+import { useLocaleSafe } from '@/hooks/useTranslationsSafe'
+import Image from 'next/image'
+import { Footer } from '@/components/landing/Footer'
 import {
-    Upload,
     CheckCircle,
     XCircle,
     Clock,
     AlertCircle,
-    FileText,
-    Briefcase,
     Link as LinkIcon,
-    Users,
-    MessageSquare
+    MessageSquare,
+    Play
 } from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 
 interface Application {
     id: string
@@ -49,9 +36,9 @@ interface Application {
 export default function CreatorApplicationPage() {
     const { data: session } = useSession()
     const router = useRouter()
-    const params = useParams()
-    const locale = params.locale as string || 'en'
-    const t = useTranslations('creator.application')
+    const locale = useLocaleSafe()
+    const isArabic = locale === 'ar'
+    const direction: 'ltr' | 'rtl' = isArabic ? 'rtl' : 'ltr'
     
     const [loading, setLoading] = useState(true)
     const [submitting, setSubmitting] = useState(false)
@@ -70,6 +57,8 @@ export default function CreatorApplicationPage() {
     useEffect(() => {
         if (session?.user) {
             loadApplication()
+        } else {
+            setLoading(false)
         }
     }, [session])
 
@@ -90,6 +79,12 @@ export default function CreatorApplicationPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        
+        if (!session?.user) {
+            toast.error('Please sign in to submit your application')
+            return
+        }
+        
         setSubmitting(true)
 
         try {
@@ -104,14 +99,14 @@ export default function CreatorApplicationPage() {
             const data = await response.json()
 
             if (response.ok) {
-                toast.success(t('submitSuccess'))
+                toast.success('Application submitted successfully! We\'ll review it and get back to you soon.')
                 loadApplication()
             } else {
-                toast.error(data.error || t('submitError'))
+                toast.error(data.error || 'Failed to submit application')
             }
         } catch (error) {
             console.error('Application submission error:', error)
-            toast.error(t('submitError'))
+            toast.error('Failed to submit application')
         } finally {
             setSubmitting(false)
         }
@@ -125,28 +120,53 @@ export default function CreatorApplicationPage() {
     }
 
     const getStatusBadge = (status: Application['status']) => {
-        switch (status) {
-            case 'PENDING':
-                return <Badge className="bg-blue-100 text-blue-800"><Clock className="w-3 h-3 mr-1" />{t('status.pending')}</Badge>
-            case 'UNDER_REVIEW':
-                return <Badge className="bg-yellow-100 text-yellow-800"><AlertCircle className="w-3 h-3 mr-1" />{t('status.underReview')}</Badge>
-            case 'APPROVED':
-                return <Badge className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />{t('status.approved')}</Badge>
-            case 'REJECTED':
-                return <Badge className="bg-red-100 text-red-800"><XCircle className="w-3 h-3 mr-1" />{t('status.rejected')}</Badge>
-            case 'RESUBMIT_REQUIRED':
-                return <Badge className="bg-orange-100 text-orange-800"><AlertCircle className="w-3 h-3 mr-1" />{t('status.resubmitRequired')}</Badge>
-            default:
-                return null
+        const statusConfig = {
+            'PENDING': {
+                icon: Clock,
+                label: 'Pending Review',
+                className: 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+            },
+            'UNDER_REVIEW': {
+                icon: AlertCircle,
+                label: 'Under Review',
+                className: 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+            },
+            'APPROVED': {
+                icon: CheckCircle,
+                label: 'Approved',
+                className: 'bg-green-500/10 text-green-400 border border-green-500/20'
+            },
+            'REJECTED': {
+                icon: XCircle,
+                label: 'Rejected',
+                className: 'bg-red-500/10 text-red-400 border border-red-500/20'
+            },
+            'RESUBMIT_REQUIRED': {
+                icon: AlertCircle,
+                label: 'Resubmit Required',
+                className: 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+            }
         }
+
+        const config = statusConfig[status]
+        if (!config) return null
+
+        const Icon = config.icon
+
+        return (
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${config.className}`}>
+                <Icon className="w-4 h-4" />
+                {config.label}
+            </div>
+        )
     }
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+            <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-400 mx-auto mb-6"></div>
-                    <p className="text-purple-200 text-lg">{t('loading')}</p>
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-foreground mx-auto mb-6"></div>
+                    <p className="text-foreground text-lg">Loading...</p>
                 </div>
             </div>
         )
@@ -155,250 +175,383 @@ export default function CreatorApplicationPage() {
     // Show existing application status
     if (hasApplication && application && !['REJECTED', 'RESUBMIT_REQUIRED'].includes(application.status)) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute top-20 left-20 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl"></div>
-                    <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl"></div>
+            <div dir={direction} className="min-h-screen bg-background">
+                {/* Back Button */}
+                <div className="absolute top-8 left-8 z-50">
+                    <button
+                        onClick={() => router.back()}
+                        className="flex items-center gap-2 px-4 py-2 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full text-white transition-all"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        <span className="text-sm font-medium">Back</span>
+                    </button>
                 </div>
 
-                <div className="relative max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                    <div className="mb-8">
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent mb-2">
-                            {t('title')}
-                        </h1>
-                        <p className="text-purple-200/80 text-lg">
-                            {t('subtitle')}
-                        </p>
+                {/* Hero Section */}
+                <div className="relative h-[60vh] w-full overflow-hidden mb-12">
+                    {/* Background Image */}
+                    <div className="absolute inset-0">
+                        <Image
+                            src="/images/courses/German Language Posters/WhatsApp Image 2025-11-23 at 22.43.43_7cec6116.jpg"
+                            alt="Creator Application"
+                            fill
+                            className="object-cover"
+                            priority
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+                        <div className={`absolute inset-0 ${isArabic ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-black/80 via-transparent to-transparent`} />
                     </div>
 
-                    <Card className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-xl border-gray-700/50">
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-white">{t('applicationStatus')}</CardTitle>
-                                {getStatusBadge(application.status)}
+                    {/* Hero Content */}
+                    <div className={`relative h-full max-w-screen-2xl mx-auto px-8 flex flex-col justify-end pb-16 ${isArabic ? 'items-end' : ''}`}>
+                        <div className={`max-w-xl space-y-3 ${isArabic ? 'text-right' : 'text-left'}`}>
+                            {/* Prime Logo */}
+                            <div className="flex items-center gap-2 mb-2">
+                                <Image
+                                    src="/images/logo.jpg"
+                                    alt="Prime"
+                                    width={40}
+                                    height={40}
+                                    className="rounded-lg"
+                                />
+                                <span className="text-white text-2xl font-semibold">Prime</span>
                             </div>
-                            <CardDescription className="text-gray-400">
-                                {t('submittedOn')}: {new Date(application.createdAt).toLocaleDateString(locale)}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="grid grid-cols-2 gap-6">
+                            
+                            <h1 className="text-5xl font-bold text-white tracking-tight leading-tight">
+                                Creator Application
+                            </h1>
+                            <p className="text-base text-white/90 leading-relaxed max-w-md">
+                                Track your application status and start your journey as a creator
+                            </p>
+                            {getStatusBadge(application.status)}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Application Details */}
+                <div className="max-w-screen-2xl mx-auto px-8 pb-20">
+                    <div className="max-w-4xl">
+                        {/* Status Card */}
+                        <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-8 mb-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-2xl font-semibold text-foreground">Application Details</h2>
+                                <p className="text-sm text-muted-foreground">
+                                    Submitted: {new Date(application.createdAt).toLocaleDateString(locale)}
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <Label className="text-gray-300">{t('expertise')}</Label>
-                                    <p className="text-white mt-1">{application.expertise}</p>
+                                    <p className="text-sm text-muted-foreground mb-1">Expertise</p>
+                                    <p className="text-foreground font-medium">{application.expertise}</p>
                                 </div>
                                 {application.experienceYears && (
                                     <div>
-                                        <Label className="text-gray-300">{t('experienceYears')}</Label>
-                                        <p className="text-white mt-1">{application.experienceYears} {t('years')}</p>
+                                        <p className="text-sm text-muted-foreground mb-1">Experience</p>
+                                        <p className="text-foreground font-medium">{application.experienceYears} years</p>
                                     </div>
                                 )}
                             </div>
 
                             {application.sampleContentUrl && (
-                                <div>
-                                    <Label className="text-gray-300">{t('sampleContent')}</Label>
-                                    <a href={application.sampleContentUrl} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 flex items-center gap-2 mt-1">
+                                <div className="mt-6">
+                                    <p className="text-sm text-muted-foreground mb-2">Sample Content</p>
+                                    <a 
+                                        href={application.sampleContentUrl} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-blue-400 hover:text-blue-300 flex items-center gap-2 transition-colors"
+                                    >
                                         <LinkIcon className="w-4 h-4" />
-                                        {application.sampleContentUrl}
+                                        View Sample
                                     </a>
                                 </div>
                             )}
 
                             {application.portfolioUrl && (
-                                <div>
-                                    <Label className="text-gray-300">{t('portfolio')}</Label>
-                                    <a href={application.portfolioUrl} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 flex items-center gap-2 mt-1">
+                                <div className="mt-6">
+                                    <p className="text-sm text-muted-foreground mb-2">Portfolio</p>
+                                    <a 
+                                        href={application.portfolioUrl} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-blue-400 hover:text-blue-300 flex items-center gap-2 transition-colors"
+                                    >
                                         <LinkIcon className="w-4 h-4" />
-                                        {application.portfolioUrl}
+                                        View Portfolio
                                     </a>
                                 </div>
                             )}
 
-                            <div>
-                                <Label className="text-gray-300">{t('motivation')}</Label>
-                                <p className="text-white mt-1 whitespace-pre-wrap">{application.motivation}</p>
+                            {application.socialProof && (
+                                <div className="mt-6">
+                                    <p className="text-sm text-muted-foreground mb-2">Social Proof</p>
+                                    <p className="text-foreground whitespace-pre-wrap">{application.socialProof}</p>
+                                </div>
+                            )}
+
+                            <div className="mt-6">
+                                <p className="text-sm text-muted-foreground mb-2">Motivation</p>
+                                <p className="text-foreground whitespace-pre-wrap">{application.motivation}</p>
                             </div>
 
                             {application.reviewNotes && (
-                                <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-4">
-                                    <Label className="text-blue-300 flex items-center gap-2">
-                                        <MessageSquare className="w-4 h-4" />
-                                        {t('reviewNotes')}
-                                    </Label>
-                                    <p className="text-blue-100 mt-2">{application.reviewNotes}</p>
+                                <div className="mt-6 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <MessageSquare className="w-4 h-4 text-blue-400" />
+                                        <p className="text-sm font-medium text-blue-400">Review Notes</p>
+                                    </div>
+                                    <p className="text-blue-100">{application.reviewNotes}</p>
                                 </div>
                             )}
 
                             {application.status === 'APPROVED' && (
-                                <div className="bg-green-900/20 border border-green-700/50 rounded-lg p-4">
-                                    <h3 className="text-green-300 font-semibold mb-2">{t('congratulations')}</h3>
-                                    <p className="text-green-100">{t('approvedMessage')}</p>
-                                    <Button 
+                                <div className="mt-6 bg-green-500/10 border border-green-500/20 rounded-xl p-6">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <CheckCircle className="w-5 h-5 text-green-400" />
+                                        <h3 className="text-lg font-semibold text-green-400">Congratulations!</h3>
+                                    </div>
+                                    <p className="text-green-100 mb-4">
+                                        Your application has been approved! You can now start creating content on our platform.
+                                    </p>
+                                    <button 
                                         onClick={() => router.push(`/${locale}/creator/dashboard`)}
-                                        className="mt-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                                        className="bg-white hover:bg-white/90 text-black font-semibold px-8 py-3 rounded-full transition-all"
                                     >
-                                        {t('goToDashboard')}
-                                    </Button>
+                                        Go to Creator Dashboard
+                                    </button>
                                 </div>
                             )}
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
                 </div>
+
+                <Footer />
             </div>
         )
     }
 
     // Show application form
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-20 left-20 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl"></div>
+        <div dir={direction} className="min-h-screen bg-background">
+            {/* Back Button */}
+            <div className="absolute top-8 left-8 z-50">
+                <button
+                    onClick={() => router.back()}
+                    className="flex items-center gap-2 px-4 py-2 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full text-white transition-all"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    <span className="text-sm font-medium">Back</span>
+                </button>
             </div>
 
-            <div className="relative max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                <div className="mb-8">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent mb-2">
-                        {t('title')}
-                    </h1>
-                    <p className="text-purple-200/80 text-lg">
-                        {t('subtitle')}
-                    </p>
+            {/* Hero Section */}
+            <div className="relative h-[60vh] w-full overflow-hidden mb-12">
+                {/* Background Image */}
+                <div className="absolute inset-0">
+                    <Image
+                        src="/images/courses/German Language Posters/WhatsApp Image 2025-11-23 at 23.38.13_cf3432e6.jpg"
+                        alt="Become a Creator"
+                        fill
+                        className="object-cover"
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+                    <div className={`absolute inset-0 ${isArabic ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-black/80 via-transparent to-transparent`} />
                 </div>
 
-                {application?.rejectionReason && (
-                    <Card className="bg-red-900/20 border-red-700/50 mb-6">
-                        <CardHeader>
-                            <CardTitle className="text-red-300 flex items-center gap-2">
-                                <XCircle className="w-5 h-5" />
-                                {t('previouslyRejected')}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-red-100">{application.rejectionReason}</p>
-                        </CardContent>
-                    </Card>
-                )}
-
-                <form onSubmit={handleSubmit}>
-                    <Card className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-xl border-gray-700/50">
-                        <CardHeader>
-                            <CardTitle className="text-white">{t('applicationForm')}</CardTitle>
-                            <CardDescription className="text-gray-400">
-                                {t('formDescription')}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div>
-                                <Label htmlFor="expertise" className="text-gray-300">
-                                    {t('expertise')} <span className="text-red-400">*</span>
-                                </Label>
-                                <Input
-                                    id="expertise"
-                                    value={formData.expertise}
-                                    onChange={(e) => handleChange('expertise', e.target.value)}
-                                    placeholder={t('expertisePlaceholder')}
-                                    required
-                                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500"
-                                />
-                            </div>
-
-                            <div>
-                                <Label htmlFor="experienceYears" className="text-gray-300">
-                                    {t('experienceYears')}
-                                </Label>
-                                <Input
-                                    id="experienceYears"
-                                    type="number"
-                                    min="0"
-                                    value={formData.experienceYears}
-                                    onChange={(e) => handleChange('experienceYears', e.target.value)}
-                                    placeholder={t('experienceYearsPlaceholder')}
-                                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500"
-                                />
-                            </div>
-
-                            <div>
-                                <Label htmlFor="sampleContentUrl" className="text-gray-300">
-                                    {t('sampleContent')}
-                                </Label>
-                                <Input
-                                    id="sampleContentUrl"
-                                    type="url"
-                                    value={formData.sampleContentUrl}
-                                    onChange={(e) => handleChange('sampleContentUrl', e.target.value)}
-                                    placeholder={t('sampleContentPlaceholder')}
-                                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500"
-                                />
-                                <p className="text-gray-500 text-sm mt-1">{t('sampleContentHint')}</p>
-                            </div>
-
-                            <div>
-                                <Label htmlFor="portfolioUrl" className="text-gray-300">
-                                    {t('portfolio')}
-                                </Label>
-                                <Input
-                                    id="portfolioUrl"
-                                    type="url"
-                                    value={formData.portfolioUrl}
-                                    onChange={(e) => handleChange('portfolioUrl', e.target.value)}
-                                    placeholder={t('portfolioPlaceholder')}
-                                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500"
-                                />
-                            </div>
-
-                            <div>
-                                <Label htmlFor="socialProof" className="text-gray-300">
-                                    {t('socialProof')}
-                                </Label>
-                                <Textarea
-                                    id="socialProof"
-                                    value={formData.socialProof}
-                                    onChange={(e) => handleChange('socialProof', e.target.value)}
-                                    placeholder={t('socialProofPlaceholder')}
-                                    rows={3}
-                                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500"
-                                />
-                                <p className="text-gray-500 text-sm mt-1">{t('socialProofHint')}</p>
-                            </div>
-
-                            <div>
-                                <Label htmlFor="motivation" className="text-gray-300">
-                                    {t('motivation')} <span className="text-red-400">*</span>
-                                </Label>
-                                <Textarea
-                                    id="motivation"
-                                    value={formData.motivation}
-                                    onChange={(e) => handleChange('motivation', e.target.value)}
-                                    placeholder={t('motivationPlaceholder')}
-                                    rows={5}
-                                    required
-                                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500"
-                                />
-                            </div>
-
-                            <div className="flex gap-4">
-                                <Button
-                                    type="submit"
-                                    disabled={submitting}
-                                    className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                                >
-                                    {submitting ? t('submitting') : t('submit')}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => router.push(`/${locale}/dashboard`)}
-                                    className="border-gray-700 text-gray-300 hover:bg-gray-800"
-                                >
-                                    {t('cancel')}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </form>
+                {/* Hero Content */}
+                <div className={`relative h-full max-w-screen-2xl mx-auto px-8 flex flex-col justify-end pb-16 ${isArabic ? 'items-end' : ''}`}>
+                    <div className={`max-w-xl space-y-3 ${isArabic ? 'text-right' : 'text-left'}`}>
+                        {/* Prime Logo */}
+                        <div className="flex items-center gap-2 mb-2">
+                            <Image
+                                src="/images/logo.jpg"
+                                alt="Prime"
+                                width={40}
+                                height={40}
+                                className="rounded-lg"
+                            />
+                            <span className="text-white text-2xl font-semibold">Prime Creator</span>
+                        </div>
+                        
+                        <h1 className="text-5xl font-bold text-white tracking-tight leading-tight">
+                            Become a Creator
+                        </h1>
+                        <p className="text-base text-white/90 leading-relaxed max-w-md">
+                            Join our community of talented creators and share your expertise with thousands of learners worldwide.
+                        </p>
+                    </div>
+                </div>
             </div>
+
+            {/* Application Form */}
+            <div className="max-w-screen-2xl mx-auto px-8 pb-20">
+                <div className="max-w-4xl">
+                    {/* Rejection Notice */}
+                    {application?.rejectionReason && (
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 mb-6">
+                            <div className="flex items-center gap-2 mb-3">
+                                <XCircle className="w-5 h-5 text-red-400" />
+                                <h3 className="text-lg font-semibold text-red-400">Previous Application Rejected</h3>
+                            </div>
+                            <p className="text-red-100">{application.rejectionReason}</p>
+                            <p className="text-red-100/80 text-sm mt-2">Please address the feedback below and resubmit your application.</p>
+                        </div>
+                    )}
+
+                    {/* Sign In Notice */}
+                    {!session?.user && (
+                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-6 mb-6">
+                            <div className="flex items-center gap-2 mb-3">
+                                <AlertCircle className="w-5 h-5 text-blue-400" />
+                                <h3 className="text-lg font-semibold text-blue-400">Sign In Required</h3>
+                            </div>
+                            <p className="text-blue-100 mb-4">You need to sign in to submit a creator application.</p>
+                            <button 
+                                onClick={() => router.push(`/${locale}/auth/signin?callbackUrl=/${locale}/creator/apply`)}
+                                className="bg-white hover:bg-white/90 text-black font-semibold px-8 py-3 rounded-full transition-all"
+                            >
+                                Sign In
+                            </button>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit}>
+                        <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-8">
+                            <h2 className="text-2xl font-semibold text-foreground mb-6">Application Form</h2>
+                            <p className="text-muted-foreground mb-8">
+                                Tell us about yourself and why you want to become a creator on our platform.
+                            </p>
+
+                            <div className="space-y-6">
+                                {/* Expertise */}
+                                <div>
+                                    <label htmlFor="expertise" className="block text-sm font-medium text-foreground mb-2">
+                                        Area of Expertise <span className="text-red-400">*</span>
+                                    </label>
+                                    <input
+                                        id="expertise"
+                                        type="text"
+                                        value={formData.expertise}
+                                        onChange={(e) => handleChange('expertise', e.target.value)}
+                                        placeholder="e.g., Web Development, Graphic Design, Marketing"
+                                        required
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
+                                    />
+                                </div>
+
+                                {/* Experience Years */}
+                                <div>
+                                    <label htmlFor="experienceYears" className="block text-sm font-medium text-foreground mb-2">
+                                        Years of Experience
+                                    </label>
+                                    <input
+                                        id="experienceYears"
+                                        type="number"
+                                        min="0"
+                                        value={formData.experienceYears}
+                                        onChange={(e) => handleChange('experienceYears', e.target.value)}
+                                        placeholder="How many years of experience do you have?"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
+                                    />
+                                </div>
+
+                                {/* Sample Content URL */}
+                                <div>
+                                    <label htmlFor="sampleContentUrl" className="block text-sm font-medium text-foreground mb-2">
+                                        Sample Content URL
+                                    </label>
+                                    <input
+                                        id="sampleContentUrl"
+                                        type="url"
+                                        value={formData.sampleContentUrl}
+                                        onChange={(e) => handleChange('sampleContentUrl', e.target.value)}
+                                        placeholder="https://youtube.com/watch?v=..."
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
+                                    />
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        Link to a video, article, or project that showcases your expertise
+                                    </p>
+                                </div>
+
+                                {/* Portfolio URL */}
+                                <div>
+                                    <label htmlFor="portfolioUrl" className="block text-sm font-medium text-foreground mb-2">
+                                        Portfolio URL
+                                    </label>
+                                    <input
+                                        id="portfolioUrl"
+                                        type="url"
+                                        value={formData.portfolioUrl}
+                                        onChange={(e) => handleChange('portfolioUrl', e.target.value)}
+                                        placeholder="https://yourportfolio.com"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
+                                    />
+                                </div>
+
+                                {/* Social Proof */}
+                                <div>
+                                    <label htmlFor="socialProof" className="block text-sm font-medium text-foreground mb-2">
+                                        Social Media & Achievements
+                                    </label>
+                                    <textarea
+                                        id="socialProof"
+                                        value={formData.socialProof}
+                                        onChange={(e) => handleChange('socialProof', e.target.value)}
+                                        placeholder="Share your social media handles, follower counts, certifications, awards, or other achievements"
+                                        rows={4}
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
+                                    />
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        Help us understand your reach and credibility
+                                    </p>
+                                </div>
+
+                                {/* Motivation */}
+                                <div>
+                                    <label htmlFor="motivation" className="block text-sm font-medium text-foreground mb-2">
+                                        Why do you want to be a creator? <span className="text-red-400">*</span>
+                                    </label>
+                                    <textarea
+                                        id="motivation"
+                                        value={formData.motivation}
+                                        onChange={(e) => handleChange('motivation', e.target.value)}
+                                        placeholder="Tell us about your passion for teaching, what you want to create, and how you'll help learners..."
+                                        rows={6}
+                                        required
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
+                                    />
+                                </div>
+
+                                {/* Submit Button */}
+                                <div className="flex gap-4 pt-4">
+                                    <button
+                                        type="submit"
+                                        disabled={submitting || !session?.user}
+                                        className="flex-1 bg-white hover:bg-white/90 text-black font-semibold px-8 py-3 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {submitting ? 'Submitting...' : 'Submit Application'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => router.push(`/${locale}/`)}
+                                        className="px-8 py-3 border border-white/20 text-foreground font-semibold rounded-full hover:bg-white/5 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <Footer />
         </div>
     )
 }

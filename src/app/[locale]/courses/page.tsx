@@ -8,6 +8,7 @@ import { Search, Play } from 'lucide-react';
 import Image from 'next/image';
 import { SignInModal } from '@/components/SignInModal';
 import { PaymentModal } from '@/components/PaymentModal';
+import { Footer } from '@/components/landing/Footer';
 
 interface Course {
     id: string;
@@ -24,6 +25,7 @@ interface Course {
 
 // Mock courses data matching Apple TV style
 const mockCourses: Course[] = [
+    // German Language (8 courses)
     {
         id: 'lost-bus-german-survival',
         title: 'The Lost Bus',
@@ -37,57 +39,6 @@ const mockCourses: Course[] = [
         thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-23 at 22.43.43_7cec6116.jpg'
     },
     {
-        id: 'pluribus-drama-relationships',
-        title: 'Pluribus',
-        titleAr: 'بلوريبوس',
-        category: 'Freelance & Side Hustle',
-        rating: 4.5,
-        year: 2024,
-        duration: '4 months',
-        description: 'A compelling drama series exploring complex human relationships.',
-        thumbnail: '/images/courses/Freelance & Side Hustle Posters/between.png'
-    },
-    {
-        id: 'high-potential-entrepreneur',
-        title: 'High Potential',
-        titleAr: 'إمكانات عالية',
-        category: 'Entrepreneurship',
-        rating: 4.6,
-        year: 2024,
-        duration: '5 months',
-        thumbnail: '/images/courses/Entrepreneurship Posters/first launch.png'
-    },
-    {
-        id: 'morning-show-trading',
-        title: 'Morning Show',
-        titleAr: 'برنامج الصباح',
-        category: 'Trading',
-        rating: 4.7,
-        year: 2024,
-        duration: '6 months',
-        thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.12_063b614c.jpg'
-    },
-    {
-        id: 'ted-lasso-coding-ai',
-        title: 'Ted Lasso',
-        titleAr: 'تيد لاسو',
-        category: 'Coding & AI',
-        rating: 4.9,
-        year: 2024,
-        duration: '3 months',
-        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.11_07d95353.jpg'
-    },
-    {
-        id: 'slow-horses-german-integration',
-        title: 'Slow Horses',
-        titleAr: 'الخيول البطيئة',
-        category: 'German Integration',
-        rating: 4.8,
-        year: 2024,
-        duration: '5 months',
-        thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.13_973f42cd.jpg'
-    },
-    {
         id: 'severance-german-advanced',
         title: 'Severance',
         titleAr: 'الفصل',
@@ -96,96 +47,6 @@ const mockCourses: Course[] = [
         year: 2024,
         duration: '6 months',
         thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-23 at 23.38.13_cf3432e6.jpg'
-    },
-    {
-        id: 'foundation-freelance-mastery',
-        title: 'Foundation',
-        titleAr: 'الأساس',
-        category: 'Freelance & Side Hustle',
-        rating: 4.7,
-        year: 2024,
-        duration: '8 months',
-        thumbnail: '/images/courses/Freelance & Side Hustle Posters/driving deliveries in berlin.png'
-    },
-    {
-        id: 'invasion-startup-growth',
-        title: 'Invasion',
-        titleAr: 'الغزو',
-        category: 'Entrepreneurship',
-        rating: 4.5,
-        year: 2024,
-        duration: '5 months',
-        thumbnail: '/images/courses/Entrepreneurship Posters/investor room 101.png'
-    },
-    {
-        id: 'master-trader-pro',
-        title: 'Master Trader',
-        titleAr: 'المتداول المحترف',
-        category: 'Trading',
-        rating: 4.8,
-        year: 2024,
-        duration: '4 months',
-        thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.14_770af3af.jpg'
-    },
-    {
-        id: 'ai-revolution-machine-learning',
-        title: 'AI Revolution',
-        titleAr: 'ثورة الذكاء الاصطناعي',
-        category: 'Coding & AI',
-        rating: 4.9,
-        year: 2024,
-        duration: '7 months',
-        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.13_c74bbc50.jpg'
-    },
-    {
-        id: 'german-life-culture',
-        title: 'German Life',
-        titleAr: 'الحياة الألمانية',
-        category: 'German Integration',
-        rating: 4.7,
-        year: 2024,
-        duration: '5 months',
-        thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.13_d9d3d1dd.jpg'
-    },
-    {
-        id: 'python-mastery',
-        title: 'Python Mastery',
-        titleAr: 'إتقان بايثون',
-        category: 'Coding & AI',
-        rating: 4.8,
-        year: 2024,
-        duration: '4 months',
-        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 15.04.46_5f562939.jpg'
-    },
-    {
-        id: 'freelance-success',
-        title: 'Freelance Success',
-        titleAr: 'نجاح العمل الحر',
-        category: 'Freelance & Side Hustle',
-        rating: 4.6,
-        year: 2024,
-        duration: '3 months',
-        thumbnail: '/images/courses/Freelance & Side Hustle Posters/E-Commerce Day One.png'
-    },
-    {
-        id: 'startup-funding',
-        title: 'Startup Funding',
-        titleAr: 'تمويل الشركات الناشئة',
-        category: 'Entrepreneurship',
-        rating: 4.7,
-        year: 2024,
-        duration: '6 months',
-        thumbnail: '/images/courses/Entrepreneurship Posters/WhatsApp Image 2025-11-25 at 14.32.14_9bb85000.jpg'
-    },
-    {
-        id: 'forex-trading-pro',
-        title: 'Forex Trading Pro',
-        titleAr: 'احترافية تداول العملات',
-        category: 'Trading',
-        rating: 4.9,
-        year: 2024,
-        duration: '5 months',
-        thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.12_063b614c.jpg'
     },
     {
         id: 'german-b2-course',
@@ -198,14 +59,86 @@ const mockCourses: Course[] = [
         thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-25 at 14.30.27_09d6241b.jpg'
     },
     {
-        id: 'web-development-bootcamp',
-        title: 'Web Development Bootcamp',
-        titleAr: 'معسكر تطوير الويب',
-        category: 'Coding & AI',
-        rating: 4.9,
+        id: 'german-c1-advanced',
+        title: 'German C1 Advanced',
+        titleAr: 'الألمانية C1 متقدم',
+        category: 'German Language',
+        rating: 4.8,
         year: 2024,
         duration: '8 months',
-        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.11_07d95353.jpg'
+        thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-25 at 14.32.11_b498b0d9.jpg'
+    },
+    {
+        id: 'german-a1-beginner',
+        title: 'German A1 Beginner',
+        titleAr: 'الألمانية A1 للمبتدئين',
+        category: 'German Language',
+        rating: 4.7,
+        year: 2024,
+        duration: '4 months',
+        thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-25 at 14.32.16_9169e54d.jpg'
+    },
+    {
+        id: 'german-conversation',
+        title: 'German Conversation',
+        titleAr: 'محادثة ألمانية',
+        category: 'German Language',
+        rating: 4.6,
+        year: 2024,
+        duration: '3 months',
+        thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-25 at 14.32.16_917477a7.jpg'
+    },
+    {
+        id: 'german-grammar-mastery',
+        title: 'German Grammar Mastery',
+        titleAr: 'إتقان قواعد اللغة الألمانية',
+        category: 'German Language',
+        rating: 4.9,
+        year: 2024,
+        duration: '5 months',
+        thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-25 at 14.32.17_825387de.jpg'
+    },
+    {
+        id: 'german-business',
+        title: 'Business German',
+        titleAr: 'الألمانية للأعمال',
+        category: 'German Language',
+        rating: 4.8,
+        year: 2024,
+        duration: '6 months',
+        thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-25 at 14.32.17_ae8d6ae8.jpg'
+    },
+    // Freelance & Side Hustle (7 courses)
+    {
+        id: 'pluribus-drama-relationships',
+        title: 'Pluribus',
+        titleAr: 'بلوريبوس',
+        category: 'Freelance & Side Hustle',
+        rating: 4.5,
+        year: 2024,
+        duration: '4 months',
+        description: 'A compelling drama series exploring complex human relationships.',
+        thumbnail: '/images/courses/Freelance & Side Hustle Posters/between.png'
+    },
+    {
+        id: 'foundation-freelance-mastery',
+        title: 'Foundation',
+        titleAr: 'الأساس',
+        category: 'Freelance & Side Hustle',
+        rating: 4.7,
+        year: 2024,
+        duration: '8 months',
+        thumbnail: '/images/courses/Freelance & Side Hustle Posters/driving deliveries in berlin.png'
+    },
+    {
+        id: 'freelance-success',
+        title: 'Freelance Success',
+        titleAr: 'نجاح العمل الحر',
+        category: 'Freelance & Side Hustle',
+        rating: 4.6,
+        year: 2024,
+        duration: '3 months',
+        thumbnail: '/images/courses/Freelance & Side Hustle Posters/E-Commerce Day One.png'
     },
     {
         id: 'content-creation-mastery',
@@ -218,46 +151,6 @@ const mockCourses: Course[] = [
         thumbnail: '/images/courses/Freelance & Side Hustle Posters/SKILL INTO INCOME.png'
     },
     {
-        id: 'business-growth-strategies',
-        title: 'Business Growth Strategies',
-        titleAr: 'استراتيجيات نمو الأعمال',
-        category: 'Entrepreneurship',
-        rating: 4.7,
-        year: 2024,
-        duration: '5 months',
-        thumbnail: '/images/courses/Entrepreneurship Posters/WhatsApp Image 2025-11-25 at 14.32.15_34d01093.jpg'
-    },
-    {
-        id: 'crypto-trading-fundamentals',
-        title: 'Crypto Trading Fundamentals',
-        titleAr: 'أساسيات تداول العملات المشفرة',
-        category: 'Trading',
-        rating: 4.6,
-        year: 2024,
-        duration: '3 months',
-        thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.14_770af3af.jpg'
-    },
-    {
-        id: 'german-citizenship-prep',
-        title: 'German Citizenship Prep',
-        titleAr: 'التحضير للجنسية الألمانية',
-        category: 'German Integration',
-        rating: 4.8,
-        year: 2024,
-        duration: '6 months',
-        thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.14_39554e98.jpg'
-    },
-    {
-        id: 'machine-learning-basics',
-        title: 'Machine Learning Basics',
-        titleAr: 'أساسيات تعلم الآلة',
-        category: 'Coding & AI',
-        rating: 4.9,
-        year: 2024,
-        duration: '7 months',
-        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.13_c74bbc50.jpg'
-    },
-    {
         id: 'digital-marketing-blueprint',
         title: 'Digital Marketing Blueprint',
         titleAr: 'مخطط التسويق الرقمي',
@@ -266,46 +159,6 @@ const mockCourses: Course[] = [
         year: 2024,
         duration: '5 months',
         thumbnail: '/images/courses/Freelance & Side Hustle Posters/WhatsApp Image 2025-11-25 at 14.32.12_063b614c.jpg'
-    },
-    {
-        id: 'scaling-your-startup',
-        title: 'Scaling Your Startup',
-        titleAr: 'توسيع شركتك الناشئة',
-        category: 'Entrepreneurship',
-        rating: 4.8,
-        year: 2024,
-        duration: '6 months',
-        thumbnail: '/images/courses/Entrepreneurship Posters/WhatsApp Image 2025-11-25 at 15.04.46_5f562939.jpg'
-    },
-    {
-        id: 'day-trading-mastery',
-        title: 'Day Trading Mastery',
-        titleAr: 'إتقان التداول اليومي',
-        category: 'Trading',
-        rating: 4.9,
-        year: 2024,
-        duration: '4 months',
-        thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.12_063b614c.jpg'
-    },
-    {
-        id: 'german-c1-advanced',
-        title: 'German C1 Advanced',
-        titleAr: 'الألمانية C1 متقدم',
-        category: 'German Language',
-        rating: 4.8,
-        year: 2024,
-        duration: '8 months',
-        thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-25 at 14.32.11_b498b0d9.jpg'
-    },
-    {
-        id: 'full-stack-developer',
-        title: 'Full Stack Developer',
-        titleAr: 'مطور متكامل',
-        category: 'Coding & AI',
-        rating: 4.9,
-        year: 2024,
-        duration: '10 months',
-        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 15.04.46_5f562939.jpg'
     },
     {
         id: 'freelance-graphic-design',
@@ -318,24 +171,178 @@ const mockCourses: Course[] = [
         thumbnail: '/images/courses/Freelance & Side Hustle Posters/WhatsApp Image 2025-11-25 at 14.32.12_2ac19e78.jpg'
     },
     {
-        id: 'ecommerce-empire',
-        title: 'E-commerce Empire',
-        titleAr: 'إمبراطورية التجارة الإلكترونية',
+        id: 'freelance-writing',
+        title: 'Freelance Writing',
+        titleAr: 'الكتابة الحرة',
+        category: 'Freelance & Side Hustle',
+        rating: 4.8,
+        year: 2024,
+        duration: '3 months',
+        thumbnail: '/images/courses/Freelance & Side Hustle Posters/WhatsApp Image 2025-11-25 at 14.32.15_58aad836.jpg'
+    },
+    // Entrepreneurship (5 courses)
+    {
+        id: 'high-potential-entrepreneur',
+        title: 'High Potential',
+        titleAr: 'إمكانات عالية',
+        category: 'Entrepreneurship',
+        rating: 4.6,
+        year: 2024,
+        duration: '5 months',
+        thumbnail: '/images/courses/Entrepreneurship Posters/first launch.png'
+    },
+    {
+        id: 'invasion-startup-growth',
+        title: 'Invasion',
+        titleAr: 'الغزو',
+        category: 'Entrepreneurship',
+        rating: 4.5,
+        year: 2024,
+        duration: '5 months',
+        thumbnail: '/images/courses/Entrepreneurship Posters/investor room 101.png'
+    },
+    {
+        id: 'startup-funding',
+        title: 'Startup Funding',
+        titleAr: 'تمويل الشركات الناشئة',
         category: 'Entrepreneurship',
         rating: 4.7,
         year: 2024,
         duration: '6 months',
-        thumbnail: '/images/courses/Entrepreneurship Posters/first launch.png'
+        thumbnail: '/images/courses/Entrepreneurship Posters/WhatsApp Image 2025-11-25 at 14.32.14_9bb85000.jpg'
     },
     {
-        id: 'options-trading-advanced',
-        title: 'Options Trading Advanced',
-        titleAr: 'تداول الخيارات المتقدم',
+        id: 'business-growth-strategies',
+        title: 'Business Growth Strategies',
+        titleAr: 'استراتيجيات نمو الأعمال',
+        category: 'Entrepreneurship',
+        rating: 4.7,
+        year: 2024,
+        duration: '5 months',
+        thumbnail: '/images/courses/Entrepreneurship Posters/WhatsApp Image 2025-11-25 at 14.32.15_34d01093.jpg'
+    },
+    {
+        id: 'scaling-your-startup',
+        title: 'Scaling Your Startup',
+        titleAr: 'توسيع شركتك الناشئة',
+        category: 'Entrepreneurship',
+        rating: 4.8,
+        year: 2024,
+        duration: '6 months',
+        thumbnail: '/images/courses/Entrepreneurship Posters/WhatsApp Image 2025-11-25 at 15.04.46_5f562939.jpg'
+    },
+    // Trading (2 courses)
+    {
+        id: 'morning-show-trading',
+        title: 'Morning Show',
+        titleAr: 'برنامج الصباح',
+        category: 'Trading',
+        rating: 4.7,
+        year: 2024,
+        duration: '6 months',
+        thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.12_063b614c.jpg'
+    },
+    {
+        id: 'master-trader-pro',
+        title: 'Master Trader',
+        titleAr: 'المتداول المحترف',
         category: 'Trading',
         rating: 4.8,
         year: 2024,
-        duration: '5 months',
+        duration: '4 months',
         thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.14_770af3af.jpg'
+    },
+    // Coding & AI (3 courses)
+    {
+        id: 'ted-lasso-coding-ai',
+        title: 'Ted Lasso',
+        titleAr: 'تيد لاسو',
+        category: 'Coding & AI',
+        rating: 4.9,
+        year: 2024,
+        duration: '3 months',
+        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.11_07d95353.jpg'
+    },
+    {
+        id: 'ai-revolution-machine-learning',
+        title: 'AI Revolution',
+        titleAr: 'ثورة الذكاء الاصطناعي',
+        category: 'Coding & AI',
+        rating: 4.9,
+        year: 2024,
+        duration: '7 months',
+        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.13_c74bbc50.jpg'
+    },
+    {
+        id: 'python-mastery',
+        title: 'Python Mastery',
+        titleAr: 'إتقان بايثون',
+        category: 'Coding & AI',
+        rating: 4.8,
+        year: 2024,
+        duration: '4 months',
+        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 15.04.46_5f562939.jpg'
+    },
+    // German Integration (6 courses)
+    {
+        id: 'slow-horses-german-integration',
+        title: 'Slow Horses',
+        titleAr: 'الخيول البطيئة',
+        category: 'German Integration',
+        rating: 4.8,
+        year: 2024,
+        duration: '5 months',
+        thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.13_973f42cd.jpg'
+    },
+    {
+        id: 'german-life-culture',
+        title: 'German Life',
+        titleAr: 'الحياة الألمانية',
+        category: 'German Integration',
+        rating: 4.7,
+        year: 2024,
+        duration: '5 months',
+        thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.13_d9d3d1dd.jpg'
+    },
+    {
+        id: 'german-citizenship-prep',
+        title: 'German Citizenship Prep',
+        titleAr: 'التحضير للجنسية الألمانية',
+        category: 'German Integration',
+        rating: 4.8,
+        year: 2024,
+        duration: '6 months',
+        thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.14_39554e98.jpg'
+    },
+    {
+        id: 'german-work-culture',
+        title: 'German Work Culture',
+        titleAr: 'ثقافة العمل الألمانية',
+        category: 'German Integration',
+        rating: 4.6,
+        year: 2024,
+        duration: '4 months',
+        thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.15_48365969.jpg'
+    },
+    {
+        id: 'living-in-germany',
+        title: 'Living in Germany',
+        titleAr: 'العيش في ألمانيا',
+        category: 'German Integration',
+        rating: 4.7,
+        year: 2024,
+        duration: '3 months',
+        thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.16_fdffce41.jpg'
+    },
+    {
+        id: 'german-social-system',
+        title: 'German Social System',
+        titleAr: 'النظام الاجتماعي الألماني',
+        category: 'German Integration',
+        rating: 4.9,
+        year: 2024,
+        duration: '4 months',
+        thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.17_91121bd7.jpg'
     }
 ];
 
@@ -355,6 +362,7 @@ export default function CoursesPage() {
     const [scrollPositions, setScrollPositions] = useState<{ [key: string]: number }>({});
     const [showLeftArrow, setShowLeftArrow] = useState<{ [key: string]: boolean }>({});
     const [showRightArrow, setShowRightArrow] = useState<{ [key: string]: boolean }>({});
+    const [expandedFAQ, setExpandedFAQ] = useState<number | null>(0);
     const router = useRouter();
     const { data: session } = useSession();
     const locale = useLocaleSafe();
@@ -517,8 +525,37 @@ export default function CoursesPage() {
     }, [courses]);
 
     return (
-        <div dir={direction} className="min-h-screen bg-background">
-            
+        <div dir={direction} className="min-h-screen bg-background pb-20">
+            {/* Sticky Bottom Banner */}
+            <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0071E3] text-white py-4 px-4">
+                <div className="max-w-screen-2xl mx-auto flex items-center justify-between">
+                    <div className="flex-1">
+                        <p className="text-sm font-semibold">€28.99/Mo For 12 Months</p>
+                        <p className="text-xs opacity-90">Hundreds of exclusive Prime Originals. Now 50% off.</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                        <button 
+                            onClick={handleAcceptOffer}
+                            className="bg-white text-black font-semibold text-sm hover:bg-white/90 transition-all whitespace-nowrap text-center"
+                            style={{
+                                border: 'none',
+                                borderRadius: '32px',
+                                boxShadow: '0 0 20px rgba(0, 0, 0, .06)',
+                                height: '32px',
+                                width: '245px',
+                                padding: '0 12px',
+                                verticalAlign: 'middle'
+                            }}
+                        >
+                            Accept Offer
+                        </button>
+                        <p className="text-[10px] opacity-75 text-center leading-tight" style={{ maxWidth: '245px' }}>
+                            €28.99/Mo For 12 Months<br />
+                            Terms apply.
+                        </p>
+                    </div>
+                </div>
+            </div>
 
             {/* Hero Section - Featured Course */}
             <div 
@@ -539,6 +576,7 @@ export default function CoursesPage() {
                         fill
                         className="object-cover"
                         priority
+                        key={heroCourse.id}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
                     <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
@@ -598,8 +636,7 @@ export default function CoursesPage() {
 
                         {/* Offer Text */}
                         <p className="text-xs text-white/70 pt-1 leading-relaxed">
-                            EGP 59.99/month for the first<br />
-                            <span className="font-medium">6 months</span>, then EGP 119.99/month
+                            €28.99/Mo For 12 Months
                         </p>
                     </div>
                 </div>
@@ -691,6 +728,7 @@ export default function CoursesPage() {
                                         alt={course.title}
                                         fill
                                         className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                        key={course.id}
                                     />
                                     {/* Three Dots Button - Apple TV Style */}
                                     <button
@@ -817,6 +855,7 @@ export default function CoursesPage() {
                                                 alt={course.title}
                                                 fill
                                                 className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                                key={course.id}
                                             />
                                             {/* Three Dots Button - Apple TV Style */}
                                             <button
@@ -900,17 +939,21 @@ export default function CoursesPage() {
                         {/* Hero Content */}
                         <div className={`relative h-full px-8 flex flex-col justify-center ${isArabic ? 'items-end' : 'items-start'}`}>
                             <div className={`max-w-2xl space-y-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                                {/* Apple TV Logo */}
-                                <div className="flex items-center gap-1 mb-2">
-                                    <svg className="w-8 h-8" viewBox="0 0 32 32" fill="white">
-                                        <path d="M22.184 8.82c-1.44 0-2.736.68-3.64.68-.944 0-2.4-.72-3.944-.72-3.04 0-6.4 2.52-6.4 7.28 0 4.64 3.68 9.84 6.68 9.84 1.32 0 2.32-.68 3.4-.68 1.04 0 2.08.72 3.52.72 2.88 0 5.2-4.72 5.2-4.84-.12 0-4.04-1.56-4.04-5.84 0-3.72 3.04-5.48 3.16-5.6-1.96-2.84-4.92-2.84-4.92-2.84zm-1.6-2.68c.96-1.16 1.68-2.76 1.44-4.4-1.52.08-3.32 1.04-4.36 2.28-.88 1.04-1.72 2.68-1.44 4.24 1.68.12 3.4-.84 4.36-2.12z"/>
-                                    </svg>
-                                    <span className="text-white text-2xl font-semibold">tv+</span>
+                                {/* Prime Logo */}
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Image
+                                        src="/images/logo.jpg"
+                                        alt="Prime"
+                                        width={32}
+                                        height={32}
+                                        className="rounded-lg"
+                                    />
+                                    <span className="text-white text-2xl font-semibold">Prime</span>
                                 </div>
                                 
                                 {/* Title */}
                                 <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight" style={{ fontSize: '22px' }}>
-                                    {isArabic ? 'عرض لفترة محدودة. 59.99 جنيه مصري / شهر لمدة 6 أشهر' : 'Limited-time offer. $59.99/mo for 6 months.'}
+                                    {isArabic ? 'عرض لفترة محدودة. €28.99/Mo For 12 Months' : 'Limited-time offer. €28.99/Mo For 12 Months'}
                                 </h1>
 
                                 {/* CTA Button */}
@@ -926,8 +969,8 @@ export default function CoursesPage() {
                                 {/* Offer Details */}
                                 <p className="text-xs text-white/70 leading-relaxed">
                                     {isArabic 
-                                        ? 'EGP 59.99/شهر للـ 6 أشهر الأولى، ثم EGP 119.99/شهر' 
-                                        : '$59.99/month for the first 6 months, then $119.99/month'}
+                                        ? '€28.99/Mo For 12 Months' 
+                                        : '€28.99/Mo For 12 Months'}
                                 </p>
                             </div>
                         </div>
@@ -937,6 +980,180 @@ export default function CoursesPage() {
                 {/* Separator Line */}
                 <div className="max-w-screen-2xl mx-auto px-8 mt-8">
                     <div className="h-[1px] bg-white/10"></div>
+                </div>
+
+
+            </div>
+
+            {/* Watch on the go Section */}
+            <div className="relative z-10 pb-12 bg-white">
+                <div className="max-w-screen-2xl mx-auto px-8">
+                    <div className="text-center py-12">
+                        <h2 className="text-4xl font-bold text-black mb-6">Watch on the go.</h2>
+                        <a href="#" className="text-[#0071E3] hover:underline text-sm font-semibold inline-flex items-center gap-1">
+                            See all the ways to watch Prime
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                        
+                        {/* Device Icons */}
+                        <div className="flex items-center justify-center gap-12 mt-12 flex-wrap">
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-12 h-12 flex items-center justify-center">
+                                    <svg className="w-10 h-12" viewBox="0 0 40 48" fill="none" stroke="black" strokeWidth="1.5">
+                                        <rect x="6" y="2" width="28" height="44" rx="4" />
+                                        <line x1="6" y1="38" x2="34" y2="38" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm text-black">iPhone</span>
+                            </div>
+                            
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-12 h-12 flex items-center justify-center">
+                                    <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" stroke="black" strokeWidth="1.5">
+                                        <rect x="4" y="6" width="40" height="36" rx="4" />
+                                        <line x1="4" y1="36" x2="44" y2="36" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm text-black">iPad</span>
+                            </div>
+                            
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-12 h-12 flex items-center justify-center">
+                                    <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" stroke="black" strokeWidth="1.5">
+                                        <rect x="2" y="8" width="44" height="28" rx="2" />
+                                        <path d="M16 36 L20 36 L22 44 L26 44 L28 36 L32 36" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm text-black">Mac & Windows</span>
+                            </div>
+
+                            
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-12 h-12 flex items-center justify-center">
+                                    <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" stroke="black" strokeWidth="1.5">
+                                        <rect x="8" y="12" width="32" height="24" rx="2" />
+                                        <path d="M24 36 L24 42" />
+                                        <line x1="16" y1="42" x2="32" y2="42" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm text-black">AirPlay</span>
+                            </div>
+                            
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-12 h-12 flex items-center justify-center">
+                                    <svg className="w-10 h-12" viewBox="0 0 40 48" fill="none" stroke="black" strokeWidth="1.5">
+                                        <rect x="6" y="2" width="28" height="44" rx="4" />
+                                        <line x1="6" y1="38" x2="34" y2="38" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm text-black">Android</span>
+                            </div>
+                            
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-12 h-12 flex items-center justify-center">
+                                    <svg className="w-10 h-10" viewBox="0 0 40 40" fill="none" stroke="black" strokeWidth="1.5">
+                                        <circle cx="20" cy="20" r="18" />
+                                        <path d="M12 20 L18 26 L28 14" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm text-black">Web</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {/* Separator Line */}
+                <div className="max-w-screen-2xl mx-auto px-8 mt-8">
+                    <div className="h-[1px] bg-black/10"></div>
+                </div>
+            </div>
+
+            {/* Questions? Answers. Section */}
+            <div className="relative z-10 pb-12 bg-white">
+                <div className="max-w-4xl mx-auto px-8">
+                    <h2 className="text-4xl font-bold text-black text-center mb-12">Questions? Answers.</h2>
+                    
+                    <div className="space-y-0">
+                        {/* FAQ Item 1 */}
+                        <div className="border-b border-black/10">
+                            <button 
+                                onClick={() => setExpandedFAQ(expandedFAQ === 0 ? null : 0)}
+                                className="w-full py-6 flex items-center justify-between text-left hover:opacity-70 transition-opacity"
+                            >
+                                <span className="text-xl font-semibold text-black">What is Prime ?</span>
+                                <svg className="w-4 h-2 text-black" viewBox="0 0 17 8.85">
+                                    <polyline 
+                                        stroke="currentColor" 
+                                        strokeLinecap="round" 
+                                        strokeLinejoin="round" 
+                                        fill="none" 
+                                        fillRule="evenodd" 
+                                        points={expandedFAQ === 0 ? "15 7.72 8.5 1.13 2 7.72" : "15 1.13 8.5 7.72 2 1.13"}
+                                        className="transition-all duration-300"
+                                    />
+                                </svg>
+                            </button>
+                            <div className={`overflow-hidden transition-all duration-300 ${expandedFAQ === 0 ? 'max-h-96 pb-6' : 'max-h-0'}`}>
+                                <p className="text-black/80 leading-relaxed">
+                                    Prime is your gateway to exceptional learning experiences, featuring hundreds of exclusive courses and programs — from intensive language courses and professional development to entrepreneurial training and technical skills — with new content added weekly. Subscribe and access all courses on the Prime platform. Prime subscription includes unlimited access to all courses, live sessions, interactive tools, and community features.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* FAQ Item 2 */}
+                        <div className="border-b border-black/10">
+                            <button 
+                                onClick={() => setExpandedFAQ(expandedFAQ === 1 ? null : 1)}
+                                className="w-full py-6 flex items-center justify-between text-left hover:opacity-70 transition-opacity"
+                            >
+                                <span className="text-xl font-semibold text-black">How much does a Prime subscription cost?</span>
+                                <svg className="w-4 h-2 text-black" viewBox="0 0 17 8.85">
+                                    <polyline 
+                                        stroke="currentColor" 
+                                        strokeLinecap="round" 
+                                        strokeLinejoin="round" 
+                                        fill="none" 
+                                        fillRule="evenodd" 
+                                        points={expandedFAQ === 1 ? "15 7.72 8.5 1.13 2 7.72" : "15 1.13 8.5 7.72 2 1.13"}
+                                        className="transition-all duration-300"
+                                    />
+                                </svg>
+                            </button>
+                            <div className={`overflow-hidden transition-all duration-300 ${expandedFAQ === 1 ? 'max-h-96 pb-6' : 'max-h-0'}`}>
+                                <p className="text-black/80 leading-relaxed">
+                                    A Prime subscription costs €28.99/Mo for 12 months. You can cancel anytime and get access to all courses, live sessions, certificates, and premium features.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* FAQ Item 3 */}
+                        <div className="border-b border-black/10">
+                            <button 
+                                onClick={() => setExpandedFAQ(expandedFAQ === 2 ? null : 2)}
+                                className="w-full py-6 flex items-center justify-between text-left hover:opacity-70 transition-opacity"
+                            >
+                                <span className="text-xl font-semibold text-black">Can I get a Prime subscription for free?</span>
+                                <svg className="w-4 h-2 text-black" viewBox="0 0 17 8.85">
+                                    <polyline 
+                                        stroke="currentColor" 
+                                        strokeLinecap="round" 
+                                        strokeLinejoin="round" 
+                                        fill="none" 
+                                        fillRule="evenodd" 
+                                        points={expandedFAQ === 2 ? "15 7.72 8.5 1.13 2 7.72" : "15 1.13 8.5 7.72 2 1.13"}
+                                        className="transition-all duration-300"
+                                    />
+                                </svg>
+                            </button>
+                            <div className={`overflow-hidden transition-all duration-300 ${expandedFAQ === 2 ? 'max-h-96 pb-6' : 'max-h-0'}`}>
+                                <p className="text-black/80 leading-relaxed">
+                                    Yes! New subscribers can try Prime free for 7 days. After that, it's €28.99/Mo for 12 months with full access to all courses and features.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -988,8 +1205,11 @@ export default function CoursesPage() {
                 isOpen={showPaymentModal}
                 onClose={() => setShowPaymentModal(false)}
                 courseTitle={heroCourse.title}
-                price="EGP 59.99/month for the first 6 months, then EGP 119.99/month"
+                price="€28.99/Mo For 12 Months"
             />
+
+            {/* Footer */}
+            <Footer />
         </div>
     );
 }

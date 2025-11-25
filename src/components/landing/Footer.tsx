@@ -17,6 +17,17 @@ export function Footer() {
         <footer className="bg-background dark:bg-[#1d1d1f] py-4">
             <div className="max-w-screen-2xl mx-auto px-8">
                 <div className="flex flex-col items-start">
+                    {/* Top Links */}
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-xs mb-3">
+                        <a href="#" className="text-muted-foreground dark:text-[#6e6e73] hover:underline">
+                            Deutschland
+                        </a>
+                        <span className="text-muted-foreground dark:text-[#6e6e73]">|</span>
+                        <a href={`/${locale}/creator/apply`} className="text-muted-foreground dark:text-[#6e6e73] hover:underline">
+                            Become a Creator
+                        </a>
+                    </div>
+                    
                     {/* Copyright */}
                     <div className="text-xs text-muted-foreground dark:text-[#6e6e73] mb-2">
                         Copyright © {currentYear} <span className="font-semibold">Prime Inc.</span> All rights reserved.

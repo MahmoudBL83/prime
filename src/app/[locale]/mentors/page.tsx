@@ -1728,17 +1728,11 @@ export default function OnlyFansStyleMentorsPage() {
                                                         className="bg-white/[0.02] border border-border rounded-2xl p-4 hover:border-purple-500/50 transition-all cursor-pointer group"
                                                     >
                                                         <div className="flex items-center gap-3 mb-3">
-                                                            {creator.user.profileImage ? (
-                                                                <Image
-                                                                    src={creator.user.profileImage}
-                                                                    alt={creator.user.name}
-                                                                    width={48} height={48} className="rounded-full object-cover w-12 h-12"
-                                                                />
-                                                            ) : (
-                                                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                                                                    <span className="text-lg font-bold text-foreground">{creator.user.name[0]}</span>
-                                                                </div>
-                                                            )}
+                                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
+                                                                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                                                                </svg>
+                                                            </div>
                                                             <div className="flex-1">
                                                                 <div className="flex items-center gap-1">
                                                                     <h5 className="font-bold text-foreground group-hover:text-purple-400 transition-colors">{creator.user.name}</h5>
@@ -1989,37 +1983,13 @@ export default function OnlyFansStyleMentorsPage() {
                                                     }}
                                                 />
                                                 
-                                                {/* Card Image */}
-                                                <div className="relative aspect-[16/10] overflow-hidden" style={{ borderRadius: 'inherit' }}>
-                                                    {(
-                                                        <img
-                                                            src={`/images/mentors/${(idx % 7) + 1}.jpg`}
-                                                            alt={creator.user.name}
-                                                            className="w-full h-full object-cover transition-transform duration-300"
-                                                            onError={(e) => {
-                                                                const img = e.target as HTMLImageElement;
-                                                                // Try different extensions if jpg fails
-                                                                if (img.src.includes('.jpg')) {
-                                                                    img.src = `/images/mentors/${(idx % 7) + 1}.webp`;
-                                                                } else if (img.src.includes('.webp')) {
-                                                                    img.src = `/images/mentors/${(idx % 7) + 1}.png`;
-                                                                } else {
-                                                                    // Final fallback to gradient
-                                                                    img.style.display = 'none';
-                                                                    const parent = img.parentElement;
-                                                                    if (parent) {
-                                                                        parent.innerHTML = `
-                                                                            <div class="w-full h-full bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 flex items-center justify-center">
-                                                                                <span class="text-6xl font-bold text-white">${creator.user.name[0]}</span>
-                                                                            </div>
-                                                                        `;
-                                                                    }
-                                                                }
-                                                            }}
-                                                        />
-                                                    )}
-                                                    
-                                                    {/* Gradient Overlay */}
+                                {/* Card Image */}
+                                <div className="relative aspect-[16/10] overflow-hidden" style={{ borderRadius: 'inherit' }}>
+                                    <div className="w-full h-full bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 flex items-center justify-center">
+                                        <svg className="w-24 h-24 text-white/90" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                                        </svg>
+                                    </div>                                                    {/* Gradient Overlay */}
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                                                     
                                                     {/* Category Tag - Top Left */}

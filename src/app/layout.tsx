@@ -18,6 +18,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "برايم - منصة التعلم الرقمي المصرية",
   description: "منصة تعليمية شاملة للطلاب والمتعلمين في مصر",
+  icons: {
+    icon: '/images/logo.jpg',
+    apple: '/images/logo.jpg',
+  },
 };
 
 export default function RootLayout({

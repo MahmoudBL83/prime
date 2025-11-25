@@ -132,6 +132,16 @@ const coursesData: { [key: string]: Course } = {
                 descriptionAr: 'تعميق الروابط وظهور الأسرار الخفية...',
                 duration: '55 min',
                 thumbnail: '/images/courses/Freelance & Side Hustle Posters/driving deliveries in berlin.png'
+            },
+            {
+                id: '3',
+                number: 3,
+                title: 'Breaking Points',
+                titleAr: 'نقاط الانهيار',
+                description: 'Tensions rise as relationships are tested...',
+                descriptionAr: 'تتصاعد التوترات مع اختبار العلاقات...',
+                duration: '52 min',
+                thumbnail: '/images/courses/Freelance & Side Hustle Posters/E-Commerce Day One.png'
             }
         ]
     },
@@ -156,6 +166,16 @@ const coursesData: { [key: string]: Course } = {
                 descriptionAr: 'هياكل القواعد الألمانية المعقدة...',
                 duration: '1h 5min',
                 thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-23 at 23.38.13_cf3432e6.jpg'
+            },
+            {
+                id: '2',
+                number: 2,
+                title: 'Professional German',
+                titleAr: 'الألمانية المهنية',
+                description: 'Business German communication...',
+                descriptionAr: 'التواصل باللغة الألمانية للأعمال...',
+                duration: '58 min',
+                thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-25 at 14.32.17_ae8d6ae8.jpg'
             }
         ]
     },
@@ -169,7 +189,7 @@ const coursesData: { [key: string]: Course } = {
         duration: '8 months',
         description: 'Build your freelance career from the ground up.',
         descriptionAr: 'ابن حياتك المهنية المستقلة من الصفر.',
-        thumbnail: '/images/courses/Freelance & Side Hustle Posters/E-Commerce Day One.png',
+        thumbnail: '/images/courses/Freelance & Side Hustle Posters/driving deliveries in berlin.png',
         episodes: [
             {
                 id: '1',
@@ -179,7 +199,17 @@ const coursesData: { [key: string]: Course } = {
                 description: 'First steps in freelancing...',
                 descriptionAr: 'الخطوات الأولى في العمل الحر...',
                 duration: '1h',
-                thumbnail: '/images/courses/Freelance & Side Hustle Posters/E-Commerce Day One.png'
+                thumbnail: '/images/courses/Freelance & Side Hustle Posters/driving deliveries in berlin.png'
+            },
+            {
+                id: '2',
+                number: 2,
+                title: 'Building Your Portfolio',
+                titleAr: 'بناء محفظتك',
+                description: 'Create a compelling portfolio...',
+                descriptionAr: 'إنشاء محفظة مقنعة...',
+                duration: '55 min',
+                thumbnail: '/images/courses/Freelance & Side Hustle Posters/SKILL INTO INCOME.png'
             }
         ]
     },
@@ -203,7 +233,17 @@ const coursesData: { [key: string]: Course } = {
                 description: 'Introduction to artificial intelligence...',
                 descriptionAr: 'مقدمة للذكاء الاصطناعي...',
                 duration: '50 min',
-                thumbnail: '/images/courses/apple5.jpg'
+                thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.11_07d95353.jpg'
+            },
+            {
+                id: '2',
+                number: 2,
+                title: 'Machine Learning Basics',
+                titleAr: 'أساسيات تعلم الآلة',
+                description: 'Understanding ML algorithms...',
+                descriptionAr: 'فهم خوارزميات تعلم الآلة...',
+                duration: '1h 2min',
+                thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.13_c74bbc50.jpg'
             }
         ]
     },
@@ -217,7 +257,7 @@ const coursesData: { [key: string]: Course } = {
         duration: '5 months',
         description: 'Complete guide to German integration and culture.',
         descriptionAr: 'دليل كامل للاندماج والثقافة الألمانية.',
-        thumbnail: '/images/courses/apple6.jpg',
+        thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.13_973f42cd.jpg',
         episodes: [
             {
                 id: '1',
@@ -227,7 +267,17 @@ const coursesData: { [key: string]: Course } = {
                 description: 'Understanding German culture...',
                 descriptionAr: 'فهم الثقافة الألمانية...',
                 duration: '1h 10min',
-                thumbnail: '/images/courses/apple6.jpg'
+                thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.13_973f42cd.jpg'
+            },
+            {
+                id: '2',
+                number: 2,
+                title: 'Integration Process',
+                titleAr: 'عملية الاندماج',
+                description: 'Steps to successful integration...',
+                descriptionAr: 'خطوات الاندماج الناجح...',
+                duration: '58 min',
+                thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.14_39554e98.jpg'
             }
         ]
     },
@@ -241,7 +291,7 @@ const coursesData: { [key: string]: Course } = {
         duration: '6 months',
         description: 'Learn professional trading strategies and techniques.',
         descriptionAr: 'تعلم استراتيجيات وتقنيات التداول الاحترافية.',
-        thumbnail: '/images/courses/apple4.jpg',
+        thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.12_063b614c.jpg',
         episodes: [
             {
                 id: '1',
@@ -251,7 +301,17 @@ const coursesData: { [key: string]: Course } = {
                 description: 'Introduction to trading markets...',
                 descriptionAr: 'مقدمة لأسواق التداول...',
                 duration: '1h 15min',
-                thumbnail: '/images/courses/apple4.jpg'
+                thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.12_063b614c.jpg'
+            },
+            {
+                id: '2',
+                number: 2,
+                title: 'Risk Management',
+                titleAr: 'إدارة المخاطر',
+                description: 'Managing trading risks effectively...',
+                descriptionAr: 'إدارة مخاطر التداول بفعالية...',
+                duration: '1h 5min',
+                thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.14_770af3af.jpg'
             }
         ]
     },
@@ -265,7 +325,7 @@ const coursesData: { [key: string]: Course } = {
         duration: '7 months',
         description: 'Deep dive into machine learning and AI technologies.',
         descriptionAr: 'غوص عميق في تعلم الآلة وتقنيات الذكاء الاصطناعي.',
-        thumbnail: '/images/courses/apple1.jpg',
+        thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.13_c74bbc50.jpg',
         episodes: [
             {
                 id: '1',
@@ -275,7 +335,17 @@ const coursesData: { [key: string]: Course } = {
                 description: 'Getting started with machine learning...',
                 descriptionAr: 'البدء في تعلم الآلة...',
                 duration: '1h 20min',
-                thumbnail: '/images/courses/apple1.jpg'
+                thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.13_c74bbc50.jpg'
+            },
+            {
+                id: '2',
+                number: 2,
+                title: 'Deep Learning',
+                titleAr: 'التعلم العميق',
+                description: 'Advanced neural networks...',
+                descriptionAr: 'الشبكات العصبية المتقدمة...',
+                duration: '1h 15min',
+                thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 15.04.46_5f562939.jpg'
             }
         ]
     },
@@ -289,7 +359,7 @@ const coursesData: { [key: string]: Course } = {
         duration: '5 months',
         description: 'Experience authentic German life and traditions.',
         descriptionAr: 'تجربة الحياة والتقاليد الألمانية الأصيلة.',
-        thumbnail: '/images/courses/apple2.jpg',
+        thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.13_d9d3d1dd.jpg',
         episodes: [
             {
                 id: '1',
@@ -299,7 +369,17 @@ const coursesData: { [key: string]: Course } = {
                 description: 'Understanding German daily routines...',
                 descriptionAr: 'فهم الروتين اليومي الألماني...',
                 duration: '55 min',
-                thumbnail: '/images/courses/apple2.jpg'
+                thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.13_d9d3d1dd.jpg'
+            },
+            {
+                id: '2',
+                number: 2,
+                title: 'Traditions & Festivals',
+                titleAr: 'التقاليد والمهرجانات',
+                description: 'Exploring German celebrations...',
+                descriptionAr: 'استكشاف الاحتفالات الألمانية...',
+                duration: '1h',
+                thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.16_fdffce41.jpg'
             }
         ]
     }
@@ -459,7 +539,7 @@ export default function CourseDetailPage() {
     }
 
     return (
-        <div className="min-h-screen pt-" style={{ backgroundColor: '#1f1f1f' }}>
+        <div className="min-h-screen bg-background" style={{ backgroundColor: '#000000' }}>
             {/* Hero Section */}
             <div 
                 className="relative h-screen w-full overflow-hidden mb-12 cursor-grab active:cursor-grabbing"
@@ -479,9 +559,11 @@ export default function CourseDetailPage() {
                         fill
                         className="object-cover"
                         priority
+                        unoptimized
+                        key={course.id}
                     />
-                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #1f1f1f, rgba(31, 31, 31, 0.6), transparent)' }} />
-                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(31, 31, 31, 0.8), transparent, transparent)' }} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
                 </div>
 
                 {/* Hero Content */}
@@ -543,8 +625,7 @@ export default function CourseDetailPage() {
 
                         {/* Offer Text */}
                         <p className="text-xs text-white/70 pt-1 leading-relaxed">
-                            EGP 59.99/month for the first<br />
-                            <span className="font-medium">6 months</span>, then EGP 119.99/month
+                            €28.99/Mo For 12 Months
                         </p>
                     </div>
                 </div>
@@ -668,14 +749,14 @@ export default function CourseDetailPage() {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
                     {[
-                        { id: 'pluribus-drama-relationships', title: 'Pluribus', thumbnail: '/images/courses/apple2.jpg' },
-                        { id: 'severance-german-advanced', title: 'Severance', thumbnail: '/images/courses/apple7.jpg' },
-                        { id: 'foundation-freelance-mastery', title: 'Foundation', thumbnail: '/images/courses/apple8.jpg' },
-                        { id: 'ted-lasso-coding-ai', title: 'Ted Lasso', thumbnail: '/images/courses/apple5.jpg' },
-                        { id: 'slow-horses-german-integration', title: 'Slow Horses', thumbnail: '/images/courses/apple6.jpg' },
-                        { id: 'morning-show-trading', title: 'Morning Show', thumbnail: '/images/courses/apple4.jpg' },
-                        { id: 'ai-revolution-machine-learning', title: 'AI Revolution', thumbnail: '/images/courses/apple1.jpg' },
-                        { id: 'german-life-culture', title: 'German Life', thumbnail: '/images/courses/apple2.jpg' }
+                        { id: 'pluribus-drama-relationships', title: 'Pluribus', thumbnail: '/images/courses/Freelance & Side Hustle Posters/between.png' },
+                        { id: 'severance-german-advanced', title: 'Severance', thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-23 at 23.38.13_cf3432e6.jpg' },
+                        { id: 'foundation-freelance-mastery', title: 'Foundation', thumbnail: '/images/courses/Freelance & Side Hustle Posters/driving deliveries in berlin.png' },
+                        { id: 'ted-lasso-coding-ai', title: 'Ted Lasso', thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.11_07d95353.jpg' },
+                        { id: 'slow-horses-german-integration', title: 'Slow Horses', thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.13_973f42cd.jpg' },
+                        { id: 'morning-show-trading', title: 'Morning Show', thumbnail: '/images/courses/Trading Posters/WhatsApp Image 2025-11-25 at 14.32.12_063b614c.jpg' },
+                        { id: 'ai-revolution-machine-learning', title: 'AI Revolution', thumbnail: '/images/courses/Coding & AI Posters/WhatsApp Image 2025-11-25 at 14.32.13_c74bbc50.jpg' },
+                        { id: 'german-life-culture', title: 'German Life', thumbnail: '/images/courses/German Integration Posters/WhatsApp Image 2025-11-25 at 14.32.13_d9d3d1dd.jpg' }
                     ].map((related) => (
                         <div
                             key={related.id}
@@ -822,7 +903,7 @@ export default function CourseDetailPage() {
                 isOpen={showPaymentModal}
                 onClose={() => setShowPaymentModal(false)}
                 courseTitle={course.title}
-                price="EGP 59.99/month for the first 6 months, then EGP 119.99/month"
+                price="€28.99/Mo For 12 Months"
             />
         </div>
     );

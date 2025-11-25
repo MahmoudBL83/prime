@@ -241,7 +241,7 @@ export function PaymentModal({ isOpen, onClose, courseTitle, price }: PaymentMod
                             {/* Terms */}
                             <div className="text-xs text-white/60 leading-relaxed">
                                 By clicking Continue, you agree to the{' '}
-                                <button className="text-blue-500 hover:text-blue-400">Apple Media Services Terms and Conditions</button>
+                                <button className="text-blue-500 hover:text-blue-400">Prime Media Services Terms and Conditions</button>
                                 {' '}and acknowledge that you have read the{' '}
                                 <button className="text-blue-500 hover:text-blue-400">Privacy Policy</button>.
                             </div>

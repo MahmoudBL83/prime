@@ -94,9 +94,14 @@ export function Navigation() {
                             <button
                                 onClick={() => navigateWithLoading(`/${locale}/courses`, 'nav-home')}
                                 disabled={isLoading('nav-home')}
-                                className="text-foreground dark:text-white text-xl font-semibold tracking-tight hover:opacity-80 transition-opacity"
+                                className="hover:opacity-80 transition-opacity"
                             >
-                                Prime
+                                <img 
+                                    src="/images/logo.jpg" 
+                                    alt="Prime" 
+                                    className="h-8 w-auto"
+                                    style={{ borderRadius: '6px' }}
+                                />
                             </button>
                         </div>
 
@@ -260,9 +265,12 @@ export function Navigation() {
                             <div className="max-w-screen-2xl mx-auto px-8 py-6">
                                 {/* Header */}
                                 <div className="flex items-center justify-between mb-6">
-                                    <div className="text-xl font-semibold text-foreground dark:text-white">
-                                        Prime
-                                    </div>
+                                    <img 
+                                        src="/images/logo.jpg" 
+                                        alt="Prime" 
+                                        className="h-8 w-auto"
+                                        style={{ borderRadius: '6px' }}
+                                    />
                                     <button
                                         onClick={() => setIsMobileMenuOpen(false)}
                                         className="text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white transition-colors"
