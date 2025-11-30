@@ -375,8 +375,14 @@ function MessengerPage() {
     const [showNewMessageModal, setShowNewMessageModal] = useState(false)
     const [selectedUsers, setSelectedUsers] = useState<string[]>([])
     const [searchUsers, setSearchUsers] = useState('')
-    const [activeTab, setActiveTab] = useState<'inbox' | 'archived' | 'groups'>('inbox')
+    const [activeTab, setActiveTab] = useState<'mentors' | 'study-buddies' | 'recommended'>('mentors')
     const [showCreateGroupModal, setShowCreateGroupModal] = useState(false)
+    const [mentors, setMentors] = useState<any[]>([])
+    const [studyBuddies, setStudyBuddies] = useState<any[]>([])
+    const [recommendedUsers, setRecommendedUsers] = useState<any[]>([])
+    const [messageRequests, setMessageRequests] = useState<any[]>([])
+    const [showMessageRequestModal, setShowMessageRequestModal] = useState(false)
+    const [selectedRequest, setSelectedRequest] = useState<any | null>(null)
     const [showGroupInfoModal, setShowGroupInfoModal] = useState(false)
     const [newGroupName, setNewGroupName] = useState('')
     const [newGroupDescription, setNewGroupDescription] = useState('')
@@ -466,6 +472,10 @@ function MessengerPage() {
         fetchConversations()
         fetchCohorts()
         fetchAllUsers()
+        fetchMentors()
+        fetchStudyBuddies()
+        fetchRecommendedUsers()
+        fetchMessageRequests()
 
         return () => {
             window.removeEventListener('resize', checkMobile)
@@ -932,6 +942,54 @@ function MessengerPage() {
         }
     }
 
+    const fetchMentors = async () => {
+        try {
+            const response = await fetch('/api/mentors/my-mentors')
+            if (response.ok) {
+                const data = await response.json()
+                setMentors(data.mentors || [])
+            }
+        } catch (error) {
+            console.error('Failed to fetch mentors:', error)
+        }
+    }
+
+    const fetchStudyBuddies = async () => {
+        try {
+            const response = await fetch('/api/study-buddies/my-buddies')
+            if (response.ok) {
+                const data = await response.json()
+                setStudyBuddies(data.buddies || [])
+            }
+        } catch (error) {
+            console.error('Failed to fetch study buddies:', error)
+        }
+    }
+
+    const fetchRecommendedUsers = async () => {
+        try {
+            const response = await fetch('/api/users/recommended')
+            if (response.ok) {
+                const data = await response.json()
+                setRecommendedUsers(data.users || [])
+            }
+        } catch (error) {
+            console.error('Failed to fetch recommended users:', error)
+        }
+    }
+
+    const fetchMessageRequests = async () => {
+        try {
+            const response = await fetch('/api/messaging/requests')
+            if (response.ok) {
+                const data = await response.json()
+                setMessageRequests(data.requests || [])
+            }
+        } catch (error) {
+            console.error('Failed to fetch message requests:', error)
+        }
+    }
+
     const fetchConversations = async () => {
         if (!session?.user?.id) return
 
@@ -1030,6 +1088,88 @@ function MessengerPage() {
             console.error('Failed to create conversation:', error)
             toast.error(isArabic ? 'فشل إنشاء المحادثة' : 'Failed to create conversation')
         }
+    }
+
+    const renderConnectionSuggestions = (users: any[], type: 'mentor' | 'study-buddy') => {
+        if (users.length === 0) {
+            return (
+                <div className={`text-center py-12 px-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <Users className="w-16 h-16 mx-auto mb-3 opacity-30" />
+                    <p className="font-semibold mb-1">
+                        {type === 'mentor'
+                            ? (isArabic ? 'لا محادثات مع المرشدين بعد' : 'No mentor chats yet')
+                            : (isArabic ? 'لا محادثات مع زملاء الدراسة بعد' : 'No study buddy chats yet')}
+                    </p>
+                    <p className="text-sm">
+                        {type === 'mentor'
+                            ? (isArabic ? 'اختر مرشدًا لبدء المحادثة.' : 'Pick a mentor to introduce yourself and start chatting.')
+                            : (isArabic ? 'ادعُ زميل دراسة للتخطيط معًا.' : 'Invite a study buddy to plan your next session.')}
+                    </p>
+                </div>
+            )
+        }
+
+        return (
+            <div className="space-y-0.5">
+                {users.map(user => {
+                    const displayName = getDisplayName(user)
+                    const accentLabel = type === 'mentor'
+                        ? (isArabic ? 'مرشد' : 'Mentor')
+                        : (isArabic ? 'زميل دراسة' : 'Study Buddy')
+                    const subtitle = type === 'mentor'
+                        ? (isArabic ? 'مرشد من دوراتك' : 'Mentor from your courses')
+                        : (isArabic ? 'متوافق مع اهتماماتك' : 'Matches your learning goals')
+
+                    return (
+                        <div
+                            key={user.id}
+                            className={`w-full p-3 flex items-center gap-3 transition-colors ${
+                                isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
+                            }`}
+                        >
+                            <div className="relative flex-shrink-0">
+                                <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-200">
+                                    {user.image ? (
+                                        <Image
+                                            src={user.image}
+                                            alt={displayName}
+                                            width={56}
+                                            height={56}
+                                            className="object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white text-lg font-semibold">
+                                            {displayName.charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <h3 className={`font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                        {displayName}
+                                    </h3>
+                                    <span className="flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-500">
+                                        {accentLabel}
+                                    </span>
+                                </div>
+                                <p className={`text-sm truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    {subtitle}
+                                </p>
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    await createConversationWithUser(user.id)
+                                }}
+                                className="px-4 py-2 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-full font-semibold text-sm transition-colors"
+                            >
+                                {isArabic ? 'ابدأ المحادثة' : 'Start chat'}
+                            </button>
+                        </div>
+                    )
+                })}
+            </div>
+        )
     }
 
     // Memoize conversation selection handler
@@ -1209,6 +1349,14 @@ function MessengerPage() {
     const formatMessageTime = useCallback((date: Date) => {
         return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     }, [])
+
+    const getDisplayName = useCallback((entity?: { name?: string | null; arabicName?: string | null; email?: string | null }) => {
+        if (!entity) {
+            return isArabic ? 'مستخدم' : 'User'
+        }
+
+        return entity.name || entity.arabicName || entity.email || (isArabic ? 'مستخدم' : 'User')
+    }, [isArabic])
 
     // Memoize create group handler
     const handleCreateGroup = useCallback(async () => {
@@ -1425,22 +1573,65 @@ function MessengerPage() {
     }, [inviteLink, selectedConversation, isArabic, handleCopyInviteLink])
 
     // Memoized filtered conversations
+    const normalizedSearchQuery = searchQuery.trim().toLowerCase()
+
+    const directConversationUserIds = useMemo(() => (
+        new Set(
+            conversations
+                .filter(conv => !conv.isGroup && !conv.isArchived)
+                .map(conv => conv.user.id)
+        )
+    ), [conversations])
+
+    const availableMentorContacts = useMemo(() => (
+        mentors.filter(mentor => !directConversationUserIds.has(mentor.id))
+    ), [mentors, directConversationUserIds])
+
+    const availableStudyBuddyContacts = useMemo(() => (
+        studyBuddies.filter(buddy => !directConversationUserIds.has(buddy.id))
+    ), [studyBuddies, directConversationUserIds])
+
+    const filteredMentorContacts = useMemo(() => (
+        availableMentorContacts.filter(mentor =>
+            getDisplayName(mentor).toLowerCase().includes(normalizedSearchQuery)
+        )
+    ), [availableMentorContacts, normalizedSearchQuery, getDisplayName])
+
+    const filteredStudyBuddyContacts = useMemo(() => (
+        availableStudyBuddyContacts.filter(buddy =>
+            getDisplayName(buddy).toLowerCase().includes(normalizedSearchQuery)
+        )
+    ), [availableStudyBuddyContacts, normalizedSearchQuery, getDisplayName])
+
+    const filteredRecommendedUsers = useMemo(() => (
+        recommendedUsers.filter(user =>
+            getDisplayName(user).toLowerCase().includes(normalizedSearchQuery)
+        )
+    ), [recommendedUsers, normalizedSearchQuery, getDisplayName])
+
     const filteredConversations = useMemo(() => {
         let filtered = conversations
 
-        if (activeTab === 'groups') {
-            filtered = conversations.filter(conv => conv.isGroup && !(conv.isArchived))
-        } else if (activeTab === 'archived') {
-            filtered = conversations.filter(conv => conv.isArchived)
-        } else {
-            filtered = conversations.filter(conv => !conv.isGroup && !(conv.isArchived))
+        if (activeTab === 'mentors') {
+            const mentorIds = new Set(mentors.map(m => m.id))
+            filtered = filtered.filter(conv => !conv.isGroup && !conv.isArchived && mentorIds.has(conv.user.id))
+        } else if (activeTab === 'study-buddies') {
+            const buddyIds = new Set(studyBuddies.map(b => b.id))
+            filtered = filtered.filter(conv => !conv.isGroup && !conv.isArchived && buddyIds.has(conv.user.id))
+        } else if (activeTab === 'recommended') {
+            return []
         }
 
-        return filtered.filter(conv =>
-            conv.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (conv.isGroup && conv.groupName?.toLowerCase().includes(searchQuery.toLowerCase()))
-        )
-    }, [conversations, searchQuery, activeTab])
+        if (!normalizedSearchQuery) {
+            return filtered
+        }
+
+        return filtered.filter(conv => {
+            const directName = (conv.user.name || '').toLowerCase()
+            const groupName = conv.isGroup && conv.groupName ? conv.groupName.toLowerCase() : ''
+            return directName.includes(normalizedSearchQuery) || groupName.includes(normalizedSearchQuery)
+        })
+    }, [conversations, normalizedSearchQuery, activeTab, mentors, studyBuddies])
 
     const canSendMessage = messageInput.trim().length > 0 || hasReadyAttachments
     const sendDisabled = sending || hasUploadingAttachments
@@ -1520,48 +1711,68 @@ function MessengerPage() {
                 </div>
 
                 {/* Tabs */}
-                <div className={`flex gap-2 px-3 pb-2 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
+                <div className={`flex gap-2 px-3 pb-3 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
                     <button
-                        onClick={() => setActiveTab('inbox')}
-                        className={`flex-1 px-4 py-2 rounded-full font-semibold text-sm transition-colors ${
-                            activeTab === 'inbox'
-                                ? 'bg-blue-500 text-white'
+                        onClick={() => setActiveTab('mentors')}
+                        className={`flex-1 px-4 py-2.5 rounded-full font-semibold text-sm transition-colors ${
+                            activeTab === 'mentors'
+                                ? 'bg-[#0a84ff] text-white'
                                 : isDarkMode ? 'text-gray-400 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'
                         }`}
                     >
-                        {isArabic ? 'الوارد' : 'Inbox'}
+                        {isArabic ? 'المرشدون' : 'Mentors'}
                     </button>
                     <button
-                        onClick={() => setActiveTab('groups')}
-                        className={`flex-1 px-4 py-2 rounded-full font-semibold text-sm transition-colors ${
-                            activeTab === 'groups'
-                                ? 'bg-blue-500 text-white'
+                        onClick={() => setActiveTab('study-buddies')}
+                        className={`flex-1 px-4 py-2.5 rounded-full font-semibold text-sm transition-colors ${
+                            activeTab === 'study-buddies'
+                                ? 'bg-[#0a84ff] text-white'
                                 : isDarkMode ? 'text-gray-400 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'
                         }`}
                     >
-                        {isArabic ? 'المجموعات' : 'Groups'}
+                        {isArabic ? 'زملاء الدراسة' : 'Study Buddies'}
                     </button>
                     <button
-                        onClick={() => setActiveTab('archived')}
-                        className={`flex-1 px-4 py-2 rounded-full font-semibold text-sm transition-colors ${
-                            activeTab === 'archived'
-                                ? 'bg-blue-500 text-white'
+                        onClick={() => setActiveTab('recommended')}
+                        className={`flex-1 px-4 py-2.5 rounded-full font-semibold text-sm transition-colors ${
+                            activeTab === 'recommended'
+                                ? 'bg-[#0a84ff] text-white'
                                 : isDarkMode ? 'text-gray-400 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'
                         }`}
                     >
-                        {isArabic ? 'المؤرشف' : 'Archived'}
+                        {isArabic ? 'مقترحون' : 'Recommended'}
                     </button>
                 </div>
 
-                {/* Create Group Button */}
-                {activeTab === 'groups' && (
+
+
+                {/* Message Requests Banner */}
+                {messageRequests.length > 0 && activeTab === 'mentors' && (
                     <div className="p-3 border-b border-gray-200 dark:border-gray-800">
                         <button
-                            onClick={() => setShowCreateGroupModal(true)}
-                            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold py-2.5 rounded-full transition-all flex items-center justify-center gap-2"
+                            onClick={() => setShowMessageRequestModal(true)}
+                            className={`w-full p-3 rounded-xl transition-colors ${
+                                isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'
+                            }`}
                         >
-                            <Plus className="w-5 h-5" />
-                            {isArabic ? 'إنشاء مجموعة جديدة' : 'Create New Group'}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-[#0a84ff] rounded-full flex items-center justify-center">
+                                        <MessageCircle className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            {isArabic ? 'طلبات الرسائل' : 'Message Requests'}
+                                        </p>
+                                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                            {messageRequests.length} {isArabic ? 'طلب جديد' : 'new request(s)'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <span className="w-6 h-6 bg-[#0a84ff] text-white text-xs font-bold rounded-full flex items-center justify-center">
+                                    {messageRequests.length}
+                                </span>
+                            </div>
                         </button>
                     </div>
                 )}
@@ -1572,16 +1783,86 @@ function MessengerPage() {
                         <div className="flex items-center justify-center h-full">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                         </div>
-                    ) : filteredConversations.length === 0 ? (
-                        <div className={`text-center py-12 px-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            <MessageCircle className="w-16 h-16 mx-auto mb-3 opacity-30" />
-                            <p className="font-semibold mb-1">
-                                {isArabic ? 'لا توجد محادثات' : 'No conversations'}
-                            </p>
-                            <p className="text-sm">
-                                {isArabic ? 'ابدأ محادثة جديدة' : 'Start a new conversation'}
-                            </p>
+                    ) : activeTab === 'recommended' ? (
+                        <div className="space-y-0.5">
+                            {filteredRecommendedUsers.map((user) => {
+                                const displayName = getDisplayName(user)
+                                const mutualLabel = user.mutualConnections
+                                    ? `${user.mutualConnections} ${isArabic ? 'صديق مشترك' : 'mutual friend(s)'}`
+                                    : (isArabic ? 'مقترح لك' : 'Suggested for you')
+
+                                return (
+                                <div
+                                        key={user.id}
+                                    className={`w-full p-3 flex items-center gap-3 transition-colors ${
+                                        isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
+                                    }`}
+                                >
+                                    <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-200">
+                                        {user.image ? (
+                                            <Image
+                                                    src={user.image}
+                                                    alt={displayName}
+                                                width={56}
+                                                height={56}
+                                                className="object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white text-lg font-semibold">
+                                                    {displayName.charAt(0).toUpperCase()}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className={`font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                {displayName}
+                                        </h3>
+                                        <p className={`text-sm truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                {mutualLabel}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={async () => {
+                                            const conv = await createConversationWithUser(user.id)
+                                            if (conv) {
+                                                toast.success(isArabic ? 'تم إرسال طلب الرسالة' : 'Message request sent')
+                                            }
+                                        }}
+                                        className="px-4 py-2 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-full font-semibold text-sm transition-colors"
+                                    >
+                                        {isArabic ? 'مراسلة' : 'Message'}
+                                    </button>
+                                    </div>
+                                )
+                            })}
+                            {filteredRecommendedUsers.length === 0 && (
+                                <div className={`text-center py-12 px-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    <Users className="w-16 h-16 mx-auto mb-3 opacity-30" />
+                                    <p className="font-semibold mb-1">
+                                        {isArabic ? 'لا توجد اقتراحات' : 'No suggestions'}
+                                    </p>
+                                    <p className="text-sm">
+                                        {isArabic ? 'تحقق مرة أخرى لاحقاً' : 'Check back later'}
+                                    </p>
+                                </div>
+                            )}
                         </div>
+                    ) : filteredConversations.length === 0 ? (
+                        activeTab === 'mentors'
+                            ? renderConnectionSuggestions(filteredMentorContacts, 'mentor')
+                            : activeTab === 'study-buddies'
+                                ? renderConnectionSuggestions(filteredStudyBuddyContacts, 'study-buddy')
+                                : (
+                                    <div className={`text-center py-12 px-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        <MessageCircle className="w-16 h-16 mx-auto mb-3 opacity-30" />
+                                        <p className="font-semibold mb-1">
+                                            {isArabic ? 'لا توجد محادثات' : 'No conversations'}
+                                        </p>
+                                        <p className="text-sm">
+                                            {isArabic ? 'ابدأ محادثة جديدة' : 'Start a new conversation'}
+                                        </p>
+                                    </div>
+                                )
                     ) : (
                         <div className="space-y-0.5">
                             {filteredConversations.map((conversation) => (
@@ -3292,7 +3573,7 @@ function MessengerPage() {
                                 {/* Archived Chats */}
                                 <button
                                     onClick={() => {
-                                        setActiveTab('archived')
+                                        toast(isArabic ? 'لا يوجد تبويب للأرشيف بعد' : 'Archived tab has been removed')
                                         setShowSettingsModal(false)
                                     }}
                                     className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
@@ -3536,6 +3817,154 @@ function MessengerPage() {
                                     <Trash2 className="w-4 h-4" />
                                     <span>{isArabic ? 'حذف المحادثة' : 'Delete chat'}</span>
                                 </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Message Request Modal */}
+            <AnimatePresence>
+                {showMessageRequestModal && (
+                    <motion.div
+                        key="message-request-modal"
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowMessageRequestModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                            className={`w-full max-w-2xl rounded-2xl shadow-2xl ${isDarkMode ? 'bg-gray-900' : 'bg-white'} max-h-[80vh] overflow-hidden flex flex-col`}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Header */}
+                            <div className={`flex items-center justify-between p-6 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
+                                <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                    {isArabic ? 'طلبات الرسائل' : 'Message Requests'}
+                                </h2>
+                                <button
+                                    onClick={() => setShowMessageRequestModal(false)}
+                                    className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${neutralIconTone}`}
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 overflow-y-auto p-6">
+                                {messageRequests.length === 0 ? (
+                                    <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        <MessageCircle className="w-16 h-16 mx-auto mb-3 opacity-30" />
+                                        <p className="font-semibold mb-1">
+                                            {isArabic ? 'لا توجد طلبات رسائل' : 'No message requests'}
+                                        </p>
+                                        <p className="text-sm">
+                                            {isArabic ? 'عندما يرسل لك شخص ما رسالة، ستظهر هنا' : 'When someone sends you a message, it will appear here'}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {messageRequests.map((request) => (
+                                            <div
+                                                key={request.id}
+                                                className={`p-4 rounded-xl border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
+                                                        {request.sender?.image ? (
+                                                            <Image
+                                                                src={request.sender.image}
+                                                                alt={request.sender.name}
+                                                                width={48}
+                                                                height={48}
+                                                                className="object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white font-semibold">
+                                                                {request.sender?.name?.[0] || '?'}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                            {request.sender?.name || 'Unknown User'}
+                                                        </h3>
+                                                        <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                            {request.message || (isArabic ? 'أرسل لك رسالة' : 'Sent you a message')}
+                                                        </p>
+                                                        <div className="flex items-center gap-2 mt-3">
+                                                            <button
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        const response = await fetch(`/api/messaging/requests/${request.id}/approve`, {
+                                                                            method: 'POST',
+                                                                        })
+                                                                        if (response.ok) {
+                                                                            setMessageRequests(prev => prev.filter(r => r.id !== request.id))
+                                                                            toast.success(isArabic ? 'تم قبول الطلب' : 'Request approved')
+                                                                            fetchConversations()
+                                                                        }
+                                                                    } catch (error) {
+                                                                        console.error('Failed to approve request:', error)
+                                                                        toast.error(isArabic ? 'فشل قبول الطلب' : 'Failed to approve request')
+                                                                    }
+                                                                }}
+                                                                className="px-4 py-2 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-full font-semibold text-sm transition-colors"
+                                                            >
+                                                                {isArabic ? 'قبول' : 'Accept'}
+                                                            </button>
+                                                            <button
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        const response = await fetch(`/api/messaging/requests/${request.id}/reject`, {
+                                                                            method: 'POST',
+                                                                        })
+                                                                        if (response.ok) {
+                                                                            setMessageRequests(prev => prev.filter(r => r.id !== request.id))
+                                                                            toast.success(isArabic ? 'تم رفض الطلب' : 'Request rejected')
+                                                                        }
+                                                                    } catch (error) {
+                                                                        console.error('Failed to reject request:', error)
+                                                                        toast.error(isArabic ? 'فشل رفض الطلب' : 'Failed to reject request')
+                                                                    }
+                                                                }}
+                                                                className={`px-4 py-2 rounded-full font-semibold text-sm transition-colors ${
+                                                                    isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
+                                                                }`}
+                                                            >
+                                                                {isArabic ? 'رفض' : 'Reject'}
+                                                            </button>
+                                                            <button
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        const response = await fetch(`/api/messaging/requests/${request.id}/block`, {
+                                                                            method: 'POST',
+                                                                        })
+                                                                        if (response.ok) {
+                                                                            setMessageRequests(prev => prev.filter(r => r.id !== request.id))
+                                                                            toast.success(isArabic ? 'تم حظر المستخدم' : 'User blocked')
+                                                                        }
+                                                                    } catch (error) {
+                                                                        console.error('Failed to block user:', error)
+                                                                        toast.error(isArabic ? 'فشل حظر المستخدم' : 'Failed to block user')
+                                                                    }
+                                                                }}
+                                                                className="px-4 py-2 text-red-500 hover:bg-red-500/10 rounded-full font-semibold text-sm transition-colors"
+                                                            >
+                                                                {isArabic ? 'حظر' : 'Block'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     </motion.div>

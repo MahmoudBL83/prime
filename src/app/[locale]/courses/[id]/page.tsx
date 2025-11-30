@@ -6,9 +6,9 @@ import { useSession } from 'next-auth/react';
 import { useLocaleSafe } from '@/hooks/useTranslationsSafe';
 import { Play, Plus, Clock, Star, Check } from 'lucide-react';
 import Image from 'next/image';
-import { SignInModal } from '@/components/SignInModal';
 import { PaymentModal } from '@/components/PaymentModal';
 import { toast } from 'react-hot-toast';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 
 interface Episode {
     id: string;
@@ -389,7 +389,6 @@ export default function CourseDetailPage() {
     const [course, setCourse] = useState<Course | null>(null);
     const [selectedSeason, setSelectedSeason] = useState(1);
     const [showMenu, setShowMenu] = useState<string | null>(null);
-    const [showSignInModal, setShowSignInModal] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [isInList, setIsInList] = useState(false);
     const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -402,6 +401,7 @@ export default function CourseDetailPage() {
     const { data: session } = useSession();
     const locale = useLocaleSafe();
     const isArabic = locale === 'ar';
+    const { openAuthModal } = useAuthModal();
 
     useEffect(() => {
         // Get course by ID from params
@@ -418,19 +418,17 @@ export default function CourseDetailPage() {
     const handleAcceptOffer = () => {
         if (session) {
             setShowPaymentModal(true);
-        } else {
-            setShowSignInModal(true);
+            return;
         }
-    };
 
-    const handleSignInSuccess = () => {
-        setShowSignInModal(false);
-        setShowPaymentModal(true);
+        openAuthModal('signin', {
+            onSuccess: () => setShowPaymentModal(true),
+        });
     };
 
     const handleAddToList = async () => {
         if (!session) {
-            setShowSignInModal(true);
+            openAuthModal('signin');
             return;
         }
 
@@ -889,14 +887,6 @@ export default function CourseDetailPage() {
                     overflow: hidden;
                 }
             `}</style>
-
-            {/* Sign In Modal */}
-            <SignInModal
-                isOpen={showSignInModal}
-                onClose={() => setShowSignInModal(false)}
-                onSignInSuccess={handleSignInSuccess}
-                locale={locale}
-            />
 
             {/* Payment Modal */}
             <PaymentModal

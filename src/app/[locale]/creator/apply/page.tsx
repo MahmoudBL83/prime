@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession, signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 import { useLocaleSafe } from '@/hooks/useTranslationsSafe'
@@ -14,7 +14,17 @@ import {
     AlertCircle,
     Link as LinkIcon,
     MessageSquare,
-    Play
+    Play,
+    Mail,
+    Lock,
+    User,
+    Eye,
+    EyeOff,
+    Upload,
+    X,
+    FileText,
+    Shield,
+    Sparkles
 } from 'lucide-react'
 
 interface Application {
@@ -45,6 +55,17 @@ export default function CreatorApplicationPage() {
     const [application, setApplication] = useState<Application | null>(null)
     const [hasApplication, setHasApplication] = useState(false)
     
+    // Auth state
+    const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
+    const [showPassword, setShowPassword] = useState(false)
+    const [authLoading, setAuthLoading] = useState(false)
+    const [authData, setAuthData] = useState({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: ''
+    })
+    
     const [formData, setFormData] = useState({
         expertise: '',
         experienceYears: '',
@@ -53,6 +74,11 @@ export default function CreatorApplicationPage() {
         socialProof: '',
         motivation: ''
     })
+
+    // ID Card upload state
+    const [idCardFile, setIdCardFile] = useState<File | null>(null)
+    const [idCardPreview, setIdCardPreview] = useState<string | null>(null)
+    const [uploadingIdCard, setUploadingIdCard] = useState(false)
 
     useEffect(() => {
         if (session?.user) {
@@ -88,12 +114,41 @@ export default function CreatorApplicationPage() {
         setSubmitting(true)
 
         try {
+            let nationalIdImageUrl = ''
+
+            // Upload ID card if provided
+            if (idCardFile) {
+                setUploadingIdCard(true)
+                const uploadFormData = new FormData()
+                uploadFormData.append('file', idCardFile)
+                uploadFormData.append('type', 'national-id')
+
+                const uploadResponse = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: uploadFormData
+                })
+
+                if (uploadResponse.ok) {
+                    const uploadData = await uploadResponse.json()
+                    nationalIdImageUrl = uploadData.url
+                } else {
+                    toast.error('Failed to upload ID card')
+                    setSubmitting(false)
+                    setUploadingIdCard(false)
+                    return
+                }
+                setUploadingIdCard(false)
+            }
+
             const response = await fetch('/api/creator/apply', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    ...formData,
+                    nationalIdImage: nationalIdImageUrl || undefined
+                })
             })
 
             const data = await response.json()
@@ -117,6 +172,123 @@ export default function CreatorApplicationPage() {
             ...prev,
             [field]: value
         }))
+    }
+
+    const handleAuthChange = (field: string, value: string) => {
+        setAuthData(prev => ({
+            ...prev,
+            [field]: value
+        }))
+    }
+
+    const handleIdCardUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+        if (!validTypes.includes(file.type)) {
+            toast.error('Please upload a valid image file (JPEG, PNG, or WebP)')
+            return
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('File size must be less than 5MB')
+            return
+        }
+
+        setIdCardFile(file)
+        
+        // Create preview
+        const reader = new FileReader()
+        reader.onloadend = () => {
+            setIdCardPreview(reader.result as string)
+        }
+        reader.readAsDataURL(file)
+    }
+
+    const removeIdCard = () => {
+        setIdCardFile(null)
+        setIdCardPreview(null)
+    }
+
+    const handleSignIn = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setAuthLoading(true)
+
+        try {
+            const result = await signIn('credentials', {
+                email: authData.email,
+                password: authData.password,
+                redirect: false
+            })
+
+            if (result?.error) {
+                toast.error('Invalid email or password')
+            } else {
+                toast.success('Signed in successfully!')
+                loadApplication()
+            }
+        } catch (error) {
+            console.error('Sign in error:', error)
+            toast.error('Failed to sign in')
+        } finally {
+            setAuthLoading(false)
+        }
+    }
+
+    const handleSignUp = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        if (authData.password !== authData.confirmPassword) {
+            toast.error('Passwords do not match')
+            return
+        }
+
+        if (authData.password.length < 6) {
+            toast.error('Password must be at least 6 characters')
+            return
+        }
+
+        setAuthLoading(true)
+
+        try {
+            const response = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: authData.name,
+                    email: authData.email,
+                    password: authData.password
+                })
+            })
+
+            const data = await response.json()
+
+            if (response.ok) {
+                toast.success('Account created successfully!')
+                // Auto sign in after signup
+                const result = await signIn('credentials', {
+                    email: authData.email,
+                    password: authData.password,
+                    redirect: false
+                })
+
+                if (!result?.error) {
+                    loadApplication()
+                }
+            } else {
+                toast.error(data.error || 'Failed to create account')
+            }
+        } catch (error) {
+            console.error('Sign up error:', error)
+            toast.error('Failed to create account')
+        } finally {
+            setAuthLoading(false)
+        }
     }
 
     const getStatusBadge = (status: Application['status']) => {
@@ -404,31 +576,258 @@ export default function CreatorApplicationPage() {
                         </div>
                     )}
 
-                    {/* Sign In Notice */}
-                    {!session?.user && (
-                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-6 mb-6">
-                            <div className="flex items-center gap-2 mb-3">
-                                <AlertCircle className="w-5 h-5 text-blue-400" />
-                                <h3 className="text-lg font-semibold text-blue-400">Sign In Required</h3>
+                    {/* Authentication Section - Only show if not signed in */}
+                    {!session?.user ? (
+                        <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-8 mb-6">
+                            <div className="max-w-md mx-auto">
+                                <div className="text-center mb-8">
+                                    <div className="inline-flex items-center gap-2 mb-4">
+                                        <Image
+                                            src="/images/logo.jpg"
+                                            alt="Prime"
+                                            width={48}
+                                            height={48}
+                                            className="rounded-lg"
+                                        />
+                                    </div>
+                                    <h2 className="text-2xl font-bold text-foreground mb-2">
+                                        {authMode === 'signin' ? 'Sign In to Continue' : 'Create Your Account'}
+                                    </h2>
+                                    <p className="text-muted-foreground">
+                                        {authMode === 'signin' 
+                                            ? 'Sign in to submit your creator application' 
+                                            : 'Join Prime and start your creator journey'}
+                                    </p>
+                                </div>
+
+                                {/* Auth Mode Tabs */}
+                                <div className="flex gap-2 mb-6 bg-white/5 p-1 rounded-xl">
+                                    <button
+                                        type="button"
+                                        onClick={() => setAuthMode('signin')}
+                                        className={`flex-1 py-2.5 rounded-lg font-semibold transition-all ${
+                                            authMode === 'signin'
+                                                ? 'bg-white text-black'
+                                                : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    >
+                                        Sign In
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setAuthMode('signup')}
+                                        className={`flex-1 py-2.5 rounded-lg font-semibold transition-all ${
+                                            authMode === 'signup'
+                                                ? 'bg-white text-black'
+                                                : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    >
+                                        Sign Up
+                                    </button>
+                                </div>
+
+                                {/* Sign In Form */}
+                                {authMode === 'signin' && (
+                                    <form onSubmit={handleSignIn} className="space-y-4">
+                                        <div>
+                                            <label htmlFor="signin-email" className="block text-sm font-medium text-foreground mb-2">
+                                                Email
+                                            </label>
+                                            <div className="relative">
+                                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                                <input
+                                                    id="signin-email"
+                                                    type="email"
+                                                    value={authData.email}
+                                                    onChange={(e) => handleAuthChange('email', e.target.value)}
+                                                    placeholder="your@email.com"
+                                                    required
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label htmlFor="signin-password" className="block text-sm font-medium text-foreground mb-2">
+                                                Password
+                                            </label>
+                                            <div className="relative">
+                                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                                <input
+                                                    id="signin-password"
+                                                    type={showPassword ? 'text' : 'password'}
+                                                    value={authData.password}
+                                                    onChange={(e) => handleAuthChange('password', e.target.value)}
+                                                    placeholder="••••••••"
+                                                    required
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-11 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                                >
+                                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={authLoading}
+                                            className="w-full bg-white hover:bg-white/90 text-black font-semibold px-8 py-3 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {authLoading ? 'Signing in...' : 'Sign In'}
+                                        </button>
+                                    </form>
+                                )}
+
+                                {/* Sign Up Form */}
+                                {authMode === 'signup' && (
+                                    <form onSubmit={handleSignUp} className="space-y-4">
+                                        <div>
+                                            <label htmlFor="signup-name" className="block text-sm font-medium text-foreground mb-2">
+                                                Full Name
+                                            </label>
+                                            <div className="relative">
+                                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                                <input
+                                                    id="signup-name"
+                                                    type="text"
+                                                    value={authData.name}
+                                                    onChange={(e) => handleAuthChange('name', e.target.value)}
+                                                    placeholder="John Doe"
+                                                    required
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label htmlFor="signup-email" className="block text-sm font-medium text-foreground mb-2">
+                                                Email
+                                            </label>
+                                            <div className="relative">
+                                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                                <input
+                                                    id="signup-email"
+                                                    type="email"
+                                                    value={authData.email}
+                                                    onChange={(e) => handleAuthChange('email', e.target.value)}
+                                                    placeholder="your@email.com"
+                                                    required
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label htmlFor="signup-password" className="block text-sm font-medium text-foreground mb-2">
+                                                Password
+                                            </label>
+                                            <div className="relative">
+                                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                                <input
+                                                    id="signup-password"
+                                                    type={showPassword ? 'text' : 'password'}
+                                                    value={authData.password}
+                                                    onChange={(e) => handleAuthChange('password', e.target.value)}
+                                                    placeholder="••••••••"
+                                                    required
+                                                    minLength={6}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-11 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                                >
+                                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                                </button>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground mt-1">At least 6 characters</p>
+                                        </div>
+
+                                        <div>
+                                            <label htmlFor="signup-confirm-password" className="block text-sm font-medium text-foreground mb-2">
+                                                Confirm Password
+                                            </label>
+                                            <div className="relative">
+                                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                                <input
+                                                    id="signup-confirm-password"
+                                                    type={showPassword ? 'text' : 'password'}
+                                                    value={authData.confirmPassword}
+                                                    onChange={(e) => handleAuthChange('confirmPassword', e.target.value)}
+                                                    placeholder="••••••••"
+                                                    required
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={authLoading}
+                                            className="w-full bg-white hover:bg-white/90 text-black font-semibold px-8 py-3 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {authLoading ? 'Creating account...' : 'Create Account'}
+                                        </button>
+
+                                        <p className="text-xs text-center text-muted-foreground mt-4">
+                                            By creating an account, you agree to our Terms of Service and Privacy Policy
+                                        </p>
+                                    </form>
+                                )}
                             </div>
-                            <p className="text-blue-100 mb-4">You need to sign in to submit a creator application.</p>
-                            <button 
-                                onClick={() => router.push(`/${locale}/auth/signin?callbackUrl=/${locale}/creator/apply`)}
-                                className="bg-white hover:bg-white/90 text-black font-semibold px-8 py-3 rounded-full transition-all"
-                            >
-                                Sign In
-                            </button>
                         </div>
-                    )}
-
-                    <form onSubmit={handleSubmit}>
+                    ) : (
+                        /* Application Form - Only show when authenticated */
+                        <form onSubmit={handleSubmit}>
                         <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-8">
-                            <h2 className="text-2xl font-semibold text-foreground mb-6">Application Form</h2>
-                            <p className="text-muted-foreground mb-8">
-                                Tell us about yourself and why you want to become a creator on our platform.
-                            </p>
+                            <div className="flex items-start gap-4 mb-8">
+                                <div className="p-3 bg-purple-500/20 rounded-full">
+                                    <Sparkles className="w-6 h-6 text-purple-400" />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold text-foreground mb-2">Application Form</h2>
+                                    <p className="text-muted-foreground">
+                                        Tell us about yourself and why you want to become a creator on our platform.
+                                    </p>
+                                </div>
+                            </div>
 
-                            <div className="space-y-6">
+                            {/* Progress Indicator */}
+                            <div className="mb-8">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-foreground">
+                                        {isArabic ? 'التقدم' : 'Progress'}
+                                    </span>
+                                    <span className="text-sm text-muted-foreground">
+                                        {formData.expertise && formData.motivation ? '100%' : 
+                                         formData.expertise || formData.motivation ? '50%' : '0%'}
+                                    </span>
+                                </div>
+                                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                                    <div 
+                                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                                        style={{ 
+                                            width: formData.expertise && formData.motivation ? '100%' : 
+                                                   formData.expertise || formData.motivation ? '50%' : '0%'
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-8">
+                                {/* Section 1: Professional Information */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+                                        <FileText className="w-5 h-5 text-purple-400" />
+                                        <h3 className="text-lg font-semibold text-foreground">
+                                            {isArabic ? 'المعلومات المهنية' : 'Professional Information'}
+                                        </h3>
+                                    </div>
                                 {/* Expertise */}
                                 <div>
                                     <label htmlFor="expertise" className="block text-sm font-medium text-foreground mb-2">
@@ -527,27 +926,134 @@ export default function CreatorApplicationPage() {
                                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
                                     />
                                 </div>
+                                </div>
+
+                                {/* Section 2: Verification Documents */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+                                        <Shield className="w-5 h-5 text-green-400" />
+                                        <h3 className="text-lg font-semibold text-foreground">
+                                            {isArabic ? 'التحقق من الهوية' : 'Identity Verification'}
+                                        </h3>
+                                        <span className="ml-2 px-2 py-0.5 bg-green-500/20 text-green-400 text-xs font-medium rounded-full">
+                                            {isArabic ? 'اختياري' : 'Optional'}
+                                        </span>
+                                    </div>
+
+                                    {/* ID Card Upload */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-foreground mb-2">
+                                            {isArabic ? 'بطاقة الهوية الوطنية' : 'National ID Card'}
+                                        </label>
+                                        <p className="text-sm text-muted-foreground mb-4">
+                                            {isArabic 
+                                                ? 'رفع بطاقة هويتك يساعدنا في التحقق من حسابك بشكل أسرع ويزيد من مصداقيتك كمنشئ محتوى.'
+                                                : 'Uploading your ID helps us verify your account faster and increases your credibility as a creator.'}
+                                        </p>
+
+                                        {!idCardPreview ? (
+                                            <label className="block cursor-pointer">
+                                                <div className="border-2 border-dashed border-white/20 rounded-xl p-8 hover:border-purple-500/50 hover:bg-white/5 transition-all">
+                                                    <div className="flex flex-col items-center gap-3">
+                                                        <div className="p-4 bg-purple-500/20 rounded-full">
+                                                            <Upload className="w-8 h-8 text-purple-400" />
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <p className="text-foreground font-medium mb-1">
+                                                                {isArabic ? 'انقر للرفع أو اسحب وأفلت' : 'Click to upload or drag and drop'}
+                                                            </p>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {isArabic ? 'PNG، JPG، WEBP حتى 5MB' : 'PNG, JPG, WEBP up to 5MB'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <input
+                                                    type="file"
+                                                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                                                    onChange={handleIdCardUpload}
+                                                    className="hidden"
+                                                />
+                                            </label>
+                                        ) : (
+                                            <div className="relative border border-white/10 rounded-xl overflow-hidden">
+                                                <img
+                                                    src={idCardPreview}
+                                                    alt="ID Card Preview"
+                                                    className="w-full h-64 object-contain bg-black/20"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={removeIdCard}
+                                                    className="absolute top-3 right-3 p-2 bg-red-500 hover:bg-red-600 rounded-full transition-colors"
+                                                >
+                                                    <X className="w-4 h-4 text-white" />
+                                                </button>
+                                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                                                    <div className="flex items-center gap-2 text-white">
+                                                        <CheckCircle className="w-5 h-5 text-green-400" />
+                                                        <span className="text-sm font-medium">
+                                                            {isArabic ? 'تم رفع بطاقة الهوية' : 'ID Card Uploaded'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="mt-3 flex items-start gap-2 text-sm text-muted-foreground">
+                                            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                            <p>
+                                                {isArabic
+                                                    ? 'معلوماتك الشخصية آمنة ومحمية. نحن نستخدمها فقط للتحقق من الهوية.'
+                                                    : 'Your personal information is secure and protected. We only use it for identity verification.'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 {/* Submit Button */}
-                                <div className="flex gap-4 pt-4">
-                                    <button
-                                        type="submit"
-                                        disabled={submitting || !session?.user}
-                                        className="flex-1 bg-white hover:bg-white/90 text-black font-semibold px-8 py-3 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {submitting ? 'Submitting...' : 'Submit Application'}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => router.push(`/${locale}/`)}
-                                        className="px-8 py-3 border border-white/20 text-foreground font-semibold rounded-full hover:bg-white/5 transition-all"
-                                    >
-                                        Cancel
-                                    </button>
+                                <div className="flex flex-col gap-4 pt-6">
+                                    {uploadingIdCard && (
+                                        <div className="flex items-center gap-3 px-4 py-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-400 border-t-transparent" />
+                                            <span className="text-sm text-blue-400">
+                                                {isArabic ? 'جارٍ رفع بطاقة الهوية...' : 'Uploading ID card...'}
+                                            </span>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="flex gap-4">
+                                        <button
+                                            type="submit"
+                                            disabled={submitting || uploadingIdCard}
+                                            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-8 py-4 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        >
+                                            {submitting ? (
+                                                <>
+                                                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                                                    {isArabic ? 'جارٍ الإرسال...' : 'Submitting...'}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Sparkles className="w-5 h-5" />
+                                                    {isArabic ? 'إرسال الطلب' : 'Submit Application'}
+                                                </>
+                                            )}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => router.push(`/${locale}/`)}
+                                            disabled={submitting || uploadingIdCard}
+                                            className="px-8 py-4 border border-white/20 text-foreground font-semibold rounded-full hover:bg-white/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {isArabic ? 'إلغاء' : 'Cancel'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </form>
+                    )}
                 </div>
             </div>
 

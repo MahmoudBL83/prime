@@ -9,6 +9,7 @@ import { useTranslationsSafe } from '@/hooks/useTranslationsSafe';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 import Image from 'next/image';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 
 interface NavigationAuthSectionProps {
     isMobile?: boolean;
@@ -20,6 +21,7 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
     const router = useRouter();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const { openAuthModal } = useAuthModal();
 
     // Safe translation hooks
     const { t } = useTranslationsSafe('auth');
@@ -80,11 +82,11 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                     variant="ghost"
                     size="sm"
                     className={isMobile
-                        ? "w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl px-4 py-3 transition-all duration-300"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl px-4 py-2.5 transition-all duration-300"
+                        ? "w-full justify-start text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-white/10 rounded-lg px-4 py-2.5 transition-colors"
+                        : "text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-white/10 rounded-lg px-4 py-2 transition-colors"
                     }
                     onClick={() => {
-                        router.push(`/${locale}/auth/login`);
+                        openAuthModal('signin');
                         if (onCloseMobileMenu) onCloseMobileMenu();
                     }}
                 >
@@ -93,11 +95,11 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                 <Button
                     size="sm"
                     className={isMobile
-                        ? "w-full justify-center bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-xl px-4 py-3 font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                        : "bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-xl px-4 py-2.5 font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                        ? "w-full justify-center bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-full px-4 py-2.5 font-semibold transition-all"
+                        : "bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-full px-4 py-2 font-semibold transition-all"
                     }
                     onClick={() => {
-                        router.push(`/${locale}/auth/register`);
+                        openAuthModal('signup');
                         if (onCloseMobileMenu) onCloseMobileMenu();
                     }}
                 >
@@ -127,17 +129,7 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                         {/* Notifications */}
                         <NotificationDropdown />
                         
-                        <Button
-                            size="sm"
-                            className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-xl px-4 py-2.5 font-medium shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
-                            onClick={() => {
-                                router.push(`/${locale}/subscribe`);
-                                if (onCloseMobileMenu) onCloseMobileMenu();
-                            }}
-                        >
-                            <Crown className="w-4 h-4" />
-                            {tPayment('subscribe')}
-                        </Button>
+
                     </div>
                 )}
 
@@ -146,12 +138,12 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                         variant="ghost"
                         size="sm"
                         className={isMobile
-                            ? "w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl px-4 py-3 transition-all duration-300"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl p-2 transition-all duration-300 flex items-center gap-1"
+                            ? "w-full justify-start text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-white/10 rounded-lg px-4 py-2.5 transition-colors"
+                            : "text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-white/10 rounded-lg p-2 transition-colors flex items-center gap-1"
                         }
                         onClick={toggleDropdown}
                     >
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                        <div className="w-8 h-8 bg-[#0a84ff] rounded-full flex items-center justify-center">
                             {getAvatarContent()}
                         </div>
                         {!isMobile && (
@@ -171,11 +163,11 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                     isMobile ? 'mx-4' : 'w-64'
                                 }`}
                             >
-                                <div className="bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl overflow-hidden">
+                                <div className="bg-background dark:bg-[#1f1f1f] border border-border dark:border-[hsla(0,0%,100%,.16)] rounded-xl shadow-xl overflow-hidden">
                                     {/* User Info Header */}
-                                    <div className="px-4 py-4 border-b border-border/50 bg-muted/30">
+                                    <div className="px-4 py-4 border-b border-border dark:border-[hsla(0,0%,100%,.16)]">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                                            <div className="w-10 h-10 bg-[#0a84ff] rounded-full flex items-center justify-center">
                                                 {getAvatarContent()}
                                             </div>
                                             <div>
@@ -192,10 +184,10 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
 
                                     {/* Upgrade Prompt */}
                                     {isMobile && (
-                                        <div className="px-4 py-3 bg-muted/20 border-b border-border/50">
+                                        <div className="px-4 py-3 border-b border-border dark:border-[hsla(0,0%,100%,.16)]">
                                             <Button
                                                 size="sm"
-                                                className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-xl font-medium shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                                                className="w-full bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-full font-semibold transition-all flex items-center justify-center gap-2"
                                                 onClick={() => {
                                                     router.push(`/${locale}/subscribe`);
                                                     closeDropdown();
@@ -209,34 +201,55 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
 
                                     {/* Menu Items */}
                                     <div className="py-2">
+                                        {/* Creator Dashboard - Show for creators or users with applications */}
+                                        {(session.user?.isCreator || session.user?.applicationStatus) && (
+                                            <button
+                                                onClick={() => {
+                                                    router.push(`/${locale}/creator/dashboard`);
+                                                    closeDropdown();
+                                                }}
+                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground dark:text-white/90 hover:bg-accent dark:hover:bg-white/10 transition-colors"
+                                            >
+                                                <Sparkles className="w-4 h-4 text-[#0a84ff]" />
+                                                <span className="flex-1 text-left">Creator Dashboard</span>
+                                                {session.user?.applicationStatus && session.user.applicationStatus !== 'APPROVED' && (
+                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                                        session.user.applicationStatus === 'PENDING' 
+                                                            ? 'bg-blue-500/20 text-blue-400'
+                                                            : session.user.applicationStatus === 'UNDER_REVIEW'
+                                                            ? 'bg-yellow-500/20 text-yellow-400'
+                                                            : session.user.applicationStatus === 'REJECTED'
+                                                            ? 'bg-red-500/20 text-red-400'
+                                                            : 'bg-orange-500/20 text-orange-400'
+                                                    }`}>
+                                                        {session.user.applicationStatus === 'PENDING' && 'Pending'}
+                                                        {session.user.applicationStatus === 'UNDER_REVIEW' && 'Review'}
+                                                        {session.user.applicationStatus === 'REJECTED' && 'Rejected'}
+                                                        {session.user.applicationStatus === 'RESUBMIT_REQUIRED' && 'Resubmit'}
+                                                    </span>
+                                                )}
+                                            </button>
+                                        )}
+                                        
+                                        {/* Learner Dashboard - Always show */}
                                         <button
                                             onClick={() => {
                                                 router.push(`/${locale}/dashboard`);
                                                 closeDropdown();
                                             }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground dark:text-white/90 hover:bg-accent dark:hover:bg-white/10 transition-colors"
                                         >
-                                            <BarChart3 className="w-4 h-4 text-purple-400" />
-                                            {tNav('dashboard')}
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                router.push(`/${locale}/my-learning`);
-                                                closeDropdown();
-                                            }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
-                                        >
-                                            <BookOpen className="w-4 h-4 text-green-400" />
-                                            {tCommon('myLearning')}
+                                            <BookOpen className="w-4 h-4" />
+                                            {(session.user?.isCreator || session.user?.applicationStatus) ? 'Learner Dashboard' : tNav('dashboard')}
                                         </button>
                                         <button
                                             onClick={() => {
                                                 router.push(`/${locale}/profile`);
                                                 closeDropdown();
                                             }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground dark:text-white/90 hover:bg-accent dark:hover:bg-white/10 transition-colors"
                                         >
-                                            <UserCog className="w-4 h-4 text-blue-400" />
+                                            <UserCog className="w-4 h-4" />
                                             {tNav('profile')}
                                         </button>
                                         <button
@@ -244,9 +257,9 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                                 router.push(`/${locale}/settings`);
                                                 closeDropdown();
                                             }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground dark:text-white/90 hover:bg-accent dark:hover:bg-white/10 transition-colors"
                                         >
-                                            <Settings className="w-4 h-4 text-muted-foreground" />
+                                            <Settings className="w-4 h-4" />
                                             {tNav('settings')}
                                         </button>
                                     </div>
@@ -254,7 +267,7 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                     {/* Creator Hub Section - Only for CREATOR role */}
                                     {session.user?.role === 'CREATOR' && (
                                         <>
-                                            <div className="border-t border-border/50"></div>
+                                            <div className="border-t border-border dark:border-[hsla(0,0%,100%,.16)]"></div>
                                             <div className="py-2">
                                                 <div className="px-4 py-2">
                                                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
@@ -307,13 +320,13 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                     )}
 
                                     {/* Logout */}
-                                    <div className="border-t border-border/50">
+                                    <div className="border-t border-border dark:border-[hsla(0,0%,100%,.16)]">
                                         <button
                                             onClick={() => {
                                                 signOut({ callbackUrl: `/${locale}` });
                                                 closeDropdown();
                                             }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground dark:text-white/90 hover:bg-accent dark:hover:bg-white/10 transition-colors"
                                         >
                                             <LogOut className="w-4 h-4" />
                                             {tNav('logout')}
@@ -361,12 +374,12 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                     onClick={toggleDropdown}
                 >
                     <div className="relative">
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                        <div className="w-8 h-8 bg-[#0a84ff] rounded-full flex items-center justify-center">
                             {getAvatarContent()}
                         </div>
                         {/* Premium indicator */}
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-gray-900 flex items-center justify-center">
-                            <Crown className="w-2 h-2 text-foreground" />
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full border-2 border-background flex items-center justify-center">
+                            <Crown className="w-2 h-2 text-white" />
                         </div>
                     </div>
                     {!isMobile && (
@@ -386,15 +399,15 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                 isMobile ? 'mx-4' : 'w-64'
                             }`}
                         >
-                            <div className="bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl overflow-hidden">
+                            <div className="bg-background dark:bg-[#1f1f1f] border border-border dark:border-[hsla(0,0%,100%,.16)] rounded-xl shadow-xl overflow-hidden">
                                 {/* User Info Header */}
-                                <div className="px-4 py-4 border-b border-border/50 bg-muted/30">
+                                <div className="px-4 py-4 border-b border-border dark:border-[hsla(0,0%,100%,.16)]">
                                     <div className="flex items-center gap-3">
                                         <div className="relative">
-                                            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                                            <div className="w-10 h-10 bg-[#0a84ff] rounded-full flex items-center justify-center">
                                                 {getAvatarContent()}
                                             </div>
-                                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-background flex items-center justify-center">
+                                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full border-2 border-background flex items-center justify-center">
                                                 <Crown className="w-2.5 h-2.5 text-white" />
                                             </div>
                                         </div>
@@ -403,7 +416,7 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                             <p className="text-muted-foreground text-xs">{session.user?.email}</p>
                                         </div>
                                         <div className="ml-auto">
-                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30">
+                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/20">
                                                 <Crown className="w-3 h-3 mr-1" />
                                                 Premium
                                             </span>
@@ -413,7 +426,7 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
 
                                 {/* Notifications section for mobile */}
                                 {isMobile && (
-                                    <div className="px-4 py-3 border-b border-border/50">
+                                    <div className="px-4 py-3 border-b border-border dark:border-[hsla(0,0%,100%,.16)]">
                                         <Button
                                             variant="ghost"
                                             size="sm"
@@ -428,6 +441,37 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
 
                                 {/* Menu Items */}
                                 <div className="py-2">
+                                    {/* Creator Dashboard - Show for creators or users with applications */}
+                                    {(session.user?.isCreator || session.user?.applicationStatus) && (
+                                        <button
+                                            onClick={() => {
+                                                router.push(`/${locale}/creator/dashboard`);
+                                                closeDropdown();
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
+                                        >
+                                            <Sparkles className="w-4 h-4 text-purple-400" />
+                                            <span className="flex-1 text-left">Creator Dashboard</span>
+                                            {session.user?.applicationStatus && session.user.applicationStatus !== 'APPROVED' && (
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                                    session.user.applicationStatus === 'PENDING' 
+                                                        ? 'bg-blue-500/20 text-blue-400'
+                                                        : session.user.applicationStatus === 'UNDER_REVIEW'
+                                                        ? 'bg-yellow-500/20 text-yellow-400'
+                                                        : session.user.applicationStatus === 'REJECTED'
+                                                        ? 'bg-red-500/20 text-red-400'
+                                                        : 'bg-orange-500/20 text-orange-400'
+                                                }`}>
+                                                    {session.user.applicationStatus === 'PENDING' && 'Pending'}
+                                                    {session.user.applicationStatus === 'UNDER_REVIEW' && 'Review'}
+                                                    {session.user.applicationStatus === 'REJECTED' && 'Rejected'}
+                                                    {session.user.applicationStatus === 'RESUBMIT_REQUIRED' && 'Resubmit'}
+                                                </span>
+                                            )}
+                                        </button>
+                                    )}
+                                    
+                                    {/* Learner Dashboard - Always show */}
                                     <button
                                         onClick={() => {
                                             router.push(`/${locale}/dashboard`);
@@ -435,18 +479,8 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                         }}
                                         className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
                                     >
-                                        <BarChart3 className="w-4 h-4 text-purple-400" />
-                                        {tNav('dashboard')}
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            router.push(`/${locale}/my-learning`);
-                                            closeDropdown();
-                                        }}
-                                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
-                                    >
                                         <BookOpen className="w-4 h-4 text-green-400" />
-                                        {tCommon('myLearning')}
+                                        {(session.user?.isCreator || session.user?.applicationStatus) ? 'Learner Dashboard' : tNav('dashboard')}
                                     </button>
                                     <button
                                         onClick={() => {
@@ -471,7 +505,7 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                 </div>
 
                                 {/* Logout */}
-                                <div className="border-t border-border/50">
+                                <div className="border-t border-border dark:border-[hsla(0,0%,100%,.16)]">
                                     <button
                                         onClick={() => {
                                             signOut({ callbackUrl: `/${locale}` });

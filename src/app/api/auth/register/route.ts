@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
-import { UserRole } from "@prisma/client"
 
 // Mark as Edge Runtime compatible or Node runtime
 export const runtime = 'nodejs'
@@ -11,11 +10,13 @@ export const dynamic = 'force-dynamic'
 const registerSchema = z.object({
     email: z.string().email(),
     password: z.string().min(8),
-    name: z.string().min(2),
-    arabicName: z.string().optional(),
-    phone: z.string().optional(),
-    interests: z.array(z.string()).optional(),
-    goals: z.array(z.string()).optional(),
+    firstName: z.string().min(2),
+    lastName: z.string().min(2),
+    birthDate: z.string().refine((value) => {
+        const date = new Date(value)
+        return !Number.isNaN(date.getTime())
+    }, "Invalid birth date"),
+    country: z.string().min(2),
 })
 
 export async function POST(req: NextRequest) {
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
             )
         }
 
-        const { email, password, interests, goals, ...userData } = validation.data
+        const { email, password, firstName, lastName, birthDate, country } = validation.data
 
         // Check if user exists
         const existing = await prisma.user.findUnique({
@@ -56,14 +57,18 @@ export async function POST(req: NextRequest) {
         // Hash password
         const passwordHash = await bcrypt.hash(password, 12)
 
-        // Create user
+        const parsedBirthDate = new Date(birthDate)
+
+        // Create user with Apple-style required fields
         const user = await prisma.user.create({
             data: {
                 email,
                 passwordHash,
-                interests: interests ? JSON.stringify(interests) : undefined,
-                goals: goals ? JSON.stringify(goals) : undefined,
-                ...userData,
+                name: `${firstName} ${lastName}`.trim(),
+                firstName,
+                lastName,
+                birthDate: parsedBirthDate,
+                country,
             },
         })
 

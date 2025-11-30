@@ -10,6 +10,7 @@ import { LoadingButton } from '@/components/ui/LoadingButton';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 
 interface CourseItem {
     id: string;
@@ -90,6 +91,7 @@ function CourseCard({ item, index, isLarge = false }: {
     const locale = useLocale();
     const { navigateWithLoading, isLoading } = useNavigationLoading();
     const { data: session } = useSession();
+    const { openAuthModal } = useAuthModal();
     const isArabic = locale === 'ar';
 
     // Fetch my list status on mount
@@ -116,7 +118,7 @@ function CourseCard({ item, index, isLarge = false }: {
         
         if (!session?.user) {
             toast.error(isArabic ? 'يجب تسجيل الدخول أولاً' : 'Please sign in to add to your list');
-            navigateWithLoading(`/${locale}/auth/login`, 'login');
+            openAuthModal('signin');
             return;
         }
 

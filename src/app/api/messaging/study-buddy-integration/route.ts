@@ -1,9 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
-const prisma = new PrismaClient();
+const ACTIVE_MATCH_STATUSES = ['accepted', 'ACCEPTED', 'ACTIVE'];
+
+const conversationInclude = {
+    participants: {
+        where: {
+            isActive: true,
+        },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    profileImage: true,
+                },
+            },
+        },
+    },
+    _count: {
+        select: {
+            messages: true,
+        },
+    },
+};
 
 // GET /api/messaging/study-buddy-integration - Get or create conversation for a study buddy match
 export async function GET(req: NextRequest) {
@@ -36,7 +59,7 @@ export async function GET(req: NextRequest) {
         }
 
         // Check if match is accepted
-        if (match.status !== 'accepted') {
+        if (!ACTIVE_MATCH_STATUSES.includes(match.status)) {
             return NextResponse.json({ error: 'Match not accepted yet' }, { status: 400 });
         }
 
@@ -60,33 +83,26 @@ export async function GET(req: NextRequest) {
         const existingConversation = await prisma.conversation.findFirst({
             where: {
                 type: 'DIRECT',
-                participants: {
-                    every: {
-                        userId: {
-                            in: [match.user1Id, match.user2Id],
-                        },
-                    },
-                },
-            },
-            include: {
-                participants: {
-                    include: {
-                        user: {
-                            select: {
-                                id: true,
-                                name: true,
-                                email: true,
-                                profileImage: true,
+                AND: [
+                    {
+                        participants: {
+                            some: {
+                                userId: match.user1Id,
+                                isActive: true,
                             },
                         },
                     },
-                },
-                _count: {
-                    select: {
-                        messages: true,
+                    {
+                        participants: {
+                            some: {
+                                userId: match.user2Id,
+                                isActive: true,
+                            },
+                        },
                     },
-                },
+                ],
             },
+            include: conversationInclude,
         });
 
         if (existingConversation) {
@@ -115,25 +131,7 @@ export async function GET(req: NextRequest) {
                     ],
                 },
             },
-            include: {
-                participants: {
-                    include: {
-                        user: {
-                            select: {
-                                id: true,
-                                name: true,
-                                email: true,
-                                profileImage: true,
-                            },
-                        },
-                    },
-                },
-                _count: {
-                    select: {
-                        messages: true,
-                    },
-                },
-            },
+            include: conversationInclude,
         });
 
         // Create a system message to indicate this is a study buddy match
@@ -187,7 +185,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Check if match is accepted
-        if (match.status !== 'accepted') {
+        if (!ACTIVE_MATCH_STATUSES.includes(match.status)) {
             return NextResponse.json({ error: 'Match not accepted yet' }, { status: 400 });
         }
 
@@ -229,25 +227,7 @@ export async function POST(req: NextRequest) {
                     ],
                 },
             },
-            include: {
-                participants: {
-                    include: {
-                        user: {
-                            select: {
-                                id: true,
-                                name: true,
-                                email: true,
-                                profileImage: true,
-                            },
-                        },
-                    },
-                },
-                _count: {
-                    select: {
-                        messages: true,
-                    },
-                },
-            },
+            include: conversationInclude,
         });
 
         // Create a system message to indicate this is a study buddy match

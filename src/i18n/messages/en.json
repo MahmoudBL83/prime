@@ -80,7 +80,11 @@
         "emailInvalid": "Invalid email",
         "passwordMinLength": "Password must be at least 8 characters",
         "passwordMismatch": "Passwords do not match",
-        "name": "Name"
+        "name": "Name",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "birthDate": "Birth Date",
+        "country": "Country"
     },
     "courses": {
         "title": "Courses",

@@ -15,14 +15,22 @@ const baseRegisterSchema = z.object({
     email: z.string().email('Invalid email address'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string(),
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    arabicName: z.string().optional(),
-    phone: z.string().optional(),
-    interests: z.string().optional(),
-    goals: z.string().optional(),
+    firstName: z.string().min(2, 'First name must be at least 2 characters'),
+    lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+    birthDate: z.string().refine((value) => !Number.isNaN(Date.parse(value)), 'Invalid birth date'),
+    country: z.string().min(2, 'Country is required'),
 })
 
 type RegisterForm = z.infer<typeof baseRegisterSchema>
+
+const countryOptions = [
+    'Egypt',
+    'Germany',
+    'United Arab Emirates',
+    'Saudi Arabia',
+    'United States',
+    'United Kingdom',
+]
 
 function RegisterContent() {
     const router = useRouter()
@@ -50,11 +58,10 @@ function RegisterContent() {
             const processedData = {
                 email: data.email,
                 password: data.password,
-                name: data.name,
-                arabicName: data.arabicName || undefined,
-                phone: data.phone || undefined,
-                interests: data.interests ? data.interests.split(',').map(s => s.trim()).filter(Boolean) : undefined,
-                goals: data.goals ? data.goals.split(',').map(s => s.trim()).filter(Boolean) : undefined,
+                firstName: data.firstName,
+                lastName: data.lastName,
+                birthDate: data.birthDate,
+                country: data.country,
             }
 
             const res = await fetch('/api/auth/register', {
@@ -69,7 +76,7 @@ function RegisterContent() {
             }
 
             toast.success(t('registerSuccess'))
-            router.push(`/${locale}/auth/login`)
+            router.push(`/${locale}?auth=signin`)
         } catch (error) {
             toast.error(error instanceof Error ? error.message : t('registerFail'))
         } finally {
@@ -203,50 +210,77 @@ function RegisterContent() {
                                 )}
                             </div>
 
-                            {/* Name Fields */}
+                            {/* Personal Details */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        {t('name')}
+                                        {t('firstName')}
                                     </label>
                                     <input
-                                        {...register('name')}
+                                        {...register('firstName')}
                                         type="text"
-                                        placeholder={locale === 'ar' ? 'أدخل اسمك' : 'Enter your name'}
+                                        placeholder={locale === 'ar' ? 'الاسم الأول' : 'First name'}
                                         className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0a84ff] focus:border-transparent transition-all placeholder-gray-500"
                                         disabled={isLoading}
                                     />
-                                    {errors.name && (
-                                        <p className="mt-1 text-sm text-red-400">{errors.name.message}</p>
+                                    {errors.firstName && (
+                                        <p className="mt-1 text-sm text-red-400">{errors.firstName.message}</p>
                                     )}
                                 </div>
-
                                 <div>
                                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        {locale === 'ar' ? 'الاسم بالعربية (اختياري)' : 'Arabic Name (optional)'}
+                                        {t('lastName')}
                                     </label>
                                     <input
-                                        {...register('arabicName')}
+                                        {...register('lastName')}
                                         type="text"
-                                        placeholder={locale === 'ar' ? 'الاسم بالعربية' : 'Arabic name'}
+                                        placeholder={locale === 'ar' ? 'اسم العائلة' : 'Last name'}
                                         className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0a84ff] focus:border-transparent transition-all placeholder-gray-500"
                                         disabled={isLoading}
                                     />
+                                    {errors.lastName && (
+                                        <p className="mt-1 text-sm text-red-400">{errors.lastName.message}</p>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Phone Field */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
-                                    {locale === 'ar' ? 'رقم الهاتف (اختياري)' : 'Phone Number (optional)'}
-                                </label>
-                                <input
-                                    {...register('phone')}
-                                    type="tel"
-                                    placeholder={locale === 'ar' ? 'رقم الهاتف' : 'Phone number'}
-                                    className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0a84ff] focus:border-transparent transition-all placeholder-gray-500"
-                                    disabled={isLoading}
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        {t('birthDate')}
+                                    </label>
+                                    <input
+                                        {...register('birthDate')}
+                                        type="date"
+                                        className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0a84ff] focus:border-transparent transition-all"
+                                        disabled={isLoading}
+                                    />
+                                    {errors.birthDate && (
+                                        <p className="mt-1 text-sm text-red-400">{errors.birthDate.message}</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        {t('country')}
+                                    </label>
+                                    <select
+                                        {...register('country')}
+                                        className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0a84ff] focus:border-transparent transition-all"
+                                        disabled={isLoading}
+                                    >
+                                        <option value="" className="bg-gray-900">
+                                            {locale === 'ar' ? 'اختر الدولة' : 'Select country'}
+                                        </option>
+                                        {countryOptions.map((option) => (
+                                            <option key={option} value={option} className="bg-gray-900">
+                                                {option}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.country && (
+                                        <p className="mt-1 text-sm text-red-400">{errors.country.message}</p>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Password Fields */}
@@ -302,35 +336,6 @@ function RegisterContent() {
                                 </div>
                             </div>
 
-                            {/* Optional Fields */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        {locale === 'ar' ? 'الاهتمامات (مفصولة بفواصل، اختياري)' : 'Interests (comma-separated, optional)'}
-                                    </label>
-                                    <input
-                                        {...register('interests')}
-                                        type="text"
-                                        placeholder={locale === 'ar' ? 'مثال: تقنية، أعمال، تصميم' : 'e.g., Technology, Business, Design'}
-                                        className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0a84ff] focus:border-transparent transition-all placeholder-gray-500"
-                                        disabled={isLoading}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        {locale === 'ar' ? 'الأهداف التعليمية (مفصولة بفواصل، اختياري)' : 'Learning Goals (comma-separated, optional)'}
-                                    </label>
-                                    <input
-                                        {...register('goals')}
-                                        type="text"
-                                        placeholder={locale === 'ar' ? 'مثال: تغيير مسار، تطوير مهارات' : 'e.g., Career Change, Skill Development'}
-                                        className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0a84ff] focus:border-transparent transition-all placeholder-gray-500"
-                                        disabled={isLoading}
-                                    />
-                                </div>
-                            </div>
-
                             {/* Submit Button */}
                             <motion.button
                                 type="submit"
@@ -349,7 +354,7 @@ function RegisterContent() {
                                 <p className="text-gray-400">
                                     {t('alreadyHaveAccount')}{' '}
                                     <Link
-                                        href="/auth/login"
+                                        href="/?auth=signin"
                                         className="text-[#0a84ff] font-medium transition-colors hover:opacity-80"
                                     >
                                         {t('login')}

@@ -83,7 +83,11 @@
         "emailInvalid": "البريد الإلكتروني غير صحيح",
         "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
         "passwordMismatch": "كلمتا المرور غير متطابقتين",
-        "name": "الاسم"
+        "name": "الاسم",
+        "firstName": "الاسم الأول",
+        "lastName": "اسم العائلة",
+        "birthDate": "تاريخ الميلاد",
+        "country": "الدولة"
     },
     "courses": {
         "title": "الدورات",

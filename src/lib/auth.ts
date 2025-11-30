@@ -24,7 +24,7 @@ export const authOptions: NextAuthOptions = {
     },
     secret: process.env.NEXTAUTH_SECRET,
     pages: {
-        signIn: "/auth/login",
+        signIn: "/?auth=signin",
         error: "/auth/error",
     },
     providers: [
@@ -52,6 +52,10 @@ export const authOptions: NextAuthOptions = {
                             id: true,
                             email: true,
                             name: true,
+                            firstName: true,
+                            lastName: true,
+                            birthDate: true,
+                            country: true,
                             role: true,
                             passwordHash: true,
                         }
@@ -74,6 +78,10 @@ export const authOptions: NextAuthOptions = {
                         id: user.id,
                         email: user.email,
                         name: user.name,
+                        firstName: user.firstName ?? null,
+                        lastName: user.lastName ?? null,
+                        birthDate: user.birthDate?.toISOString() ?? null,
+                        country: user.country ?? null,
                         role: user.role as UserRole,
                     }
                 } catch (error) {
@@ -85,13 +93,39 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks: {
         async jwt({ token, user, trigger }) {
-            // Only update token on sign-in or refresh
-            if (user || trigger === "update") {
-                if (user) {
-                    token.id = user.id as string
-                    token.role = user.role as UserRole
+            // Set initial token data on sign-in
+            if (user) {
+                token.id = user.id as string
+                token.role = user.role as UserRole
+                token.firstName = (user as any).firstName ?? null
+                token.lastName = (user as any).lastName ?? null
+                token.birthDate = (user as any).birthDate ?? null
+                token.country = (user as any).country ?? null
+            }
+            
+            // Always check creator status (on sign-in and subsequent requests)
+            if (token.id) {
+                try {
+                    const { prisma } = await import("@/lib/prisma")
+                    
+                    // Check if user has creator profile
+                    const creator = await prisma.creator.findUnique({
+                        where: { userId: token.id as string },
+                        select: { id: true }
+                    })
+                    token.isCreator = !!creator
+                    
+                    // Check creator application status
+                    const application = await prisma.creatorApplication.findUnique({
+                        where: { userId: token.id as string },
+                        select: { status: true }
+                    })
+                    token.applicationStatus = application?.status || null
+                } catch (error) {
+                    console.error("Error checking creator status:", error)
                 }
             }
+            
             return token
         },
         async session({ session, token }) {
@@ -99,6 +133,12 @@ export const authOptions: NextAuthOptions = {
             if (session?.user && token) {
                 session.user.id = token.id as string
                 session.user.role = token.role as UserRole
+                session.user.firstName = token.firstName as string | null
+                session.user.lastName = token.lastName as string | null
+                session.user.birthDate = token.birthDate as string | null
+                session.user.country = token.country as string | null
+                session.user.isCreator = token.isCreator as boolean
+                session.user.applicationStatus = token.applicationStatus as string | null
             }
             return session
         },

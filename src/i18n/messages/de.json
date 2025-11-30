@@ -50,7 +50,11 @@
         "welcomeBack": "Willkommen zurück",
         "createAccount": "Neues Konto erstellen",
         "alreadyHaveAccount": "Bereits ein Konto?",
-        "dontHaveAccount": "Noch kein Konto?"
+        "dontHaveAccount": "Noch kein Konto?",
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "birthDate": "Geburtsdatum",
+        "country": "Land"
     },
     "courses": {
         "title": "Kurse",

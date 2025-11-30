@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, CheckCircle, Mail } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
+import { useSession } from 'next-auth/react';
+import toast from 'react-hot-toast';
 
 interface PaymentModalProps {
     isOpen: boolean;
@@ -13,28 +14,47 @@ interface PaymentModalProps {
 }
 
 export function PaymentModal({ isOpen, onClose, courseTitle, price }: PaymentModalProps) {
-    const [paymentType, setPaymentType] = useState('Credit / Debit Card');
-    const [formData, setFormData] = useState({
-        cardNumber: '',
-        expiryDate: '',
-        cvv: '',
-        firstName: '',
-        lastName: '',
-        street: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        country: 'United States'
-    });
+    const { data: session } = useSession();
+    const [loading, setLoading] = useState(false);
+    const [emailSent, setEmailSent] = useState(false);
 
-    const handleInputChange = (field: string, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    };
+    const handleSendPaymentLink = async () => {
+        if (!session?.user?.email) {
+            toast.error('Please sign in to continue');
+            return;
+        }
 
-    const handleSubmit = () => {
-        // Handle payment submission
-        console.log('Payment submitted:', formData);
-        onClose();
+        setLoading(true);
+        try {
+            const response = await fetch('/api/payments/create-link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    amount: 28.99,
+                    description: 'Prime Subscription - €28.99/Mo For 12 Months',
+                    successUrl: `${window.location.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+                    cancelUrl: `${window.location.origin}/courses`,
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setEmailSent(true);
+                toast.success('Payment link sent to your email!');
+                
+                // Optionally, open the payment link in a new tab
+                // window.open(data.paymentUrl, '_blank');
+            } else {
+                throw new Error('Failed to create payment link');
+            }
+        } catch (error) {
+            console.error('Error creating payment link:', error);
+            toast.error('Failed to send payment link. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -56,7 +76,7 @@ export function PaymentModal({ isOpen, onClose, courseTitle, price }: PaymentMod
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-neutral-900 rounded-3xl shadow-2xl"
+                        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-neutral-900 rounded-3xl shadow-2xl"
                         style={{ border: '1px solid rgba(255,255,255,0.1)' }}
                     >
                         {/* Header */}
@@ -68,191 +88,159 @@ export function PaymentModal({ isOpen, onClose, courseTitle, price }: PaymentMod
                                 >
                                     <X className="w-5 h-5 text-white" />
                                 </button>
-                                <h2 className="text-2xl font-bold text-white">Payment Method</h2>
+                                <h2 className="text-2xl font-bold text-white">
+                                    {emailSent ? 'Check Your Email' : 'Complete Payment'}
+                                </h2>
                             </div>
                         </div>
 
                         {/* Content */}
-                        <div className="px-8 py-6 space-y-6">
-                            {/* Course Info */}
-                            <div className="bg-white/5 rounded-2xl p-4">
-                                <p className="text-white/60 text-sm mb-1">Subscribing to</p>
-                                <p className="text-white font-semibold text-lg">{courseTitle}</p>
-                                <p className="text-white/80 text-sm mt-2">{price}</p>
-                            </div>
-
-                            {/* Payment Type Selector */}
-                            <div className="space-y-3">
-                                <label className="text-white/60 text-sm font-medium">Payment Type</label>
-                                <div className="relative">
-                                    <select
-                                        value={paymentType}
-                                        onChange={(e) => setPaymentType(e.target.value)}
-                                        className="w-full bg-white/10 text-white rounded-xl px-4 py-3.5 border border-white/20 focus:border-white/40 focus:outline-none appearance-none cursor-pointer"
-                                    >
-                                        <option value="Credit / Debit Card" className="bg-neutral-800">Credit / Debit Card</option>
-                                        <option value="Apple Pay" className="bg-neutral-800">Apple Pay</option>
-                                        <option value="PayPal" className="bg-neutral-800">PayPal</option>
-                                    </select>
-                                    <svg className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/60 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </div>
-                            </div>
-
-                            {/* Details Section */}
-                            <div className="space-y-4">
-                                <h3 className="text-white font-semibold text-lg">Details</h3>
-                                
-                                {/* Card Number */}
-                                <div className="space-y-2">
-                                    <label className="text-white/60 text-sm font-medium">Card Number</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Required"
-                                        value={formData.cardNumber}
-                                        onChange={(e) => handleInputChange('cardNumber', e.target.value)}
-                                        className="w-full bg-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3.5 border border-white/20 focus:border-white/40 focus:outline-none"
-                                    />
-                                </div>
-
-                                {/* Expiry Date & CVV */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-white/60 text-sm font-medium">Expiry Date</label>
-                                        <input
-                                            type="text"
-                                            placeholder="MM/YYYY"
-                                            value={formData.expiryDate}
-                                            onChange={(e) => handleInputChange('expiryDate', e.target.value)}
-                                            className="w-full bg-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3.5 border border-white/20 focus:border-white/40 focus:outline-none"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-white/60 text-sm font-medium">CVV</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Security code"
-                                            value={formData.cvv}
-                                            onChange={(e) => handleInputChange('cvv', e.target.value)}
-                                            className="w-full bg-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3.5 border border-white/20 focus:border-white/40 focus:outline-none"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Billing Address */}
-                            <div className="space-y-4">
-                                <h3 className="text-white font-semibold text-lg">Billing Address</h3>
-                                
-                                {/* First Name & Last Name */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-white/60 text-sm font-medium">First Name</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Hoda"
-                                            value={formData.firstName}
-                                            onChange={(e) => handleInputChange('firstName', e.target.value)}
-                                            className="w-full bg-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3.5 border border-white/20 focus:border-white/40 focus:outline-none"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-white/60 text-sm font-medium">Last Name</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Salah"
-                                            value={formData.lastName}
-                                            onChange={(e) => handleInputChange('lastName', e.target.value)}
-                                            className="w-full bg-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3.5 border border-white/20 focus:border-white/40 focus:outline-none"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Street */}
-                                <div className="space-y-2">
-                                    <label className="text-white/60 text-sm font-medium">Street</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Riyadh across zaki"
-                                        value={formData.street}
-                                        onChange={(e) => handleInputChange('street', e.target.value)}
-                                        className="w-full bg-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3.5 border border-white/20 focus:border-white/40 focus:outline-none"
-                                    />
-                                </div>
-
-                                {/* City & State */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-white/60 text-sm font-medium">City</label>
-                                        <input
-                                            type="text"
-                                            placeholder="City"
-                                            value={formData.city}
-                                            onChange={(e) => handleInputChange('city', e.target.value)}
-                                            className="w-full bg-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3.5 border border-white/20 focus:border-white/40 focus:outline-none"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-white/60 text-sm font-medium">State</label>
-                                        <input
-                                            type="text"
-                                            placeholder="State"
-                                            value={formData.state}
-                                            onChange={(e) => handleInputChange('state', e.target.value)}
-                                            className="w-full bg-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3.5 border border-white/20 focus:border-white/40 focus:outline-none"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Zip Code & Country */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-white/60 text-sm font-medium">Zip Code</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Zip Code"
-                                            value={formData.zipCode}
-                                            onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                                            className="w-full bg-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3.5 border border-white/20 focus:border-white/40 focus:outline-none"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-white/60 text-sm font-medium">Country</label>
-                                        <div className="relative">
-                                            <select
-                                                value={formData.country}
-                                                onChange={(e) => handleInputChange('country', e.target.value)}
-                                                className="w-full bg-white/10 text-white rounded-xl px-4 py-3.5 border border-white/20 focus:border-white/40 focus:outline-none appearance-none cursor-pointer"
-                                            >
-                                                <option value="United States" className="bg-neutral-800">United States</option>
-                                                <option value="Egypt" className="bg-neutral-800">Egypt</option>
-                                                <option value="Germany" className="bg-neutral-800">Germany</option>
-                                                <option value="United Kingdom" className="bg-neutral-800">United Kingdom</option>
-                                            </select>
-                                            <svg className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/60 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                            </svg>
+                        <div className="px-8 py-8 space-y-6">
+                            {!emailSent ? (
+                                <>
+                                    {/* Course Info */}
+                                    <div className="bg-white/5 rounded-2xl p-6 space-y-3">
+                                        <p className="text-white/60 text-sm">Subscribing to</p>
+                                        <p className="text-white font-bold text-xl">{courseTitle}</p>
+                                        <div className="pt-3 border-t border-white/10">
+                                            <p className="text-white/80 text-lg font-semibold">{price}</p>
+                                            <p className="text-white/60 text-sm mt-1">
+                                                Unlimited access to all courses
+                                            </p>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* Terms */}
-                            <div className="text-xs text-white/60 leading-relaxed">
-                                By clicking Continue, you agree to the{' '}
-                                <button className="text-blue-500 hover:text-blue-400">Prime Media Services Terms and Conditions</button>
-                                {' '}and acknowledge that you have read the{' '}
-                                <button className="text-blue-500 hover:text-blue-400">Privacy Policy</button>.
-                            </div>
+                                    {/* User Email */}
+                                    <div className="bg-[#0a84ff]/10 border border-[#0a84ff]/20 rounded-2xl p-6">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="w-10 h-10 bg-[#0a84ff]/20 rounded-full flex items-center justify-center">
+                                                <Mail className="w-5 h-5 text-[#0a84ff]" />
+                                            </div>
+                                            <div>
+                                                <p className="text-white font-semibold">Payment Link</p>
+                                                <p className="text-white/60 text-sm">We'll email you a secure link</p>
+                                            </div>
+                                        </div>
+                                        <div className="bg-white/5 rounded-xl px-4 py-3">
+                                            <p className="text-white text-sm">{session?.user?.email}</p>
+                                        </div>
+                                    </div>
 
-                            {/* Continue Button */}
-                            <button
-                                onClick={handleSubmit}
-                                className="w-full bg-white hover:bg-white/90 text-black font-semibold py-4 rounded-full transition-all"
-                            >
-                                Continue
-                            </button>
+                                    {/* Features */}
+                                    <div className="space-y-3">
+                                        <p className="text-white/60 text-sm font-medium">What's included:</p>
+                                        <ul className="space-y-2.5">
+                                            {[
+                                                'Unlimited access to all courses',
+                                                'Live sessions with expert instructors',
+                                                'Interactive learning tools',
+                                                'Professional certificates',
+                                                'Cancel anytime',
+                                            ].map((feature, index) => (
+                                                <li key={index} className="flex items-start gap-3">
+                                                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                    <span className="text-white/90 text-sm">{feature}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+
+                                    {/* Terms */}
+                                    <div className="text-xs text-white/60 leading-relaxed">
+                                        By continuing, you agree to the{' '}
+                                        <button className="text-[#0a84ff] hover:text-[#0a84ff]/80">
+                                            Prime Terms and Conditions
+                                        </button>
+                                        {' '}and acknowledge that you have read the{' '}
+                                        <button className="text-[#0a84ff] hover:text-[#0a84ff]/80">
+                                            Privacy Policy
+                                        </button>.
+                                    </div>
+
+                                    {/* Send Payment Link Button */}
+                                    <button
+                                        onClick={handleSendPaymentLink}
+                                        disabled={loading}
+                                        className="w-full bg-white hover:bg-white/90 text-black font-semibold py-4 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                                                <span>Sending...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Mail className="w-5 h-5" />
+                                                <span>Send Payment Link</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Success State */}
+                                    <div className="text-center space-y-6 py-8">
+                                        <div className="w-20 h-20 mx-auto bg-green-500/10 rounded-full flex items-center justify-center">
+                                            <Mail className="w-10 h-10 text-green-500" />
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                            <h3 className="text-2xl font-bold text-white">
+                                                Check Your Email
+                                            </h3>
+                                            <p className="text-white/60">
+                                                We've sent a secure payment link to:
+                                            </p>
+                                            <p className="text-[#0a84ff] font-semibold">
+                                                {session?.user?.email}
+                                            </p>
+                                        </div>
+
+                                        <div className="bg-white/5 rounded-2xl p-6 space-y-3 text-left">
+                                            <p className="text-white font-semibold">Next steps:</p>
+                                            <ol className="space-y-2 text-sm text-white/80">
+                                                <li className="flex gap-3">
+                                                    <span className="w-6 h-6 bg-[#0a84ff] rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                                                        1
+                                                    </span>
+                                                    <span>Check your email inbox (and spam folder)</span>
+                                                </li>
+                                                <li className="flex gap-3">
+                                                    <span className="w-6 h-6 bg-[#0a84ff] rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                                                        2
+                                                    </span>
+                                                    <span>Click the secure payment link</span>
+                                                </li>
+                                                <li className="flex gap-3">
+                                                    <span className="w-6 h-6 bg-[#0a84ff] rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                                                        3
+                                                    </span>
+                                                    <span>Complete your payment securely with Stripe</span>
+                                                </li>
+                                                <li className="flex gap-3">
+                                                    <span className="w-6 h-6 bg-[#0a84ff] rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                                                        4
+                                                    </span>
+                                                    <span>Start learning immediately!</span>
+                                                </li>
+                                            </ol>
+                                        </div>
+
+                                        <div className="bg-[#0a84ff]/10 border border-[#0a84ff]/20 rounded-xl p-4">
+                                            <p className="text-white/60 text-xs">
+                                                💡 The payment link will expire in 24 hours
+                                            </p>
+                                        </div>
+
+                                        <button
+                                            onClick={onClose}
+                                            className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 rounded-full transition-all"
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </motion.div>
                 </div>

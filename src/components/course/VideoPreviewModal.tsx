@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Play, Pause, Volume2, VolumeX, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useSession } from 'next-auth/react';
 
 interface VideoPreviewModalProps {
@@ -33,6 +34,7 @@ export function VideoPreviewModal({
     lang = 'ar'
 }: VideoPreviewModalProps) {
     const { data: session } = useSession();
+    const { openAuthModal } = useAuthModal();
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
@@ -210,14 +212,14 @@ export function VideoPreviewModal({
                                                 <>
                                                     <Button
                                                         className="w-full bg-blue-600 hover:bg-blue-700"
-                                                        onClick={() => window.location.href = `/auth/login?callbackUrl=/courses/${course.id}`}
+                                                        onClick={() => openAuthModal('signin')}
                                                     >
                                                         {currentT.signIn}
                                                     </Button>
                                                     <Button
                                                         variant="outline"
                                                         className="w-full border-gray-600 text-muted-foreground hover:bg-card"
-                                                        onClick={() => window.location.href = `/auth/register?callbackUrl=/courses/${course.id}`}
+                                                        onClick={() => openAuthModal('signup')}
                                                     >
                                                         {currentT.createAccount}
                                                     </Button>

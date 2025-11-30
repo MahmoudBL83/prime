@@ -1,9 +1,11 @@
+"use client"
+
 import React from 'react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UserPlus, Users, MessageSquare } from 'lucide-react'
-import Link from 'next/link'
+import { useAuthModal } from '@/contexts/AuthModalContext'
 
 interface AuthGuardProps {
     children: React.ReactNode
@@ -11,6 +13,7 @@ interface AuthGuardProps {
 
 export function StudyBuddyAuthGuard({ children }: AuthGuardProps) {
     const { data: session, status } = useSession()
+    const { openAuthModal } = useAuthModal()
 
     if (status === 'loading') {
         return (
@@ -79,16 +82,17 @@ export function StudyBuddyAuthGuard({ children }: AuthGuardProps) {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <Link href="/auth/login" className="w-full">
-                                <Button className="w-full" size="lg">
-                                    Sign In to Find Study Buddies
-                                </Button>
-                            </Link>
-                            <Link href="/auth/register" className="w-full">
-                                <Button variant="outline" className="w-full" size="lg">
-                                    Create New Account
-                                </Button>
-                            </Link>
+                            <Button className="w-full" size="lg" onClick={() => openAuthModal('signin')}>
+                                Sign In to Find Study Buddies
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                size="lg"
+                                onClick={() => openAuthModal('signup')}
+                            >
+                                Create New Account
+                            </Button>
                         </CardContent>
                     </Card>
                 </div>

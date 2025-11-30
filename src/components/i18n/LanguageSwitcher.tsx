@@ -3,9 +3,13 @@
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { routing, localeNames, localeFlags } from '@/i18n/routing';
 import { useLocaleSafe } from '@/hooks/useTranslationsSafe';
-const { locales } = routing;
+const { locales: routingLocales } = routing;
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+    locales?: string[];
+}
+
+export function LanguageSwitcher({ locales }: LanguageSwitcherProps = {}) {
     const locale = useLocaleSafe();
 
     // Safe navigation hooks with fallback
@@ -31,9 +35,11 @@ export function LanguageSwitcher() {
         }
     };
 
+    const availableLocales = locales && locales.length > 0 ? locales : routingLocales;
+
     return (
         <div className="py-1">
-            {locales.map((loc: string) => (
+            {availableLocales.map((loc: string) => (
                 <button
                     key={loc}
                     onClick={() => handleLanguageChange(loc)}

@@ -197,6 +197,13 @@ function DashboardContent() {
         setIsClient(true)
     }, [])
 
+    // Redirect creators to creator dashboard
+    useEffect(() => {
+        if (session?.user?.isCreator || session?.user?.applicationStatus) {
+            router.push(`/${locale}/creator/dashboard`)
+        }
+    }, [session, router, locale])
+
     // Handle tab from URL query
     useEffect(() => {
         const tab = searchParams.get('tab')
@@ -479,11 +486,11 @@ function DashboardContent() {
                 {/* Tab Content */}
                 {activeTab === 'overview' && (
                 <>
-                {/* Quick Actions Grid - Simplified to 4 core actions */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                {/* Quick Actions Grid - Core 2 actions with enhanced visuals */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                     {/* My Learning (Category A + B) */}
                     <div 
-                        className="group relative bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:border-white/30 transition-all duration-500 hover:shadow-2xl hover:shadow-white/5 cursor-pointer" 
+                        className="group relative bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden hover:border-white/30 transition-all duration-500 hover:shadow-2xl hover:shadow-white/5 cursor-pointer" 
                         onClick={() => navigateWithLoading(`/${locale}/dashboard/my-learning`, 'my-learning')}
                     >
                         {/* Loading Overlay */}
@@ -500,85 +507,43 @@ function DashboardContent() {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
                         
                         <div className="relative p-8">
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                    <BookOpen className="w-7 h-7 text-white" />
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                                    <BookOpen className="w-8 h-8 text-white" />
                                 </div>
-                                <ChevronRight className="w-6 h-6 text-white/40 group-hover:translate-x-1 group-hover:text-white transition-all duration-300" />
+                                <ChevronRight className="w-7 h-7 text-white/40 group-hover:translate-x-2 group-hover:text-white transition-all duration-300" />
                             </div>
-                            <h3 className="font-semibold text-xl mb-3 text-white group-hover:text-white transition-colors">
+                            <h3 className="font-bold text-2xl mb-4 text-white group-hover:text-white transition-colors">
                                 {isArabic ? 'دوراتي' : 'My Learning'}
                             </h3>
-                            <p className="text-white/60 text-sm mb-6 leading-relaxed group-hover:text-white/80 transition-colors">
+                            <p className="text-white/60 text-base mb-8 leading-relaxed group-hover:text-white/80 transition-colors">
                                 {isArabic 
-                                    ? 'الوصول إلى جميع دوراتك المسجلة'
-                                    : 'Access all your enrolled courses'
+                                    ? 'الوصول إلى جميع دوراتك المسجلة والاستمرار في التعلم'
+                                    : 'Access all your enrolled courses and continue learning'
                                 }
                             </p>
-                            <div className="flex items-center gap-2">
-                                <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 transition-colors px-4 py-2 text-base">
                                     {learningStats?.totalCourses || 0} {isArabic ? 'دورات' : 'courses'}
                                 </Badge>
-                            </div>
-                        </div>
-                        
-                        {/* Hover Effect Overlay */}
-                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl"></div>
-                    </div>
-
-                    {/* My Meetings */}
-                    <div 
-                        className="group relative bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:border-white/30 transition-all duration-500 hover:shadow-2xl hover:shadow-white/5 cursor-pointer" 
-                        onClick={() => navigateWithLoading(`/${locale}/dashboard/meetings`, 'meetings')}
-                    >
-                        {/* Loading Overlay */}
-                        {isLoading('meetings') && (
-                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-xl flex items-center justify-center z-20">
-                                <div className="flex flex-col items-center gap-4 text-white">
-                                    <div className="w-8 h-8 border-3 border-white/20 border-t-white rounded-full animate-spin"></div>
-                                    <span className="text-sm font-medium">Loading meetings...</span>
-                                </div>
-                            </div>
-                        )}
-                        
-                        {/* Decorative Elements */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
-                        
-                        <div className="relative p-8">
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                    <Calendar className="w-7 h-7 text-white" />
-                                </div>
-                                <ChevronRight className="w-6 h-6 text-white/40 group-hover:translate-x-1 group-hover:text-white transition-all duration-300" />
-                            </div>
-                            <h3 className="font-semibold text-xl mb-3 text-white group-hover:text-white transition-colors">
-                                {isArabic ? 'اجتماعاتي' : 'My Meetings'}
-                            </h3>
-                            <p className="text-white/60 text-sm mb-6 leading-relaxed group-hover:text-white/80 transition-colors">
-                                {isArabic 
-                                    ? 'عرض وإدارة جلساتك المحجوزة مع المدربين'
-                                    : 'View and manage your scheduled sessions'
-                                }
-                            </p>
-                            <div className="flex items-center gap-2">
-                                <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 transition-colors">
-                                    {learningStats?.upcomingMeetingsCount || 0} {isArabic ? 'قادمة' : 'upcoming'}
+                                <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 transition-colors px-4 py-2 text-base">
+                                    {learningStats?.averageProgress || 0}% {isArabic ? 'مكتمل' : 'complete'}
                                 </Badge>
                             </div>
                         </div>
                         
                         {/* Hover Effect Overlay */}
-                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl"></div>
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"></div>
                     </div>
 
-                    {/* Study Buddy */}
+                    {/* Study Buddy - Enhanced */}
                     <div 
-                        className="group relative bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:border-white/30 transition-all duration-500 hover:shadow-2xl hover:shadow-white/5 cursor-pointer" 
+                        className="group relative bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden hover:border-white/30 transition-all duration-500 hover:shadow-2xl hover:shadow-white/5 cursor-pointer" 
                         onClick={handleStudyBuddyClick}
                     >
                         {/* Loading Overlay */}
                         {isLoading('study-buddy') && (
-                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-xl flex items-center justify-center z-20">
+                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-2xl flex items-center justify-center z-20">
                                 <div className="flex flex-col items-center gap-4 text-white">
                                     <div className="w-8 h-8 border-3 border-white/20 border-t-white rounded-full animate-spin"></div>
                                     <span className="text-sm font-medium">Finding study buddies...</span>
@@ -587,86 +552,38 @@ function DashboardContent() {
                         )}
                         
                         {/* Decorative Elements */}
-                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full blur-2xl"></div>
+                        <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
                         
-                        <div className="relative p-8">
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                    <Users className="w-7 h-7 text-white" />
+                        <div className="relative p-10">
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                                    <Users className="w-8 h-8 text-white" />
                                 </div>
-                                <ChevronRight className="w-6 h-6 text-white/40 group-hover:translate-x-1 group-hover:text-white transition-all duration-300" />
+                                <ChevronRight className="w-7 h-7 text-white/40 group-hover:translate-x-2 group-hover:text-white transition-all duration-300" />
                             </div>
-                            <h3 className="font-semibold text-xl mb-3 text-white group-hover:text-white transition-colors">
+                            <h3 className="font-bold text-2xl mb-4 text-white group-hover:text-white transition-colors">
                                 {isArabic ? 'رفيق الدراسة' : 'Study Buddy'}
                             </h3>
-                            <p className="text-white/60 text-sm mb-6 leading-relaxed group-hover:text-white/80 transition-colors">
+                            <p className="text-white/60 text-base mb-8 leading-relaxed group-hover:text-white/80 transition-colors">
                                 {isArabic 
-                                    ? 'ابحث عن شريك التعلم المثالي'
-                                    : 'Find the perfect learning partner'
+                                    ? 'ابحث عن شريك التعلم المثالي وتعاون معه'
+                                    : 'Find the perfect learning partner and collaborate'
                                 }
                             </p>
-                            <div className="flex items-center gap-2">
-                                <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 transition-colors px-4 py-2 text-base">
                                     {learningStats?.studyBuddyMatches || 0} {isArabic ? 'مطابقة' : 'matches'}
+                                </Badge>
+                                <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 transition-colors px-4 py-2 text-base">
+                                    {learningStats?.upcomingSessionsCount || 0} {isArabic ? 'جلسات' : 'sessions'}
                                 </Badge>
                             </div>
                         </div>
                         
                         {/* Hover Effect Overlay */}
-                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl"></div>
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"></div>
                     </div>
-
-                    {/* My Progress */}
-                    <div 
-                        className="group relative bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:border-white/30 transition-all duration-500 hover:shadow-2xl hover:shadow-white/5 cursor-pointer" 
-                        onClick={() => navigateWithLoading(`/${locale}/dashboard/progress`, 'progress')}
-                    >
-                        {/* Loading Overlay */}
-                        {isLoading('progress') && (
-                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-xl flex items-center justify-center z-20">
-                                <div className="flex flex-col items-center gap-4 text-white">
-                                    <div className="w-8 h-8 border-3 border-white/20 border-t-white rounded-full animate-spin"></div>
-                                    <span className="text-sm font-medium">Loading progress...</span>
-                                </div>
-                            </div>
-                        )}
-                        
-                        {/* Decorative Elements */}
-                        <div className="absolute top-0 right-0 w-28 h-28 bg-white/5 rounded-full blur-2xl"></div>
-                        
-                        <div className="relative p-8">
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                    <TrendingUp className="w-7 h-7 text-white" />
-                                </div>
-                                <ChevronRight className="w-6 h-6 text-white/40 group-hover:translate-x-1 group-hover:text-white transition-all duration-300" />
-                            </div>
-                            <h3 className="font-semibold text-xl mb-3 text-white group-hover:text-white transition-colors">
-                                {isArabic ? 'تقدمي' : 'My Progress'}
-                            </h3>
-                            <p className="text-white/60 text-sm mb-6 leading-relaxed group-hover:text-white/80 transition-colors">
-                                {isArabic 
-                                    ? 'تتبع تقدمك التعليمي وإنجازاتك'
-                                    : 'Track your learning progress'
-                                }
-                            </p>
-                            <div className="mb-2">
-                                <div className="w-full bg-white/10 rounded-full h-2 mb-2">
-                                    <div 
-                                        className="bg-white/80 h-2 rounded-full transition-all duration-500" 
-                                        style={{ width: `${learningStats?.averageProgress || 0}%` }}
-                                    ></div>
-                                </div>
-                                <p className="text-xs text-white/70 font-medium">
-                                    {learningStats?.averageProgress || 0}% {isArabic ? 'مكتمل' : 'complete'}
-                                </p>
-                            </div>
-                        </div>
-                        
-                        {/* Hover Effect Overlay */}
-                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl"></div>
-                    </div>
-
                     
                 </div>
 
@@ -1238,100 +1155,7 @@ function DashboardContent() {
                             </div>
                         </div>
 
-                        {/* Rewards & Scholarships */}
-                        <div className="relative bg-gradient-to-br from-amber-800/60 to-yellow-900/60 backdrop-blur-sm rounded-3xl border border-amber-700/50 overflow-hidden hover:border-amber-400/60 transition-all duration-500 hover:shadow-2xl hover:shadow-amber-500/20">
-                            {/* Decorative Elements */}
-                            <div className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-amber-500/20 to-yellow-500/20 rounded-full blur-3xl"></div>
-                            
-                            <div className="relative p-8">
-                                <div className="flex items-center justify-between mb-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-2xl flex items-center justify-center shadow-lg">
-                                            <Trophy className="w-6 h-6 text-white" />
-                                        </div>
-                                        <h2 className="text-xl font-bold text-white">
-                                            {isArabic ? 'المكافآت والمنح' : 'Rewards & Scholarships'}
-                                        </h2>
-                                    </div>
-                                    <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30">
-                                        {isArabic ? 'جديد' : 'New'}
-                                    </Badge>
-                                </div>
-                                
-                                <div className="space-y-4">
-                                    {/* Active Contests Placeholder */}
-                                    <div className="p-4 bg-gray-900/60 backdrop-blur-sm border border-gray-700/50 rounded-xl">
-                                        <div className="flex items-start justify-between mb-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-lg flex items-center justify-center">
-                                                    <Trophy className="w-5 h-5 text-white" />
-                                                </div>
-                                                <div>
-                                                    <h4 className="text-white font-semibold text-sm mb-1">
-                                                        {isArabic ? 'مسابقة الدورة الشهرية' : 'Monthly Course Challenge'}
-                                                    </h4>
-                                                    <p className="text-gray-400 text-xs">
-                                                        {isArabic ? 'أكمل 3 دورات للفوز' : 'Complete 3 courses to win'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs">
-                                                {isArabic ? 'نشط' : 'Active'}
-                                            </Badge>
-                                        </div>
-                                        <div className="mb-2">
-                                            <div className="flex justify-between text-xs text-gray-400 mb-1">
-                                                <span>{isArabic ? 'التقدم' : 'Progress'}</span>
-                                                <span>1/3</span>
-                                            </div>
-                                            <div className="w-full bg-gray-700/50 rounded-full h-2">
-                                                <div className="bg-gradient-to-r from-amber-500 to-yellow-500 h-2 rounded-full" style={{ width: '33%' }}></div>
-                                            </div>
-                                        </div>
-                                        <p className="text-amber-300 text-xs font-medium">
-                                            💰 {isArabic ? 'الجائزة: 1,000 ج.م' : 'Prize: 1,000 EGP'}
-                                        </p>
-                                    </div>
 
-                                    {/* Leaderboard Preview */}
-                                    <div className="p-4 bg-gray-900/60 backdrop-blur-sm border border-gray-700/50 rounded-xl">
-                                        <h4 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
-                                            <TrendingUp className="w-4 h-4 text-amber-400" />
-                                            {isArabic ? 'المتصدرون' : 'Top Learners'}
-                                        </h4>
-                                        <div className="space-y-2">
-                                            {[1, 2, 3].map((rank) => (
-                                                <div key={rank} className="flex items-center justify-between text-xs">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${
-                                                            rank === 1 ? 'bg-yellow-500/20 text-yellow-400' :
-                                                            rank === 2 ? 'bg-gray-400/20 text-gray-300' :
-                                                            'bg-amber-700/20 text-amber-400'
-                                                        }`}>
-                                                            {rank}
-                                                        </span>
-                                                        <span className="text-gray-300">
-                                                            {isArabic ? 'متعلم' : 'Learner'} {rank}
-                                                        </span>
-                                                    </div>
-                                                    <span className="text-amber-400 font-medium">
-                                                        {95 - (rank - 1) * 5}%
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <Button 
-                                        className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                                        onClick={() => toast.success(isArabic ? 'صفحة المكافآت قريباً!' : 'Rewards page coming soon!')}
-                                    >
-                                        <Trophy className="w-5 h-5 mr-2" />
-                                        {isArabic ? 'عرض جميع المكافآت' : 'View All Rewards'}
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
 
                         {/* Learning Goals */}
                         <div className="relative bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-sm rounded-3xl border border-gray-700/50 overflow-hidden hover:border-yellow-400/60 transition-all duration-500 hover:shadow-2xl hover:shadow-yellow-500/20">

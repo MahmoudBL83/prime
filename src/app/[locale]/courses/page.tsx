@@ -6,14 +6,15 @@ import { useSession } from 'next-auth/react';
 import { useLocaleSafe } from '@/hooks/useTranslationsSafe';
 import { Search, Play } from 'lucide-react';
 import Image from 'next/image';
-import { SignInModal } from '@/components/SignInModal';
 import { PaymentModal } from '@/components/PaymentModal';
 import { Footer } from '@/components/landing/Footer';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 
 interface Course {
     id: string;
     title: string;
     titleAr?: string;
+    titleDe?: string;
     category: string;
     thumbnail?: string;
     rating?: number;
@@ -21,6 +22,7 @@ interface Course {
     duration?: string;
     description?: string;
     descriptionAr?: string;
+    descriptionDe?: string;
 }
 
 // Mock courses data matching Apple TV style
@@ -30,18 +32,21 @@ const mockCourses: Course[] = [
         id: 'lost-bus-german-survival',
         title: 'The Lost Bus',
         titleAr: 'الحافلة المفقودة',
+        titleDe: 'Der verlorene Bus',
         category: 'German Language',
         rating: 4.8,
         year: 2024,
         duration: '6 months',
         description: 'To save 22 children, they risk everything—including their lives. Inspired by a true story of survival.',
         descriptionAr: 'لإنقاذ 22 طفلاً، يخاطرون بكل شيء - بما في ذلك حياتهم. مستوحى من قصة حقيقية للبقاء على قيد الحياة.',
+        descriptionDe: 'Um 22 Kinder zu retten, riskieren sie alles – sogar ihr Leben. Inspiriert von einer wahren Überlebensgeschichte.',
         thumbnail: '/images/courses/German Language Posters/WhatsApp Image 2025-11-23 at 22.43.43_7cec6116.jpg'
     },
     {
         id: 'severance-german-advanced',
         title: 'Severance',
         titleAr: 'الفصل',
+        titleDe: 'Severance',
         category: 'German Language',
         rating: 4.9,
         year: 2024,
@@ -52,6 +57,7 @@ const mockCourses: Course[] = [
         id: 'german-b2-course',
         title: 'German B2 Course',
         titleAr: 'دورة الألمانية B2',
+        titleDe: 'Deutsch B2 Kurs',
         category: 'German Language',
         rating: 4.8,
         year: 2024,
@@ -62,6 +68,7 @@ const mockCourses: Course[] = [
         id: 'german-c1-advanced',
         title: 'German C1 Advanced',
         titleAr: 'الألمانية C1 متقدم',
+        titleDe: 'Deutsch C1 Fortgeschritten',
         category: 'German Language',
         rating: 4.8,
         year: 2024,
@@ -72,6 +79,7 @@ const mockCourses: Course[] = [
         id: 'german-a1-beginner',
         title: 'German A1 Beginner',
         titleAr: 'الألمانية A1 للمبتدئين',
+        titleDe: 'Deutsch A1 Anfänger',
         category: 'German Language',
         rating: 4.7,
         year: 2024,
@@ -82,6 +90,7 @@ const mockCourses: Course[] = [
         id: 'german-conversation',
         title: 'German Conversation',
         titleAr: 'محادثة ألمانية',
+        titleDe: 'Deutsch Konversation',
         category: 'German Language',
         rating: 4.6,
         year: 2024,
@@ -92,6 +101,7 @@ const mockCourses: Course[] = [
         id: 'german-grammar-mastery',
         title: 'German Grammar Mastery',
         titleAr: 'إتقان قواعد اللغة الألمانية',
+        titleDe: 'Deutsch Grammatik Meisterkurs',
         category: 'German Language',
         rating: 4.9,
         year: 2024,
@@ -102,6 +112,7 @@ const mockCourses: Course[] = [
         id: 'german-business',
         title: 'Business German',
         titleAr: 'الألمانية للأعمال',
+        titleDe: 'Business Deutsch',
         category: 'German Language',
         rating: 4.8,
         year: 2024,
@@ -113,17 +124,20 @@ const mockCourses: Course[] = [
         id: 'pluribus-drama-relationships',
         title: 'Pluribus',
         titleAr: 'بلوريبوس',
+        titleDe: 'Pluribus',
         category: 'Freelance & Side Hustle',
         rating: 4.5,
         year: 2024,
         duration: '4 months',
         description: 'A compelling drama series exploring complex human relationships.',
+        descriptionDe: 'Eine fesselnde Dramaserie, die komplexe menschliche Beziehungen erkundet.',
         thumbnail: '/images/courses/Freelance & Side Hustle Posters/between.png'
     },
     {
         id: 'foundation-freelance-mastery',
         title: 'Foundation',
         titleAr: 'الأساس',
+        titleDe: 'Foundation',
         category: 'Freelance & Side Hustle',
         rating: 4.7,
         year: 2024,
@@ -134,6 +148,7 @@ const mockCourses: Course[] = [
         id: 'freelance-success',
         title: 'Freelance Success',
         titleAr: 'نجاح العمل الحر',
+        titleDe: 'Freelance-Erfolg',
         category: 'Freelance & Side Hustle',
         rating: 4.6,
         year: 2024,
@@ -144,6 +159,7 @@ const mockCourses: Course[] = [
         id: 'content-creation-mastery',
         title: 'Content Creation Mastery',
         titleAr: 'إتقان إنشاء المحتوى',
+        titleDe: 'Content-Erstellung meistern',
         category: 'Freelance & Side Hustle',
         rating: 4.5,
         year: 2024,
@@ -154,6 +170,7 @@ const mockCourses: Course[] = [
         id: 'digital-marketing-blueprint',
         title: 'Digital Marketing Blueprint',
         titleAr: 'مخطط التسويق الرقمي',
+        titleDe: 'Digitales Marketing-Blueprint',
         category: 'Freelance & Side Hustle',
         rating: 4.7,
         year: 2024,
@@ -164,6 +181,7 @@ const mockCourses: Course[] = [
         id: 'freelance-graphic-design',
         title: 'Freelance Graphic Design',
         titleAr: 'التصميم الجرافيكي الحر',
+        titleDe: 'Freelance Grafikdesign',
         category: 'Freelance & Side Hustle',
         rating: 4.6,
         year: 2024,
@@ -174,6 +192,7 @@ const mockCourses: Course[] = [
         id: 'freelance-writing',
         title: 'Freelance Writing',
         titleAr: 'الكتابة الحرة',
+        titleDe: 'Freiberufliches Schreiben',
         category: 'Freelance & Side Hustle',
         rating: 4.8,
         year: 2024,
@@ -185,6 +204,7 @@ const mockCourses: Course[] = [
         id: 'high-potential-entrepreneur',
         title: 'High Potential',
         titleAr: 'إمكانات عالية',
+        titleDe: 'Hohes Potenzial',
         category: 'Entrepreneurship',
         rating: 4.6,
         year: 2024,
@@ -195,6 +215,7 @@ const mockCourses: Course[] = [
         id: 'invasion-startup-growth',
         title: 'Invasion',
         titleAr: 'الغزو',
+        titleDe: 'Invasion',
         category: 'Entrepreneurship',
         rating: 4.5,
         year: 2024,
@@ -205,6 +226,7 @@ const mockCourses: Course[] = [
         id: 'startup-funding',
         title: 'Startup Funding',
         titleAr: 'تمويل الشركات الناشئة',
+        titleDe: 'Startup-Finanzierung',
         category: 'Entrepreneurship',
         rating: 4.7,
         year: 2024,
@@ -215,6 +237,7 @@ const mockCourses: Course[] = [
         id: 'business-growth-strategies',
         title: 'Business Growth Strategies',
         titleAr: 'استراتيجيات نمو الأعمال',
+        titleDe: 'Strategien für Unternehmenswachstum',
         category: 'Entrepreneurship',
         rating: 4.7,
         year: 2024,
@@ -225,6 +248,7 @@ const mockCourses: Course[] = [
         id: 'scaling-your-startup',
         title: 'Scaling Your Startup',
         titleAr: 'توسيع شركتك الناشئة',
+        titleDe: 'Dein Startup skalieren',
         category: 'Entrepreneurship',
         rating: 4.8,
         year: 2024,
@@ -236,6 +260,7 @@ const mockCourses: Course[] = [
         id: 'morning-show-trading',
         title: 'Morning Show',
         titleAr: 'برنامج الصباح',
+        titleDe: 'Morning Show',
         category: 'Trading',
         rating: 4.7,
         year: 2024,
@@ -246,6 +271,7 @@ const mockCourses: Course[] = [
         id: 'master-trader-pro',
         title: 'Master Trader',
         titleAr: 'المتداول المحترف',
+        titleDe: 'Master Trader',
         category: 'Trading',
         rating: 4.8,
         year: 2024,
@@ -257,6 +283,7 @@ const mockCourses: Course[] = [
         id: 'ted-lasso-coding-ai',
         title: 'Ted Lasso',
         titleAr: 'تيد لاسو',
+        titleDe: 'Ted Lasso',
         category: 'Coding & AI',
         rating: 4.9,
         year: 2024,
@@ -267,6 +294,7 @@ const mockCourses: Course[] = [
         id: 'ai-revolution-machine-learning',
         title: 'AI Revolution',
         titleAr: 'ثورة الذكاء الاصطناعي',
+        titleDe: 'KI-Revolution',
         category: 'Coding & AI',
         rating: 4.9,
         year: 2024,
@@ -277,6 +305,7 @@ const mockCourses: Course[] = [
         id: 'python-mastery',
         title: 'Python Mastery',
         titleAr: 'إتقان بايثون',
+        titleDe: 'Python-Meisterkurs',
         category: 'Coding & AI',
         rating: 4.8,
         year: 2024,
@@ -288,6 +317,7 @@ const mockCourses: Course[] = [
         id: 'slow-horses-german-integration',
         title: 'Slow Horses',
         titleAr: 'الخيول البطيئة',
+        titleDe: 'Slow Horses',
         category: 'German Integration',
         rating: 4.8,
         year: 2024,
@@ -298,6 +328,7 @@ const mockCourses: Course[] = [
         id: 'german-life-culture',
         title: 'German Life',
         titleAr: 'الحياة الألمانية',
+        titleDe: 'Deutsches Leben',
         category: 'German Integration',
         rating: 4.7,
         year: 2024,
@@ -308,6 +339,7 @@ const mockCourses: Course[] = [
         id: 'german-citizenship-prep',
         title: 'German Citizenship Prep',
         titleAr: 'التحضير للجنسية الألمانية',
+        titleDe: 'Vorbereitung auf die deutsche Staatsbürgerschaft',
         category: 'German Integration',
         rating: 4.8,
         year: 2024,
@@ -318,6 +350,7 @@ const mockCourses: Course[] = [
         id: 'german-work-culture',
         title: 'German Work Culture',
         titleAr: 'ثقافة العمل الألمانية',
+        titleDe: 'Deutsche Arbeitskultur',
         category: 'German Integration',
         rating: 4.6,
         year: 2024,
@@ -328,6 +361,7 @@ const mockCourses: Course[] = [
         id: 'living-in-germany',
         title: 'Living in Germany',
         titleAr: 'العيش في ألمانيا',
+        titleDe: 'In Deutschland leben',
         category: 'German Integration',
         rating: 4.7,
         year: 2024,
@@ -338,6 +372,7 @@ const mockCourses: Course[] = [
         id: 'german-social-system',
         title: 'German Social System',
         titleAr: 'النظام الاجتماعي الألماني',
+        titleDe: 'Deutsches Sozialsystem',
         category: 'German Integration',
         rating: 4.9,
         year: 2024,
@@ -346,13 +381,45 @@ const mockCourses: Course[] = [
     }
 ];
 
+const categoryLabels: Record<string, { en: string; ar?: string; de?: string }> = {
+    'German Language': {
+        en: 'German Language',
+        ar: 'اللغة الألمانية',
+        de: 'Deutsch lernen'
+    },
+    'Freelance & Side Hustle': {
+        en: 'Freelance & Side Hustle',
+        ar: 'العمل الحر والمشاريع الجانبية',
+        de: 'Freelance & Nebenjobs'
+    },
+    'Entrepreneurship': {
+        en: 'Entrepreneurship',
+        ar: 'ريادة الأعمال',
+        de: 'Unternehmertum'
+    },
+    'Trading': {
+        en: 'Trading',
+        ar: 'التداول',
+        de: 'Trading'
+    },
+    'Coding & AI': {
+        en: 'Coding & AI',
+        ar: 'البرمجة والذكاء الاصطناعي',
+        de: 'Programmierung & KI'
+    },
+    'German Integration': {
+        en: 'German Integration',
+        ar: 'الاندماج في ألمانيا',
+        de: 'Integration in Deutschland'
+    }
+};
+
 export default function CoursesPage() {
     const [courses, setCourses] = useState<Course[]>([]);
     const [heroIndex, setHeroIndex] = useState(0);
     const [isScrolled, setIsScrolled] = useState(false);
     const [hoveredCard, setHoveredCard] = useState<string | null>(null);
     const [showMenu, setShowMenu] = useState<string | null>(null);
-    const [showSignInModal, setShowSignInModal] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -367,6 +434,26 @@ export default function CoursesPage() {
     const { data: session } = useSession();
     const locale = useLocaleSafe();
     const isArabic = locale === 'ar';
+    const isGerman = locale === 'de';
+    const getLocalizedText = (en: string, ar?: string, de?: string) => {
+        if (isArabic && ar) return ar;
+        if (isGerman && de) return de;
+        return en;
+    };
+    const getCourseTitle = (course: Course) => {
+        if (isArabic && course.titleAr) return course.titleAr;
+        if (isGerman && course.titleDe) return course.titleDe;
+        return course.title;
+    };
+    const getCourseDescription = (course: Course) => {
+        if (isArabic && course.descriptionAr) return course.descriptionAr;
+        if (isGerman && course.descriptionDe) return course.descriptionDe;
+        return course.description;
+    };
+    const getCategoryLabel = (categoryKey: string) => {
+        const labels = categoryLabels[categoryKey] || { en: categoryKey };
+        return getLocalizedText(labels.en, labels.ar, labels.de);
+    };
     const direction: 'ltr' | 'rtl' = isArabic ? 'rtl' : 'ltr';
     const dropdownTextAlign = isArabic ? 'text-right' : 'text-left';
     const cardMenuPositionClass = isArabic ? 'left-2 right-auto' : 'right-2';
@@ -389,11 +476,16 @@ export default function CoursesPage() {
         setCourses(mockCourses);
     }, []);
 
+    const [showBottomCTA, setShowBottomCTA] = useState(false);
+
     useEffect(() => {
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
+            const currentScroll = window.scrollY;
+            setIsScrolled(currentScroll > 50);
+            setShowBottomCTA(currentScroll > 1);
         };
         window.addEventListener('scroll', handleScroll);
+        handleScroll();
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
@@ -462,17 +554,17 @@ export default function CoursesPage() {
         router.push(`/${locale}/courses/${courseId}`);
     };
 
+    const { openAuthModal } = useAuthModal();
+
     const handleAcceptOffer = () => {
         if (session) {
             setShowPaymentModal(true);
-        } else {
-            setShowSignInModal(true);
+            return;
         }
-    };
 
-    const handleSignInSuccess = () => {
-        setShowSignInModal(false);
-        setShowPaymentModal(true);
+        openAuthModal('signin', {
+            onSuccess: () => setShowPaymentModal(true),
+        });
     };
 
     const scroll = (direction: 'left' | 'right', containerId: string) => {
@@ -525,37 +617,39 @@ export default function CoursesPage() {
     }, [courses]);
 
     return (
-        <div dir={direction} className="min-h-screen bg-background pb-20">
+        <div dir={direction} className="min-h-screen bg-[#1f1f1f]">
             {/* Sticky Bottom Banner */}
-            <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0071E3] text-white py-4 px-4">
-                <div className="max-w-screen-2xl mx-auto flex items-center justify-between">
-                    <div className="flex-1">
-                        <p className="text-sm font-semibold">€28.99/Mo For 12 Months</p>
-                        <p className="text-xs opacity-90">Hundreds of exclusive Prime Originals. Now 50% off.</p>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                        <button 
-                            onClick={handleAcceptOffer}
-                            className="bg-white text-black font-semibold text-sm hover:bg-white/90 transition-all whitespace-nowrap text-center"
-                            style={{
-                                border: 'none',
-                                borderRadius: '32px',
-                                boxShadow: '0 0 20px rgba(0, 0, 0, .06)',
-                                height: '32px',
-                                width: '245px',
-                                padding: '0 12px',
-                                verticalAlign: 'middle'
-                            }}
-                        >
-                            Accept Offer
-                        </button>
-                        <p className="text-[10px] opacity-75 text-center leading-tight" style={{ maxWidth: '245px' }}>
-                            €28.99/Mo For 12 Months<br />
-                            Terms apply.
-                        </p>
+            {showBottomCTA && (
+                <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0071E3] text-white py-4 px-4">
+                    <div className="max-w-screen-2xl mx-auto flex items-center justify-between">
+                        <div className="flex-1">
+                            <p className="text-sm font-semibold">€28.99/Mo For 12 Months</p>
+                            <p className="text-xs opacity-90">Hundreds of exclusive Prime Originals. Now 50% off.</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                            <button 
+                                onClick={handleAcceptOffer}
+                                className="bg-white text-black font-semibold text-sm hover:bg-white/90 transition-all whitespace-nowrap text-center"
+                                style={{
+                                    border: 'none',
+                                    borderRadius: '32px',
+                                    boxShadow: '0 0 20px rgba(0, 0, 0, .06)',
+                                    height: '32px',
+                                    width: '245px',
+                                    padding: '0 12px',
+                                    verticalAlign: 'middle'
+                                }}
+                            >
+                                Accept Offer
+                            </button>
+                            <p className="text-[10px] opacity-75 text-center leading-tight" style={{ maxWidth: '245px' }}>
+                                €28.99/Mo For 12 Months<br />
+                                Terms apply.
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Hero Section - Featured Course */}
             <div 
@@ -587,7 +681,7 @@ export default function CoursesPage() {
                     <div className={`max-w-xl space-y-3 ${isArabic ? 'text-right' : 'text-left'}`}>
                         {/* Title */}
                         <h1 className="text-5xl font-bold text-white tracking-tight leading-tight">
-                            {isArabic && heroCourse.titleAr ? heroCourse.titleAr : heroCourse.title}
+                            {getCourseTitle(heroCourse)}
                         </h1>
                         
                         {/* Metadata - Movies • Thriller • Drama • 18+ */}
@@ -596,7 +690,7 @@ export default function CoursesPage() {
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
                                 </svg>
-                                <span className="font-medium">{heroCourse.category}</span>
+                                <span className="font-medium">{getCategoryLabel(heroCourse.category)}</span>
                             </div>
                             <span>•</span>
                             <span>Thriller</span>
@@ -608,9 +702,7 @@ export default function CoursesPage() {
 
                         {/* Description */}
                         <p className="text-base text-white/90 leading-relaxed max-w-md">
-                            {isArabic && heroCourse.descriptionAr 
-                                ? heroCourse.descriptionAr 
-                                : heroCourse.description}
+                            {getCourseDescription(heroCourse)}
                         </p>
 
                         {/* Buttons */}
@@ -801,7 +893,7 @@ export default function CoursesPage() {
                             <div className="flex items-center justify-between mb-4">
                                 <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse text-right' : ''}`}>
                                     <h2 className="text-xl font-semibold text-foreground">
-                                        {category}
+                                        {getCategoryLabel(category)}
                                     </h2>
                                     <svg className="w-4 h-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
@@ -1191,14 +1283,6 @@ export default function CoursesPage() {
                     }
                 }
             `}</style>
-
-            {/* Sign In Modal */}
-            <SignInModal
-                isOpen={showSignInModal}
-                onClose={() => setShowSignInModal(false)}
-                onSignInSuccess={handleSignInSuccess}
-                locale={locale}
-            />
 
             {/* Payment Modal */}
             <PaymentModal

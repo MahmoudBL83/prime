@@ -15,6 +15,8 @@ model User {
   phone                 String?   @unique
   passwordHash          String
   name                  String
+  firstName             String?
+  lastName              String?
   role                  UserRole  @default(LEARNER)
   emailVerified         DateTime?
   phoneVerified         DateTime?
@@ -22,6 +24,8 @@ model User {
   profileImage          String?
   bio                   String?
   age                   String?
+  birthDate             DateTime?
+  country               String?
   avatar                String?
   interests             String?
   goals                 String?
@@ -133,6 +137,17 @@ model User {
   // Cohort-Based Learning
   cohortMemberships  CohortMember[]
   sessionAttendances SessionAttendance[]
+
+  // Message Request Relations
+  sentMessageRequests     MessageRequest[] @relation("SentMessageRequests")
+  receivedMessageRequests MessageRequest[] @relation("ReceivedMessageRequests")
+
+  // Message Blocking Relations (for messaging system)
+  messageBlockedUsers BlockedUser[] @relation("MessageBlockedUsers")
+  messageBlockedBy    BlockedUser[] @relation("MessageBlockedBy")
+
+  // Payment Links
+  paymentLinks PaymentLink[] @relation("UserPaymentLinks")
 }
 
 model Creator {
@@ -3441,4 +3456,76 @@ enum MilestoneType {
   READING
   PROJECT_PHASE
   DEADLINE
+}
+
+// Message Request: For handling message requests from strangers
+model MessageRequest {
+  id          String                @id @default(cuid())
+  senderId    String
+  recipientId String
+  message     String?
+  status      MessageRequestStatus @default(PENDING)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  sender    User @relation("SentMessageRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient User @relation("ReceivedMessageRequests", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, recipientId])
+  @@index([senderId])
+  @@index([recipientId])
+  @@index([status])
+}
+
+// Blocked User: For handling blocked users in messaging
+model BlockedUser {
+  id            String   @id @default(cuid())
+  userId        String
+  blockedUserId String
+  createdAt     DateTime @default(now())
+
+  user        User @relation("MessageBlockedUsers", fields: [userId], references: [id], onDelete: Cascade)
+  blockedUser User @relation("MessageBlockedBy", fields: [blockedUserId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, blockedUserId])
+  @@index([userId])
+  @@index([blockedUserId])
+}
+
+enum MessageRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  BLOCKED
+}
+
+// Payment Link: For tracking Stripe payment links sent to users
+model PaymentLink {
+  id               String              @id @default(cuid())
+  userId           String
+  email            String
+  stripePaymentUrl String
+  stripeSessionId  String?             @unique
+  amount           Float
+  currency         String              @default("eur")
+  description      String?
+  status           PaymentLinkStatus   @default(PENDING)
+  expiresAt        DateTime?
+  paidAt           DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  user User @relation("UserPaymentLinks", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
+  @@index([status])
+  @@index([stripeSessionId])
+}
+
+enum PaymentLinkStatus {
+  PENDING
+  PAID
+  EXPIRED
+  CANCELLED
 }

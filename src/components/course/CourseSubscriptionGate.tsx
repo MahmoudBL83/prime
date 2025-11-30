@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'react-hot-toast'
+import { useAuthModal } from '@/contexts/AuthModalContext'
 
 interface CourseSubscriptionGateProps {
     course: {
@@ -48,10 +49,13 @@ export default function CourseSubscriptionGate({
     const { data: session } = useSession()
     const router = useRouter()
     const [isActivating, setIsActivating] = useState(false)
+    const { openAuthModal } = useAuthModal()
 
-    const handleDemoSubscription = async () => {
-        if (!session) {
-            router.push('/auth/login?callbackUrl=/subscribe/demo')
+    const handleDemoSubscription = async (skipAuthCheck = false) => {
+        if (!skipAuthCheck && !session) {
+            openAuthModal('signin', {
+                onSuccess: () => handleDemoSubscription(true)
+            })
             return
         }
 
@@ -190,7 +194,7 @@ export default function CourseSubscriptionGate({
                                 </li>
                             </ul>
                             <Button
-                                onClick={handleDemoSubscription}
+                                onClick={() => handleDemoSubscription()}
                                 disabled={isActivating}
                                 className="w-full bg-blue-600 hover:bg-blue-700"
                             >

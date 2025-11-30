@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Crown, Play, Lock, X, Star } from 'lucide-react';
 import { CourseCard as CourseCardType } from '@/types/landing';
-import Link from 'next/link';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 
 interface CoursePlayerGateProps {
     children: React.ReactNode;
@@ -34,6 +34,7 @@ export function CoursePlayerGate({
     });
     const [showGate, setShowGate] = useState(true);
     const [isExiting, setIsExiting] = useState(false);
+    const { openAuthModal } = useAuthModal();
 
     // Check if user should see the gate
     useEffect(() => {
@@ -65,7 +66,7 @@ export function CoursePlayerGate({
     };
 
     const handleLogin = () => {
-        window.location.href = `/auth/login?callbackUrl=/courses/${course.id}`;
+        openAuthModal('signin');
     };
 
     const formatTime = (seconds: number) => {
