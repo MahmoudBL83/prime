@@ -80,7 +80,7 @@ export const authOptions: NextAuthOptions = {
                         name: user.name,
                         firstName: user.firstName ?? null,
                         lastName: user.lastName ?? null,
-                        birthDate: user.birthDate?.toISOString() ?? null,
+                        birthDate: user.birthDate ?? null,
                         country: user.country ?? null,
                         role: user.role as UserRole,
                     }
@@ -99,7 +99,7 @@ export const authOptions: NextAuthOptions = {
                 token.role = user.role as UserRole
                 token.firstName = (user as any).firstName ?? null
                 token.lastName = (user as any).lastName ?? null
-                token.birthDate = (user as any).birthDate ?? null
+                token.birthDate = (user as any).birthDate ? new Date((user as any).birthDate).toISOString() : null
                 token.country = (user as any).country ?? null
             }
             
