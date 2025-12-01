@@ -5,8 +5,9 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(
   request: Request,
-  { params }: { params: { requestId: string } }
+  { params }: { params: Promise<{ requestId: string }> }
 ) {
+  const { requestId } = await params
   try {
     const session = await getServerSession(authOptions)
 
@@ -16,8 +17,6 @@ export async function POST(
         { status: 401 }
       )
     }
-
-    const { requestId } = params
 
     // Get the message request
     const messageRequest = await prisma.messageRequest.findUnique({
