@@ -8,7 +8,6 @@ export async function POST(
   { params }: { params: Promise<{ requestId: string }> }
 ) {
   const { requestId } = await params
-  const { requestId } = await params
   try {
     const session = await getServerSession(authOptions)
 
