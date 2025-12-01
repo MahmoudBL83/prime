@@ -3184,6 +3184,18 @@ model VideoChapter {
 }
 
 // System Configuration for storing app-wide settings
+// Early Access Waitlist
+model EarlyAccessSignup {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  notified  Boolean  @default(false)
+  
+  @@index([email])
+  @@index([createdAt])
+}
+
 model SystemConfig {
   id        String   @id @default(cuid())
   key       String   @unique
