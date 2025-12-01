@@ -2196,6 +2196,7 @@ model CreatorApplication {
   portfolioUrl     String? // Portfolio/website
   socialProof      String? // Testimonials, followers count, etc.
   motivation       String? // Why they want to be a creator
+  nationalIdImage  String? // National ID document image
   reviewNotes      String? // Admin review notes
   reviewedAt       DateTime?
   reviewedBy       String? // Admin user ID
