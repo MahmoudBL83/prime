@@ -91,8 +91,13 @@ export async function POST(request: Request) {
       },
     })
 
-    // Send email with payment link
-    await sendPaymentEmail(session.user.email, checkoutSession.url!, session.user.name || 'Student')
+    // Send email with payment link (optional - don't fail if email fails)
+    try {
+      await sendPaymentEmail(session.user.email, checkoutSession.url!, session.user.name || 'Student')
+    } catch (emailError) {
+      console.error('Failed to send payment email:', emailError)
+      // Continue anyway - payment link was created successfully
+    }
 
     return NextResponse.json({
       success: true,
@@ -111,7 +116,8 @@ export async function POST(request: Request) {
 
 async function sendPaymentEmail(email: string, paymentUrl: string, userName: string) {
   if (!gmailTransporter || !gmailUser) {
-    throw new Error('Gmail credentials are not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD.')
+    console.warn('Gmail credentials are not configured. Skipping payment email.')
+    return
   }
 
   await gmailTransporter.sendMail({
