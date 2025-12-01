@@ -25,8 +25,7 @@ export async function POST(request: NextRequest) {
             sampleContentUrl,
             portfolioUrl,
             socialProof,
-            motivation,
-            nationalIdImage
+            motivation
         } = body
 
         // Validate required fields
@@ -54,7 +53,6 @@ export async function POST(request: NextRequest) {
                         portfolioUrl,
                         socialProof,
                         motivation,
-                        nationalIdImage: nationalIdImage ?? existingApplication.nationalIdImage,
                         status: 'PENDING',
                         reviewNotes: null,
                         rejectionReason: null,
@@ -87,7 +85,6 @@ export async function POST(request: NextRequest) {
                 portfolioUrl,
                 socialProof,
                 motivation,
-                nationalIdImage,
                 status: 'PENDING'
             }
         })
