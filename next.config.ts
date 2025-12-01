@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
   // Output configuration for serverless deployment
   output: 'standalone',
   
+  // Ensure Prisma binaries are included
+  outputFileTracingIncludes: {
+    '/api/**/*': ['./node_modules/.prisma/client/**/*'],
+  },
+  
   // Optimization for faster compilation
   experimental: {
     optimizePackageImports: [
@@ -15,10 +20,6 @@ const nextConfig: NextConfig = {
       'next-auth',
       '@prisma/client',
     ],
-    // Ensure Prisma binaries are included
-    outputFileTracingIncludes: {
-      '/api/**/*': ['./node_modules/.prisma/client/**/*'],
-    },
   },
   
   // Compiler optimizations

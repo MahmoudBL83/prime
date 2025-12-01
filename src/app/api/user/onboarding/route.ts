@@ -7,18 +7,11 @@ import { z } from 'zod'
 const onboardingSchema = z.object({
     interests: z.array(z.string()).min(1),
     goals: z.array(z.string()).min(1),
-    skillLevel: z.enum(['Beginner', 'Intermediate', 'Advanced']),
-    learningMode: z.enum(['Self-paced', 'Interactive with group', 'Mixed']),
+    skillLevel: z.enum(['beginner', 'intermediate', 'advanced']),
+    availability: z.enum(['weekdays-morning', 'weekdays-evening', 'weekends', 'flexible']),
     studyBuddyOptIn: z.boolean(),
-    studyBuddyPreferences: z.object({
-        availability: z.string(),
-        preferredSubjects: z.array(z.string()),
-        collaborationStyle: z.enum(['Chat only', 'Video calls', 'In-person', 'Mixed']),
-    }).optional(),
     age: z.string(),
     avatar: z.string(),
-    arabicName: z.string().optional(),
-    phone: z.string().optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -66,16 +59,9 @@ export async function POST(req: NextRequest) {
                 interests: JSON.stringify(data.interests),
                 goals: JSON.stringify(data.goals),
                 skillLevel: data.skillLevel,
-                learningMode: data.learningMode,
                 age: data.age,
                 avatar: data.avatar,
-                arabicName: data.arabicName,
-                phone: data.phone,
-                onboardingCompleted: true, // Make sure this is explicitly set
-                // Store study buddy preferences as JSON if opted in
-                ...(data.studyBuddyOptIn && data.studyBuddyPreferences && {
-                    studyBuddyPreferences: JSON.stringify(data.studyBuddyPreferences)
-                })
+                onboardingCompleted: true,
             },
         })
 

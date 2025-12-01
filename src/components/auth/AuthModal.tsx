@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { signIn } from "next-auth/react";
-import { X, CheckCircle } from "lucide-react";
+import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
 type AuthModalMode = "signin" | "signup";
+type AuthStep = "email" | "auth";
 
 interface AuthModalProps {
     isOpen: boolean;
@@ -21,6 +23,7 @@ const backgroundImage =
     "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=80";
 
 export function AuthModal({ isOpen, mode, onClose, onModeChange, onSuccess }: AuthModalProps) {
+    const [step, setStep] = useState<AuthStep>("email");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [birthDate, setBirthDate] = useState("");
@@ -30,11 +33,31 @@ export function AuthModal({ isOpen, mode, onClose, onModeChange, onSuccess }: Au
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [mounted, setMounted] = useState(false);
+    const [agreeToTerms, setAgreeToTerms] = useState(false);
+    const [receiveUpdates, setReceiveUpdates] = useState(true);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
 
     useEffect(() => {
         if (!isOpen) {
             setError(null);
             setIsLoading(false);
+            setStep("email");
             setEmail("");
             setPassword("");
             setConfirmPassword("");
@@ -44,6 +67,39 @@ export function AuthModal({ isOpen, mode, onClose, onModeChange, onSuccess }: Au
             setCountry("");
         }
     }, [isOpen]);
+
+    const handleEmailSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            // Check if user exists
+            const response = await fetch("/api/auth/check-email", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+
+            if (data.exists) {
+                onModeChange("signin");
+            } else {
+                onModeChange("signup");
+            }
+            setStep("auth");
+        } catch (error) {
+            console.error("Email check error", error);
+            // Default to signup if check fails
+            onModeChange("signup");
+            setStep("auth");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -77,14 +133,14 @@ export function AuthModal({ isOpen, mode, onClose, onModeChange, onSuccess }: Au
         setIsLoading(true);
         setError(null);
 
-        if (password !== confirmPassword) {
-            setError("Passwords do not match");
+        if (!firstName || !lastName || !birthDate || !country) {
+            setError("Please complete all required fields");
             setIsLoading(false);
             return;
         }
 
-        if (!firstName || !lastName || !birthDate || !country) {
-            setError("Please complete all required fields");
+        if (!agreeToTerms) {
+            setError("You must agree to the Terms & Conditions");
             setIsLoading(false);
             return;
         }
@@ -142,286 +198,312 @@ export function AuthModal({ isOpen, mode, onClose, onModeChange, onSuccess }: Au
         "United Kingdom",
     ];
 
-    return (
+    if (!mounted) return null;
+
+    const modalContent = (
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    className="fixed inset-0 z-[200]"
+                    className="fixed inset-0 z-[9999] flex items-center justify-center"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
                 >
-                    {/* Background */}
-                    <div className="absolute inset-0 overflow-hidden">
-                        <Image
-                            src={backgroundImage}
-                            alt="Prime background"
-                            fill
-                            priority
-                            sizes="100vw"
-                            className="object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/80 to-black/95" />
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/70" />
-                    </div>
-
-                    {/* Backdrop click handler */}
-                    <div
-                        className="absolute inset-0"
+                    {/* Background Overlay */}
+                    <motion.div
+                        className="absolute inset-0 bg-black/95"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         onClick={onClose}
-                        aria-hidden="true"
                     />
 
-                    <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-10">
-                        <motion.div
-                            initial={{ opacity: 0, y: 40, scale: 0.98 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 40, scale: 0.98 }}
-                            transition={{ type: "spring", stiffness: 120, damping: 20 }}
-                            className="w-full max-w-md bg-black/80 border border-white/10 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.75)] backdrop-blur-xl overflow-hidden"
-                            role="dialog"
-                            aria-modal="true"
-                        >
-                            <div className="flex items-center justify-between px-8 pt-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="relative h-10 w-10 rounded-xl overflow-hidden">
-                                        <Image
-                                            src="/images/logo.jpg"
-                                            alt="Prime"
-                                            fill
-                                            sizes="40px"
-                                        />
-                                    </div>
-                                    <div>
-                                        <p className="text-white/80 text-xs uppercase tracking-[0.3em]">Prime</p>
-                                        <p className="text-white font-semibold text-base">Unlimited Learning</p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={onClose}
-                                    className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-                                    aria-label="Close auth modal"
-                                >
-                                    <X className="h-5 w-5 text-white" />
-                                </button>
-                            </div>
+                    {/* Modal Content */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 40, scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className="relative z-10 w-full max-w-md sm:max-w-lg lg:max-w-2xl mx-4 my-8 bg-[#1a1a1a] rounded-2xl shadow-[0_25px_70px_rgba(0,0,0,0.85)] overflow-hidden max-h-[90vh] flex flex-col"
+                        role="dialog"
+                        aria-modal="true"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="relative overflow-y-auto overscroll-contain">
+                            {/* Close Button */}
+                            <button
+                                onClick={onClose}
+                                className="absolute top-4 left-4 w-8 h-8 rounded-full bg-[#2d2d2d] hover:bg-[#3d3d3d] flex items-center justify-center transition-all z-10"
+                                aria-label="Close"
+                            >
+                                <X className="h-4 w-4 text-white/80" />
+                            </button>
 
-                            {/* Tabs */}
-                            <div className="px-8 mt-8">
-                                <div className="flex rounded-full bg-white/5 p-1 border border-white/10">
-                                    {[
-                                        { key: "signin", label: "Sign In" },
-                                        { key: "signup", label: "Create Account" },
-                                    ].map((tab) => (
-                                        <button
-                                            key={tab.key}
-                                            className={`flex-1 py-2.5 text-sm font-semibold rounded-full transition-all duration-200 ${
-                                                mode === tab.key
-                                                    ? "bg-[#e50914] text-white shadow-lg shadow-[#e50914]/40"
-                                                    : "text-white/60 hover:text-white"
-                                            }`}
-                                            onClick={() => onModeChange(tab.key as AuthModalMode)}
-                                        >
-                                            {tab.label}
-                                        </button>
-                                    ))}
-                                </div>
+                            {/* Header */}
+                            <div className="flex flex-col items-center pt-16 pb-8 px-8 lg:px-16">
+                                {step === "email" ? (
+                                    <>
+                                        <h2 className="text-2xl lg:text-3xl font-semibold text-white text-center mb-2">
+                                            Continue with Email
+                                        </h2>
+                                        <p className="text-[#86868b] text-center text-sm lg:text-base max-w-md">
+                                            You can sign in if you already have an account, or we'll help you create one.
+                                        </p>
+                                    </>
+                                ) : mode === "signin" ? (
+                                    <>
+                                        <h2 className="text-2xl lg:text-3xl font-semibold text-white text-center mb-2">
+                                            Welcome back
+                                        </h2>
+                                        <p className="text-[#86868b] text-center text-sm lg:text-base max-w-md">
+                                            Enter your password to continue
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <h2 className="text-2xl lg:text-3xl font-semibold text-white text-center mb-2">
+                                            Create Your Account
+                                        </h2>
+                                        <p className="text-[#86868b] text-center text-sm lg:text-base max-w-md">
+                                            You'll use this account for all Prime services.
+                                        </p>
+                                    </>
+                                )}
                             </div>
 
                             {/* Form */}
-                            <div className="px-8 py-8 space-y-6">
-                                <div>
-                                    <h2 className="text-3xl font-bold text-white tracking-tight">
-                                        {mode === "signin" ? "Sign in to continue" : "Create your account"}
-                                    </h2>
-                                    <p className="text-white/60 mt-2">
-                                        {mode === "signin"
-                                            ? "Access every course, live cohort, and interactive tool in one place."
-                                            : "Join thousands of learners leveling up their careers with Prime."}
-                                    </p>
-                                </div>
-
+                            <div className="px-8 lg:px-16 pb-8 lg:pb-12 max-w-xl mx-auto">
                                 {error && (
-                                    <div className="rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                                    <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200 mb-4">
                                         {error}
                                     </div>
                                 )}
 
-                                {mode === "signin" ? (
-                                    <form className="space-y-4" onSubmit={handleSignIn}>
-                                        <label className="block text-sm font-medium text-white/80">
-                                            Email
+                                {step === "email" ? (
+                                    <form className="space-y-4" onSubmit={handleEmailSubmit}>
+                                        <div>
                                             <input
                                                 type="email"
                                                 required
                                                 value={email}
                                                 onChange={(event) => setEmail(event.target.value)}
-                                                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-white/40 focus:outline-none"
-                                                placeholder="you@example.com"
+                                                className="w-full rounded-xl border border-[#3d3d3d] bg-[#2d2d2d] px-4 py-3.5 text-white text-sm placeholder-[#86868b] focus:border-[#0071e3] focus:outline-none transition-all"
+                                                placeholder="Email"
+                                                autoFocus
                                             />
-                                        </label>
-                                        <label className="block text-sm font-medium text-white/80">
-                                            Password
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            disabled={isLoading}
+                                            className="w-full rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white py-3.5 text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {isLoading ? "Checking..." : "Continue"}
+                                        </button>
+                                    </form>
+                                ) : mode === "signin" ? (
+                                    <form className="space-y-4" onSubmit={handleSignIn}>
+                                        <div>
+                                            <input
+                                                type="email"
+                                                required
+                                                value={email}
+                                                disabled
+                                                className="w-full rounded-xl border border-[#3d3d3d] bg-[#2d2d2d] px-4 py-3.5 text-white/50 text-sm"
+                                            />
+                                        </div>
+                                        <div>
                                             <input
                                                 type="password"
                                                 required
                                                 value={password}
                                                 onChange={(event) => setPassword(event.target.value)}
-                                                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-white/40 focus:outline-none"
-                                                placeholder="••••••••"
+                                                className="w-full rounded-xl border border-[#3d3d3d] bg-[#2d2d2d] px-4 py-3.5 text-white text-sm placeholder-[#86868b] focus:border-[#0071e3] focus:outline-none transition-all"
+                                                placeholder="Password"
+                                                autoFocus
                                             />
-                                        </label>
+                                        </div>
                                         <button
                                             type="submit"
                                             disabled={isLoading}
-                                            className="w-full rounded-2xl bg-[#e50914] py-3.5 text-base font-semibold text-white shadow-[0_20px_40px_rgba(229,9,20,0.35)] transition-all hover:bg-[#f6121d] disabled:cursor-not-allowed disabled:opacity-60"
+                                            className="w-full rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white py-3.5 text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            {isLoading ? "Signing in..." : "Sign In"}
+                                            {isLoading ? "Signing in..." : "Continue"}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setStep("email")}
+                                            className="w-full text-[#0071e3] text-sm hover:underline"
+                                        >
+                                            Use a different email
                                         </button>
                                     </form>
                                 ) : (
                                     <form className="space-y-4" onSubmit={handleSignUp}>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <label className="block text-sm font-medium text-white/80">
-                                                First Name
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    value={firstName}
-                                                    onChange={(event) => setFirstName(event.target.value)}
-                                                    className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-white/40 focus:outline-none"
-                                                    placeholder="First name"
-                                                />
-                                            </label>
-                                            <label className="block text-sm font-medium text-white/80">
-                                                Last Name
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    value={lastName}
-                                                    onChange={(event) => setLastName(event.target.value)}
-                                                    className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-white/40 focus:outline-none"
-                                                    placeholder="Last name"
-                                                />
-                                            </label>
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <label className="block text-sm font-medium text-white/80">
-                                                Birth Date
-                                                <input
-                                                    type="date"
-                                                    required
-                                                    value={birthDate}
-                                                    onChange={(event) => setBirthDate(event.target.value)}
-                                                    className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-white/40 focus:outline-none"
-                                                />
-                                            </label>
-                                            <label className="block text-sm font-medium text-white/80">
-                                                Country
-                                                <select
-                                                    required
-                                                    value={country}
-                                                    onChange={(event) => setCountry(event.target.value)}
-                                                    className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-white/40 focus:outline-none"
-                                                >
-                                                    <option value="" className="bg-black text-white">
-                                                        Select country
-                                                    </option>
-                                                    {countryOptions.map((option) => (
-                                                        <option key={option} value={option} className="bg-black text-white">
-                                                            {option}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </label>
-                                        </div>
-                                        <label className="block text-sm font-medium text-white/80">
-                                            Email
+                                        <div>
                                             <input
                                                 type="email"
                                                 required
                                                 value={email}
-                                                onChange={(event) => setEmail(event.target.value)}
-                                                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-white/40 focus:outline-none"
-                                                placeholder="you@example.com"
+                                                disabled
+                                                className="w-full rounded-xl border border-[#3d3d3d] bg-[#2d2d2d] px-4 py-3.5 text-white/50 text-sm"
                                             />
-                                        </label>
-                                        <label className="block text-sm font-medium text-white/80">
-                                            Password
+                                            <p className="text-[#86868b] text-xs mt-2">
+                                                This email address will become your Prime Account.
+                                            </p>
+                                        </div>
+                                        <div>
                                             <input
                                                 type="password"
                                                 required
                                                 value={password}
                                                 onChange={(event) => setPassword(event.target.value)}
-                                                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-white/40 focus:outline-none"
-                                                placeholder="Create a password"
+                                                className="w-full rounded-xl border border-[#3d3d3d] bg-[#2d2d2d] px-4 py-3.5 text-white text-sm placeholder-[#86868b] focus:border-[#0071e3] focus:outline-none transition-all"
+                                                placeholder="Password"
                                                 minLength={8}
                                             />
-                                        </label>
-                                        <label className="block text-sm font-medium text-white/80">
-                                            Confirm Password
+                                            <p className="text-[#86868b] text-xs mt-2">
+                                                Your password must have 8 or more characters, upper and lowercase letters, and at least one number.
+                                            </p>
+                                        </div>
+                                        <div>
                                             <input
-                                                type="password"
+                                                type="text"
                                                 required
-                                                value={confirmPassword}
-                                                onChange={(event) => setConfirmPassword(event.target.value)}
-                                                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-white/40 focus:outline-none"
-                                                placeholder="Repeat password"
-                                                minLength={8}
+                                                value={firstName}
+                                                onChange={(event) => setFirstName(event.target.value)}
+                                                className="w-full rounded-xl border border-[#3d3d3d] bg-[#2d2d2d] px-4 py-3.5 text-white text-sm placeholder-[#86868b] focus:border-[#0071e3] focus:outline-none transition-all"
+                                                placeholder="First Name"
                                             />
-                                        </label>
-                                        <button
-                                            type="submit"
-                                            disabled={isLoading}
-                                            className="w-full rounded-2xl bg-[#e50914] py-3.5 text-base font-semibold text-white shadow-[0_20px_40px_rgba(229,9,20,0.35)] transition-all hover:bg-[#f6121d] disabled:cursor-not-allowed disabled:opacity-60"
-                                        >
-                                            {isLoading ? "Creating account..." : "Start Membership"}
-                                        </button>
+                                        </div>
+                                        <div>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={lastName}
+                                                onChange={(event) => setLastName(event.target.value)}
+                                                className="w-full rounded-xl border border-[#3d3d3d] bg-[#2d2d2d] px-4 py-3.5 text-white text-sm placeholder-[#86868b] focus:border-[#0071e3] focus:outline-none transition-all"
+                                                placeholder="Last Name"
+                                            />
+                                        </div>
+                                        <div>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={birthDate}
+                                                onChange={(event) => {
+                                                    let value = event.target.value.replace(/\D/g, '');
+                                                    if (value.length >= 2) {
+                                                        value = value.slice(0, 2) + '/' + value.slice(2);
+                                                    }
+                                                    if (value.length >= 5) {
+                                                        value = value.slice(0, 5) + '/' + value.slice(5, 9);
+                                                    }
+                                                    setBirthDate(value);
+                                                }}
+                                                className="w-full rounded-xl border border-[#3d3d3d] bg-[#2d2d2d] px-4 py-3.5 text-white text-sm placeholder-[#86868b] focus:border-[#0071e3] focus:outline-none transition-all"
+                                                placeholder="Birthday"
+                                                maxLength={10}
+                                            />
+                                        </div>
+                                        <div>
+                                            <select
+                                                required
+                                                value={country}
+                                                onChange={(event) => setCountry(event.target.value)}
+                                                className="w-full rounded-xl border border-[#3d3d3d] bg-[#2d2d2d] px-4 py-3.5 text-white text-sm focus:border-[#0071e3] focus:outline-none transition-all"
+                                            >
+                                                <option value="" className="bg-[#1a1a1a] text-white">Country/Region</option>
+                                                {countryOptions.map((option) => (
+                                                    <option key={option} value={option} className="bg-[#1a1a1a] text-white">
+                                                        {option}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        {/* Prime Updates Checkbox */}
+                                        <div className="flex items-start gap-3 pt-2">
+                                            <input
+                                                type="checkbox"
+                                                id="receiveUpdates"
+                                                checked={receiveUpdates}
+                                                onChange={(e) => setReceiveUpdates(e.target.checked)}
+                                                className="mt-0.5 w-4 h-4 rounded border-[#3d3d3d] bg-[#2d2d2d] text-[#0071e3] focus:ring-[#0071e3] focus:ring-offset-0"
+                                            />
+                                            <label htmlFor="receiveUpdates" className="text-sm text-white">
+                                                <span className="font-semibold">Prime Updates</span>
+                                                <p className="text-[#86868b] text-xs mt-1">
+                                                    Receive Prime emails and communications including new releases, exclusive content, special offers, and marketing and recommendations for apps, music, movies, TV, books, podcasts, Prime Pay, and more.
+                                                </p>
+                                            </label>
+                                        </div>
+
+                                        {/* Terms & Conditions Checkbox */}
+                                        <div className="flex items-start gap-3">
+                                            <input
+                                                type="checkbox"
+                                                id="agreeToTerms"
+                                                checked={agreeToTerms}
+                                                onChange={(e) => setAgreeToTerms(e.target.checked)}
+                                                className="mt-0.5 w-4 h-4 rounded border-[#3d3d3d] bg-[#2d2d2d] text-[#0071e3] focus:ring-[#0071e3] focus:ring-offset-0"
+                                            />
+                                            <label htmlFor="agreeToTerms" className="text-sm text-white">
+                                                Agree to Terms & Conditions
+                                            </label>
+                                        </div>
+
+                                        {/* Terms Text */}
+                                        <div className="pt-2 pb-4 border-t border-[#3d3d3d]">
+                                            <p className="text-[#86868b] text-xs">
+                                                By selecting Continue, you agree to the{" "}
+                                                <a href="#" className="text-[#0071e3] hover:underline">
+                                                    Prime Media Services Terms & Conditions
+                                                </a>{" "}
+                                                and acknowledge that you will be signed in on this browser.
+                                            </p>
+                                        </div>
+
+                                        <div className="flex gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setStep("email")}
+                                                className="flex-1 rounded-xl border border-[#0071e3] bg-transparent text-[#0071e3] py-3.5 text-sm font-semibold transition-all hover:bg-[#0071e3]/10"
+                                            >
+                                                Back
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                disabled={isLoading}
+                                                className="flex-1 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white py-3.5 text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {isLoading ? "Creating..." : "Continue"}
+                                            </button>
+                                        </div>
                                     </form>
                                 )}
 
-                                <div className="space-y-3">
-                                    {featureList.map((feature) => (
-                                        <div key={feature} className="flex items-center gap-3">
-                                            <CheckCircle className="h-5 w-5 text-green-400" />
-                                            <p className="text-sm text-white/80">{feature}</p>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <p className="text-xs text-white/50 leading-relaxed">
-                                    By continuing you agree to the Prime Terms of Service and acknowledge our Privacy Policy.
-                                    You can cancel anytime.
-                                </p>
-
-                                <div className="pt-4 border-t border-white/10">
-                                    {mode === "signin" ? (
-                                        <p className="text-center text-sm text-white/70">
-                                            New to Prime?{" "}
-                                            <button
-                                                className="font-semibold text-white hover:text-[#f6121d]"
-                                                onClick={() => onModeChange("signup")}
-                                            >
-                                                Start your membership
-                                            </button>
-                                        </p>
-                                    ) : (
-                                        <p className="text-center text-sm text-white/70">
-                                            Already have an account?{" "}
-                                            <button
-                                                className="font-semibold text-white hover:text-[#f6121d]"
-                                                onClick={() => onModeChange("signin")}
-                                            >
-                                                Sign in
-                                            </button>
-                                        </p>
-                                    )}
+                                {/* Privacy Notice */}
+                                <div className="mt-6 flex items-start gap-3">
+                                    <div className="mt-0.5">
+                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                            <path d="M10 2C8.07 2 6.5 3.57 6.5 5.5V8H5.5C4.67 8 4 8.67 4 9.5V16.5C4 17.33 4.67 18 5.5 18H14.5C15.33 18 16 17.33 16 16.5V9.5C16 8.67 15.33 8 14.5 8H13.5V5.5C13.5 3.57 11.93 2 10 2ZM10 3.5C11.1 3.5 12 4.4 12 5.5V8H8V5.5C8 4.4 8.9 3.5 10 3.5Z" fill="#0071e3"/>
+                                        </svg>
+                                    </div>
+                                    <p className="text-[11px] text-[#86868b] leading-relaxed">
+                                        Your Apple Account information is used to allow you to sign in securely and access your data. Apple records certain data for security, support, and reporting purposes. If you agree, Apple may also use your Apple Account information to send you marketing emails and communications, including based on your use of Apple services.{" "}
+                                        <a href="#" className="text-[#0071e3] hover:underline">
+                                            See how your data is managed...
+                                        </a>
+                                    </p>
                                 </div>
                             </div>
-                        </motion.div>
-                    </div>
-                </motion.div>
-            )}
-        </AnimatePresence>
-    );
+                        </div>
+                    </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        );
+
+    return createPortal(modalContent, document.body);
 }

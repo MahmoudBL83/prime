@@ -25,7 +25,8 @@ export async function POST(request: NextRequest) {
             sampleContentUrl,
             portfolioUrl,
             socialProof,
-            motivation
+            motivation,
+            nationalIdImage
         } = body
 
         // Validate required fields
@@ -53,6 +54,7 @@ export async function POST(request: NextRequest) {
                         portfolioUrl,
                         socialProof,
                         motivation,
+                        nationalIdImage: nationalIdImage ?? existingApplication.nationalIdImage,
                         status: 'PENDING',
                         reviewNotes: null,
                         rejectionReason: null,
@@ -85,6 +87,7 @@ export async function POST(request: NextRequest) {
                 portfolioUrl,
                 socialProof,
                 motivation,
+                nationalIdImage,
                 status: 'PENDING'
             }
         })
@@ -98,6 +101,49 @@ export async function POST(request: NextRequest) {
         console.error('Creator application error:', error)
         return NextResponse.json(
             { error: 'Failed to submit application' },
+            { status: 500 }
+        )
+    }
+}
+
+/**
+ * DELETE /api/creator/apply
+ * Remove current user's creator application so they can reapply
+ */
+export async function DELETE(request: NextRequest) {
+    try {
+        const session = await getServerSession(authOptions)
+
+        if (!session?.user?.id) {
+            return NextResponse.json(
+                { error: 'Unauthorized' },
+                { status: 401 }
+            )
+        }
+
+        const existingApplication = await prisma.creatorApplication.findUnique({
+            where: { userId: session.user.id }
+        })
+
+        if (!existingApplication) {
+            return NextResponse.json(
+                { error: 'No application found' },
+                { status: 404 }
+            )
+        }
+
+        await prisma.creatorApplication.delete({
+            where: { userId: session.user.id }
+        })
+
+        return NextResponse.json({
+            message: 'Application removed successfully'
+        })
+
+    } catch (error) {
+        console.error('Delete creator application error:', error)
+        return NextResponse.json(
+            { error: 'Failed to remove application' },
             { status: 500 }
         )
     }

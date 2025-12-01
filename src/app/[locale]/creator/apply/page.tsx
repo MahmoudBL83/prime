@@ -66,7 +66,7 @@ export default function CreatorApplicationPage() {
         confirmPassword: ''
     })
     
-    const [formData, setFormData] = useState({
+    const createEmptyFormState = () => ({
         expertise: '',
         experienceYears: '',
         sampleContentUrl: '',
@@ -75,10 +75,13 @@ export default function CreatorApplicationPage() {
         motivation: ''
     })
 
+    const [formData, setFormData] = useState(createEmptyFormState())
+
     // ID Card upload state
     const [idCardFile, setIdCardFile] = useState<File | null>(null)
     const [idCardPreview, setIdCardPreview] = useState<string | null>(null)
     const [uploadingIdCard, setUploadingIdCard] = useState(false)
+    const [withdrawing, setWithdrawing] = useState(false)
 
     useEffect(() => {
         if (session?.user) {
@@ -164,6 +167,42 @@ export default function CreatorApplicationPage() {
             toast.error('Failed to submit application')
         } finally {
             setSubmitting(false)
+        }
+    }
+
+    const handleWithdrawApplication = async () => {
+        if (!session?.user) {
+            toast.error('Please sign in to manage your application')
+            return
+        }
+
+        const confirmed = window.confirm('This will remove your current application so you can submit a new one. Continue?')
+        if (!confirmed) return
+
+        setWithdrawing(true)
+
+        try {
+            const response = await fetch('/api/creator/apply', {
+                method: 'DELETE'
+            })
+
+            const data = await response.json().catch(() => ({}))
+
+            if (response.ok) {
+                toast.success('Application removed. You can submit a new one now.')
+                setApplication(null)
+                setHasApplication(false)
+                setFormData(createEmptyFormState())
+                setIdCardFile(null)
+                setIdCardPreview(null)
+            } else {
+                toast.error(data.error || 'Failed to remove application')
+            }
+        } catch (error) {
+            console.error('Withdraw application error:', error)
+            toast.error('Failed to remove application')
+        } finally {
+            setWithdrawing(false)
         }
     }
 
@@ -407,11 +446,27 @@ export default function CreatorApplicationPage() {
                     <div className="max-w-4xl">
                         {/* Status Card */}
                         <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-8 mb-6">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-2xl font-semibold text-foreground">Application Details</h2>
-                                <p className="text-sm text-muted-foreground">
-                                    Submitted: {new Date(application.createdAt).toLocaleDateString(locale)}
-                                </p>
+                            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                                <div>
+                                    <h2 className="text-2xl font-semibold text-foreground">Application Details</h2>
+                                    <p className="text-sm text-muted-foreground">
+                                        Submitted: {new Date(application.createdAt).toLocaleDateString(locale)}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={handleWithdrawApplication}
+                                    disabled={withdrawing}
+                                    className="inline-flex items-center gap-2 px-4 py-2 border border-white/20 rounded-full text-sm font-semibold text-foreground hover:bg-white/5 transition-all disabled:opacity-50"
+                                >
+                                    {withdrawing ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                                            Removing...
+                                        </>
+                                    ) : (
+                                        'Withdraw & Reapply'
+                                    )}
+                                </button>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

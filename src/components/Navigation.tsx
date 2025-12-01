@@ -95,12 +95,9 @@ export function Navigation() {
                                 disabled={isLoading('nav-home')}
                                 className="hover:opacity-80 transition-opacity"
                             >
-                                <img 
-                                    src="/images/logo.jpg" 
-                                    alt="Prime" 
-                                    className="h-8 w-auto"
-                                    style={{ borderRadius: '6px' }}
-                                />
+                                <span className="text-2xl font-bold text-foreground dark:text-white">
+                                    Prime
+                                </span>
                             </button>
                         </div>
 
@@ -198,12 +195,9 @@ export function Navigation() {
                             <div className="max-w-screen-2xl mx-auto px-8 py-6">
                                 {/* Header */}
                                 <div className="flex items-center justify-between mb-6">
-                                    <img 
-                                        src="/images/logo.jpg" 
-                                        alt="Prime" 
-                                        className="h-8 w-auto"
-                                        style={{ borderRadius: '6px' }}
-                                    />
+                                    <span className="text-2xl font-bold text-foreground dark:text-white">
+                                        Prime
+                                    </span>
                                     <button
                                         onClick={() => setIsMobileMenuOpen(false)}
                                         className="text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white transition-colors"
