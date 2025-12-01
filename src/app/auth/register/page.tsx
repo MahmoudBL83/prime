@@ -136,10 +136,9 @@ function RegisterContent() {
                             >
                                 <ArrowLeft className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                                 <span className="text-sm">{tCommon('back')}</span>
-                                    <Link
-                                        href="/?auth=signin"
-                                        className="text-[var(--accent)] font-medium transition-colors hover:opacity-80"
-                                    >
+                            </Link>
+                        </div>
+
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
