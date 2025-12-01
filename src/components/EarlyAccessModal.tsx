@@ -169,7 +169,7 @@ export default function EarlyAccessModal() {
                     {/* Info text */}
                     <div className="mt-6 pt-6 border-t border-white/10">
                         <p className="text-white/50 text-xs text-center leading-relaxed">
-                            🎉 We'll send you an exclusive access link via email when we launch. 
+                            📧 You will receive the access link directly via email.
                             <br />
                             No spam, just pure learning excellence.
                         </p>
