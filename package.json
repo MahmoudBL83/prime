@@ -100,6 +100,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/negotiator": "^0.6.4",
     "@types/node": "^20.19.25",
+    "@types/nodemailer": "^7.0.4",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.3",
     "eslint-config-next": "^15.5.2",
