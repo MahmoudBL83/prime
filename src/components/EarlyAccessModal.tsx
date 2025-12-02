@@ -4,6 +4,17 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, User, Sparkles, Lock } from 'lucide-react';
 
+// Apple TV Design System Colors
+const colors = {
+    background: '#000000',
+    surface: 'rgba(255, 255, 255, 0.08)',
+    border: 'rgba(255, 255, 255, 0.15)',
+    blue: '#0A84FF',
+    purple: '#BF5AF2',
+    pink: '#FF375F',
+    green: '#30D158',
+}
+
 export default function EarlyAccessModal() {
     const [email, setEmail] = useState('');
     const [name, setName] = useState('');
@@ -42,26 +53,59 @@ export default function EarlyAccessModal() {
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-            {/* Blurred backdrop - cannot be clicked */}
+            {/* Pure black backdrop with blur */}
             <div 
-                className="absolute inset-0 bg-black/80 backdrop-blur-xl"
-                style={{ pointerEvents: 'none' }}
+                className="absolute inset-0 backdrop-blur-xl"
+                style={{ 
+                    backgroundColor: colors.background,
+                    opacity: 0.95,
+                    pointerEvents: 'none' 
+                }}
             />
 
-            {/* Modal - centered and cannot be closed */}
+            {/* Modal - Apple TV style */}
             <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                transition={{ 
+                    duration: 0.6, 
+                    ease: [0.4, 0, 0.2, 1],
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30
+                }}
                 className="relative z-10 w-full max-w-md mx-4"
             >
-                {/* Glass card */}
-                <div className="relative bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 p-8 shadow-2xl">
+                {/* Glass card with minimal design */}
+                <div 
+                    className="relative rounded-3xl border-2 p-8 shadow-2xl"
+                    style={{
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                    }}
+                >
                     {/* Lock icon indicator */}
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                        <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-3 rounded-full shadow-lg">
+                    <div className="absolute -top-5 left-1/2 -translate-x-1/2">
+                        <motion.div 
+                            className="p-3 rounded-2xl shadow-lg"
+                            style={{
+                                background: `linear-gradient(135deg, ${colors.blue}, ${colors.purple})`,
+                            }}
+                            animate={{
+                                boxShadow: [
+                                    `0 0 20px ${colors.blue}40`,
+                                    `0 0 30px ${colors.purple}40`,
+                                    `0 0 20px ${colors.blue}40`,
+                                ]
+                            }}
+                            transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                        >
                             <Lock className="w-5 h-5 text-white" />
-                        </div>
+                        </motion.div>
                     </div>
 
                     {/* Header */}
@@ -69,8 +113,16 @@ export default function EarlyAccessModal() {
                         <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                            className="inline-flex items-center justify-center w-16 h-16 mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl"
+                            transition={{ 
+                                delay: 0.2, 
+                                type: "spring", 
+                                stiffness: 200,
+                                damping: 15
+                            }}
+                            className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-2xl"
+                            style={{
+                                background: `linear-gradient(135deg, ${colors.blue}, ${colors.purple})`,
+                            }}
                         >
                             <Sparkles className="w-8 h-8 text-white" />
                         </motion.div>
@@ -90,9 +142,15 @@ export default function EarlyAccessModal() {
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                className="mb-4 p-4 bg-green-500/20 border border-green-500/30 rounded-xl"
+                                className="mb-4 p-4 rounded-xl border-2"
+                                style={{
+                                    backgroundColor: `${colors.green}15`,
+                                    borderColor: `${colors.green}30`,
+                                }}
                             >
-                                <p className="text-green-400 text-sm text-center">{message}</p>
+                                <p className="text-sm text-center" style={{ color: colors.green }}>
+                                    {message}
+                                </p>
                             </motion.div>
                         )}
                         {error && (
@@ -100,9 +158,15 @@ export default function EarlyAccessModal() {
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                className="mb-4 p-4 bg-red-500/20 border border-red-500/30 rounded-xl"
+                                className="mb-4 p-4 rounded-xl border-2"
+                                style={{
+                                    backgroundColor: `${colors.pink}15`,
+                                    borderColor: `${colors.pink}30`,
+                                }}
                             >
-                                <p className="text-red-400 text-sm text-center">{error}</p>
+                                <p className="text-sm text-center" style={{ color: colors.pink }}>
+                                    {error}
+                                </p>
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -121,7 +185,19 @@ export default function EarlyAccessModal() {
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="Enter your name"
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-3 text-white placeholder:text-white/40 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                    className="w-full rounded-xl px-12 py-3 text-white placeholder:text-white/40 focus:outline-none transition-all border-2"
+                                    style={{
+                                        backgroundColor: colors.surface,
+                                        borderColor: colors.border,
+                                    }}
+                                    onFocus={(e) => {
+                                        e.target.style.borderColor = colors.blue;
+                                        e.target.style.boxShadow = `0 0 0 3px ${colors.blue}20`;
+                                    }}
+                                    onBlur={(e) => {
+                                        e.target.style.borderColor = colors.border;
+                                        e.target.style.boxShadow = 'none';
+                                    }}
                                 />
                             </div>
                         </div>
@@ -139,7 +215,19 @@ export default function EarlyAccessModal() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="your@email.com"
                                     required
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-3 text-white placeholder:text-white/40 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                    className="w-full rounded-xl px-12 py-3 text-white placeholder:text-white/40 focus:outline-none transition-all border-2"
+                                    style={{
+                                        backgroundColor: colors.surface,
+                                        borderColor: colors.border,
+                                    }}
+                                    onFocus={(e) => {
+                                        e.target.style.borderColor = colors.blue;
+                                        e.target.style.boxShadow = `0 0 0 3px ${colors.blue}20`;
+                                    }}
+                                    onBlur={(e) => {
+                                        e.target.style.borderColor = colors.border;
+                                        e.target.style.boxShadow = 'none';
+                                    }}
                                 />
                             </div>
                         </div>
@@ -150,13 +238,29 @@ export default function EarlyAccessModal() {
                             disabled={loading}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{
+                                background: `linear-gradient(135deg, ${colors.blue}, ${colors.purple})`,
+                                boxShadow: `0 0 20px ${colors.blue}30`,
+                            }}
                         >
                             {loading ? (
                                 <span className="flex items-center justify-center gap-2">
                                     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        <circle 
+                                            className="opacity-25" 
+                                            cx="12" 
+                                            cy="12" 
+                                            r="10" 
+                                            stroke="currentColor" 
+                                            strokeWidth="4" 
+                                            fill="none" 
+                                        />
+                                        <path 
+                                            className="opacity-75" 
+                                            fill="currentColor" 
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" 
+                                        />
                                     </svg>
                                     Processing...
                                 </span>
@@ -167,7 +271,10 @@ export default function EarlyAccessModal() {
                     </form>
 
                     {/* Info text */}
-                    <div className="mt-6 pt-6 border-t border-white/10">
+                    <div 
+                        className="mt-6 pt-6 border-t-2"
+                        style={{ borderColor: colors.border }}
+                    >
                         <p className="text-white/50 text-xs text-center leading-relaxed">
                             📧 You will receive the access link directly via email.
                             <br />
@@ -177,7 +284,12 @@ export default function EarlyAccessModal() {
                 </div>
 
                 {/* Decorative glow */}
-                <div className="absolute inset-0 -z-10 bg-gradient-to-r from-blue-500/20 to-purple-600/20 blur-3xl rounded-3xl" />
+                <div 
+                    className="absolute inset-0 -z-10 blur-3xl rounded-3xl opacity-30"
+                    style={{
+                        background: `linear-gradient(135deg, ${colors.blue}40, ${colors.purple}40)`,
+                    }}
+                />
             </motion.div>
         </div>
     );
