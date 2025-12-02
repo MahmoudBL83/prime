@@ -109,22 +109,7 @@ export default function EarlyAccessModal() {
 
                     {/* Header */}
                     <div className="text-center mb-6 mt-4">
-                        <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ 
-                                delay: 0.2, 
-                                type: "spring", 
-                                stiffness: 200,
-                                damping: 15
-                            }}
-                            className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-2xl"
-                            style={{
-                                background: colors.blue,
-                            }}
-                        >
-                            <Sparkles className="w-8 h-8 text-white" />
-                        </motion.div>
+                        
                         
                         <h2 className="text-3xl font-bold text-white mb-2">
                             Coming Soon
