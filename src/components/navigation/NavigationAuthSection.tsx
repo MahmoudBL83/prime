@@ -92,19 +92,6 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                 >
                     {t('login')}
                 </Button>
-                <Button
-                    size="sm"
-                    className={isMobile
-                        ? "w-full justify-center bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-full px-4 py-2.5 font-semibold transition-all"
-                        : "bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-full px-4 py-2 font-semibold transition-all"
-                    }
-                    onClick={() => {
-                        openAuthModal('signup');
-                        if (onCloseMobileMenu) onCloseMobileMenu();
-                    }}
-                >
-                    {t('register')}
-                </Button>
             </div>
         );
     }
