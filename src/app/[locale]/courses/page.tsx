@@ -642,7 +642,7 @@ export default function CoursesPage() {
                             >
                                 Accept Offer
                             </button>
-                            <p className="text-[10px] opacity-75 text-center leading-tight" style={{ maxWidth: '245px' }}>
+                            <p className="text-[10px] opacity-75 leading-tight w-[245px] text-center">
                                 €28.99/Mo For 12 Months<br />
                                 Terms apply.
                             </p>
