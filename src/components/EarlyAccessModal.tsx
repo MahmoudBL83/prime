@@ -10,7 +10,6 @@ const colors = {
     surface: 'rgba(255, 255, 255, 0.08)',
     border: 'rgba(255, 255, 255, 0.15)',
     blue: '#0A84FF',
-    purple: '#BF5AF2',
     pink: '#FF375F',
     green: '#30D158',
 }
@@ -89,12 +88,12 @@ export default function EarlyAccessModal() {
                         <motion.div 
                             className="p-3 rounded-2xl shadow-lg"
                             style={{
-                                background: `linear-gradient(135deg, ${colors.blue}, ${colors.purple})`,
+                                background: colors.blue,
                             }}
                             animate={{
                                 boxShadow: [
                                     `0 0 20px ${colors.blue}40`,
-                                    `0 0 30px ${colors.purple}40`,
+                                    `0 0 30px ${colors.blue}40`,
                                     `0 0 20px ${colors.blue}40`,
                                 ]
                             }}
@@ -121,7 +120,7 @@ export default function EarlyAccessModal() {
                             }}
                             className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-2xl"
                             style={{
-                                background: `linear-gradient(135deg, ${colors.blue}, ${colors.purple})`,
+                                background: colors.blue,
                             }}
                         >
                             <Sparkles className="w-8 h-8 text-white" />
@@ -240,7 +239,7 @@ export default function EarlyAccessModal() {
                             whileTap={{ scale: 0.98 }}
                             className="w-full text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{
-                                background: `linear-gradient(135deg, ${colors.blue}, ${colors.purple})`,
+                                background: colors.blue,
                                 boxShadow: `0 0 20px ${colors.blue}30`,
                             }}
                         >
@@ -287,7 +286,7 @@ export default function EarlyAccessModal() {
                 <div 
                     className="absolute inset-0 -z-10 blur-3xl rounded-3xl opacity-30"
                     style={{
-                        background: `linear-gradient(135deg, ${colors.blue}40, ${colors.purple}40)`,
+                        background: `${colors.blue}40`,
                     }}
                 />
             </motion.div>
