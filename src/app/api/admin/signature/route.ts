@@ -4,6 +4,16 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { UserRole } from '@prisma/client'
 
+type SignatureCourseItem = {
+    id: string
+    type: 'proposal' | 'invitation'
+    stage: string
+    enrollments: number
+    revenue: number
+    rating?: number
+    [key: string]: unknown
+}
+
 async function requireAdmin() {
     const session = await getServerSession(authOptions)
 
@@ -169,7 +179,7 @@ export async function GET(req: NextRequest) {
                 reviewedAt: proposal.reviewedAt?.toISOString(),
                 notes: proposal.reviewNotes,
                 creatorEmail: creator?.email
-            }
+            } satisfies SignatureCourseItem
         })
 
         const proposalsCreatorSet = new Set(proposalCreatorIds)
@@ -193,6 +203,9 @@ export async function GET(req: NextRequest) {
                     },
                     stage,
                     category: 'General',
+                    enrollments: 0,
+                    revenue: 0,
+                    rating: undefined,
                     estimatedPrice: 0,
                     completionProgress: progressForStage(stage),
                     content: { modules: 0, videos: 0, documents: 0, quizzes: 0 },
@@ -200,10 +213,10 @@ export async function GET(req: NextRequest) {
                     notes: invitation.message,
                     submittedAt: invitation.invitedAt.toISOString(),
                     creatorEmail: creator?.email
-                }
+                } satisfies SignatureCourseItem
             })
 
-        const courses = [...mappedFromProposals, ...mappedFromInvitations]
+        const courses: SignatureCourseItem[] = [...mappedFromProposals, ...mappedFromInvitations]
 
         const stats = (() => {
             const totalCourses = courses.length

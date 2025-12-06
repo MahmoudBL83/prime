@@ -248,7 +248,7 @@ export async function POST(request: NextRequest) {
             data: {
                 name: name.trim(),
                 email: email.toLowerCase().trim(),
-                password: hashedPassword,
+                passwordHash: hashedPassword,
                 role: (role as UserRole) || UserRole.LEARNER,
                 arabicName: arabicName?.trim() || null,
                 bio: bio?.trim() || null,
@@ -271,15 +271,7 @@ export async function POST(request: NextRequest) {
         if (role === 'CREATOR') {
             await prisma.creator.create({
                 data: {
-                    userId: newUser.id,
-                    displayName: name.trim(),
-                    slug: email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-'),
-                    bio: bio?.trim() || null,
-                    isVerified: false,
-                    totalStudents: 0,
-                    totalCourses: 0,
-                    averageRating: 0,
-                    totalRevenue: 0
+                    userId: newUser.id
                 }
             })
         }

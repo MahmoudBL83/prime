@@ -453,7 +453,7 @@ export async function DELETE(
 
                 // Delete mentor subscriptions (as mentor)
                 await tx.mentorSubscription.deleteMany({
-                    where: { mentorId: creatorId }
+                    where: { creatorId: creatorId }
                 })
 
                 // Delete creator earnings
@@ -477,7 +477,7 @@ export async function DELETE(
                 })
 
                 // Delete creator channel and related content
-                const channel = await tx.creatorChannel.findUnique({
+                const channel = await tx.creatorChannel.findFirst({
                     where: { creatorId: creatorId }
                 })
 
@@ -531,7 +531,7 @@ export async function DELETE(
 
                     // Delete community resources
                     await tx.communityResource.deleteMany({
-                        where: { channelId: channel.id }
+                        where: { creatorId: creatorId }
                     })
 
                     // Delete member groups
