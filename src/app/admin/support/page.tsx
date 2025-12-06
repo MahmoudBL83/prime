@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
     MessageSquare,
     Search,
@@ -65,353 +65,182 @@ interface Ticket {
     responseTime?: number // in hours
 }
 
-const MOCK_TICKETS: Ticket[] = [
-    {
-        id: '1',
-        ticketNumber: 'TKT-2024-0001',
-        subject: 'Unable to access purchased course',
-        category: 'technical',
-        priority: 'urgent',
-        status: 'open',
-        user: {
-            id: 'u1',
-            name: 'Ahmed Hassan',
-            email: 'ahmed.hassan@example.com',
-            phone: '+20 100 123 4567',
-            role: 'LEARNER'
-        },
-        createdAt: '2024-01-15T10:30:00Z',
-        updatedAt: '2024-01-15T10:30:00Z',
-        messages: [
-            {
-                id: 'm1',
-                content: 'I purchased the "Advanced Arabic Grammar" course yesterday but I cannot access it. The payment was successful but the course is not showing in my dashboard.',
-                sender: 'user',
-                senderName: 'Ahmed Hassan',
-                createdAt: '2024-01-15T10:30:00Z'
-            }
-        ],
-        slaBreached: true,
-        responseTime: 6
-    },
-    {
-        id: '2',
-        ticketNumber: 'TKT-2024-0002',
-        subject: 'Refund request for subscription',
-        category: 'billing',
-        priority: 'high',
-        status: 'in_progress',
-        user: {
-            id: 'u2',
-            name: 'Fatma Mohamed',
-            email: 'fatma.m@example.com',
-            role: 'LEARNER'
-        },
-        assignedTo: {
-            id: 'a1',
-            name: 'Support Team A'
-        },
-        createdAt: '2024-01-14T15:20:00Z',
-        updatedAt: '2024-01-15T09:15:00Z',
-        firstResponseAt: '2024-01-14T16:30:00Z',
-        messages: [
-            {
-                id: 'm2',
-                content: 'I would like to request a refund for my All-Access subscription. I subscribed by mistake.',
-                sender: 'user',
-                senderName: 'Fatma Mohamed',
-                createdAt: '2024-01-14T15:20:00Z'
-            },
-            {
-                id: 'm3',
-                content: 'Hello Fatma, we\'ve received your refund request. Can you please confirm the subscription purchase date and the payment method used?',
-                sender: 'admin',
-                senderName: 'Support Team A',
-                createdAt: '2024-01-14T16:30:00Z'
-            },
-            {
-                id: 'm4',
-                content: 'I purchased it on January 10th using my credit card ending in 4567.',
-                sender: 'user',
-                senderName: 'Fatma Mohamed',
-                createdAt: '2024-01-15T09:00:00Z'
-            }
-        ],
-        slaBreached: false,
-        responseTime: 1.2
-    },
-    {
-        id: '3',
-        ticketNumber: 'TKT-2024-0003',
-        subject: 'Creator payout not received',
-        category: 'billing',
-        priority: 'urgent',
-        status: 'waiting',
-        user: {
-            id: 'u3',
-            name: 'Dr. Khaled Ibrahim',
-            email: 'khaled.ibrahim@example.com',
-            phone: '+20 122 987 6543',
-            role: 'CREATOR'
-        },
-        assignedTo: {
-            id: 'a2',
-            name: 'Finance Team'
-        },
-        createdAt: '2024-01-13T11:00:00Z',
-        updatedAt: '2024-01-15T08:00:00Z',
-        firstResponseAt: '2024-01-13T14:20:00Z',
-        messages: [
-            {
-                id: 'm5',
-                content: 'I was supposed to receive my monthly creator payout on January 10th but I haven\'t received it yet. My earnings show E£3,450.',
-                sender: 'user',
-                senderName: 'Dr. Khaled Ibrahim',
-                createdAt: '2024-01-13T11:00:00Z'
-            },
-            {
-                id: 'm6',
-                content: 'Hello Dr. Khaled, we\'re looking into this issue. Our finance team is reviewing your payout status.',
-                sender: 'admin',
-                senderName: 'Finance Team',
-                createdAt: '2024-01-13T14:20:00Z'
-            },
-            {
-                id: 'm7',
-                content: 'We\'ve identified the issue - your bank details need verification. Please check your email for the verification form.',
-                sender: 'admin',
-                senderName: 'Finance Team',
-                createdAt: '2024-01-15T08:00:00Z'
-            }
-        ],
-        slaBreached: false,
-        responseTime: 3.3
-    },
-    {
-        id: '4',
-        ticketNumber: 'TKT-2024-0004',
-        subject: 'Email verification not working',
-        category: 'account',
-        priority: 'medium',
-        status: 'resolved',
-        user: {
-            id: 'u4',
-            name: 'Sara Ali',
-            email: 'sara.ali@example.com',
-            role: 'LEARNER'
-        },
-        assignedTo: {
-            id: 'a3',
-            name: 'Tech Support'
-        },
-        createdAt: '2024-01-12T09:30:00Z',
-        updatedAt: '2024-01-12T15:45:00Z',
-        firstResponseAt: '2024-01-12T10:15:00Z',
-        resolvedAt: '2024-01-12T15:45:00Z',
-        messages: [
-            {
-                id: 'm8',
-                content: 'I\'m not receiving the email verification code. I\'ve tried multiple times.',
-                sender: 'user',
-                senderName: 'Sara Ali',
-                createdAt: '2024-01-12T09:30:00Z'
-            },
-            {
-                id: 'm9',
-                content: 'Let me resend the verification code. Please check your spam folder as well.',
-                sender: 'admin',
-                senderName: 'Tech Support',
-                createdAt: '2024-01-12T10:15:00Z'
-            },
-            {
-                id: 'm10',
-                content: 'Thank you! I found it in spam and verified successfully.',
-                sender: 'user',
-                senderName: 'Sara Ali',
-                createdAt: '2024-01-12T15:45:00Z'
-            }
-        ],
-        slaBreached: false,
-        responseTime: 0.75
-    },
-    {
-        id: '5',
-        ticketNumber: 'TKT-2024-0005',
-        subject: 'Inappropriate content reported',
-        category: 'content',
-        priority: 'high',
-        status: 'in_progress',
-        user: {
-            id: 'u5',
-            name: 'Omar Mahmoud',
-            email: 'omar.m@example.com',
-            role: 'LEARNER'
-        },
-        assignedTo: {
-            id: 'a4',
-            name: 'Content Moderation'
-        },
-        createdAt: '2024-01-15T07:00:00Z',
-        updatedAt: '2024-01-15T08:30:00Z',
-        firstResponseAt: '2024-01-15T07:45:00Z',
-        messages: [
-            {
-                id: 'm11',
-                content: 'I found some inappropriate content in Course ID: C-4567. The lesson contains material that violates community guidelines.',
-                sender: 'user',
-                senderName: 'Omar Mahmoud',
-                createdAt: '2024-01-15T07:00:00Z'
-            },
-            {
-                id: 'm12',
-                content: 'Thank you for reporting this. Our content moderation team is reviewing the course now.',
-                sender: 'admin',
-                senderName: 'Content Moderation',
-                createdAt: '2024-01-15T07:45:00Z'
-            }
-        ],
-        slaBreached: false,
-        responseTime: 0.75
-    },
-    {
-        id: '6',
-        ticketNumber: 'TKT-2024-0006',
-        subject: 'Study buddy matching issue',
-        category: 'technical',
-        priority: 'low',
-        status: 'open',
-        user: {
-            id: 'u6',
-            name: 'Layla Youssef',
-            email: 'layla.y@example.com',
-            role: 'LEARNER'
-        },
-        createdAt: '2024-01-15T12:00:00Z',
-        updatedAt: '2024-01-15T12:00:00Z',
-        messages: [
-            {
-                id: 'm13',
-                content: 'I\'ve been trying to find a study buddy for the Data Science course but the system keeps showing "no matches found".',
-                sender: 'user',
-                senderName: 'Layla Youssef',
-                createdAt: '2024-01-15T12:00:00Z'
-            }
-        ],
-        slaBreached: false,
-        responseTime: 2
-    }
-]
-
-const statusColors = {
+const statusColors: Record<string, string> = {
     open: 'bg-blue-100 text-blue-800 border-blue-200',
+    OPEN: 'bg-blue-100 text-blue-800 border-blue-200',
     in_progress: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    IN_PROGRESS: 'bg-yellow-100 text-yellow-800 border-yellow-200',
     waiting: 'bg-purple-100 text-purple-800 border-purple-200',
     resolved: 'bg-green-100 text-green-800 border-green-200',
-    closed: 'bg-muted text-gray-800 border-border'
+    RESOLVED: 'bg-green-100 text-green-800 border-green-200',
+    closed: 'bg-muted text-gray-800 border-border',
+    CLOSED: 'bg-muted text-gray-800 border-border'
 }
 
-const priorityColors = {
+const priorityColors: Record<string, string> = {
     low: 'bg-muted text-gray-800 border-border',
+    LOW: 'bg-muted text-gray-800 border-border',
     medium: 'bg-blue-100 text-blue-800 border-blue-200',
+    MEDIUM: 'bg-blue-100 text-blue-800 border-blue-200',
     high: 'bg-orange-100 text-orange-800 border-orange-200',
-    urgent: 'bg-red-100 text-red-800 border-red-200'
+    HIGH: 'bg-orange-100 text-orange-800 border-orange-200',
+    urgent: 'bg-red-100 text-red-800 border-red-200',
+    URGENT: 'bg-red-100 text-red-800 border-red-200'
 }
 
-const categoryIcons = {
+const categoryIcons: Record<string, any> = {
     technical: Zap,
+    TECHNICAL: Zap,
     billing: Tag,
+    BILLING: Tag,
     account: User,
+    ACCOUNT: User,
     content: MessageCircle,
-    other: MoreHorizontal
+    CONTENT: MessageCircle,
+    other: MoreHorizontal,
+    OTHER: MoreHorizontal
+}
+
+interface Stats {
+    status: Record<string, number>
+    priority: Record<string, number>
+    slaBreached: number
+    avgResponseTimeHours: number | null
 }
 
 export default function SupportPage() {
-    const [tickets, setTickets] = useState<Ticket[]>(MOCK_TICKETS)
+    const [tickets, setTickets] = useState<Ticket[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [apiStats, setApiStats] = useState<Stats | null>(null)
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
     const [statusFilter, setStatusFilter] = useState<string>('all')
     const [priorityFilter, setPriorityFilter] = useState<string>('all')
     const [categoryFilter, setCategoryFilter] = useState<string>('all')
     const [replyText, setReplyText] = useState('')
+    const [page, setPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+
+    const fetchTickets = useCallback(async () => {
+        try {
+            setLoading(true)
+            const params = new URLSearchParams()
+            params.set('page', page.toString())
+            params.set('pageSize', '25')
+            if (statusFilter !== 'all') params.set('status', statusFilter.toUpperCase())
+            if (priorityFilter !== 'all') params.set('priority', priorityFilter.toUpperCase())
+            if (categoryFilter !== 'all') params.set('category', categoryFilter.toUpperCase())
+            if (searchTerm) params.set('search', searchTerm)
+
+            const response = await fetch(`/api/admin/support?${params.toString()}`)
+            if (!response.ok) throw new Error('Failed to fetch tickets')
+            
+            const data = await response.json()
+            setTickets(data.tickets || [])
+            setApiStats(data.stats || null)
+            setTotalPages(Math.ceil((data.meta?.total || 0) / (data.meta?.pageSize || 25)))
+            setError(null)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unknown error')
+        } finally {
+            setLoading(false)
+        }
+    }, [page, statusFilter, priorityFilter, categoryFilter, searchTerm])
+
+    useEffect(() => {
+        fetchTickets()
+    }, [fetchTickets])
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (page !== 1) setPage(1)
+            else fetchTickets()
+        }, 400)
+        return () => clearTimeout(timer)
+    }, [searchTerm])
 
     const stats = {
-        total: tickets.length,
-        open: tickets.filter(t => t.status === 'open').length,
-        inProgress: tickets.filter(t => t.status === 'in_progress').length,
-        slaBreached: tickets.filter(t => t.slaBreached).length,
-        avgResponseTime: 2.5
+        total: apiStats ? Object.values(apiStats.status).reduce((a, b) => a + b, 0) : tickets.length,
+        open: apiStats?.status?.OPEN || tickets.filter(t => t.status.toLowerCase() === 'open').length,
+        inProgress: apiStats?.status?.IN_PROGRESS || tickets.filter(t => t.status.toLowerCase() === 'in_progress').length,
+        slaBreached: apiStats?.slaBreached || tickets.filter(t => t.slaBreached).length,
+        avgResponseTime: apiStats?.avgResponseTimeHours || 0
     }
 
-    const filteredTickets = tickets.filter(ticket => {
-        const matchesSearch = ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            ticket.ticketNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            ticket.user.name.toLowerCase().includes(searchTerm.toLowerCase())
-        const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter
-        const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter
-        const matchesCategory = categoryFilter === 'all' || ticket.category === categoryFilter
-        return matchesSearch && matchesStatus && matchesPriority && matchesCategory
-    })
+    const filteredTickets = tickets
 
-    const handleSendReply = () => {
+    const handleSendReply = async () => {
         if (!selectedTicket || !replyText.trim()) return
 
-        const newMessage = {
-            id: `m${Date.now()}`,
-            content: replyText,
-            sender: 'admin' as const,
-            senderName: 'Admin Team',
-            createdAt: new Date().toISOString()
-        }
-
-        const updatedTicket = {
-            ...selectedTicket,
-            messages: [...selectedTicket.messages, newMessage],
-            status: 'in_progress' as const,
-            updatedAt: new Date().toISOString(),
-            firstResponseAt: selectedTicket.firstResponseAt || new Date().toISOString()
-        }
-
-        setTickets(tickets.map(t => t.id === selectedTicket.id ? updatedTicket : t))
-        setSelectedTicket(updatedTicket)
-        setReplyText('')
-    }
-
-    const handleStatusChange = (ticketId: string, newStatus: Ticket['status']) => {
-        const updatedTickets = tickets.map(t => {
-            if (t.id === ticketId) {
-                const updates: Partial<Ticket> = {
-                    status: newStatus,
-                    updatedAt: new Date().toISOString()
-                }
-                if (newStatus === 'resolved') {
-                    updates.resolvedAt = new Date().toISOString()
-                }
-                return { ...t, ...updates }
-            }
-            return t
-        })
-        setTickets(updatedTickets)
-        if (selectedTicket?.id === ticketId) {
-            const updatedTicket = updatedTickets.find(t => t.id === ticketId)
-            if (updatedTicket) setSelectedTicket(updatedTicket)
+        try {
+            const response = await fetch('/api/admin/support', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ticketId: selectedTicket.id,
+                    action: 'reply',
+                    message: replyText
+                })
+            })
+            
+            if (!response.ok) throw new Error('Failed to send reply')
+            
+            const data = await response.json()
+            setTickets(tickets.map(t => t.id === selectedTicket.id ? data.ticket : t))
+            setSelectedTicket(data.ticket)
+            setReplyText('')
+        } catch (err) {
+            console.error('Failed to send reply:', err)
         }
     }
 
-    const handleAssign = (ticketId: string, assigneeId: string, assigneeName: string) => {
-        const updatedTickets = tickets.map(t => {
-            if (t.id === ticketId) {
-                return {
-                    ...t,
-                    assignedTo: { id: assigneeId, name: assigneeName },
-                    updatedAt: new Date().toISOString()
-                }
+    const handleStatusChange = async (ticketId: string, newStatus: string) => {
+        try {
+            const response = await fetch('/api/admin/support', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ticketId,
+                    action: 'status',
+                    status: newStatus.toUpperCase()
+                })
+            })
+            
+            if (!response.ok) throw new Error('Failed to update status')
+            
+            const data = await response.json()
+            setTickets(tickets.map(t => t.id === ticketId ? data.ticket : t))
+            if (selectedTicket?.id === ticketId) {
+                setSelectedTicket(data.ticket)
             }
-            return t
-        })
-        setTickets(updatedTickets)
-        if (selectedTicket?.id === ticketId) {
-            const updatedTicket = updatedTickets.find(t => t.id === ticketId)
-            if (updatedTicket) setSelectedTicket(updatedTicket)
+        } catch (err) {
+            console.error('Failed to update status:', err)
+        }
+    }
+
+    const handleAssign = async (ticketId: string, assigneeId: string, assigneeName: string) => {
+        try {
+            const response = await fetch('/api/admin/support', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ticketId,
+                    action: 'assign',
+                    assignedToId: assigneeId
+                })
+            })
+            
+            if (!response.ok) throw new Error('Failed to assign ticket')
+            
+            const data = await response.json()
+            setTickets(tickets.map(t => t.id === ticketId ? data.ticket : t))
+            if (selectedTicket?.id === ticketId) {
+                setSelectedTicket(data.ticket)
+            }
+        } catch (err) {
+            console.error('Failed to assign ticket:', err)
         }
     }
 
@@ -424,6 +253,51 @@ export default function SupportPage() {
         if (diffInHours < 24) return `${diffInHours}h ago`
         if (diffInHours < 48) return 'Yesterday'
         return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+    }
+
+    if (loading && tickets.length === 0) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
+                <div className="animate-pulse">
+                    <div className="h-10 bg-white/5 rounded-lg w-1/3 mb-4"></div>
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+                        {[...Array(5)].map((_, i) => (
+                            <div key={i} className="bg-white/5 rounded-xl h-28"></div>
+                        ))}
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="space-y-3">
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} className="bg-white/5 rounded-xl h-24"></div>
+                            ))}
+                        </div>
+                        <div className="lg:col-span-2 bg-white/5 rounded-xl h-96"></div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
+                <div className="bg-red-600/20 border border-red-500/30 rounded-xl p-6 backdrop-blur-xl">
+                    <div className="flex items-start gap-4">
+                        <AlertCircle className="h-6 w-6 text-red-400" />
+                        <div>
+                            <h3 className="text-lg font-semibold text-white mb-1">Error loading tickets</h3>
+                            <div className="text-sm text-red-300">{error}</div>
+                            <Button 
+                                onClick={() => fetchTickets()} 
+                                className="mt-4 bg-red-600 hover:bg-red-700"
+                            >
+                                Try Again
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (

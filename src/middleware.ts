@@ -13,6 +13,11 @@ export default withAuth(
         if (pathname.startsWith('/api')) {
             return null;
         }
+
+        // CRITICAL: Allow admin login page without any checks
+        if (pathname === '/admin/login') {
+            return null;
+        }
         
         // Skip internationalization for admin routes - they don't use locale
         if (!pathname.startsWith('/admin')) {
@@ -82,8 +87,16 @@ export default withAuth(
 
         // Admin routes should not require locale and should not be redirected
         if (pathname.startsWith('/admin')) {
+            // Allow access to admin login page - let the page handle sign-out logic
+            if (pathname === '/admin/login') {
+                // Allow everyone to access the login page
+                // The page itself will handle signing out non-admins and redirecting admins
+                return null;
+            }
+            
+            // Protect other admin routes
             if (!isAuth) {
-                return NextResponse.redirect(new URL('/en/auth/login', req.url));
+                return NextResponse.redirect(new URL('/admin/login', req.url));
             }
             if (token.role !== "ADMIN") {
                 return NextResponse.redirect(new URL('/en/dashboard', req.url));

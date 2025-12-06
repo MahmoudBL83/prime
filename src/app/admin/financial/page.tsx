@@ -24,6 +24,19 @@ import {
 import { formatPrice } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
+
+// Simple CSV export helper
+const exportToCsv = (filename: string, rows: string[]) => {
+    const csvContent = rows.join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', filename)
+    link.click()
+    URL.revokeObjectURL(url)
+}
 
 interface FinancialStats {
     overview: {
@@ -37,15 +50,13 @@ interface FinancialStats {
         averageRevenuePerUser: number
     }
     breakdown: {
-        categoryA: number
-        categoryB: number
-        categoryC: number
         subscriptions: number
-        addOns: number
+        courses: number
+        other: number
     }
     recentTransactions: Array<{
         id: string
-        type: 'subscription' | 'payout' | 'refund' | 'chargeback'
+        type: 'subscription' | 'purchase' | 'payout' | 'refund' | 'chargeback'
         amount: number
         status: 'completed' | 'pending' | 'failed'
         user: string
@@ -62,8 +73,12 @@ interface FinancialStats {
 
 export default function FinancialManagementPage() {
     const [stats, setStats] = useState<FinancialStats | null>(null)
+    const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d')
+    const [isExporting, setIsExporting] = useState(false)
+    const [isRefreshing, setIsRefreshing] = useState(false)
+    const router = useRouter()
 
     useEffect(() => {
         fetchFinancialStats()
@@ -72,15 +87,54 @@ export default function FinancialManagementPage() {
     const fetchFinancialStats = async () => {
         try {
             setLoading(true)
+            setError(null)
             const response = await fetch(`/api/admin/financial?range=${timeRange}`)
-            if (response.ok) {
-                const data = await response.json()
-                setStats(data)
+            if (!response.ok) {
+                setStats(null)
+                setError('Unable to load financial stats (auth or server issue).')
+                return
             }
+
+            const data = await response.json()
+            // Normalize API shape to UI shape
+            const normalized: FinancialStats = {
+                overview: data.overview,
+                breakdown: {
+                    subscriptions: data.breakdown?.subscriptions ?? 0,
+                    courses: data.breakdown?.courses ?? 0,
+                    other: data.breakdown?.other ?? 0,
+                },
+                recentTransactions: data.recentTransactions ?? [],
+                topCreatorEarnings: data.topCreatorEarnings ?? [],
+            }
+
+            setStats(normalized)
         } catch (error) {
             console.error('Failed to fetch financial stats:', error)
+            setError('Unable to load financial stats.')
         } finally {
             setLoading(false)
+            setIsRefreshing(false)
+        }
+    }
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true)
+        await fetchFinancialStats()
+    }
+
+    const handleExport = () => {
+        if (!stats) return
+        setIsExporting(true)
+        try {
+            const header = ['Section,Label,Value']
+            const overviewRows = Object.entries(stats.overview).map(([key, value]) => `Overview,${key},${value}`)
+            const breakdownRows = Object.entries(stats.breakdown).map(([key, value]) => `Breakdown,${key},${value}`)
+            const txHeader = ['Transactions,id,type,amount,status,user,date']
+            const txRows = stats.recentTransactions.map(tx => `Transactions,${tx.id},${tx.type},${tx.amount},${tx.status},${tx.user},${tx.date}`)
+            exportToCsv(`financial-${timeRange}.csv`, [...header, ...overviewRows, ...breakdownRows, ...txHeader, ...txRows])
+        } finally {
+            setIsExporting(false)
         }
     }
 
@@ -99,7 +153,13 @@ export default function FinancialManagementPage() {
         )
     }
 
-    if (!stats) return null
+    if (!stats) {
+        return (
+            <div className="min-h-screen p-8">
+                <div className="text-foreground">{error || 'No financial data available.'}</div>
+            </div>
+        )
+    }
 
     const metricCards = [
         {
@@ -148,27 +208,27 @@ export default function FinancialManagementPage() {
             iconColor: 'text-indigo-400'
         },
         {
-            title: 'Category A Revenue',
-            value: formatPrice(stats.breakdown.categoryA),
-            subtitle: 'All-Access Library',
+            title: 'Subscriptions Revenue',
+            value: formatPrice(stats.breakdown.subscriptions),
+            subtitle: 'Channel subscriptions',
             icon: FileText,
             color: 'from-teal-600 to-green-600',
             iconBg: 'bg-teal-600/20',
             iconColor: 'text-teal-400'
         },
         {
-            title: 'Category B Revenue',
-            value: formatPrice(stats.breakdown.categoryB),
-            subtitle: 'Signature Courses',
+            title: 'Courses Revenue',
+            value: formatPrice(stats.breakdown.courses),
+            subtitle: 'Course purchases',
             icon: FileText,
             color: 'from-yellow-600 to-orange-600',
             iconBg: 'bg-yellow-600/20',
             iconColor: 'text-yellow-400'
         },
         {
-            title: 'Category C Revenue',
-            value: formatPrice(stats.breakdown.categoryC),
-            subtitle: 'Membership Channels',
+            title: 'Other Revenue',
+            value: formatPrice(stats.breakdown.other),
+            subtitle: 'Other income',
             icon: FileText,
             color: 'from-pink-600 to-red-600',
             iconBg: 'bg-pink-600/20',
@@ -203,13 +263,21 @@ export default function FinancialManagementPage() {
                         <option value="90d">Last 90 days</option>
                         <option value="1y">Last year</option>
                     </select>
-                    <Button className="bg-white/10 hover:bg-white/20 text-foreground">
-                        <Filter className="w-4 h-4 mr-2" />
-                        Filter
+                    <Button
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        className="bg-white/10 hover:bg-white/20 text-foreground"
+                    >
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        {isRefreshing ? 'Refreshing...' : 'Refresh'}
                     </Button>
-                    <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-foreground">
+                    <Button
+                        onClick={handleExport}
+                        disabled={isExporting}
+                        className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-foreground"
+                    >
                         <Download className="w-4 h-4 mr-2" />
-                        Export
+                        {isExporting ? 'Exporting...' : 'Export'}
                     </Button>
                 </div>
             </motion.div>
@@ -267,9 +335,13 @@ export default function FinancialManagementPage() {
                 >
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-xl font-bold text-foreground">Recent Transactions</h3>
-                        <Button className="bg-white/10 hover:bg-white/20 text-foreground text-xs">
+                        <Button
+                            onClick={handleRefresh}
+                            disabled={isRefreshing}
+                            className="bg-white/10 hover:bg-white/20 text-foreground text-xs"
+                        >
                             <RefreshCw className="w-3 h-3 mr-1" />
-                            Refresh
+                            {isRefreshing ? 'Refreshing...' : 'Refresh'}
                         </Button>
                     </div>
                     <div className="space-y-3">
@@ -327,7 +399,10 @@ export default function FinancialManagementPage() {
                 >
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-xl font-bold text-foreground">Top Creator Earnings</h3>
-                        <Button className="bg-white/10 hover:bg-white/20 text-foreground text-xs">
+                        <Button
+                            onClick={() => router.push('/admin/financial/creators')}
+                            className="bg-white/10 hover:bg-white/20 text-foreground text-xs"
+                        >
                             View All
                         </Button>
                     </div>
@@ -390,7 +465,10 @@ export default function FinancialManagementPage() {
                     <p className="text-sm text-muted-foreground mb-4">
                         Awaiting processing
                     </p>
-                    <Button className="w-full bg-purple-600 hover:bg-purple-700 text-foreground">
+                    <Button
+                        className="w-full bg-purple-600 hover:bg-purple-700 text-foreground"
+                        onClick={() => alert('Payout processing initiated (connect to payout API when available).')}
+                    >
                         Process Payouts
                     </Button>
                 </motion.div>
@@ -409,7 +487,10 @@ export default function FinancialManagementPage() {
                     <p className="text-sm text-muted-foreground mb-4">
                         Monthly subscription cancellations
                     </p>
-                    <Button className="w-full bg-orange-600 hover:bg-orange-700 text-foreground">
+                    <Button
+                        className="w-full bg-orange-600 hover:bg-orange-700 text-foreground"
+                        onClick={() => router.push('/admin/analytics')}
+                    >
                         View Analytics
                     </Button>
                 </motion.div>
@@ -425,9 +506,13 @@ export default function FinancialManagementPage() {
                     <p className="text-sm text-muted-foreground mb-4">
                         Generate comprehensive tax and financial reports
                     </p>
-                    <Button className="w-full bg-green-600 hover:bg-green-700 text-foreground mt-4">
+                    <Button
+                        className="w-full bg-green-600 hover:bg-green-700 text-foreground mt-4"
+                        onClick={handleExport}
+                        disabled={isExporting}
+                    >
                         <Download className="w-4 h-4 mr-2" />
-                        Generate Report
+                        {isExporting ? 'Generating...' : 'Generate Report'}
                     </Button>
                 </motion.div>
             </div>

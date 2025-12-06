@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useLocale } from 'next-intl'
 import { AlertTriangle, X } from 'lucide-react'
 
 interface UserDeleteModalProps {
@@ -15,7 +14,6 @@ interface UserDeleteModalProps {
 export default function UserDeleteModal({ isOpen, onClose, onConfirm, userName, userEmail }: UserDeleteModalProps) {
     const [isDeleting, setIsDeleting] = useState(false)
     const [confirmText, setConfirmText] = useState('')
-    const locale = useLocale()
 
     const handleDelete = async () => {
         if (confirmText !== 'DELETE') {
@@ -53,7 +51,7 @@ export default function UserDeleteModal({ isOpen, onClose, onConfirm, userName, 
                             <AlertTriangle className="w-5 h-5 text-red-600" />
                         </div>
                         <h2 className="text-lg font-semibold text-foreground">
-                            {locale === 'ar' ? 'حذف المستخدم' : locale === 'de' ? 'Benutzer löschen' : 'Delete User'}
+                            Delete User
                         </h2>
                     </div>
                     <button
@@ -69,7 +67,7 @@ export default function UserDeleteModal({ isOpen, onClose, onConfirm, userName, 
                 <div className="p-6">
                     <div className="mb-4">
                         <p className="text-foreground mb-2">
-                            {locale === 'ar' ? 'أنت على وشك حذف المستخدم التالي بشكل دائم:' : locale === 'de' ? 'Sie sind dabei, den folgenden Benutzer endgültig zu löschen:' : 'You are about to permanently delete the following user:'}
+                            You are about to permanently delete the following user:
                         </p>
                         <div className="bg-background rounded-lg p-3">
                             <p className="font-medium text-foreground">{userName}</p>
@@ -82,13 +80,13 @@ export default function UserDeleteModal({ isOpen, onClose, onConfirm, userName, 
                             <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                             <div>
                                 <h4 className="text-sm font-medium text-red-800 mb-1">
-                                    {locale === 'ar' ? 'تحذير: لا يمكن التراجع عن هذا الإجراء' : locale === 'de' ? 'Warnung: Diese Aktion kann nicht rückgängig gemacht werden' : 'Warning: This action cannot be undone'}
+                                    Warning: This action cannot be undone
                                 </h4>
                                 <ul className="text-sm text-red-700 space-y-1">
-                                    <li>• {locale === 'ar' ? 'سيتم حذف جميع بيانات المستخدم بشكل دائم' : locale === 'de' ? 'Alle Benutzerdaten werden endgültig gelöscht' : 'All user data will be permanently deleted'}</li>
-                                    <li>• {locale === 'ar' ? 'ستفقد تسجيلات الدورات والتقدم' : locale === 'de' ? 'Kursanmeldungen und Fortschritt gehen verloren' : 'Course enrollments and progress will be lost'}</li>
-                                    <li>• {locale === 'ar' ? 'سيتم إزالة محتوى المبدع وبيانات الأرباح' : locale === 'de' ? 'Erstellerinhalte und Einnahmendaten werden entfernt' : 'Creator content and earnings data will be removed'}</li>
-                                    <li>• {locale === 'ar' ? 'سيتم حذف سجل الدفعات' : locale === 'de' ? 'Zahlungsverlauf wird gelöscht' : 'Payment history will be deleted'}</li>
+                                    <li>• All user data will be permanently deleted</li>
+                                    <li>• Course enrollments and progress will be lost</li>
+                                    <li>• Creator content and earnings data will be removed</li>
+                                    <li>• Payment history will be deleted</li>
                                 </ul>
                             </div>
                         </div>
@@ -96,17 +94,13 @@ export default function UserDeleteModal({ isOpen, onClose, onConfirm, userName, 
 
                     <div className="mb-6">
                         <label className="block text-sm font-medium text-foreground mb-2">
-                            {locale === 'ar'
-                                ? 'لتأكيد الحذف، اكتب <span className="font-mono bg-muted px-1 rounded">DELETE</span> في الحقل أدناه:'
-                                : locale === 'de'
-                                    ? 'Zum Bestätigen der Löschung geben Sie <span className="font-mono bg-muted px-1 rounded">DELETE</span> in das Feld unten ein:'
-                                    : 'To confirm deletion, type <span className="font-mono bg-muted px-1 rounded">DELETE</span> in the field below:'}
+                            To confirm deletion, type <span className="font-mono bg-muted px-1 rounded">DELETE</span> in the field below:
                         </label>
                         <input
                             type="text"
                             value={confirmText}
                             onChange={(e) => setConfirmText(e.target.value)}
-                            placeholder={locale === 'ar' ? 'اكتب DELETE للتأكيد' : locale === 'de' ? 'DELETE eingeben zum Bestätigen' : 'Type DELETE to confirm'}
+                            placeholder="Type DELETE to confirm"
                             disabled={isDeleting}
                             className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:opacity-50"
                         />
@@ -118,20 +112,20 @@ export default function UserDeleteModal({ isOpen, onClose, onConfirm, userName, 
                             disabled={isDeleting}
                             className="flex-1 px-4 py-2 border border-border text-foreground rounded-lg hover:bg-background disabled:opacity-50"
                         >
-                            {locale === 'ar' ? 'إلغاء' : locale === 'de' ? 'Abbrechen' : 'Cancel'}
+                            Cancel
                         </button>
                         <button
                             onClick={handleDelete}
                             disabled={confirmText !== 'DELETE' || isDeleting}
-                            className="flex-1 px-4 py-2 bg-red-600 text-foreground rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isDeleting ? (
                                 <div className="flex items-center justify-center gap-2">
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                    {locale === 'ar' ? 'جارٍ الحذف...' : locale === 'de' ? 'Wird gelöscht...' : 'Deleting...'}
+                                    Deleting...
                                 </div>
                             ) : (
-                                locale === 'ar' ? 'حذف المستخدم' : locale === 'de' ? 'Benutzer löschen' : 'Delete User'
+                                'Delete User'
                             )}
                         </button>
                     </div>

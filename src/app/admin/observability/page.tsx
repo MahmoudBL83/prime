@@ -227,43 +227,61 @@ const alertIcons = {
 
 export default function ObservabilityDashboard() {
     const [activeTab, setActiveTab] = useState('overview')
-    const [liveMetrics, setLiveMetrics] = useState<LiveMetrics>(MOCK_LIVE_METRICS)
-    const [revenue] = useState<RevenueMetrics>(MOCK_REVENUE)
-    const [platformKPIs] = useState<PlatformKPIs>(MOCK_PLATFORM_KPIS)
-    const [creatorKPIs] = useState<CreatorKPIs>(MOCK_CREATOR_KPIS)
-    const [learnerKPIs] = useState<LearnerKPIs>(MOCK_LEARNER_KPIS)
-    const [alerts] = useState<SystemAlert[]>(MOCK_ALERTS)
-    const [geographic] = useState<GeographicData[]>(MOCK_GEOGRAPHIC)
-    const [hourlyData] = useState(MOCK_HOURLY_ACTIVITY)
+    const [liveMetrics, setLiveMetrics] = useState<LiveMetrics | null>(null)
+    const [revenue, setRevenue] = useState<RevenueMetrics | null>(null)
+    const [platformKPIs, setPlatformKPIs] = useState<PlatformKPIs | null>(null)
+    const [creatorKPIs, setCreatorKPIs] = useState<CreatorKPIs | null>(null)
+    const [learnerKPIs, setLearnerKPIs] = useState<LearnerKPIs | null>(null)
+    const [alerts, setAlerts] = useState<SystemAlert[]>([])
+    const [geographic, setGeographic] = useState<GeographicData[]>([])
+    const [hourlyData] = useState(MOCK_HOURLY_ACTIVITY) // Keep hourly for charts
     const [lastUpdate, setLastUpdate] = useState(new Date())
     const [isRefreshing, setIsRefreshing] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [showAlertModal, setShowAlertModal] = useState(false)
     const [selectedAlert, setSelectedAlert] = useState<SystemAlert | null>(null)
 
-    // Simulate real-time updates
+    const fetchData = async () => {
+        try {
+            setIsRefreshing(true)
+            const response = await fetch('/api/admin/observability')
+            if (!response.ok) throw new Error('Failed to fetch data')
+            
+            const data = await response.json()
+            setLiveMetrics(data.liveMetrics)
+            setRevenue(data.revenue)
+            setPlatformKPIs(data.platformKPIs)
+            setCreatorKPIs(data.creatorKPIs)
+            setLearnerKPIs(data.learnerKPIs)
+            setAlerts(data.alerts || [])
+            setGeographic(data.geographic || [])
+            setLastUpdate(new Date())
+            setError(null)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unknown error')
+        } finally {
+            setLoading(false)
+            setIsRefreshing(false)
+        }
+    }
+
+    // Initial fetch
+    useEffect(() => {
+        fetchData()
+    }, [])
+
+    // Auto-refresh every 30 seconds
     useEffect(() => {
         const interval = setInterval(() => {
-            setLiveMetrics(prev => ({
-                ...prev,
-                concurrentUsers: prev.concurrentUsers + Math.floor(Math.random() * 20 - 10),
-                activeSessions: prev.activeSessions + Math.floor(Math.random() * 30 - 15),
-                apiResponseTime: Math.max(200, prev.apiResponseTime + Math.floor(Math.random() * 40 - 20)),
-                errorRate: Math.max(0, Math.min(5, prev.errorRate + (Math.random() * 0.2 - 0.1))),
-                cpuUsage: Math.max(30, Math.min(80, prev.cpuUsage + Math.floor(Math.random() * 10 - 5))),
-                memoryUsage: Math.max(40, Math.min(90, prev.memoryUsage + Math.floor(Math.random() * 6 - 3)))
-            }))
-            setLastUpdate(new Date())
-        }, 3000)
+            fetchData()
+        }, 30000)
 
         return () => clearInterval(interval)
     }, [])
 
     const handleRefresh = () => {
-        setIsRefreshing(true)
-        setTimeout(() => {
-            setIsRefreshing(false)
-            setLastUpdate(new Date())
-        }, 1000)
+        fetchData()
     }
 
     const handleViewAlert = (alert: SystemAlert) => {
@@ -272,17 +290,71 @@ export default function ObservabilityDashboard() {
     }
 
     const getSystemStatus = (): SystemStatus => {
+        if (!liveMetrics) return 'operational'
         if (liveMetrics.errorRate > 2 || liveMetrics.apiResponseTime > 500) return 'down'
         if (liveMetrics.errorRate > 1 || liveMetrics.apiResponseTime > 350) return 'degraded'
         return 'operational'
     }
 
     const systemStatus = getSystemStatus()
-    const revenueChange = ((revenue.todayRevenue - revenue.yesterdayRevenue) / revenue.yesterdayRevenue) * 100
+    const revenueChange = revenue && revenue.yesterdayRevenue > 0 
+        ? ((revenue.todayRevenue - revenue.yesterdayRevenue) / revenue.yesterdayRevenue) * 100 
+        : 0
     const activeAlerts = alerts.filter(a => a.status === 'active')
 
     const formatCurrency = (amount: number) => `E£${(amount / 1000).toFixed(0)}k`
     const formatTime = (date: Date) => date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-900 to-gray-900 p-6">
+                <div className="max-w-[1800px] mx-auto">
+                    <div className="animate-pulse space-y-6">
+                        <div className="h-12 bg-white/5 rounded-lg w-1/3"></div>
+                        <div className="h-16 bg-white/5 rounded-lg"></div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} className="h-32 bg-white/5 rounded-lg"></div>
+                            ))}
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} className="h-32 bg-white/5 rounded-lg"></div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-900 to-gray-900 p-6">
+                <div className="max-w-[1800px] mx-auto">
+                    <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-6">
+                        <div className="flex items-start gap-4">
+                            <AlertTriangle className="h-6 w-6 text-red-400" />
+                            <div>
+                                <h3 className="text-lg font-semibold text-white mb-1">Error loading dashboard</h3>
+                                <div className="text-sm text-red-300">{error}</div>
+                                <Button onClick={handleRefresh} className="mt-4 bg-red-600 hover:bg-red-700">
+                                    Try Again
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    // Use default values if data is null
+    const metrics = liveMetrics || MOCK_LIVE_METRICS
+    const rev = revenue || MOCK_REVENUE
+    const platform = platformKPIs || MOCK_PLATFORM_KPIS
+    const creator = creatorKPIs || MOCK_CREATOR_KPIS
+    const learner = learnerKPIs || MOCK_LEARNER_KPIS
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-900 to-gray-900 p-6">
@@ -355,7 +427,7 @@ export default function ObservabilityDashboard() {
                             <Users className="w-8 h-8 text-blue-400" />
                             <Activity className="w-5 h-5 text-green-400 animate-pulse" />
                         </div>
-                        <div className="text-3xl font-bold text-foreground">{liveMetrics.concurrentUsers.toLocaleString()}</div>
+                        <div className="text-3xl font-bold text-foreground">{metrics.concurrentUsers.toLocaleString()}</div>
                         <div className="text-sm text-muted-foreground mt-1">Concurrent Users</div>
                         <div className="text-xs text-green-400 mt-2">↑ Live</div>
                     </div>
@@ -363,12 +435,12 @@ export default function ObservabilityDashboard() {
                     <div className="bg-white/10 backdrop-blur-lg rounded-lg border border-border p-6">
                         <div className="flex items-center justify-between mb-2">
                             <Zap className="w-8 h-8 text-yellow-400" />
-                            <div className={`w-2 h-2 rounded-full ${liveMetrics.apiResponseTime < 300 ? 'bg-green-400' : 'bg-yellow-400'} animate-pulse`} />
+                            <div className={`w-2 h-2 rounded-full ${metrics.apiResponseTime < 300 ? 'bg-green-400' : 'bg-yellow-400'} animate-pulse`} />
                         </div>
-                        <div className="text-3xl font-bold text-foreground">{liveMetrics.apiResponseTime}ms</div>
+                        <div className="text-3xl font-bold text-foreground">{metrics.apiResponseTime}ms</div>
                         <div className="text-sm text-muted-foreground mt-1">API Response Time</div>
-                        <div className={`text-xs mt-2 ${liveMetrics.apiResponseTime < 300 ? 'text-green-400' : 'text-yellow-400'}`}>
-                            {liveMetrics.apiResponseTime < 300 ? '✓ Normal' : '⚠ Elevated'}
+                        <div className={`text-xs mt-2 ${metrics.apiResponseTime < 300 ? 'text-green-400' : 'text-yellow-400'}`}>
+                            {metrics.apiResponseTime < 300 ? '✓ Normal' : '⚠ Elevated'}
                         </div>
                     </div>
 
@@ -376,10 +448,10 @@ export default function ObservabilityDashboard() {
                         <div className="flex items-center justify-between mb-2">
                             <AlertTriangle className="w-8 h-8 text-orange-400" />
                         </div>
-                        <div className="text-3xl font-bold text-foreground">{liveMetrics.errorRate.toFixed(2)}%</div>
+                        <div className="text-3xl font-bold text-foreground">{metrics.errorRate.toFixed(2)}%</div>
                         <div className="text-sm text-muted-foreground mt-1">Error Rate</div>
-                        <div className={`text-xs mt-2 ${liveMetrics.errorRate < 1 ? 'text-green-400' : 'text-red-400'}`}>
-                            {liveMetrics.errorRate < 1 ? '✓ Low' : '⚠ High'}
+                        <div className={`text-xs mt-2 ${metrics.errorRate < 1 ? 'text-green-400' : 'text-red-400'}`}>
+                            {metrics.errorRate < 1 ? '✓ Low' : '⚠ High'}
                         </div>
                     </div>
 
@@ -387,7 +459,7 @@ export default function ObservabilityDashboard() {
                         <div className="flex items-center justify-between mb-2">
                             <Database className="w-8 h-8 text-purple-400" />
                         </div>
-                        <div className="text-3xl font-bold text-foreground">{liveMetrics.databaseLatency}ms</div>
+                        <div className="text-3xl font-bold text-foreground">{metrics.databaseLatency}ms</div>
                         <div className="text-sm text-muted-foreground mt-1">Database Latency</div>
                         <div className="text-xs text-green-400 mt-2">✓ Optimal</div>
                     </div>
@@ -400,11 +472,11 @@ export default function ObservabilityDashboard() {
                             <Cpu className="w-6 h-6 text-blue-400" />
                             <span className="text-sm font-semibold text-foreground">CPU Usage</span>
                         </div>
-                        <div className="text-2xl font-bold text-foreground mb-2">{liveMetrics.cpuUsage}%</div>
+                        <div className="text-2xl font-bold text-foreground mb-2">{metrics.cpuUsage}%</div>
                         <div className="w-full bg-white/10 rounded-full h-2">
                             <div
-                                className={`h-2 rounded-full ${liveMetrics.cpuUsage > 70 ? 'bg-red-400' : 'bg-blue-400'}`}
-                                style={{ width: `${liveMetrics.cpuUsage}%` }}
+                                className={`h-2 rounded-full ${metrics.cpuUsage > 70 ? 'bg-red-400' : 'bg-blue-400'}`}
+                                style={{ width: `${metrics.cpuUsage}%` }}
                             />
                         </div>
                     </div>
@@ -414,11 +486,11 @@ export default function ObservabilityDashboard() {
                             <Server className="w-6 h-6 text-purple-400" />
                             <span className="text-sm font-semibold text-foreground">Memory Usage</span>
                         </div>
-                        <div className="text-2xl font-bold text-foreground mb-2">{liveMetrics.memoryUsage}%</div>
+                        <div className="text-2xl font-bold text-foreground mb-2">{metrics.memoryUsage}%</div>
                         <div className="w-full bg-white/10 rounded-full h-2">
                             <div
-                                className={`h-2 rounded-full ${liveMetrics.memoryUsage > 80 ? 'bg-red-400' : 'bg-purple-400'}`}
-                                style={{ width: `${liveMetrics.memoryUsage}%` }}
+                                className={`h-2 rounded-full ${metrics.memoryUsage > 80 ? 'bg-red-400' : 'bg-purple-400'}`}
+                                style={{ width: `${metrics.memoryUsage}%` }}
                             />
                         </div>
                     </div>
@@ -428,11 +500,11 @@ export default function ObservabilityDashboard() {
                             <HardDrive className="w-6 h-6 text-green-400" />
                             <span className="text-sm font-semibold text-foreground">Disk Usage</span>
                         </div>
-                        <div className="text-2xl font-bold text-foreground mb-2">{liveMetrics.diskUsage}%</div>
+                        <div className="text-2xl font-bold text-foreground mb-2">{metrics.diskUsage}%</div>
                         <div className="w-full bg-white/10 rounded-full h-2">
                             <div
                                 className="bg-green-400 h-2 rounded-full"
-                                style={{ width: `${liveMetrics.diskUsage}%` }}
+                                style={{ width: `${metrics.diskUsage}%` }}
                             />
                         </div>
                     </div>
@@ -442,7 +514,7 @@ export default function ObservabilityDashboard() {
                             <Activity className="w-6 h-6 text-emerald-400" />
                             <span className="text-sm font-semibold text-foreground">Active Sessions</span>
                         </div>
-                        <div className="text-2xl font-bold text-foreground">{liveMetrics.activeSessions.toLocaleString()}</div>
+                        <div className="text-2xl font-bold text-foreground">{metrics.activeSessions.toLocaleString()}</div>
                         <div className="text-xs text-muted-foreground mt-1">Session pool healthy</div>
                     </div>
                 </div>
@@ -523,7 +595,7 @@ export default function ObservabilityDashboard() {
                                             <UserPlus className="w-5 h-5 text-green-400" />
                                             <span className="text-sm text-muted-foreground">New Signups</span>
                                         </div>
-                                        <div className="text-2xl font-bold text-foreground">{learnerKPIs.newSignupsToday}</div>
+                                        <div className="text-2xl font-bold text-foreground">{learner.newSignupsToday}</div>
                                         <div className="text-xs text-green-400 mt-1">+12% vs yesterday</div>
                                     </div>
 
@@ -532,8 +604,8 @@ export default function ObservabilityDashboard() {
                                             <ShoppingCart className="w-5 h-5 text-blue-400" />
                                             <span className="text-sm text-muted-foreground">Course Sales</span>
                                         </div>
-                                        <div className="text-2xl font-bold text-foreground">{revenue.courseSalesToday}</div>
-                                        <div className="text-xs text-blue-400 mt-1">E£{(revenue.todayRevenue / 1000).toFixed(0)}k revenue</div>
+                                        <div className="text-2xl font-bold text-foreground">{rev.courseSalesToday}</div>
+                                        <div className="text-xs text-blue-400 mt-1">E£{(rev.todayRevenue / 1000).toFixed(0)}k revenue</div>
                                     </div>
 
                                     <div className="bg-white/5 rounded-lg p-4 border border-border">
@@ -541,7 +613,7 @@ export default function ObservabilityDashboard() {
                                             <GraduationCap className="w-5 h-5 text-purple-400" />
                                             <span className="text-sm text-muted-foreground">Completions</span>
                                         </div>
-                                        <div className="text-2xl font-bold text-foreground">{learnerKPIs.courseCompletionsToday}</div>
+                                        <div className="text-2xl font-bold text-foreground">{learner.courseCompletionsToday}</div>
                                         <div className="text-xs text-purple-400 mt-1">Today</div>
                                     </div>
 
@@ -550,7 +622,7 @@ export default function ObservabilityDashboard() {
                                             <Star className="w-5 h-5 text-yellow-400" />
                                             <span className="text-sm text-muted-foreground">Engagement</span>
                                         </div>
-                                        <div className="text-2xl font-bold text-foreground">{learnerKPIs.avgEngagementScore}%</div>
+                                        <div className="text-2xl font-bold text-foreground">{learner.avgEngagementScore}%</div>
                                         <div className="text-xs text-yellow-400 mt-1">Avg score</div>
                                     </div>
                                 </div>
@@ -571,7 +643,7 @@ export default function ObservabilityDashboard() {
                                             )}
                                         </div>
                                         <div className="text-4xl font-bold text-foreground mb-2">
-                                            {formatCurrency(revenue.todayRevenue)}
+                                            {formatCurrency(rev.todayRevenue)}
                                         </div>
                                         <div className="text-sm text-muted-foreground">Today's Revenue</div>
                                         <div className={`text-lg font-semibold mt-2 ${revenueChange > 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -583,12 +655,12 @@ export default function ObservabilityDashboard() {
                                         <div className="space-y-4">
                                             <div>
                                                 <div className="text-sm text-muted-foreground mb-1">Subscriptions</div>
-                                                <div className="text-3xl font-bold text-blue-400">{revenue.subscriptionsToday}</div>
+                                                <div className="text-3xl font-bold text-blue-400">{rev.subscriptionsToday}</div>
                                                 <div className="text-xs text-muted-foreground mt-1">New subscriptions today</div>
                                             </div>
                                             <div>
                                                 <div className="text-sm text-muted-foreground mb-1">Course Sales</div>
-                                                <div className="text-3xl font-bold text-purple-400">{revenue.courseSalesToday}</div>
+                                                <div className="text-3xl font-bold text-purple-400">{rev.courseSalesToday}</div>
                                                 <div className="text-xs text-muted-foreground mt-1">Individual purchases</div>
                                             </div>
                                         </div>
@@ -598,12 +670,12 @@ export default function ObservabilityDashboard() {
                                         <div className="space-y-4">
                                             <div>
                                                 <div className="text-sm text-muted-foreground mb-1">Conversion Rate</div>
-                                                <div className="text-3xl font-bold text-yellow-400">{revenue.conversionRate}%</div>
+                                                <div className="text-3xl font-bold text-yellow-400">{rev.conversionRate}%</div>
                                                 <div className="text-xs text-green-400 mt-1">+0.3% vs last week</div>
                                             </div>
                                             <div>
                                                 <div className="text-sm text-muted-foreground mb-1">Avg Order Value</div>
-                                                <div className="text-3xl font-bold text-emerald-400">E£{revenue.avgOrderValue}</div>
+                                                <div className="text-3xl font-bold text-emerald-400">E£{rev.avgOrderValue}</div>
                                                 <div className="text-xs text-muted-foreground mt-1">Per transaction</div>
                                             </div>
                                         </div>
@@ -645,41 +717,41 @@ export default function ObservabilityDashboard() {
                                     <div className="grid grid-cols-3 gap-4">
                                         <div className="bg-white/5 rounded-lg p-5 border border-border">
                                             <div className="text-sm text-muted-foreground mb-2">Monthly Active Users</div>
-                                            <div className="text-3xl font-bold text-foreground">{platformKPIs.mau.toLocaleString()}</div>
+                                            <div className="text-3xl font-bold text-foreground">{platform.mau.toLocaleString()}</div>
                                             <div className="text-xs text-green-400 mt-2">+8.5% MoM</div>
                                         </div>
 
                                         <div className="bg-white/5 rounded-lg p-5 border border-border">
                                             <div className="text-sm text-muted-foreground mb-2">Daily Active Users</div>
-                                            <div className="text-3xl font-bold text-foreground">{platformKPIs.dau.toLocaleString()}</div>
-                                            <div className="text-xs text-blue-400 mt-2">DAU/MAU: {((platformKPIs.dau / platformKPIs.mau) * 100).toFixed(1)}%</div>
+                                            <div className="text-3xl font-bold text-foreground">{platform.dau.toLocaleString()}</div>
+                                            <div className="text-xs text-blue-400 mt-2">DAU/MAU: {platform.mau > 0 ? ((platform.dau / platform.mau) * 100).toFixed(1) : 0}%</div>
                                         </div>
 
                                         <div className="bg-white/5 rounded-lg p-5 border border-border">
                                             <div className="text-sm text-muted-foreground mb-2">Net Promoter Score</div>
-                                            <div className="text-3xl font-bold text-yellow-400">{platformKPIs.nps}</div>
+                                            <div className="text-3xl font-bold text-yellow-400">{platform.nps}</div>
                                             <div className="text-xs text-green-400 mt-2">Excellent</div>
                                         </div>
 
                                         <div className="bg-white/5 rounded-lg p-5 border border-border">
                                             <div className="text-sm text-muted-foreground mb-2">7-Day Retention</div>
-                                            <div className="text-3xl font-bold text-emerald-400">{platformKPIs.retentionRate7Day}%</div>
+                                            <div className="text-3xl font-bold text-emerald-400">{platform.retentionRate7Day}%</div>
                                             <div className="w-full bg-white/10 rounded-full h-2 mt-2">
-                                                <div className="bg-emerald-400 h-2 rounded-full" style={{ width: `${platformKPIs.retentionRate7Day}%` }} />
+                                                <div className="bg-emerald-400 h-2 rounded-full" style={{ width: `${platform.retentionRate7Day}%` }} />
                                             </div>
                                         </div>
 
                                         <div className="bg-white/5 rounded-lg p-5 border border-border">
                                             <div className="text-sm text-muted-foreground mb-2">30-Day Retention</div>
-                                            <div className="text-3xl font-bold text-blue-400">{platformKPIs.retentionRate30Day}%</div>
+                                            <div className="text-3xl font-bold text-blue-400">{platform.retentionRate30Day}%</div>
                                             <div className="w-full bg-white/10 rounded-full h-2 mt-2">
-                                                <div className="bg-blue-400 h-2 rounded-full" style={{ width: `${platformKPIs.retentionRate30Day}%` }} />
+                                                <div className="bg-blue-400 h-2 rounded-full" style={{ width: `${platform.retentionRate30Day}%` }} />
                                             </div>
                                         </div>
 
                                         <div className="bg-white/5 rounded-lg p-5 border border-border">
                                             <div className="text-sm text-muted-foreground mb-2">Churn Rate</div>
-                                            <div className="text-3xl font-bold text-orange-400">{platformKPIs.churnRate}%</div>
+                                            <div className="text-3xl font-bold text-orange-400">{platform.churnRate}%</div>
                                             <div className="text-xs text-green-400 mt-2">Below industry avg (6%)</div>
                                         </div>
                                     </div>
@@ -691,25 +763,25 @@ export default function ObservabilityDashboard() {
                                     <div className="grid grid-cols-4 gap-4">
                                         <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg p-5 border border-purple-500/30">
                                             <div className="text-sm text-muted-foreground mb-2">Active Creators</div>
-                                            <div className="text-3xl font-bold text-foreground">{creatorKPIs.activeCreators}</div>
+                                            <div className="text-3xl font-bold text-foreground">{creator.activeCreators}</div>
                                             <div className="text-xs text-purple-400 mt-2">+15 this week</div>
                                         </div>
 
                                         <div className="bg-white/5 rounded-lg p-5 border border-border">
                                             <div className="text-sm text-muted-foreground mb-2">Courses This Week</div>
-                                            <div className="text-3xl font-bold text-blue-400">{creatorKPIs.coursesPublishedThisWeek}</div>
+                                            <div className="text-3xl font-bold text-blue-400">{creator.coursesPublishedThisWeek}</div>
                                             <div className="text-xs text-muted-foreground mt-2">New publications</div>
                                         </div>
 
                                         <div className="bg-white/5 rounded-lg p-5 border border-border">
                                             <div className="text-sm text-muted-foreground mb-2">Avg Creator Earnings</div>
-                                            <div className="text-3xl font-bold text-green-400">E£{creatorKPIs.avgCreatorEarnings.toLocaleString()}</div>
+                                            <div className="text-3xl font-bold text-green-400">E£{creator.avgCreatorEarnings.toLocaleString()}</div>
                                             <div className="text-xs text-green-400 mt-2">+12% MoM</div>
                                         </div>
 
                                         <div className="bg-white/5 rounded-lg p-5 border border-border">
                                             <div className="text-sm text-muted-foreground mb-2">Top Creator Revenue</div>
-                                            <div className="text-3xl font-bold text-yellow-400">E£{creatorKPIs.topCreatorRevenue.toLocaleString()}</div>
+                                            <div className="text-3xl font-bold text-yellow-400">E£{creator.topCreatorRevenue.toLocaleString()}</div>
                                             <div className="text-xs text-muted-foreground mt-2">This month</div>
                                         </div>
                                     </div>
@@ -721,27 +793,27 @@ export default function ObservabilityDashboard() {
                                     <div className="grid grid-cols-4 gap-4">
                                         <div className="bg-white/5 rounded-lg p-5 border border-border">
                                             <div className="text-sm text-muted-foreground mb-2">Active Learners</div>
-                                            <div className="text-3xl font-bold text-foreground">{learnerKPIs.activeLearners.toLocaleString()}</div>
+                                            <div className="text-3xl font-bold text-foreground">{learner.activeLearners.toLocaleString()}</div>
                                             <div className="text-xs text-blue-400 mt-2">Currently enrolled</div>
                                         </div>
 
                                         <div className="bg-white/5 rounded-lg p-5 border border-border">
                                             <div className="text-sm text-muted-foreground mb-2">Completions Today</div>
-                                            <div className="text-3xl font-bold text-emerald-400">{learnerKPIs.courseCompletionsToday}</div>
+                                            <div className="text-3xl font-bold text-emerald-400">{learner.courseCompletionsToday}</div>
                                             <div className="text-xs text-emerald-400 mt-2">+23% vs yesterday</div>
                                         </div>
 
                                         <div className="bg-white/5 rounded-lg p-5 border border-border">
                                             <div className="text-sm text-muted-foreground mb-2">Engagement Score</div>
-                                            <div className="text-3xl font-bold text-yellow-400">{learnerKPIs.avgEngagementScore}%</div>
+                                            <div className="text-3xl font-bold text-yellow-400">{learner.avgEngagementScore}%</div>
                                             <div className="w-full bg-white/10 rounded-full h-2 mt-2">
-                                                <div className="bg-yellow-400 h-2 rounded-full" style={{ width: `${learnerKPIs.avgEngagementScore}%` }} />
+                                                <div className="bg-yellow-400 h-2 rounded-full" style={{ width: `${learner.avgEngagementScore}%` }} />
                                             </div>
                                         </div>
 
                                         <div className="bg-white/5 rounded-lg p-5 border border-border">
                                             <div className="text-sm text-muted-foreground mb-2">New Signups</div>
-                                            <div className="text-3xl font-bold text-purple-400">{learnerKPIs.newSignupsToday}</div>
+                                            <div className="text-3xl font-bold text-purple-400">{learner.newSignupsToday}</div>
                                             <div className="text-xs text-purple-400 mt-2">Today</div>
                                         </div>
                                     </div>

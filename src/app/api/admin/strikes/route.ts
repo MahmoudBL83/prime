@@ -5,6 +5,13 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { StrikeSeverity, AppealStatus } from '@prisma/client';
 
+const RESOLVED_APPEAL_STATUSES: AppealStatus[] = [
+  AppealStatus.UPHELD,
+  AppealStatus.REDUCED,
+  AppealStatus.REINSTATED,
+  AppealStatus.REJECTED,
+];
+
 // Strike creation schema
 const strikeSchema = z.object({
   creatorId: z.string(),
@@ -61,12 +68,12 @@ export async function GET(req: NextRequest) {
     }
 
     if (resolved === 'true') {
-      where.appealStatus = AppealStatus.APPROVED;
+      where.appealStatus = { in: RESOLVED_APPEAL_STATUSES };
     } else if (resolved === 'false') {
       where.OR = [
         { appealStatus: null },
         { appealStatus: AppealStatus.PENDING },
-        { appealStatus: AppealStatus.REJECTED },
+        { appealStatus: AppealStatus.UNDER_REVIEW },
       ];
     }
 
@@ -157,7 +164,7 @@ export async function POST(req: NextRequest) {
           in: ['MAJOR', 'CRITICAL'],
         },
         appealStatus: {
-          not: AppealStatus.APPROVED, // Not resolved
+          notIn: RESOLVED_APPEAL_STATUSES, // Not resolved
         },
         OR: [
           { expiresAt: null }, // Never expires
@@ -254,9 +261,9 @@ export async function PUT(req: NextRequest) {
     const updated = await prisma.contentStrike.update({
       where: { id: validatedData.strikeId },
       data: {
-        appealStatus: validatedData.action === 'APPROVE' 
-          ? AppealStatus.APPROVED 
-          : AppealStatus.REJECTED,
+        appealStatus: validatedData.action === 'APPROVE'
+          ? AppealStatus.REINSTATED
+          : AppealStatus.UPHELD,
         // Note: Schema doesn't have resolutionNotes field
         // Would need to add to schema or store in separate table
       },

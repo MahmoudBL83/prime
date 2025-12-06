@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
     Mail,
     Plus,
@@ -22,7 +22,8 @@ import {
     UserPlus,
     AlertTriangle,
     Bell,
-    Star
+    Star,
+    Loader2
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -428,27 +429,56 @@ const typeIcons = {
 
 export default function CommunicationTemplatesPage() {
     const [activeTab, setActiveTab] = useState('all')
-    const [templates] = useState<EmailTemplate[]>(MOCK_TEMPLATES)
+    const [templates, setTemplates] = useState<EmailTemplate[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null)
     const [showPreviewModal, setShowPreviewModal] = useState(false)
     const [showEditModal, setShowEditModal] = useState(false)
     const [showAnalyticsModal, setShowAnalyticsModal] = useState(false)
     const [previewLanguage, setPreviewLanguage] = useState<Language>('en')
     const [editLanguage, setEditLanguage] = useState<Language>('en')
+    const [stats, setStats] = useState({
+        totalTemplates: 0,
+        activeTemplates: 0,
+        totalSent: 0,
+        avgOpenRate: '0.0',
+        avgClickRate: '0.0'
+    })
+
+    const fetchTemplates = useCallback(async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            const response = await fetch('/api/admin/communication/templates')
+            if (!response.ok) throw new Error('Failed to fetch templates')
+            const data = await response.json()
+            setTemplates(data.templates || [])
+            if (data.stats) {
+                setStats({
+                    totalTemplates: data.stats.totalTemplates,
+                    activeTemplates: data.stats.activeTemplates,
+                    totalSent: data.stats.totalSent,
+                    avgOpenRate: String(data.stats.avgOpenRate || '0.0'),
+                    avgClickRate: String(data.stats.avgClickRate || '0.0')
+                })
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred')
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
+    useEffect(() => {
+        fetchTemplates()
+    }, [fetchTemplates])
 
     const transactional = templates.filter(t => t.type === 'transactional')
     const lifecycle = templates.filter(t => t.type === 'lifecycle')
     const promotional = templates.filter(t => t.type === 'promotional')
     const safety = templates.filter(t => t.type === 'safety')
     const active = templates.filter(t => t.status === 'active')
-
-    const stats = {
-        totalTemplates: templates.length,
-        activeTemplates: active.length,
-        totalSent: templates.reduce((sum, t) => sum + t.analytics.sent, 0),
-        avgOpenRate: (templates.reduce((sum, t) => sum + (t.analytics.opened / t.analytics.sent * 100), 0) / templates.length).toFixed(1),
-        avgClickRate: (templates.reduce((sum, t) => sum + (t.analytics.clicked / t.analytics.sent * 100), 0) / templates.length).toFixed(1)
-    }
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-GB', {
@@ -477,6 +507,26 @@ export default function CommunicationTemplatesPage() {
 
     const calculateRate = (value: number, total: number) => {
         return total > 0 ? ((value / total) * 100).toFixed(1) : '0.0'
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center">
+                <div className="text-center">
+                    <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                    <p className="text-red-400">{error}</p>
+                    <Button onClick={fetchTemplates} className="mt-4">Retry</Button>
+                </div>
+            </div>
+        )
     }
 
     return (

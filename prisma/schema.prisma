@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "rhel-openssl-3.0.x", "debian-openssl-3.0.x"]
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "rhel-openssl-3.0.x", "debian-openssl-3.0.x"]
   previewFeatures = []
 }
 
@@ -71,8 +71,8 @@ model User {
   verificationLogs         UserVerification[]
   moderationEvents         ModerationEvent[]
   onboardingProgress       OnboardingProgress?
-  supportTickets           SupportTicket[]         @relation("UserTickets")
-  assignedTickets          SupportTicket[]         @relation("AssignedTickets")
+  supportTickets           SupportTicket[]           @relation("UserTickets")
+  assignedTickets          SupportTicket[]           @relation("AssignedTickets")
   supportMessages          SupportTicketMessage[]
 
   // Video Call Relations
@@ -148,6 +148,23 @@ model User {
 
   // Payment Links
   paymentLinks PaymentLink[] @relation("UserPaymentLinks")
+
+  // Admin Panel Relations
+  bans                 UserBan[]                @relation("UserBans")
+  issuedBans           UserBan[]                @relation("AdminBans")
+  appeals              Appeal[]                 @relation("UserAppeals")
+  reviewedAppeals      Appeal[]                 @relation("AppealReviewer")
+  reviewedDMCA         DMCARequest[]            @relation("DMCAReviewer")
+  createdTemplates     EmailTemplate[]          @relation("TemplateCreator")
+  createdCampaigns     ScholarshipCampaign[]    @relation("CampaignCreator")
+  scholarshipApps      ScholarshipApplication[] @relation("ScholarshipApplicant")
+  reviewedScholarships ScholarshipApplication[] @relation("ScholarshipReviewer")
+  adminAuditLogs       AdminAuditLog[]          @relation("AdminAuditLogs")
+  adminRoleAssignments AdminAssignment[]        @relation("AdminRoleAssignments")
+  adminAssignments     AdminAssignment[]        @relation("AdminAssigner")
+  nominatedContent     FeaturedContent[]        @relation("ContentNominator")
+  reviewedContent      FeaturedContent[]        @relation("ContentReviewer")
+  reviewedChannels     FlaggedChannel[]         @relation("ChannelReviewer")
 }
 
 model Creator {
@@ -214,6 +231,9 @@ model Creator {
 
   // Community Resources
   communityResources CommunityResource[]
+
+  // Admin Panel Relations
+  flaggedChannels FlaggedChannel[] @relation("FlaggedCreator")
 
   // Essential performance indexes for Creator
   @@index([kycStatus])
@@ -316,6 +336,9 @@ model Course {
 
   // Cohort-Based Learning
   cohorts Cohort[]
+
+  // Admin Panel Relations
+  featuredContent FeaturedContent[]
 
   // Essential performance indexes
   @@index([status])
@@ -481,6 +504,9 @@ model CreatorChannel {
   memberMessages       MemberMessage[]
   memberPolls          MemberPoll[]
   paymentTransactions  PaymentTransaction[]
+
+  // Admin Panel Relations
+  flaggedChannels FlaggedChannel[]
 }
 
 // Old ChannelPost model - will be removed, using new one from blueprint
@@ -498,42 +524,42 @@ model CreatorChannel {
 // }
 
 model Subscription {
-  id                   String           @id @default(cuid())
+  id                   String               @id @default(cuid())
   userId               String
   type                 SubscriptionType
   channelId            String?
   pricePerMonth        Float
   status               String
-  startDate            DateTime         @default(now())
+  startDate            DateTime             @default(now())
   endDate              DateTime?
   cancelledAt          DateTime?
   paymentMethodId      String?
   subscriptionId       String?
   billingCycle         String? // 'monthly' or 'yearly'
-  stripeSubscriptionId String?          @unique
+  stripeSubscriptionId String?              @unique
   stripeCustomerId     String?
-  paymobOrderId        String?          @unique
-  paymobTransactionId  String?          @unique
-  autoRenew            Boolean          @default(true)
+  paymobOrderId        String?              @unique
+  paymobTransactionId  String?              @unique
+  autoRenew            Boolean              @default(true)
   metadata             String? // JSON string for storing additional data like creatorId, tier, etc.
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
-  channel              CreatorChannel?  @relation(fields: [channelId], references: [id])
-  user                 User             @relation(fields: [userId], references: [id])
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  channel              CreatorChannel?      @relation(fields: [channelId], references: [id])
+  user                 User                 @relation(fields: [userId], references: [id])
   paymentTransactions  PaymentTransaction[]
 }
 
 model PaymentTransaction {
-  id                  String            @id @default(cuid())
+  id                  String           @id @default(cuid())
   userId              String
   subscriptionId      String?
   subscriptionType    SubscriptionType
   channelId           String?
   amount              Float
-  currency            String            @default("EGP")
-  status              PaymentStatus     @default(PENDING)
-  merchantOrderId     String            @unique
-  paymobOrderId       String            @unique
+  currency            String           @default("EGP")
+  status              PaymentStatus    @default(PENDING)
+  merchantOrderId     String           @unique
+  paymobOrderId       String           @unique
   paymobPaymentKey    String
   paymobIframeUrl     String?
   paymobTransactionId String?
@@ -544,9 +570,9 @@ model PaymentTransaction {
   failedAt            DateTime?
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
-  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subscription        Subscription?     @relation(fields: [subscriptionId], references: [id])
-  channel             CreatorChannel?   @relation(fields: [channelId], references: [id])
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription        Subscription?    @relation(fields: [subscriptionId], references: [id])
+  channel             CreatorChannel?  @relation(fields: [channelId], references: [id])
 
   @@index([userId])
   @@index([channelId])
@@ -694,32 +720,32 @@ model UserVerification {
 }
 
 model OnboardingProgress {
-  id             String   @id @default(cuid())
-  userId         String   @unique
+  id             String    @id @default(cuid())
+  userId         String    @unique
   steps          Json
-  completed      Boolean  @default(false)
+  completed      Boolean   @default(false)
   completedAt    DateTime?
   lastStep       String?
-  lastCheckpoint DateTime @default(now())
-  locale         String?  @default("en")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  lastCheckpoint DateTime  @default(now())
+  locale         String?   @default("en")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model ModerationEvent {
-  id          String               @id @default(cuid())
-  userId      String
-  eventType   ModerationEventType
-  severity    ModerationSeverity   @default(LOW)
-  status      ModerationStatus     @default(OPEN)
-  reason      String?
-  source      String?
-  metadata    Json?
-  createdAt   DateTime             @default(now())
-  resolvedAt  DateTime?
-  resolvedBy  String?
+  id         String              @id @default(cuid())
+  userId     String
+  eventType  ModerationEventType
+  severity   ModerationSeverity  @default(LOW)
+  status     ModerationStatus    @default(OPEN)
+  reason     String?
+  source     String?
+  metadata   Json?
+  createdAt  DateTime            @default(now())
+  resolvedAt DateTime?
+  resolvedBy String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -1016,22 +1042,22 @@ enum TicketCategory {
 }
 
 model SupportTicket {
-  id             String         @id @default(cuid())
-  userId         String
-  subject        String
-  description    String
-  category       TicketCategory @default(OTHER)
-  priority       TicketPriority @default(MEDIUM)
-  status         TicketStatus   @default(OPEN)
-  referenceType  String?
-  referenceId    String?
-  assignedToId   String?
-  lastMessageAt  DateTime       @default(now())
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id            String         @id @default(cuid())
+  userId        String
+  subject       String
+  description   String
+  category      TicketCategory @default(OTHER)
+  priority      TicketPriority @default(MEDIUM)
+  status        TicketStatus   @default(OPEN)
+  referenceType String?
+  referenceId   String?
+  assignedToId  String?
+  lastMessageAt DateTime       @default(now())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
-  user       User @relation("UserTickets", fields: [userId], references: [id], onDelete: Cascade)
-  assignedTo User? @relation("AssignedTickets", fields: [assignedToId], references: [id])
+  user       User                   @relation("UserTickets", fields: [userId], references: [id], onDelete: Cascade)
+  assignedTo User?                  @relation("AssignedTickets", fields: [assignedToId], references: [id])
   messages   SupportTicketMessage[]
 
   @@index([userId])
@@ -1042,16 +1068,16 @@ model SupportTicket {
 }
 
 model SupportTicketMessage {
-  id             String        @id @default(cuid())
+  id             String   @id @default(cuid())
   ticketId       String
   authorId       String
   content        String
-  isInternal     Boolean       @default(false)
+  isInternal     Boolean  @default(false)
   attachmentUrls String?
-  createdAt      DateTime      @default(now())
+  createdAt      DateTime @default(now())
 
   ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  author User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@index([ticketId])
   @@index([authorId])
@@ -2361,19 +2387,19 @@ model SessionAttendee {
 
 // Community Resources
 model CommunityResource {
-  id          String   @id @default(cuid())
-  creatorId   String
-  title       String
-  titleAr     String?
-  type        String // PDF, Video, Excel, Template, etc.
-  size        String? // File size display
-  url         String
-  isPinned    Boolean  @default(false)
-  downloads   Int      @default(0)
-  description String?
+  id            String   @id @default(cuid())
+  creatorId     String
+  title         String
+  titleAr       String?
+  type          String // PDF, Video, Excel, Template, etc.
+  size          String? // File size display
+  url           String
+  isPinned      Boolean  @default(false)
+  downloads     Int      @default(0)
+  description   String?
   descriptionAr String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   creator Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
 
@@ -2575,12 +2601,6 @@ enum StrikeSeverity {
   MINOR
   MAJOR
   CRITICAL
-}
-
-enum AppealStatus {
-  PENDING
-  APPROVED
-  REJECTED
 }
 
 // Creator Analytics Cache
@@ -3191,7 +3211,7 @@ model EarlyAccessSignup {
   name      String?
   createdAt DateTime @default(now())
   notified  Boolean  @default(false)
-  
+
   @@index([email])
   @@index([createdAt])
 }
@@ -3202,6 +3222,15 @@ model SystemConfig {
   value     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Platform Settings - used for admin-controlled features
+model PlatformSettings {
+  id                 String   @id @default(cuid())
+  earlyAccessEnabled Boolean  @default(true) // Controls early access modal visibility
+  maintenanceMode    Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 // Creator Withdrawal Requests
@@ -3473,13 +3502,13 @@ enum MilestoneType {
 
 // Message Request: For handling message requests from strangers
 model MessageRequest {
-  id          String                @id @default(cuid())
+  id          String               @id @default(cuid())
   senderId    String
   recipientId String
   message     String?
   status      MessageRequestStatus @default(PENDING)
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
 
   sender    User @relation("SentMessageRequests", fields: [senderId], references: [id], onDelete: Cascade)
   recipient User @relation("ReceivedMessageRequests", fields: [recipientId], references: [id], onDelete: Cascade)
@@ -3514,19 +3543,19 @@ enum MessageRequestStatus {
 
 // Payment Link: For tracking Stripe payment links sent to users
 model PaymentLink {
-  id               String              @id @default(cuid())
+  id               String            @id @default(cuid())
   userId           String
   email            String
   stripePaymentUrl String
-  stripeSessionId  String?             @unique
+  stripeSessionId  String?           @unique
   amount           Float
-  currency         String              @default("eur")
+  currency         String            @default("eur")
   description      String?
-  status           PaymentLinkStatus   @default(PENDING)
+  status           PaymentLinkStatus @default(PENDING)
   expiresAt        DateTime?
   paidAt           DateTime?
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   user User @relation("UserPaymentLinks", fields: [userId], references: [id], onDelete: Cascade)
 
@@ -3541,4 +3570,444 @@ enum PaymentLinkStatus {
   PAID
   EXPIRED
   CANCELLED
+}
+
+// ============================================
+// ADMIN PANEL MODELS
+// ============================================
+
+// User Ban: For tracking user bans and suspensions
+model UserBan {
+  id         String       @id @default(cuid())
+  userId     String
+  banType    BanType
+  duration   BanDuration?
+  reason     String
+  evidence   String[]
+  bannedBy   String // Admin user ID
+  bannedAt   DateTime     @default(now())
+  expiresAt  DateTime?
+  liftedAt   DateTime?
+  liftedBy   String?
+  liftReason String?
+  status     BanStatus    @default(ACTIVE)
+
+  user          User     @relation("UserBans", fields: [userId], references: [id], onDelete: Cascade)
+  bannedByAdmin User     @relation("AdminBans", fields: [bannedBy], references: [id])
+  appeals       Appeal[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([bannedBy])
+}
+
+enum BanType {
+  WARNING
+  TEMPORARY
+  PERMANENT
+  FEATURE_SPECIFIC
+  SHADOW
+}
+
+enum BanDuration {
+  ONE_DAY
+  THREE_DAYS
+  SEVEN_DAYS
+  FOURTEEN_DAYS
+  THIRTY_DAYS
+  NINETY_DAYS
+  PERMANENT
+}
+
+enum BanStatus {
+  ACTIVE
+  EXPIRED
+  LIFTED
+  APPEALED
+}
+
+// Appeal: For user ban appeals
+model Appeal {
+  id            String          @id @default(cuid())
+  appealNumber  String          @unique
+  userId        String
+  banId         String
+  reason        String          @db.Text
+  evidence      String[]
+  status        AppealStatus    @default(PENDING)
+  priority      AppealPriority  @default(MEDIUM)
+  submittedAt   DateTime        @default(now())
+  reviewedAt    DateTime?
+  reviewedBy    String?
+  decision      AppealDecision?
+  decisionNotes String?         @db.Text
+
+  user     User    @relation("UserAppeals", fields: [userId], references: [id], onDelete: Cascade)
+  ban      UserBan @relation(fields: [banId], references: [id], onDelete: Cascade)
+  reviewer User?   @relation("AppealReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([userId])
+  @@index([banId])
+  @@index([status])
+  @@index([priority])
+}
+
+enum AppealStatus {
+  PENDING
+  UNDER_REVIEW
+  UPHELD
+  REDUCED
+  REINSTATED
+  REJECTED
+}
+
+enum AppealPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum AppealDecision {
+  UPHOLD
+  REDUCE_WARNING
+  REDUCE_DURATION
+  FULL_REINSTATEMENT
+}
+
+// DMCA Request: For copyright claims
+model DMCARequest {
+  id                 String       @id @default(cuid())
+  caseNumber         String       @unique
+  complainantName    String
+  complainantEmail   String
+  complainantCompany String?
+  contentType        String // COURSE, VIDEO, DOCUMENT, IMAGE
+  contentId          String
+  contentTitle       String
+  contentUrl         String?
+  originalWorkUrl    String?
+  originalWorkDesc   String       @db.Text
+  claimDescription   String       @db.Text
+  status             DMCAStatus   @default(PENDING)
+  priority           DMCAPriority @default(MEDIUM)
+  submittedAt        DateTime     @default(now())
+  reviewedAt         DateTime?
+  reviewedBy         String?
+  resolution         String?      @db.Text
+  contentRemoved     Boolean      @default(false)
+  counterNotice      Boolean      @default(false)
+
+  reviewer User? @relation("DMCAReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([status])
+  @@index([contentId])
+  @@index([complainantEmail])
+}
+
+enum DMCAStatus {
+  PENDING
+  UNDER_REVIEW
+  CONTENT_REMOVED
+  COUNTER_NOTICE_FILED
+  RESOLVED
+  REJECTED
+}
+
+enum DMCAPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// Email Template: For communication templates
+model EmailTemplate {
+  id           String            @id @default(cuid())
+  name         String
+  type         EmailTemplateType
+  status       TemplateStatus    @default(DRAFT)
+  subjectEn    String
+  subjectAr    String?
+  bodyEn       String            @db.Text
+  bodyAr       String?           @db.Text
+  variables    String[]
+  triggerType  TriggerType
+  eventTrigger String?
+  schedule     String?
+  version      Int               @default(1)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  createdBy    String?
+
+  analytics EmailAnalytics[]
+  creator   User?            @relation("TemplateCreator", fields: [createdBy], references: [id])
+
+  @@index([type])
+  @@index([status])
+}
+
+model EmailAnalytics {
+  id         String   @id @default(cuid())
+  templateId String
+  sent       Int      @default(0)
+  opened     Int      @default(0)
+  clicked    Int      @default(0)
+  converted  Int      @default(0)
+  date       DateTime @default(now())
+
+  template EmailTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@index([date])
+}
+
+enum EmailTemplateType {
+  TRANSACTIONAL
+  LIFECYCLE
+  PROMOTIONAL
+  SAFETY
+}
+
+enum TemplateStatus {
+  ACTIVE
+  DRAFT
+  ARCHIVED
+}
+
+enum TriggerType {
+  MANUAL
+  EVENT
+  SCHEDULED
+}
+
+// Scholarship Campaign: For scholarship programs
+model ScholarshipCampaign {
+  id              String          @id @default(cuid())
+  name            String
+  description     String          @db.Text
+  status          CampaignStatus  @default(DRAFT)
+  eligibilityType EligibilityType
+  totalBudget     Float
+  budgetUsed      Float           @default(0)
+  maxRecipients   Int
+  recipientsCount Int             @default(0)
+  creditAmount    Float
+  validityDays    Int
+  startDate       DateTime
+  endDate         DateTime
+  criteria        Json? // Stores eligibility criteria
+  requirements    String[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  createdBy       String?
+
+  applications ScholarshipApplication[]
+  creator      User?                    @relation("CampaignCreator", fields: [createdBy], references: [id])
+
+  @@index([status])
+  @@index([eligibilityType])
+}
+
+model ScholarshipApplication {
+  id           String               @id @default(cuid())
+  campaignId   String
+  applicantId  String
+  status       ScholarshipAppStatus @default(PENDING)
+  score        Int?
+  income       Float?
+  demographics Json?
+  performance  Json?
+  documents    Json?
+  reviewNotes  String?              @db.Text
+  creditAmount Float?
+  expiryDate   DateTime?
+  appliedAt    DateTime             @default(now())
+  reviewedAt   DateTime?
+  reviewedBy   String?
+  disbursedAt  DateTime?
+
+  campaign  ScholarshipCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  applicant User                @relation("ScholarshipApplicant", fields: [applicantId], references: [id], onDelete: Cascade)
+  reviewer  User?               @relation("ScholarshipReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([campaignId])
+  @@index([applicantId])
+  @@index([status])
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+enum EligibilityType {
+  INCOME_BASED
+  MERIT_BASED
+  DEMOGRAPHIC
+  HYBRID
+}
+
+enum ScholarshipAppStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  DISBURSED
+}
+
+// Admin Audit Log: For tracking admin actions
+model AdminAuditLog {
+  id         String      @id @default(cuid())
+  adminId    String
+  adminName  String
+  adminEmail String
+  action     String
+  module     String
+  details    String      @db.Text
+  ipAddress  String?
+  userAgent  String?
+  status     AuditStatus @default(SUCCESS)
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+
+  admin User @relation("AdminAuditLogs", fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([module])
+  @@index([action])
+  @@index([createdAt])
+}
+
+enum AuditStatus {
+  SUCCESS
+  FAILED
+}
+
+// Admin Role: For permission management
+model AdminRole {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  type        AdminRoleType
+  description String?
+  modules     Json // Array of module permissions
+  isSystem    Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  admins AdminAssignment[]
+
+  @@index([type])
+}
+
+model AdminAssignment {
+  id         String   @id @default(cuid())
+  userId     String
+  roleId     String
+  assignedAt DateTime @default(now())
+  assignedBy String?
+
+  user     User      @relation("AdminRoleAssignments", fields: [userId], references: [id], onDelete: Cascade)
+  role     AdminRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assigner User?     @relation("AdminAssigner", fields: [assignedBy], references: [id])
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+}
+
+enum AdminRoleType {
+  SUPER_ADMIN
+  FINANCE_ADMIN
+  CONTENT_ADMIN
+  SAFETY_ADMIN
+  SUPPORT_ADMIN
+  CUSTOM
+}
+
+// Featured Content: For editorial pipeline
+model FeaturedContent {
+  id              String           @id @default(cuid())
+  courseId        String
+  status          FeaturedStatus   @default(NOMINATED)
+  featuredSection FeaturedSection?
+  nominatedBy     String
+  nominatedAt     DateTime         @default(now())
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  scheduledDate   DateTime?
+  publishedDate   DateTime?
+  endDate         DateTime?
+  curatorNotes    String?          @db.Text
+  performanceData Json?
+
+  course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  nominator User   @relation("ContentNominator", fields: [nominatedBy], references: [id])
+  reviewer  User?  @relation("ContentReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([courseId])
+  @@index([status])
+  @@index([featuredSection])
+}
+
+enum FeaturedStatus {
+  NOMINATED
+  UNDER_REVIEW
+  APPROVED
+  SCHEDULED
+  PUBLISHED
+  REJECTED
+  EXPIRED
+}
+
+enum FeaturedSection {
+  HOMEPAGE_HERO
+  TOPIC_SPOTLIGHT
+  NEW_RELEASES
+  TRENDING_NOW
+  STAFF_PICKS
+}
+
+// Flagged Channel: For Category-C monitoring
+model FlaggedChannel {
+  id             String        @id @default(cuid())
+  channelId      String
+  creatorId      String
+  status         FlaggedStatus @default(MONITORING)
+  riskLevel      RiskLevel     @default(LOW)
+  flaggedAt      DateTime      @default(now())
+  lastReviewedAt DateTime?
+  reviewedBy     String?
+  violations     Json? // Array of violation objects
+  metrics        Json? // Quality metrics
+  automatedFlags String[]
+  manualReviews  Int           @default(0)
+  warningsIssued Int           @default(0)
+  actionNotes    String?       @db.Text
+
+  channel  CreatorChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  creator  Creator        @relation("FlaggedCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  reviewer User?          @relation("ChannelReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([channelId])
+  @@index([creatorId])
+  @@index([status])
+  @@index([riskLevel])
+}
+
+enum FlaggedStatus {
+  MONITORING
+  WARNING_ISSUED
+  ESCALATED
+  SUSPENDED
+  CLEARED
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }

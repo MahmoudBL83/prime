@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
     Award,
@@ -23,17 +23,22 @@ import {
     AlertCircle,
     UserCheck,
     Mail,
-    BarChart3
+    BarChart3,
+    Loader2
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
 interface SignatureCourse {
     id: string
+    proposalId?: string
+    invitationId?: string
+    courseId?: string
     title: string
     creator: {
         id: string
         name: string
+        email?: string
         avatar: string
         verified: boolean
         expertise: string
@@ -62,167 +67,48 @@ interface SignatureCourse {
     notes?: string
 }
 
-const mockCourses: SignatureCourse[] = [
-    {
-        id: '1',
-        title: 'Advanced Machine Learning Engineering',
-        creator: {
-            id: 'c1',
-            name: 'Dr. Youssef Ahmed',
-            avatar: 'YA',
-            verified: true,
-            expertise: 'AI Research Scientist, 10+ years'
-        },
-        stage: 'published',
-        category: 'Technology',
-        estimatedPrice: 1299,
-        completionProgress: 100,
-        content: {
-            modules: 12,
-            videos: 89,
-            documents: 145,
-            quizzes: 24
-        },
-        quality: {
-            productionValue: 95,
-            contentDepth: 98,
-            pedagogicalDesign: 92,
-            marketFit: 96
-        },
-        enrollments: 2847,
-        revenue: 3698553,
-        rating: 4.9,
-        submittedAt: '2025-07-15',
-        reviewedAt: '2025-07-20'
-    },
-    {
-        id: '2',
-        title: 'Comprehensive Medical Physiology',
-        creator: {
-            id: 'c2',
-            name: 'Prof. Layla Hassan',
-            avatar: 'LH',
-            verified: true,
-            expertise: 'Medical Professor, 15+ years'
-        },
-        stage: 'review',
-        category: 'Medicine',
-        estimatedPrice: 1499,
-        completionProgress: 100,
-        content: {
-            modules: 18,
-            videos: 134,
-            documents: 287,
-            quizzes: 36
-        },
-        quality: {
-            productionValue: 88,
-            contentDepth: 95,
-            pedagogicalDesign: 90,
-            marketFit: 93
-        },
-        submittedAt: '2025-10-10',
-        notes: 'Excellent content quality. Minor audio improvements needed in modules 14-16.'
-    },
-    {
-        id: '3',
-        title: 'Enterprise Software Architecture',
-        creator: {
-            id: 'c3',
-            name: 'Ahmed Mahmoud',
-            avatar: 'AM',
-            verified: true,
-            expertise: 'Senior Architect at Microsoft, 12+ years'
-        },
-        stage: 'in-production',
-        category: 'Technology',
-        estimatedPrice: 1199,
-        completionProgress: 65,
-        content: {
-            modules: 10,
-            videos: 47,
-            documents: 89,
-            quizzes: 15
-        },
-        quality: {
-            productionValue: 0,
-            contentDepth: 0,
-            pedagogicalDesign: 0,
-            marketFit: 0
-        },
-        submittedAt: '2025-09-05'
-    },
-    {
-        id: '4',
-        title: 'Advanced Financial Analysis & Modeling',
-        creator: {
-            id: 'c4',
-            name: 'Sarah Nabil',
-            avatar: 'SN',
-            verified: false,
-            expertise: 'CFA Charterholder, Investment Banking'
-        },
-        stage: 'pitch',
-        category: 'Business',
-        estimatedPrice: 999,
-        completionProgress: 0,
-        content: {
-            modules: 0,
-            videos: 0,
-            documents: 3,
-            quizzes: 0
-        },
-        quality: {
-            productionValue: 0,
-            contentDepth: 0,
-            pedagogicalDesign: 0,
-            marketFit: 0
-        },
-        submittedAt: '2025-10-12',
-        notes: 'Strong pitch deck. Awaiting curriculum outline and sample video.'
-    },
-    {
-        id: '5',
-        title: 'Constitutional Law Masterclass',
-        creator: {
-            id: 'c5',
-            name: 'Dr. Omar Ibrahim',
-            avatar: 'OI',
-            verified: true,
-            expertise: 'Law Professor, Former Judge'
-        },
-        stage: 'invited',
-        category: 'Law',
-        estimatedPrice: 1099,
-        completionProgress: 0,
-        content: {
-            modules: 0,
-            videos: 0,
-            documents: 0,
-            quizzes: 0
-        },
-        quality: {
-            productionValue: 0,
-            contentDepth: 0,
-            pedagogicalDesign: 0,
-            marketFit: 0
-        }
-    }
-]
-
 export default function AdminSignatureCoursesPage() {
+    const [courses, setCourses] = useState<SignatureCourse[]>([])
     const [activeTab, setActiveTab] = useState<'all' | 'pipeline' | 'review' | 'published'>('all')
     const [searchQuery, setSearchQuery] = useState('')
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [actionLoading, setActionLoading] = useState<string | null>(null)
 
-    const stats = {
-        totalCourses: 28,
-        inPipeline: 12,
-        awaitingReview: 5,
-        published: 11,
-        totalRevenue: 14567890,
-        avgRating: 4.8,
-        totalEnrollments: 18453
-    }
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                setLoading(true)
+                setError(null)
+                const res = await fetch('/api/admin/signature')
+                if (!res.ok) {
+                    const body = await res.json().catch(() => ({}))
+                    throw new Error(body.error || 'Failed to load signature courses')
+                }
+                const data = await res.json()
+                setCourses(data.courses || [])
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to load signature courses')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadData()
+    }, [])
+
+    const stats = (() => {
+        const totalCourses = courses.length
+        const inPipeline = courses.filter(c => ['invited', 'pitch', 'in-production'].includes(c.stage)).length
+        const awaitingReview = courses.filter(c => c.stage === 'review').length
+        const published = courses.filter(c => c.stage === 'published').length
+        const totalRevenue = courses.reduce((sum, c) => sum + (c.revenue || 0), 0)
+        const totalEnrollments = courses.reduce((sum, c) => sum + (c.enrollments || 0), 0)
+        const ratings = courses.map(c => c.rating).filter((r): r is number => typeof r === 'number')
+        const avgRating = ratings.length ? Number((ratings.reduce((s, r) => s + r, 0) / ratings.length).toFixed(2)) : 0
+
+        return { totalCourses, inPipeline, awaitingReview, published, totalRevenue, avgRating, totalEnrollments }
+    })()
 
     const getStageColor = (stage: SignatureCourse['stage']) => {
         switch (stage) {
@@ -248,7 +134,7 @@ export default function AdminSignatureCoursesPage() {
         }
     }
 
-    const filteredCourses = mockCourses.filter(course => {
+    const filteredCourses = courses.filter(course => {
         const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             course.creator.name.toLowerCase().includes(searchQuery.toLowerCase())
         
@@ -258,6 +144,80 @@ export default function AdminSignatureCoursesPage() {
         if (activeTab === 'published') return matchesSearch && course.stage === 'published'
         return matchesSearch
     })
+
+    const handleInvite = async () => {
+        const email = window.prompt('Enter creator email to invite:')?.trim()
+        if (!email) return
+        const message = window.prompt('Optional message:', 'We would like you to build a signature course with us.')?.trim() || undefined
+        try {
+            setActionLoading('invite')
+            const res = await fetch('/api/admin/signature/invite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, message })
+            })
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}))
+                throw new Error(body.error || 'Failed to send invitation')
+            }
+            await res.json()
+            const refresh = await fetch('/api/admin/signature')
+            const data = await refresh.json()
+            setCourses(data.courses || [])
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Failed to send invitation')
+        } finally {
+            setActionLoading(null)
+        }
+    }
+
+    const handleProposalAction = async (course: SignatureCourse, action: 'APPROVE_PITCH' | 'DECLINE' | 'REQUEST_CHANGES' | 'APPROVE_PUBLISH' | 'MOVE_TO_REVIEW') => {
+        if (!course.proposalId) return
+        const notes = action === 'REQUEST_CHANGES' ? window.prompt('Add review notes (optional):', course.notes || '') || undefined : undefined
+        try {
+            setActionLoading(`${course.id}-${action}`)
+            const res = await fetch(`/api/admin/signature/proposals/${course.proposalId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, notes })
+            })
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}))
+                throw new Error(body.error || 'Action failed')
+            }
+            await res.json()
+            const refresh = await fetch('/api/admin/signature')
+            const data = await refresh.json()
+            setCourses(data.courses || [])
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Action failed')
+        } finally {
+            setActionLoading(null)
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-black to-purple-950/20">
+                <div className="flex items-center gap-3 text-foreground">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span>Loading signature courses...</span>
+                </div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-black to-purple-950/20">
+                <div className="bg-white/5 border border-border rounded-xl p-6 text-center max-w-md">
+                    <p className="text-foreground font-semibold mb-2">Failed to load signature courses</p>
+                    <p className="text-sm text-muted-foreground mb-4">{error}</p>
+                    <Button onClick={() => window.location.reload()}>Retry</Button>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-purple-950/20">
@@ -278,15 +238,25 @@ export default function AdminSignatureCoursesPage() {
                             </p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-foreground">
-                                <Send className="w-4 h-4 mr-2" />
-                                Invite Expert
+                            <Button
+                                onClick={handleInvite}
+                                disabled={actionLoading === 'invite'}
+                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-foreground"
+                            >
+                                {actionLoading === 'invite' ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+                                {actionLoading === 'invite' ? 'Sending...' : 'Invite Expert'}
                             </Button>
-                            <Button className="bg-white/5 hover:bg-white/10 text-foreground border border-border">
+                            <Button
+                                className="bg-white/5 hover:bg-white/10 text-foreground border border-border"
+                            >
                                 <FileText className="w-4 h-4 mr-2" />
                                 Quality Guidelines
                             </Button>
                         </div>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/5 border border-border rounded-xl px-4 py-3 text-sm text-muted-foreground">
+                        <AlertCircle className="w-4 h-4 text-yellow-400" />
+                        <span>Live data from admin API. Actions update proposals/invitations.</span>
                     </div>
                 </motion.div>
 
@@ -325,10 +295,10 @@ export default function AdminSignatureCoursesPage() {
                 {/* Tabs */}
                 <div className="flex items-center gap-4 mb-6">
                     {[
-                        { id: 'all', label: 'All Courses', count: mockCourses.length },
-                        { id: 'pipeline', label: 'In Pipeline', count: mockCourses.filter(c => ['invited', 'pitch', 'in-production'].includes(c.stage)).length },
-                        { id: 'review', label: 'Review & Approval', count: mockCourses.filter(c => ['review', 'approved'].includes(c.stage)).length },
-                        { id: 'published', label: 'Published', count: mockCourses.filter(c => c.stage === 'published').length }
+                        { id: 'all', label: 'All Courses', count: courses.length },
+                        { id: 'pipeline', label: 'In Pipeline', count: courses.filter(c => ['invited', 'pitch', 'in-production'].includes(c.stage)).length },
+                        { id: 'review', label: 'Review & Approval', count: courses.filter(c => ['review', 'approved'].includes(c.stage)).length },
+                        { id: 'published', label: 'Published', count: courses.filter(c => c.stage === 'published').length }
                     ].map((tab) => (
                         <button
                             key={tab.id}
@@ -535,43 +505,75 @@ export default function AdminSignatureCoursesPage() {
                                 {/* Actions */}
                                 <div className="flex items-center gap-2">
                                     {course.stage === 'invited' && (
-                                        <Button className="bg-purple-600 hover:bg-purple-700 text-foreground">
-                                            <Send className="w-4 h-4 mr-2" />
-                                            Send Invite
+                                        <Button
+                                            disabled={!!actionLoading}
+                                            className="bg-purple-600 hover:bg-purple-700 text-foreground"
+                                            onClick={handleInvite}
+                                        >
+                                            {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+                                            {actionLoading ? 'Sending...' : 'Send Invite'}
                                         </Button>
                                     )}
                                     {course.stage === 'pitch' && (
                                         <>
-                                            <Button className="bg-green-600 hover:bg-green-700 text-foreground">
-                                                <CheckCircle className="w-4 h-4 mr-2" />
-                                                Approve Pitch
+                                            <Button
+                                                disabled={actionLoading === `${course.id}-APPROVE_PITCH`}
+                                                className="bg-green-600 hover:bg-green-700 text-foreground"
+                                                onClick={() => handleProposalAction(course, 'APPROVE_PITCH')}
+                                            >
+                                                {actionLoading === `${course.id}-APPROVE_PITCH` ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                                                {actionLoading === `${course.id}-APPROVE_PITCH` ? 'Approving...' : 'Approve Pitch'}
                                             </Button>
-                                            <Button className="bg-red-600 hover:bg-red-700 text-foreground">
-                                                <XCircle className="w-4 h-4 mr-2" />
-                                                Decline
+                                            <Button
+                                                disabled={actionLoading === `${course.id}-DECLINE`}
+                                                className="bg-red-600 hover:bg-red-700 text-foreground"
+                                                onClick={() => handleProposalAction(course, 'DECLINE')}
+                                            >
+                                                {actionLoading === `${course.id}-DECLINE` ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <XCircle className="w-4 h-4 mr-2" />}
+                                                {actionLoading === `${course.id}-DECLINE` ? 'Declining...' : 'Decline'}
                                             </Button>
                                         </>
                                     )}
                                     {course.stage === 'in-production' && (
-                                        <Button className="bg-white/5 hover:bg-white/10 text-foreground border border-border">
-                                            <Eye className="w-4 h-4 mr-2" />
-                                            Monitor Progress
+                                        <Button
+                                            disabled={actionLoading === `${course.id}-MOVE_TO_REVIEW`}
+                                            className="bg-white/5 hover:bg-white/10 text-foreground border border-border"
+                                            onClick={() => handleProposalAction(course, 'MOVE_TO_REVIEW')}
+                                        >
+                                            {actionLoading === `${course.id}-MOVE_TO_REVIEW` ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Eye className="w-4 h-4 mr-2" />}
+                                            {actionLoading === `${course.id}-MOVE_TO_REVIEW` ? 'Moving...' : 'Monitor / Move to Review'}
                                         </Button>
                                     )}
                                     {course.stage === 'review' && (
                                         <>
-                                            <Button className="bg-green-600 hover:bg-green-700 text-foreground">
-                                                <CheckCircle className="w-4 h-4 mr-2" />
-                                                Approve & Publish
+                                            <Button
+                                                disabled={actionLoading === `${course.id}-APPROVE_PUBLISH`}
+                                                className="bg-green-600 hover:bg-green-700 text-foreground"
+                                                onClick={() => handleProposalAction(course, 'APPROVE_PUBLISH')}
+                                            >
+                                                {actionLoading === `${course.id}-APPROVE_PUBLISH` ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                                                {actionLoading === `${course.id}-APPROVE_PUBLISH` ? 'Publishing...' : 'Approve & Publish'}
                                             </Button>
-                                            <Button className="bg-yellow-600 hover:bg-yellow-700 text-foreground">
-                                                <AlertCircle className="w-4 h-4 mr-2" />
-                                                Request Changes
+                                            <Button
+                                                disabled={actionLoading === `${course.id}-REQUEST_CHANGES`}
+                                                className="bg-yellow-600 hover:bg-yellow-700 text-foreground"
+                                                onClick={() => handleProposalAction(course, 'REQUEST_CHANGES')}
+                                            >
+                                                {actionLoading === `${course.id}-REQUEST_CHANGES` ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <AlertCircle className="w-4 h-4 mr-2" />}
+                                                {actionLoading === `${course.id}-REQUEST_CHANGES` ? 'Sending...' : 'Request Changes'}
                                             </Button>
                                         </>
                                     )}
                                     {course.stage === 'published' && (
-                                        <Button className="bg-white/5 hover:bg-white/10 text-foreground border border-border">
+                                        <Button
+                                            disabled={!!actionLoading}
+                                            className="bg-white/5 hover:bg-white/10 text-foreground border border-border"
+                                            onClick={() => {
+                                                if (course.courseId) {
+                                                    window.open(`/admin/analytics?courseId=${course.courseId}`, '_blank')
+                                                }
+                                            }}
+                                        >
                                             <BarChart3 className="w-4 h-4 mr-2" />
                                             View Analytics
                                         </Button>

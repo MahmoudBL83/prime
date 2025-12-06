@@ -87,11 +87,11 @@ export default function AdminDashboard() {
 
     if (loading) {
         return (
-            <div className="min-h-screen p-8">
+            <div className="p-8">
                 <div className="animate-pulse">
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
                         {[...Array(5)].map((_, i) => (
-                            <div key={i} className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl h-32"></div>
+                            <div key={i} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl h-32"></div>
                         ))}
                     </div>
                 </div>
@@ -101,7 +101,7 @@ export default function AdminDashboard() {
 
     if (error) {
         return (
-            <div className="min-h-screen p-8">
+            <div className="p-8">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
                     <div className="flex items-start gap-4">
                         <AlertCircle className="h-6 w-6 text-red-400 flex-shrink-0" />
                         <div>
-                            <h3 className="text-lg font-semibold text-foreground mb-1">Error loading dashboard</h3>
+                            <h3 className="text-lg font-semibold text-white mb-1">Error loading dashboard</h3>
                             <div className="text-sm text-red-300">{error}</div>
                         </div>
                     </div>
@@ -176,7 +176,7 @@ export default function AdminDashboard() {
     ]
 
     return (
-        <div className="min-h-screen p-8 space-y-8">
+        <div className="space-y-8">
             {/* Page Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -184,10 +184,10 @@ export default function AdminDashboard() {
                 className="flex items-center justify-between"
             >
                 <div>
-                    <h1 className="text-4xl font-bold text-foreground mb-2">
+                    <h1 className="text-4xl font-bold text-white mb-2">
                         Admin Dashboard
                     </h1>
-                    <p className="text-muted-foreground">
+                    <p className="text-gray-400">
                         Platform overview and key metrics • {new Date().toLocaleDateString('en-US', { 
                             weekday: 'long', 
                             year: 'numeric', 
@@ -197,11 +197,11 @@ export default function AdminDashboard() {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Button className="bg-white/10 hover:bg-white/20 text-foreground border border-border">
+                    <Button className="bg-white/10 hover:bg-white/20 text-white border border-white/10">
                         <Activity className="w-4 h-4 mr-2" />
                         Platform Status
                     </Button>
-                    <Button className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-foreground">
+                    <Button className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white">
                         <Shield className="w-4 h-4 mr-2" />
                         Security Center
                     </Button>
@@ -217,7 +217,7 @@ export default function AdminDashboard() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
                         onClick={() => router.push(stat.href)}
-                        className={`bg-gradient-to-br ${stat.color}/20 backdrop-blur-xl border border-border rounded-2xl p-6 hover:scale-105 transition-transform cursor-pointer group`}
+                        className={`bg-gradient-to-br ${stat.color}/20 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:scale-105 transition-transform cursor-pointer group`}
                     >
                         <div className="flex items-start justify-between mb-4">
                             <div className={`${stat.iconBg} rounded-xl p-3`}>
@@ -237,12 +237,12 @@ export default function AdminDashboard() {
                             )}
                         </div>
                         <div>
-                            <div className="text-3xl font-bold text-foreground mb-1 group-hover:scale-105 transition-transform">
+                            <div className="text-3xl font-bold text-white mb-1 group-hover:scale-105 transition-transform">
                                 {stat.value}
                             </div>
-                            <div className="text-sm text-muted-foreground">{stat.title}</div>
+                            <div className="text-sm text-gray-300">{stat.title}</div>
                             {stat.subtitle && (
-                                <div className="text-xs text-muted-foreground mt-2">
+                                <div className="text-xs text-gray-400 mt-2">
                                     {stat.subtitle}
                                 </div>
                             )}
@@ -261,7 +261,7 @@ export default function AdminDashboard() {
                     <div className="flex items-start gap-4">
                         <Clock className="w-6 h-6 text-orange-400 flex-shrink-0 mt-1" />
                         <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-foreground mb-2">
+                            <h3 className="text-lg font-semibold text-white mb-2">
                                 Action Required
                             </h3>
                             <div className="flex flex-wrap gap-3">
@@ -277,7 +277,7 @@ export default function AdminDashboard() {
                                 )}
                             </div>
                         </div>
-                        <Button className="bg-orange-600 hover:bg-orange-700 text-foreground">
+                        <Button className="bg-orange-600 hover:bg-orange-700 text-white">
                             Review Now
                         </Button>
                     </div>
@@ -291,13 +291,13 @@ export default function AdminDashboard() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-6"
+                    className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6"
                 >
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-bold text-foreground">
+                        <h3 className="text-xl font-bold text-white">
                             Recent Users
                         </h3>
-                        <Button className="bg-white/10 hover:bg-white/20 text-foreground text-xs">
+                        <Button className="bg-white/10 hover:bg-white/20 text-white text-xs">
                             <Eye className="w-3 h-3 mr-1" />
                             View All
                         </Button>
@@ -309,17 +309,17 @@ export default function AdminDashboard() {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4 + index * 0.1 }}
-                                className="flex items-center justify-between p-4 bg-white/5 border border-border rounded-xl hover:bg-white/10 transition-all group cursor-pointer"
+                                className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all group cursor-pointer"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-foreground font-bold">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
                                         {user.name[0].toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="text-sm font-semibold text-foreground group-hover:text-blue-400 transition-colors">
+                                        <p className="text-sm font-semibold text-white group-hover:text-blue-400 transition-colors">
                                             {user.name}
                                         </p>
-                                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                                        <p className="text-xs text-gray-400">{user.email}</p>
                                     </div>
                                 </div>
                                 <div className="text-right">
@@ -332,7 +332,7 @@ export default function AdminDashboard() {
                                     } text-xs`}>
                                         {user.role}
                                     </Badge>
-                                    <p className="text-xs text-muted-foreground mt-1">
+                                    <p className="text-xs text-gray-400 mt-1">
                                         {new Date(user.createdAt).toLocaleDateString()}
                                     </p>
                                 </div>
@@ -346,13 +346,13 @@ export default function AdminDashboard() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-6"
+                    className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6"
                 >
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-bold text-foreground">
+                        <h3 className="text-xl font-bold text-white">
                             Recent Creator Applications
                         </h3>
-                        <Button className="bg-white/10 hover:bg-white/20 text-foreground text-xs">
+                        <Button className="bg-white/10 hover:bg-white/20 text-white text-xs">
                             <Eye className="w-3 h-3 mr-1" />
                             View All
                         </Button>
@@ -364,17 +364,17 @@ export default function AdminDashboard() {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4 + index * 0.1 }}
-                                className="flex items-center justify-between p-4 bg-white/5 border border-border rounded-xl hover:bg-white/10 transition-all group cursor-pointer"
+                                className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all group cursor-pointer"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-red-600 rounded-full flex items-center justify-center text-foreground font-bold">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-red-600 rounded-full flex items-center justify-center text-white font-bold">
                                         {creator.user.name[0].toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="text-sm font-semibold text-foreground group-hover:text-orange-400 transition-colors">
+                                        <p className="text-sm font-semibold text-white group-hover:text-orange-400 transition-colors">
                                             {creator.user.name}
                                         </p>
-                                        <p className="text-xs text-muted-foreground">{creator.user.email}</p>
+                                        <p className="text-xs text-gray-400">{creator.user.email}</p>
                                     </div>
                                 </div>
                                 <div className="text-right">
@@ -394,7 +394,7 @@ export default function AdminDashboard() {
                                         )}
                                         {creator.kycStatus}
                                     </Badge>
-                                    <p className="text-xs text-muted-foreground mt-1">
+                                    <p className="text-xs text-gray-400 mt-1">
                                         {new Date(creator.createdAt).toLocaleDateString()}
                                     </p>
                                 </div>
@@ -409,15 +409,15 @@ export default function AdminDashboard() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-xl border border-border rounded-2xl p-6"
+                className="bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6"
             >
-                <h3 className="text-xl font-bold text-foreground mb-6">
+                <h3 className="text-xl font-bold text-white mb-6">
                     Quick Actions
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Button 
                         onClick={() => router.push('/admin/creators')}
-                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-foreground h-auto py-4 flex-col items-start gap-2"
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-auto py-4 flex-col items-start gap-2"
                     >
                         <div className="flex items-center gap-2">
                             <Clock className="h-5 w-5" />
@@ -429,7 +429,7 @@ export default function AdminDashboard() {
                     </Button>
                     <Button 
                         onClick={() => router.push('/admin/content/reviews')}
-                        className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-foreground h-auto py-4 flex-col items-start gap-2"
+                        className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-auto py-4 flex-col items-start gap-2"
                     >
                         <div className="flex items-center gap-2">
                             <BookOpen className="h-5 w-5" />
@@ -441,7 +441,7 @@ export default function AdminDashboard() {
                     </Button>
                     <Button 
                         onClick={() => router.push('/admin/users')}
-                        className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-foreground h-auto py-4 flex-col items-start gap-2"
+                        className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-auto py-4 flex-col items-start gap-2"
                     >
                         <div className="flex items-center gap-2">
                             <Users className="h-5 w-5" />
@@ -453,7 +453,7 @@ export default function AdminDashboard() {
                     </Button>
                     <Button 
                         onClick={() => router.push('/admin/financial')}
-                        className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-foreground h-auto py-4 flex-col items-start gap-2"
+                        className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white h-auto py-4 flex-col items-start gap-2"
                     >
                         <div className="flex items-center gap-2">
                             <DollarSign className="h-5 w-5" />

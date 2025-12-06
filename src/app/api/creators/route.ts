@@ -141,49 +141,65 @@ export async function GET(req: NextRequest) {
             console.log('Creators API: User creator already in list')
         }
 
-        // Calculate stats for each creator
+        const now = new Date()
+
+        // Calculate stats for each creator using real data only
         const creatorsWithStats = await Promise.all(
             finalCreators.map(async (creator) => {
-                const courses = await prisma.course.findMany({
-                    where: { creatorId: creator.id },
-                    select: { rating: true, totalEnrollments: true },
-                })
+                const [courses, totalPosts, latestPost, analytics] = await Promise.all([
+                    prisma.course.findMany({
+                        where: { creatorId: creator.id },
+                        select: { rating: true, totalEnrollments: true },
+                    }),
+                    prisma.channelPost.count({
+                        where: {
+                            channel: { creatorId: creator.id },
+                            publishedAt: { lte: now },
+                        },
+                    }),
+                    prisma.channelPost.findFirst({
+                        where: {
+                            channel: { creatorId: creator.id },
+                            publishedAt: { lte: now },
+                        },
+                        orderBy: { publishedAt: 'desc' },
+                        select: { publishedAt: true },
+                    }),
+                    creator.analytics[0],
+                ])
 
                 const totalRatings = courses.reduce((sum, course) => sum + course.rating, 0)
                 const averageRating = courses.length > 0 ? totalRatings / courses.length : 0
-                const totalEnrollments = courses.reduce((sum, course) => sum + course.totalEnrollments, 0)
+                const hasNewContent = latestPost ? (now.getTime() - latestPost.publishedAt.getTime()) <= 14 * 24 * 60 * 60 * 1000 : false
+                const yearsOfExperience = Math.max(1, Math.floor((now.getTime() - new Date(creator.createdAt).getTime()) / (365 * 24 * 60 * 60 * 1000)))
 
-                // Get recent activity (mock data - could be from posts/content table)
-                const hasNewContent = Math.random() > 0.5
-                const isOnline = Math.random() > 0.6
-
-                // Get analytics
-                const analytics = creator.analytics[0]
+                // Prefer a real channel id if present for navigation
+                const primaryChannelId = creator.channels?.[0]?.id || creator.id
 
                 return {
                     id: creator.id,
-                    userId: creator.userId, // Add userId for matching with session
-                    channelId: creator.id, // For navigation
+                    userId: creator.userId,
+                    channelId: primaryChannelId,
                     user: {
                         id: creator.user.id,
                         name: creator.user.name,
                         arabicName: creator.user.arabicName,
                         profileImage: creator.user.profileImage,
-                        bio: creator.user.bio || 'Educational content creator',
+                        bio: creator.user.bio || '',
                     },
-                    channels: creator.channels, // Add channels with coverImage
-                    expertise: creator.expertise || 'General Education',
-                    basicMonthlyPrice: creator.basicMonthlyPrice || 49,
-                    premiumMonthlyPrice: creator.premiumMonthlyPrice || 99,
-                    vipMonthlyPrice: creator.vipMonthlyPrice || 199,
-                    totalSubscribers: creator.totalSubscribers,
+                    channels: creator.channels,
+                    expertise: creator.expertise || '',
+                    basicMonthlyPrice: creator.basicMonthlyPrice || 0,
+                    premiumMonthlyPrice: creator.premiumMonthlyPrice || 0,
+                    vipMonthlyPrice: creator.vipMonthlyPrice || 0,
+                    totalSubscribers: creator.totalSubscribers || 0,
                     stats: {
                         averageRating,
-                        totalPosts: analytics?.totalViews ? Math.floor(analytics.totalViews / 100) : Math.floor(Math.random() * 200) + 50,
-                        yearsOfExperience: Math.floor((Date.now() - new Date(creator.createdAt).getTime()) / (365 * 24 * 60 * 60 * 1000)) || 1,
-                        totalViews: analytics?.totalViews || Math.floor(Math.random() * 50000) + 10000,
+                        totalPosts,
+                        yearsOfExperience,
+                        totalViews: analytics?.totalViews || 0,
                     },
-                    isOnline,
+                    isOnline: false,
                     hasNewContent,
                     subscriptionBenefits: creator.subscriptionBenefits || null,
                     socialLinks: creator.socialLinks || null,

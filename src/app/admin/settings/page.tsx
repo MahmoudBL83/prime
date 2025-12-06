@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
     Settings,
@@ -24,10 +24,18 @@ import { Badge } from '@/components/ui/badge'
 
 type SettingsTab = 'general' | 'pricing' | 'features' | 'payments' | 'emails' | 'notifications' | 'legal' | 'security'
 
+interface PlatformSettings {
+    id: string;
+    earlyAccessEnabled: boolean;
+    maintenanceMode: boolean;
+}
+
 export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState<SettingsTab>('general')
     const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
+    const [platformSettings, setPlatformSettings] = useState<PlatformSettings | null>(null)
+    const [loadingSettings, setLoadingSettings] = useState(true)
 
     const tabs = [
         { id: 'general' as const, name: 'General', icon: Settings },
@@ -40,6 +48,60 @@ export default function SettingsPage() {
         { id: 'security' as const, name: 'Security', icon: Shield }
     ]
 
+    useEffect(() => {
+        fetchPlatformSettings()
+    }, [])
+
+    const fetchPlatformSettings = async () => {
+        try {
+            const response = await fetch('/api/admin/settings/platform')
+            if (response.ok) {
+                const data = await response.json()
+                setPlatformSettings(data.settings)
+            }
+        } catch (error) {
+            console.error('Error fetching platform settings:', error)
+        } finally {
+            setLoadingSettings(false)
+        }
+    }
+
+    const updatePlatformSettings = async (updates: Partial<PlatformSettings>) => {
+        try {
+            const response = await fetch('/api/admin/settings/platform', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            })
+            
+            if (response.ok) {
+                const data = await response.json()
+                setPlatformSettings(data.settings)
+                return true
+            }
+            return false
+        } catch (error) {
+            console.error('Error updating platform settings:', error)
+            return false
+        }
+    }
+
+    const handleEarlyAccessToggle = async (enabled: boolean) => {
+        const success = await updatePlatformSettings({ earlyAccessEnabled: enabled })
+        if (success) {
+            setSaved(true)
+            setTimeout(() => setSaved(false), 2000)
+        }
+    }
+
+    const handleMaintenanceModeToggle = async (enabled: boolean) => {
+        const success = await updatePlatformSettings({ maintenanceMode: enabled })
+        if (success) {
+            setSaved(true)
+            setTimeout(() => setSaved(false), 2000)
+        }
+    }
+
     const handleSave = async () => {
         setSaving(true)
         // Simulate save
@@ -50,7 +112,7 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="min-h-screen p-8 space-y-8">
+        <div className="space-y-8">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -58,17 +120,17 @@ export default function SettingsPage() {
                 className="flex items-center justify-between"
             >
                 <div>
-                    <h1 className="text-4xl font-bold text-foreground mb-2">
+                    <h1 className="text-4xl font-bold text-white mb-2">
                         Platform Settings
                     </h1>
-                    <p className="text-muted-foreground">
+                    <p className="text-gray-400">
                         Configure platform-wide settings and preferences
                     </p>
                 </div>
                 <Button
                     onClick={handleSave}
                     disabled={saving}
-                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-foreground"
+                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
                 >
                     {saving ? (
                         <>
@@ -94,7 +156,7 @@ export default function SettingsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-2"
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-2"
             >
                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
                     {tabs.map((tab) => (
@@ -103,8 +165,8 @@ export default function SettingsPage() {
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex flex-col items-center gap-2 px-4 py-3 rounded-xl transition-all ${
                                 activeTab === tab.id
-                                    ? 'bg-gradient-to-r from-red-600 to-pink-600 text-foreground shadow-lg'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                                    ? 'bg-gradient-to-r from-red-600 to-pink-600 text-white shadow-lg'
+                                    : 'text-gray-400 hover:text-white hover:bg-white/5'
                             }`}
                         >
                             <tab.icon className="w-5 h-5" />
@@ -120,44 +182,88 @@ export default function SettingsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-8"
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8"
             >
                 {/* General Settings */}
                 {activeTab === 'general' && (
                     <div className="space-y-6">
                         <div>
-                            <h2 className="text-2xl font-bold text-foreground mb-4">General Settings</h2>
-                            <p className="text-muted-foreground mb-8">Configure basic platform settings</p>
+                            <h2 className="text-2xl font-bold text-white mb-4">General Settings</h2>
+                            <p className="text-gray-400 mb-8">Configure basic platform settings</p>
+                        </div>
+
+                        {/* Platform Status Banner */}
+                        <div className="bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-xl p-6">
+                            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                <Globe className="w-5 h-5" />
+                                Platform Access Control
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm font-semibold text-white">Early Access Mode</span>
+                                        <Badge className={`${
+                                            platformSettings?.earlyAccessEnabled 
+                                                ? 'bg-blue-600/20 text-blue-400 border-blue-600/30' 
+                                                : 'bg-green-600/20 text-green-400 border-green-600/30'
+                                        }`}>
+                                            {platformSettings?.earlyAccessEnabled ? 'Active' : 'Disabled'}
+                                        </Badge>
+                                    </div>
+                                    <p className="text-xs text-gray-400">
+                                        {platformSettings?.earlyAccessEnabled 
+                                            ? 'Early access modal is shown to all visitors' 
+                                            : 'Platform is open - no early access modal'}
+                                    </p>
+                                </div>
+                                <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm font-semibold text-white">Maintenance Mode</span>
+                                        <Badge className={`${
+                                            platformSettings?.maintenanceMode 
+                                                ? 'bg-red-600/20 text-red-400 border-red-600/30' 
+                                                : 'bg-green-600/20 text-green-400 border-green-600/30'
+                                        }`}>
+                                            {platformSettings?.maintenanceMode ? 'Active' : 'Normal'}
+                                        </Badge>
+                                    </div>
+                                    <p className="text-xs text-gray-400">
+                                        {platformSettings?.maintenanceMode 
+                                            ? 'Platform is in maintenance mode' 
+                                            : 'Platform is operating normally'}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="space-y-6">
                             <div>
-                                <label className="block text-sm font-semibold text-foreground mb-2">
+                                <label className="block text-sm font-semibold text-white mb-2">
                                     Platform Name
                                 </label>
                                 <input
                                     type="text"
                                     defaultValue="Prime Learning Platform"
-                                    className="w-full bg-white/10 border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                                    className="w-full bg-white/10 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500/50"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-foreground mb-2">
+                                <label className="block text-sm font-semibold text-white mb-2">
                                     Support Email
                                 </label>
                                 <input
                                     type="email"
                                     defaultValue="support@prime-learning.com"
-                                    className="w-full bg-white/10 border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                                    className="w-full bg-white/10 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500/50"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-foreground mb-2">
+                                <label className="block text-sm font-semibold text-white mb-2">
                                     Default Language
                                 </label>
-                                <select className="w-full bg-white/10 border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-red-500/50">
+                                <select className="w-full bg-white/10 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500/50">
                                     <option value="en">English</option>
                                     <option value="ar">Arabic</option>
                                     <option value="de">German</option>
@@ -165,10 +271,10 @@ export default function SettingsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-foreground mb-2">
+                                <label className="block text-sm font-semibold text-white mb-2">
                                     Time Zone
                                 </label>
-                                <select className="w-full bg-white/10 border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-red-500/50">
+                                <select className="w-full bg-white/10 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500/50">
                                     <option value="UTC">UTC</option>
                                     <option value="Africa/Cairo">Cairo (EET)</option>
                                     <option value="America/New_York">New York (EST)</option>
@@ -178,12 +284,35 @@ export default function SettingsPage() {
 
                             <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
                                 <div>
-                                    <p className="text-sm font-semibold text-foreground">Maintenance Mode</p>
-                                    <p className="text-xs text-muted-foreground mt-1">Disable public access for maintenance</p>
+                                    <p className="text-sm font-semibold text-white">Early Access Mode</p>
+                                    <p className="text-xs text-gray-400 mt-1">Show early access waitlist modal to all visitors</p>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" className="sr-only peer" />
-                                    <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                                    <input 
+                                        type="checkbox" 
+                                        className="sr-only peer" 
+                                        checked={platformSettings?.earlyAccessEnabled ?? true}
+                                        onChange={(e) => handleEarlyAccessToggle(e.target.checked)}
+                                        disabled={loadingSettings}
+                                    />
+                                    <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+
+                            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                                <div>
+                                    <p className="text-sm font-semibold text-white">Maintenance Mode</p>
+                                    <p className="text-xs text-gray-400 mt-1">Disable public access for maintenance</p>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        className="sr-only peer"
+                                        checked={platformSettings?.maintenanceMode ?? false}
+                                        onChange={(e) => handleMaintenanceModeToggle(e.target.checked)}
+                                        disabled={loadingSettings}
+                                    />
+                                    <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
                                 </label>
                             </div>
                         </div>
@@ -194,48 +323,48 @@ export default function SettingsPage() {
                 {activeTab === 'pricing' && (
                     <div className="space-y-6">
                         <div>
-                            <h2 className="text-2xl font-bold text-foreground mb-4">Pricing Tiers</h2>
-                            <p className="text-muted-foreground mb-8">Manage subscription plans and pricing</p>
+                            <h2 className="text-2xl font-bold text-white mb-4">Pricing Tiers</h2>
+                            <p className="text-gray-400 mb-8">Manage subscription plans and pricing</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {/* Category A */}
                             <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-500/30 rounded-xl p-6">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-bold text-foreground">Category A</h3>
+                                    <h3 className="text-lg font-bold text-white">Category A</h3>
                                     <Badge className="bg-blue-600/20 text-blue-400 border-blue-600/30">
                                         All-Access
                                     </Badge>
                                 </div>
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-xs font-semibold text-muted-foreground mb-2">
+                                        <label className="block text-xs font-semibold text-gray-400 mb-2">
                                             Monthly Price
                                         </label>
                                         <input
                                             type="number"
                                             defaultValue="29.99"
-                                            className="w-full bg-white/10 border border-border rounded-lg px-4 py-2 text-foreground"
+                                            className="w-full bg-white/10 border border-white/10 rounded-lg px-4 py-2 text-white"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-muted-foreground mb-2">
+                                        <label className="block text-xs font-semibold text-gray-400 mb-2">
                                             Annual Price
                                         </label>
                                         <input
                                             type="number"
                                             defaultValue="299.99"
-                                            className="w-full bg-white/10 border border-border rounded-lg px-4 py-2 text-foreground"
+                                            className="w-full bg-white/10 border border-white/10 rounded-lg px-4 py-2 text-white"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-muted-foreground mb-2">
+                                        <label className="block text-xs font-semibold text-gray-400 mb-2">
                                             Revenue Share %
                                         </label>
                                         <input
                                             type="number"
                                             defaultValue="60"
-                                            className="w-full bg-white/10 border border-border rounded-lg px-4 py-2 text-foreground"
+                                            className="w-full bg-white/10 border border-white/10 rounded-lg px-4 py-2 text-white"
                                         />
                                     </div>
                                 </div>
@@ -244,30 +373,30 @@ export default function SettingsPage() {
                             {/* Category B */}
                             <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-xl p-6">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-bold text-foreground">Category B</h3>
+                                    <h3 className="text-lg font-bold text-white">Category B</h3>
                                     <Badge className="bg-purple-600/20 text-purple-400 border-purple-600/30">
                                         Signature
                                     </Badge>
                                 </div>
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-xs font-semibold text-muted-foreground mb-2">
+                                        <label className="block text-xs font-semibold text-gray-400 mb-2">
                                             Monthly Price
                                         </label>
                                         <input
                                             type="number"
                                             defaultValue="49.99"
-                                            className="w-full bg-white/10 border border-border rounded-lg px-4 py-2 text-foreground"
+                                            className="w-full bg-white/10 border border-white/10 rounded-lg px-4 py-2 text-white"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-muted-foreground mb-2">
+                                        <label className="block text-xs font-semibold text-gray-400 mb-2">
                                             Annual Price
                                         </label>
                                         <input
                                             type="number"
                                             defaultValue="499.99"
-                                            className="w-full bg-white/10 border border-border rounded-lg px-4 py-2 text-foreground"
+                                            className="w-full bg-white/10 border border-white/10 rounded-lg px-4 py-2 text-white"
                                         />
                                     </div>
                                     <div>

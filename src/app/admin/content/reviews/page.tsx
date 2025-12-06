@@ -95,12 +95,16 @@ export default function ContentReviewPage() {
         categoryB: 0,
         categoryC: 0
     })
+    const [page, setPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+    const [totalCourses, setTotalCourses] = useState(0)
+    const PAGE_SIZE = 10
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
     const [showReviewModal, setShowReviewModal] = useState(false)
     const [reviewAction, setReviewAction] = useState<'approve' | 'reject' | 'request_changes' | 'start_review'>('approve')
     const [reviewNotes, setReviewNotes] = useState('')
     const [submitting, setSubmitting] = useState(false)
-    const [activeTab, setActiveTab] = useState('under_review')
+    const [activeTab, setActiveTab] = useState('all')
 
     useEffect(() => {
         if (session?.user?.role !== 'ADMIN') {
@@ -108,23 +112,49 @@ export default function ContentReviewPage() {
             return
         }
         fetchCourses()
-    }, [session, activeTab])
+    }, [session, activeTab, page])
 
     const fetchCourses = async () => {
         try {
             setLoading(true)
             const status = activeTab === 'all' ? 'all' : activeTab.toUpperCase()
-            const response = await fetch(`/api/admin/content/reviews?status=${status}`)
+            const response = await fetch(`/api/admin/content/reviews?status=${status}&page=${page}&limit=${PAGE_SIZE}`)
             if (!response.ok) throw new Error('Failed to fetch')
             const result = await response.json()
             setCourses(result.data.courses)
             setStats(result.data.stats)
+            const pagination = result.data.pagination || {}
+            const newTotalPages = pagination.totalPages || 1
+            setTotalCourses(pagination.total || 0)
+            setTotalPages(newTotalPages)
+
+            if (page > newTotalPages && newTotalPages > 0) {
+                setPage(newTotalPages)
+            }
         } catch (error) {
             console.error('Error:', error)
             toast.error('Failed to load courses')
         } finally {
             setLoading(false)
         }
+    }
+
+    const handleTabChange = (value: string) => {
+        setActiveTab(value)
+        setPage(1)
+    }
+
+    const handlePageChange = (direction: 'prev' | 'next') => {
+        setPage(prev => {
+            if (direction === 'prev') {
+                return Math.max(1, prev - 1)
+            }
+            return Math.min(totalPages, prev + 1)
+        })
+    }
+
+    const handleEditCourse = (courseId: string) => {
+        router.push(`/creator/courses/${courseId}/edit?admin=1`)
     }
 
     const handleReview = (course: Course, action: 'approve' | 'reject' | 'request_changes' | 'start_review') => {
@@ -306,53 +336,9 @@ export default function ContentReviewPage() {
                     </motion.div>
                 </div>
 
-                {/* Category Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-8">
-                    <Card className="bg-background border-border">
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-lg bg-yellow-600/20 flex items-center justify-center">
-                                    <BookOpen className="w-6 h-6 text-yellow-500" />
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-bold">{stats.categoryA}</p>
-                                    <p className="text-sm text-muted-foreground">Category A</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-background border-border">
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-lg bg-purple-600/20 flex items-center justify-center">
-                                    <Award className="w-6 h-6 text-purple-500" />
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-bold">{stats.categoryB}</p>
-                                    <p className="text-sm text-muted-foreground">Category B</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-background border-border">
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-lg bg-blue-600/20 flex items-center justify-center">
-                                    <Play className="w-6 h-6 text-blue-500" />
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-bold">{stats.categoryC}</p>
-                                    <p className="text-sm text-muted-foreground">Category C</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
 
                 {/* Tabs */}
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <Tabs value={activeTab} onValueChange={handleTabChange}>
                     <TabsList className="bg-background border border-border mb-6">
                         <TabsTrigger value="under_review" className="data-[state=active]:bg-blue-600">
                             <Eye className="w-4 h-4 mr-2" />
@@ -382,170 +368,225 @@ export default function ContentReviewPage() {
                                 </CardContent>
                             </Card>
                         ) : (
-                            <div className="grid grid-cols-1 gap-6">
-                                {courses.map((course, index) => {
-                                    const statusConfig = getStatusBadge(course.status)
-                                    const categoryConfig = getCategoryBadge(course.contentCategory)
-                                    const StatusIcon = statusConfig.icon
+                            <>
+                                <div className="grid grid-cols-1 gap-6">
+                                    {courses.map((course, index) => {
+                                        const statusConfig = getStatusBadge(course.status)
+                                        const categoryConfig = getCategoryBadge(course.contentCategory)
+                                        const StatusIcon = statusConfig.icon
 
-                                    return (
-                                        <motion.div
-                                            key={course.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.05 }}
-                                        >
-                                            <Card className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 border-border hover:border-gray-600 transition-all group overflow-hidden">
-                                                <CardContent className="p-0">
-                                                    <div className="flex gap-6 p-6">
-                                                        {/* Thumbnail */}
-                                                        <div className="relative w-64 h-36 rounded-lg overflow-hidden flex-shrink-0 bg-card group-hover:ring-2 group-hover:ring-purple-500 transition-all">
-                                                            {course.thumbnail ? (
-                                                                <Image
-                                                                    src={course.thumbnail}
-                                                                    alt={course.title}
-                                                                    fill
-                                                                    className="object-cover"
-                                                                />
-                                                            ) : (
-                                                                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-900/50 to-blue-900/50">
-                                                                    {getContentTypeIcon(course.contentType)}
-                                                                </div>
-                                                            )}
-                                                            <div className="absolute top-2 left-2">
-                                                                <Badge className={categoryConfig.color}>
-                                                                    {categoryConfig.label}
-                                                                </Badge>
-                                                            </div>
-                                                            <div className="absolute bottom-2 right-2 bg-background/80 px-2 py-1 rounded text-xs font-semibold">
-                                                                {formatDuration(course.duration)}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Course Details */}
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-start justify-between gap-4 mb-3">
-                                                                <div className="flex-1 min-w-0">
-                                                                    <div className="flex items-center gap-2 mb-2">
-                                                                        <Badge className={statusConfig.color}>
-                                                                            <StatusIcon className="w-3 h-3 mr-1" />
-                                                                            {statusConfig.label}
-                                                                        </Badge>
-                                                                        <span className="text-muted-foreground">•</span>
-                                                                        <span className="text-sm text-muted-foreground">
-                                                                            {getContentTypeIcon(course.contentType)}
-                                                                        </span>
+                                        return (
+                                            <motion.div
+                                                key={course.id}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: index * 0.05 }}
+                                            >
+                                                <Card className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 border-border hover:border-gray-600 transition-all group overflow-hidden">
+                                                    <CardContent className="p-0">
+                                                        <div className="flex gap-6 p-6">
+                                                            {/* Thumbnail */}
+                                                            <div className="relative w-64 h-36 rounded-lg overflow-hidden flex-shrink-0 bg-card group-hover:ring-2 group-hover:ring-purple-500 transition-all">
+                                                                {course.thumbnail ? (
+                                                                    <Image
+                                                                        src={course.thumbnail}
+                                                                        alt={course.title}
+                                                                        fill
+                                                                        className="object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-900/50 to-blue-900/50">
+                                                                        {getContentTypeIcon(course.contentType)}
                                                                     </div>
-                                                                    <h3 className="text-2xl font-bold text-foreground mb-2 line-clamp-1 group-hover:text-purple-400 transition-colors">
-                                                                        {course.title}
-                                                                    </h3>
-                                                                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                                                                        {course.description}
-                                                                    </p>
+                                                                )}
+                                                                <div className="absolute top-2 left-2">
+                                                                    <Badge className={categoryConfig.color}>
+                                                                        {categoryConfig.label}
+                                                                    </Badge>
+                                                                </div>
+                                                                <div className="absolute bottom-2 right-2 bg-background/80 px-2 py-1 rounded text-xs font-semibold">
+                                                                    {formatDuration(course.duration)}
                                                                 </div>
                                                             </div>
 
-                                                            {/* Creator Info */}
-                                                            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border">
-                                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-foreground font-bold">
-                                                                    {course.creator.name.charAt(0).toUpperCase()}
+                                                            {/* Course Details */}
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-start justify-between gap-4 mb-3">
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                            <Badge className={statusConfig.color}>
+                                                                                <StatusIcon className="w-3 h-3 mr-1" />
+                                                                                {statusConfig.label}
+                                                                            </Badge>
+                                                                            <span className="text-muted-foreground">•</span>
+                                                                            <span className="text-sm text-muted-foreground">
+                                                                                {getContentTypeIcon(course.contentType)}
+                                                                            </span>
+                                                                        </div>
+                                                                        <h3 className="text-2xl font-bold text-foreground mb-2 line-clamp-1 group-hover:text-purple-400 transition-colors">
+                                                                            {course.title}
+                                                                        </h3>
+                                                                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                                                                            {course.description}
+                                                                        </p>
+                                                                    </div>
                                                                 </div>
-                                                                <div>
-                                                                    <p className="text-sm font-semibold text-foreground">
-                                                                        {course.creator.name}
-                                                                    </p>
-                                                                    <p className="text-xs text-muted-foreground">
-                                                                        {course.creator.email}
-                                                                    </p>
-                                                                </div>
-                                                            </div>
 
-                                                            {/* Metadata Grid */}
-                                                            <div className="grid grid-cols-4 gap-4 mb-4">
-                                                                <div>
-                                                                    <p className="text-xs text-muted-foreground">Lessons</p>
-                                                                    <p className="text-sm font-semibold text-foreground">
-                                                                        {course.totalLessons}
-                                                                    </p>
+                                                                {/* Creator Info */}
+                                                                <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border">
+                                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-foreground font-bold">
+                                                                        {course.creator.name.charAt(0).toUpperCase()}
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-sm font-semibold text-foreground">
+                                                                            {course.creator.name}
+                                                                        </p>
+                                                                        <p className="text-xs text-muted-foreground">
+                                                                            {course.creator.email}
+                                                                        </p>
+                                                                    </div>
                                                                 </div>
-                                                                <div>
-                                                                    <p className="text-xs text-muted-foreground">Category</p>
-                                                                    <p className="text-sm font-semibold text-foreground line-clamp-1">
-                                                                        {course.category}
-                                                                    </p>
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-xs text-muted-foreground">Level</p>
-                                                                    <p className="text-sm font-semibold text-foreground">
-                                                                        {course.skillLevel}
-                                                                    </p>
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-xs text-muted-foreground">Submitted</p>
-                                                                    <p className="text-sm font-semibold text-foreground">
-                                                                        {new Date(course.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                                                    </p>
-                                                                </div>
-                                                            </div>
 
-                                                            {/* Action Buttons */}
-                                                            {(course.status === 'DRAFT' || course.status === 'UNDER_REVIEW') && (
-                                                                <div className="flex gap-2">
-                                                                    {course.status === 'DRAFT' && (
+                                                                {/* Metadata Grid */}
+                                                                <div className="grid grid-cols-4 gap-4 mb-4">
+                                                                    <div>
+                                                                        <p className="text-xs text-muted-foreground">Lessons</p>
+                                                                        <p className="text-sm font-semibold text-foreground">
+                                                                            {course.totalLessons}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-xs text-muted-foreground">Category</p>
+                                                                        <p className="text-sm font-semibold text-foreground line-clamp-1">
+                                                                            {course.category}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-xs text-muted-foreground">Level</p>
+                                                                        <p className="text-sm font-semibold text-foreground">
+                                                                            {course.skillLevel}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-xs text-muted-foreground">Submitted</p>
+                                                                        <p className="text-sm font-semibold text-foreground">
+                                                                            {new Date(course.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Action Buttons */}
+                                                                {(course.status === 'DRAFT' || course.status === 'UNDER_REVIEW') ? (
+                                                                    <div className="flex gap-2">
+                                                                        {course.status === 'DRAFT' && (
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="outline"
+                                                                                onClick={() => handleReview(course, 'start_review')}
+                                                                                className="border-border hover:bg-card"
+                                                                            >
+                                                                                <Eye className="w-4 h-4 mr-2" />
+                                                                                Start Review
+                                                                            </Button>
+                                                                        )}
+                                                                        <Button
+                                                                            size="sm"
+                                                                            className="bg-green-600 hover:bg-green-700"
+                                                                            onClick={() => handleReview(course, 'approve')}
+                                                                        >
+                                                                            <CheckCircle className="w-4 h-4 mr-2" />
+                                                                            Approve
+                                                                        </Button>
                                                                         <Button
                                                                             size="sm"
                                                                             variant="outline"
-                                                                            onClick={() => handleReview(course, 'start_review')}
+                                                                            onClick={() => handleReview(course, 'request_changes')}
                                                                             className="border-border hover:bg-card"
                                                                         >
-                                                                            <Eye className="w-4 h-4 mr-2" />
-                                                                            Start Review
+                                                                            <MessageSquare className="w-4 h-4 mr-2" />
+                                                                            Request Changes
                                                                         </Button>
-                                                                    )}
-                                                                    <Button
-                                                                        size="sm"
-                                                                        className="bg-green-600 hover:bg-green-700"
-                                                                        onClick={() => handleReview(course, 'approve')}
-                                                                    >
-                                                                        <CheckCircle className="w-4 h-4 mr-2" />
-                                                                        Approve
-                                                                    </Button>
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="outline"
-                                                                        onClick={() => handleReview(course, 'request_changes')}
-                                                                        className="border-border hover:bg-card"
-                                                                    >
-                                                                        <MessageSquare className="w-4 h-4 mr-2" />
-                                                                        Request Changes
-                                                                    </Button>
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="destructive"
-                                                                        onClick={() => handleReview(course, 'reject')}
-                                                                    >
-                                                                        <XCircle className="w-4 h-4 mr-2" />
-                                                                        Reject
-                                                                    </Button>
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="outline"
-                                                                        onClick={() => router.push(`/courses/${course.id}`)}
-                                                                        className="border-border hover:bg-card ml-auto"
-                                                                    >
-                                                                        <ExternalLink className="w-4 h-4 mr-2" />
-                                                                        Preview
-                                                                    </Button>
-                                                                </div>
-                                                            )}
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="destructive"
+                                                                            onClick={() => handleReview(course, 'reject')}
+                                                                        >
+                                                                            <XCircle className="w-4 h-4 mr-2" />
+                                                                            Reject
+                                                                        </Button>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="outline"
+                                                                            onClick={() => router.push(`/courses/${course.id}`)}
+                                                                            className="border-border hover:bg-card ml-auto"
+                                                                        >
+                                                                            <ExternalLink className="w-4 h-4 mr-2" />
+                                                                            Preview
+                                                                        </Button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="flex gap-2">
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="outline"
+                                                                            onClick={() => handleEditCourse(course.id)}
+                                                                            className="border-border hover:bg-card"
+                                                                        >
+                                                                            <FileText className="w-4 h-4 mr-2" />
+                                                                            Edit Course
+                                                                        </Button>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="outline"
+                                                                            onClick={() => router.push(`/courses/${course.id}`)}
+                                                                            className="border-border hover:bg-card ml-auto"
+                                                                        >
+                                                                            <ExternalLink className="w-4 h-4 mr-2" />
+                                                                            Preview
+                                                                        </Button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        </motion.div>
-                                    )
-                                })}
-                            </div>
+                                                    </CardContent>
+                                                </Card>
+                                            </motion.div>
+                                        )
+                                    })}
+                                </div>
+
+                                {/* Pagination */}
+                                <div className="flex flex-wrap items-center justify-between gap-3 mt-6">
+                                    <p className="text-sm text-muted-foreground">
+                                        Showing {totalCourses === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}
+                                        {' '}-{' '}
+                                        {Math.min(page * PAGE_SIZE, totalCourses)} of {totalCourses} courses
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => handlePageChange('prev')}
+                                            disabled={page === 1}
+                                            className="border-border"
+                                        >
+                                            Previous
+                                        </Button>
+                                        <div className="text-sm font-semibold text-foreground">
+                                            Page {page} of {totalPages}
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => handlePageChange('next')}
+                                            disabled={page >= totalPages}
+                                            className="border-border"
+                                        >
+                                            Next
+                                        </Button>
+                                    </div>
+                                </div>
+                            </>
                         )}
                     </TabsContent>
                 </Tabs>

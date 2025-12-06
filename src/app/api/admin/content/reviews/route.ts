@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         }
 
         const { searchParams } = new URL(request.url)
-        const status = searchParams.get('status') || 'UNDER_REVIEW'
+        const status = searchParams.get('status') || 'all'
         const category = searchParams.get('category') || 'all'
         const page = parseInt(searchParams.get('page') || '1')
         const limit = parseInt(searchParams.get('limit') || '20')
@@ -27,9 +27,6 @@ export async function GET(request: NextRequest) {
         
         if (status !== 'all') {
             where.status = status
-        } else {
-            // For "all", show courses that need review or are under review
-            where.status = { in: ['DRAFT', 'UNDER_REVIEW', 'REJECTED'] }
         }
 
         if (category !== 'all') {
@@ -96,9 +93,7 @@ export async function GET(request: NextRequest) {
         // Category breakdown
         const categoryStats = await prisma.course.groupBy({
             by: ['contentCategory'],
-            where: {
-                status: 'UNDER_REVIEW'
-            },
+            where,
             _count: true
         })
 

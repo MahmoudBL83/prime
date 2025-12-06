@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
     GraduationCap,
     Plus,
@@ -18,7 +18,8 @@ import {
     Download,
     Filter,
     Eye,
-    BarChart3
+    BarChart3,
+    Loader2
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -348,28 +349,52 @@ const eligibilityColors = {
 
 export default function ScholarshipsPage() {
     const [activeTab, setActiveTab] = useState('campaigns')
-    const [campaigns] = useState<ScholarshipCampaign[]>(MOCK_CAMPAIGNS)
-    const [applications] = useState<ScholarshipApplication[]>(MOCK_APPLICATIONS)
+    const [campaigns, setCampaigns] = useState<ScholarshipCampaign[]>([])
+    const [applications, setApplications] = useState<ScholarshipApplication[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [selectedCampaign, setSelectedCampaign] = useState<ScholarshipCampaign | null>(null)
     const [selectedApplication, setSelectedApplication] = useState<ScholarshipApplication | null>(null)
     const [showCampaignModal, setShowCampaignModal] = useState(false)
     const [showReviewModal, setShowReviewModal] = useState(false)
     const [reviewDecision, setReviewDecision] = useState<'approve' | 'reject'>('approve')
     const [reviewNotes, setReviewNotes] = useState('')
+    const [stats, setStats] = useState({
+        activeCampaigns: 0,
+        totalBudget: 0,
+        budgetUsed: 0,
+        totalRecipients: 0,
+        pendingApplications: 0,
+        utilizationRate: 0
+    })
+
+    const fetchData = useCallback(async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            const response = await fetch('/api/admin/rewards/scholarships')
+            if (!response.ok) throw new Error('Failed to fetch scholarships data')
+            const data = await response.json()
+            setCampaigns(data.campaigns || [])
+            setApplications(data.applications || [])
+            if (data.stats) {
+                setStats(data.stats)
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred')
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
+    useEffect(() => {
+        fetchData()
+    }, [fetchData])
 
     const pending = applications.filter(a => a.status === 'pending')
     const underReview = applications.filter(a => a.status === 'under_review')
     const approved = applications.filter(a => a.status === 'approved')
     const disbursed = applications.filter(a => a.status === 'disbursed')
-
-    const stats = {
-        activeCampaigns: campaigns.filter(c => c.status === 'active').length,
-        totalBudget: campaigns.reduce((sum, c) => sum + c.totalBudget, 0),
-        budgetUsed: campaigns.reduce((sum, c) => sum + c.budgetUsed, 0),
-        totalRecipients: campaigns.reduce((sum, c) => sum + c.recipientsCount, 0),
-        pendingApplications: pending.length,
-        utilizationRate: 78 // Mock data
-    }
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-GB', {
@@ -395,13 +420,48 @@ export default function ScholarshipsPage() {
         setShowReviewModal(true)
     }
 
-    const handleSubmitReview = () => {
-        console.log('Review submitted:', {
-            applicationId: selectedApplication?.id,
-            decision: reviewDecision,
-            notes: reviewNotes
-        })
-        setShowReviewModal(false)
+    const handleSubmitReview = async () => {
+        if (!selectedApplication) return
+        
+        try {
+            const response = await fetch('/api/admin/rewards/scholarships', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    applicationId: selectedApplication.id,
+                    action: 'review',
+                    decision: reviewDecision,
+                    notes: reviewNotes
+                })
+            })
+            
+            if (!response.ok) throw new Error('Failed to submit review')
+            
+            setShowReviewModal(false)
+            fetchData()
+        } catch (err) {
+            console.error('Failed to submit review:', err)
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
+                <div className="text-center">
+                    <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                    <p className="text-red-400">{error}</p>
+                    <Button onClick={fetchData} className="mt-4">Retry</Button>
+                </div>
+            </div>
+        )
     }
 
     return (

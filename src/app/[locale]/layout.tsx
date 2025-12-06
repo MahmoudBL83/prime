@@ -7,7 +7,7 @@ import { OpenGraph } from '@/components/seo/OpenGraph';
 import Providers from "@/components/providers";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageTransitionProvider } from "@/components/navigation/PageTransition";
-import EarlyAccessModal from "@/components/EarlyAccessModal";
+import { ConditionalEarlyAccessModal } from "@/components/ConditionalEarlyAccessModal";
 
 export function generateStaticParams() {
     return routing.locales.map((locale) => ({ locale }));
@@ -100,8 +100,8 @@ export default async function RootLayout({
                         </MainLayout>
                     </PageTransitionProvider>
                 </Providers>
-                {/* Mandatory Early Access Modal - Cannot be closed */}
-                <EarlyAccessModal />
+                {/* Conditional Early Access Modal - Controlled by Admin */}
+                <ConditionalEarlyAccessModal />
             </div>
         </NextIntlClientProvider>
     );

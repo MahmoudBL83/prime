@@ -38,23 +38,28 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // Check if user is a creator
-        const creator = await prisma.creator.findUnique({
+        // Resolve creator: admins can create courses too (auto-create a creator profile if missing)
+        let creator = await prisma.creator.findUnique({
             where: { userId: session.user.id },
             include: { user: true }
         })
 
         if (!creator) {
-            return NextResponse.json({
-                error: 'Creator profile not found. Please complete your creator registration.'
-            }, { status: 403 })
-        }
-
-        // Check KYC status
-        if (creator.kycStatus !== 'VERIFIED') {
-            return NextResponse.json({
-                error: 'KYC verification required before creating courses.'
-            }, { status: 403 })
+            if (session.user.role === 'ADMIN') {
+                creator = await prisma.creator.create({
+                    data: {
+                        userId: session.user.id,
+                        kycStatus: 'VERIFIED',
+                        contractSigned: true,
+                        expertise: 'Admin',
+                    },
+                    include: { user: true }
+                })
+            } else {
+                return NextResponse.json({
+                    error: 'Creator profile not found. Please complete your creator registration.'
+                }, { status: 403 })
+            }
         }
 
         const body = await req.json()

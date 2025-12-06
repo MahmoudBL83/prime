@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
     RefreshCw,
     CheckCircle,
@@ -14,7 +14,8 @@ import {
     TrendingDown,
     TrendingUp,
     Filter,
-    Download
+    Download,
+    Loader2
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -248,24 +249,47 @@ const priorityColors = {
 
 export default function AppealManagementPage() {
     const [activeTab, setActiveTab] = useState('pending')
-    const [appeals] = useState<Appeal[]>(MOCK_APPEALS)
+    const [appeals, setAppeals] = useState<Appeal[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [selectedAppeal, setSelectedAppeal] = useState<Appeal | null>(null)
     const [showReviewModal, setShowReviewModal] = useState(false)
     const [reviewDecision, setReviewDecision] = useState<AppealDecision>('uphold')
     const [decisionNotes, setDecisionNotes] = useState('')
+    const [stats, setStats] = useState({
+        totalPending: 0,
+        underReview: 0,
+        urgent: 0,
+        avgReviewTime: 7.5,
+        resolutionRate: 0,
+        reinstatedRate: 0
+    })
+
+    const fetchAppeals = useCallback(async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            const response = await fetch('/api/admin/safety/appeals')
+            if (!response.ok) throw new Error('Failed to fetch appeals')
+            const data = await response.json()
+            setAppeals(data.appeals || [])
+            if (data.stats) {
+                setStats(data.stats)
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred')
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
+    useEffect(() => {
+        fetchAppeals()
+    }, [fetchAppeals])
 
     const pendingAppeals = appeals.filter(a => a.status === 'pending')
     const underReview = appeals.filter(a => a.status === 'under_review')
     const resolved = appeals.filter(a => ['upheld', 'reduced', 'reinstated'].includes(a.status))
-
-    const stats = {
-        totalPending: pendingAppeals.length,
-        underReview: underReview.length,
-        urgent: pendingAppeals.filter(a => a.priority === 'urgent').length,
-        avgReviewTime: 7.5,
-        resolutionRate: 85,
-        reinstatedRate: 35
-    }
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-GB', {
@@ -284,13 +308,51 @@ export default function AppealManagementPage() {
         setShowReviewModal(true)
     }
 
-    const handleSubmitDecision = () => {
-        console.log('Appeal decision:', {
-            appealId: selectedAppeal?.id,
-            decision: reviewDecision,
-            notes: decisionNotes
-        })
-        setShowReviewModal(false)
+    const handleSubmitDecision = async () => {
+        if (!selectedAppeal) return
+        
+        try {
+            const action = reviewDecision === 'full_reinstatement' ? 'approve' :
+                          reviewDecision === 'uphold' ? 'reject' : 'review'
+            
+            const response = await fetch('/api/admin/safety/appeals', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    appealId: selectedAppeal.id,
+                    action,
+                    decision: reviewDecision,
+                    notes: decisionNotes
+                })
+            })
+            
+            if (!response.ok) throw new Error('Failed to submit decision')
+            
+            setShowReviewModal(false)
+            fetchAppeals() // Refresh the list
+        } catch (err) {
+            console.error('Failed to submit decision:', err)
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
+                <div className="text-center">
+                    <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                    <p className="text-red-400">{error}</p>
+                    <Button onClick={fetchAppeals} className="mt-4">Retry</Button>
+                </div>
+            </div>
+        )
     }
 
     return (

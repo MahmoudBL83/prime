@@ -1,7 +1,7 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { UserRole } from '@prisma/client'
 import { Loader2, Shield } from 'lucide-react'
@@ -13,8 +13,11 @@ interface AdminGuardProps {
 export function AdminGuard({ children }: AdminGuardProps) {
     const { data: session, status } = useSession()
     const router = useRouter()
+    const pathname = usePathname()
+    const isAdminLogin = pathname === '/admin/login'
 
     useEffect(() => {
+        if (isAdminLogin) return
         if (status === 'loading') return // Still loading
 
         if (!session) {
@@ -26,7 +29,12 @@ export function AdminGuard({ children }: AdminGuardProps) {
             router.push('/en/dashboard')
             return
         }
-    }, [session, status, router])
+    }, [session, status, router, isAdminLogin])
+
+    // Allow admin login route to bypass guard after hooks are registered
+    if (isAdminLogin) {
+        return <>{children}</>
+    }
 
     if (status === 'loading') {
         return (

@@ -128,7 +128,15 @@ export async function GET(request: NextRequest) {
 
         const where: any = {}
         if (statusFilter) {
-            where.status = { equals: statusFilter, mode: 'insensitive' }
+            const normalized = statusFilter.toLowerCase()
+            if (normalized === 'reported') {
+                where.OR = [
+                    { status: { contains: 'block', mode: 'insensitive' } },
+                    { status: { contains: 'report', mode: 'insensitive' } }
+                ]
+            } else {
+                where.status = { equals: statusFilter, mode: 'insensitive' }
+            }
         }
         if (search) {
             where.OR = [

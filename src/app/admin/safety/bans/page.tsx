@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
     Ban,
     AlertTriangle,
@@ -16,7 +16,8 @@ import {
     Filter,
     Download,
     TrendingUp,
-    RefreshCw
+    RefreshCw,
+    Loader2
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -40,16 +41,16 @@ import {
 
 type BanType = 'temporary' | 'permanent' | 'feature_specific' | 'shadow'
 type BanStatus = 'active' | 'expired' | 'appealed' | 'lifted'
-type BanDuration = '1_day' | '7_days' | '30_days' | 'permanent'
+type BanDuration = '1_day' | '3_days' | '7_days' | '14_days' | '30_days' | '90_days' | 'permanent'
 
 interface BanRecord {
     id: string
     userId: string
     userName: string
     userEmail: string
-    banType: BanType
-    duration: BanDuration
-    status: BanStatus
+    banType: BanType | 'warning'
+    duration: string
+    status: BanStatus | 'appealed'
     reason: string
     evidence: string[]
     restrictedFeatures?: string[]
@@ -57,124 +58,12 @@ interface BanRecord {
     bannedAt: string
     expiresAt?: string
     liftedAt?: string
-    appealStatus?: 'pending' | 'approved' | 'rejected'
-    banHistory: {
+    appealStatus?: 'pending' | 'approved' | 'rejected' | 'none'
+    banHistory?: {
         previousBans: number
         lastBanDate?: string
     }
 }
-
-const MOCK_BANS: BanRecord[] = [
-    {
-        id: 'BAN-1001',
-        userId: 'user-123',
-        userName: 'Ahmed Mohamed',
-        userEmail: 'ahmed.m@example.com',
-        banType: 'temporary',
-        duration: '7_days',
-        status: 'active',
-        reason: 'Spam messaging multiple learners with external course promotions',
-        evidence: [
-            'Screenshot of spam messages (5 reports)',
-            'Pattern detected: 20+ identical messages sent in 1 hour',
-            'Violation of Community Guidelines Section 3.2'
-        ],
-        bannedBy: 'Admin Sarah',
-        bannedAt: '2024-10-14T10:00:00Z',
-        expiresAt: '2024-10-21T10:00:00Z',
-        banHistory: {
-            previousBans: 1,
-            lastBanDate: '2024-08-10T00:00:00Z'
-        }
-    },
-    {
-        id: 'BAN-1002',
-        userId: 'user-456',
-        userName: 'Fatma Ali',
-        userEmail: 'fatma.ali@example.com',
-        banType: 'feature_specific',
-        duration: '30_days',
-        status: 'active',
-        reason: 'Multiple instances of plagiarized content uploaded',
-        evidence: [
-            'Copyright claim from original creator',
-            'DMCA notice filed',
-            'Similarity score 95% with existing content'
-        ],
-        restrictedFeatures: ['content_upload', 'course_creation'],
-        bannedBy: 'Admin Khaled',
-        bannedAt: '2024-10-12T15:30:00Z',
-        expiresAt: '2024-11-11T15:30:00Z',
-        banHistory: {
-            previousBans: 0
-        }
-    },
-    {
-        id: 'BAN-1003',
-        userId: 'user-789',
-        userName: 'Omar Hassan',
-        userEmail: 'omar.h@example.com',
-        banType: 'permanent',
-        duration: 'permanent',
-        status: 'appealed',
-        reason: 'Repeated harassment and threatening behavior toward other users',
-        evidence: [
-            '15 harassment reports from 8 different users',
-            'Threatening language in messages and comments',
-            'Continued violations after 2 previous warnings and 1 temporary ban',
-            'Created alternate account to evade previous ban'
-        ],
-        bannedBy: 'Admin Sarah',
-        bannedAt: '2024-10-05T09:00:00Z',
-        appealStatus: 'pending',
-        banHistory: {
-            previousBans: 2,
-            lastBanDate: '2024-09-15T00:00:00Z'
-        }
-    },
-    {
-        id: 'BAN-1004',
-        userId: 'user-321',
-        userName: 'Sara Ibrahim',
-        userEmail: 'sara.i@example.com',
-        banType: 'shadow',
-        duration: '7_days',
-        status: 'active',
-        reason: 'Suspected bot activity - automated course reviews',
-        evidence: [
-            'Posted 50+ reviews in 2 hours',
-            'Reviews follow identical template',
-            'Suspicious account creation pattern'
-        ],
-        bannedBy: 'Auto-Detection System',
-        bannedAt: '2024-10-15T08:00:00Z',
-        expiresAt: '2024-10-22T08:00:00Z',
-        banHistory: {
-            previousBans: 0
-        }
-    },
-    {
-        id: 'BAN-1005',
-        userId: 'user-654',
-        userName: 'Khaled Youssef',
-        userEmail: 'khaled.y@example.com',
-        banType: 'temporary',
-        duration: '1_day',
-        status: 'expired',
-        reason: 'Inappropriate language in course Q&A',
-        evidence: [
-            '3 flagged comments with profanity',
-            'First offense - warning issued'
-        ],
-        bannedBy: 'Admin Khaled',
-        bannedAt: '2024-10-10T14:00:00Z',
-        expiresAt: '2024-10-11T14:00:00Z',
-        liftedAt: '2024-10-11T14:00:00Z',
-        banHistory: {
-            previousBans: 0
-        }
-    }
-]
 
 const banTypeColors = {
     temporary: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -192,11 +81,17 @@ const statusColors = {
 
 export default function BanManagementPage() {
     const [activeTab, setActiveTab] = useState('active')
-    const [bans] = useState<BanRecord[]>(MOCK_BANS)
+    const [bans, setBans] = useState<BanRecord[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [selectedBan, setSelectedBan] = useState<BanRecord | null>(null)
     const [showBanModal, setShowBanModal] = useState(false)
     const [showDetailsModal, setShowDetailsModal] = useState(false)
     const [showLiftModal, setShowLiftModal] = useState(false)
+    const [liftReason, setLiftReason] = useState('')
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isLifting, setIsLifting] = useState(false)
+    const [apiStats, setApiStats] = useState<{ totalActive: number; totalPermanent: number; totalTemporary: number; expiringSoon: number; appealed: number } | null>(null)
     
     // New ban form state
     const [newBan, setNewBan] = useState({
@@ -209,18 +104,41 @@ export default function BanManagementPage() {
         restrictedFeatures: [] as string[]
     })
 
+    const fetchBans = useCallback(async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            const response = await fetch('/api/admin/safety/bans', {
+                credentials: 'include',
+                cache: 'no-store'
+            })
+            if (!response.ok) throw new Error('Failed to fetch bans')
+            const data = await response.json()
+            setBans(data.bans || [])
+            setApiStats(data.stats || null)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred')
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
+    useEffect(() => {
+        fetchBans()
+    }, [fetchBans])
+
     const activeBans = bans.filter(b => b.status === 'active')
     const expiredBans = bans.filter(b => b.status === 'expired')
     const appealedBans = bans.filter(b => b.status === 'appealed')
     const liftedBans = bans.filter(b => b.status === 'lifted')
 
     const stats = {
-        totalActive: activeBans.length,
-        temporary: activeBans.filter(b => b.banType === 'temporary').length,
-        permanent: activeBans.filter(b => b.banType === 'permanent').length,
+        totalActive: apiStats?.totalActive ?? activeBans.length,
+        temporary: apiStats?.totalTemporary ?? activeBans.filter(b => b.banType === 'temporary').length,
+        permanent: apiStats?.totalPermanent ?? activeBans.filter(b => b.banType === 'permanent').length,
         featureSpecific: activeBans.filter(b => b.banType === 'feature_specific').length,
         shadow: activeBans.filter(b => b.banType === 'shadow').length,
-        appealed: appealedBans.length
+        appealed: apiStats?.appealed ?? appealedBans.length
     }
 
     const formatDate = (dateString: string) => {
@@ -239,6 +157,20 @@ export default function BanManagementPage() {
         return days > 0 ? days : 0
     }
 
+    const formatDuration = (duration: string) => {
+        const map: Record<string, string> = {
+            one_day: '1 day',
+            three_days: '3 days',
+            seven_days: '7 days',
+            fourteen_days: '14 days',
+            thirty_days: '30 days',
+            ninety_days: '90 days',
+            permanent: 'Permanent'
+        }
+        const key = duration?.toLowerCase().replace(/ /g, '_')
+        return map[key] || duration.replace(/_/g, ' ')
+    }
+
     const handleViewDetails = (ban: BanRecord) => {
         setSelectedBan(ban)
         setShowDetailsModal(true)
@@ -249,19 +181,83 @@ export default function BanManagementPage() {
         setShowLiftModal(true)
     }
 
-    const handleCreateBan = () => {
-        console.log('Creating ban:', newBan)
-        setShowBanModal(false)
-        // Reset form
-        setNewBan({
-            userName: '',
-            userId: '',
-            banType: 'temporary',
-            duration: '7_days',
-            reason: '',
-            evidence: '',
-            restrictedFeatures: []
-        })
+    const handleCreateBan = async () => {
+        try {
+            setIsSubmitting(true)
+            if (!newBan.userId || !newBan.reason.trim()) {
+                setError('User ID and reason are required')
+                return
+            }
+            const banTypeMap: Record<BanType, string> = {
+                temporary: 'TEMPORARY',
+                permanent: 'PERMANENT',
+                feature_specific: 'FEATURE_SPECIFIC',
+                shadow: 'SHADOW'
+            }
+            const durationMap: Record<BanDuration, string> = {
+                '1_day': 'ONE_DAY',
+                '3_days': 'THREE_DAYS',
+                '7_days': 'SEVEN_DAYS',
+                '14_days': 'FOURTEEN_DAYS',
+                '30_days': 'THIRTY_DAYS',
+                '90_days': 'NINETY_DAYS',
+                'permanent': 'PERMANENT'
+            }
+
+            const response = await fetch('/api/admin/safety/bans', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    userId: newBan.userId,
+                    banType: banTypeMap[newBan.banType],
+                    duration: durationMap[newBan.duration],
+                    reason: newBan.reason,
+                    evidence: newBan.evidence
+                        ? newBan.evidence.split('\n').map(line => line.trim()).filter(Boolean)
+                        : [],
+                })
+            })
+            
+            if (!response.ok) throw new Error('Failed to create ban')
+            
+            setShowBanModal(false)
+            setNewBan({
+                userName: '',
+                userId: '',
+                banType: 'temporary',
+                duration: '7_days',
+                reason: '',
+                evidence: '',
+                restrictedFeatures: []
+            })
+            await fetchBans()
+        } catch (err) {
+            console.error('Failed to create ban:', err)
+            setError(err instanceof Error ? err.message : 'Failed to create ban')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-red-900 to-gray-900 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-red-500" />
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-red-900 to-gray-900 flex items-center justify-center">
+                <div className="text-center">
+                    <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                    <p className="text-red-400">{error}</p>
+                    <Button onClick={fetchBans} className="mt-4">Retry</Button>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -281,13 +277,31 @@ export default function BanManagementPage() {
                             <Ban className="w-4 h-4 mr-2" />
                             Issue New Ban
                         </Button>
-                        <Button variant="outline" className="bg-white/5 border-border text-muted-foreground hover:bg-white/10">
-                            <Filter className="w-4 h-4 mr-2" />
-                            Filter
+                        <Button
+                            variant="outline"
+                            className="bg-white/5 border-border text-muted-foreground hover:bg-white/10"
+                            onClick={fetchBans}
+                            disabled={loading}
+                        >
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Refresh
                         </Button>
-                        <Button variant="outline" className="bg-white/5 border-border text-muted-foreground hover:bg-white/10">
+                        <Button
+                            variant="outline"
+                            className="bg-white/5 border-border text-muted-foreground hover:bg-white/10"
+                            onClick={() => {
+                                const blob = new Blob([JSON.stringify(bans, null, 2)], { type: 'application/json' })
+                                const url = URL.createObjectURL(blob)
+                                const link = document.createElement('a')
+                                link.href = url
+                                link.download = 'bans-export.json'
+                                link.click()
+                                URL.revokeObjectURL(url)
+                            }}
+                            disabled={bans.length === 0}
+                        >
                             <Download className="w-4 h-4 mr-2" />
-                            Export Report
+                            Export JSON
                         </Button>
                     </div>
                 </div>
@@ -385,15 +399,15 @@ export default function BanManagementPage() {
                                                             <h4 className="font-semibold text-foreground text-lg">{ban.userName}</h4>
                                                             <p className="text-sm text-muted-foreground">{ban.userEmail} • ID: {ban.userId}</p>
                                                         </div>
-                                                        <Badge className={banTypeColors[ban.banType]}>
+                                                        <Badge className={banTypeColors[ban.banType as BanType] || 'bg-white/10 text-foreground border-border'}>
                                                             {ban.banType.replace(/_/g, ' ')}
                                                         </Badge>
                                                         <Badge className={statusColors[ban.status]}>
                                                             {ban.status}
                                                         </Badge>
-                                                        {ban.banHistory.previousBans > 0 && (
+                                                        {(ban.banHistory?.previousBans || 0) > 0 && (
                                                             <Badge className="bg-red-100 text-red-800 border-red-200">
-                                                                Repeat Offender ({ban.banHistory.previousBans} previous)
+                                                                Repeat Offender ({ban.banHistory?.previousBans} previous)
                                                             </Badge>
                                                         )}
                                                     </div>
@@ -406,7 +420,7 @@ export default function BanManagementPage() {
                                                         <div>
                                                             <div className="text-xs text-muted-foreground mb-1">Duration</div>
                                                             <div className="text-sm text-foreground">
-                                                                {ban.duration === 'permanent' ? 'Permanent' : ban.duration.replace(/_/g, ' ')}
+                                                                {formatDuration(ban.duration)}
                                                             </div>
                                                         </div>
                                                         <div>
@@ -493,7 +507,7 @@ export default function BanManagementPage() {
                                                         <h4 className="font-semibold text-foreground text-lg">{ban.userName}</h4>
                                                         <p className="text-sm text-muted-foreground">{ban.userEmail}</p>
                                                     </div>
-                                                    <Badge className={banTypeColors[ban.banType]}>
+                                                    <Badge className={banTypeColors[ban.banType as BanType] || 'bg-white/10 text-foreground border-border'}>
                                                         {ban.banType.replace(/_/g, ' ')}
                                                     </Badge>
                                                     <Badge className="bg-blue-100 text-blue-800 border-blue-200">
@@ -505,7 +519,7 @@ export default function BanManagementPage() {
                                                     <strong>Original Ban Reason:</strong> {ban.reason}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">
-                                                    Banned: {formatDate(ban.bannedAt)} • {ban.banHistory.previousBans} previous bans
+                                                    Banned: {formatDate(ban.bannedAt)} • {(ban.banHistory?.previousBans || 0)} previous bans
                                                 </div>
                                             </div>
 
@@ -626,8 +640,11 @@ export default function BanManagementPage() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="1_day">1 Day</SelectItem>
+                                        <SelectItem value="3_days">3 Days</SelectItem>
                                         <SelectItem value="7_days">7 Days</SelectItem>
+                                        <SelectItem value="14_days">14 Days</SelectItem>
                                         <SelectItem value="30_days">30 Days</SelectItem>
+                                        <SelectItem value="90_days">90 Days</SelectItem>
                                         <SelectItem value="permanent">Permanent</SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -666,10 +683,11 @@ export default function BanManagementPage() {
                             </Button>
                             <Button
                                 onClick={handleCreateBan}
+                                disabled={isSubmitting}
                                 className="flex-1 bg-red-600 hover:bg-red-700 text-foreground"
                             >
                                 <Ban className="w-4 h-4 mr-2" />
-                                Issue Ban
+                                {isSubmitting ? 'Issuing...' : 'Issue Ban'}
                             </Button>
                         </div>
                     </div>
@@ -705,7 +723,7 @@ export default function BanManagementPage() {
                                     </div>
                                     <div>
                                         <span className="text-muted-foreground">Previous Bans:</span>
-                                        <span className="text-foreground ml-2">{selectedBan.banHistory.previousBans}</span>
+                                        <span className="text-foreground ml-2">{selectedBan?.banHistory?.previousBans ?? 0}</span>
                                     </div>
                                 </div>
                             </div>
@@ -715,13 +733,13 @@ export default function BanManagementPage() {
                                 <div className="space-y-2 text-sm">
                                     <div className="flex items-center justify-between">
                                         <span className="text-muted-foreground">Type:</span>
-                                        <Badge className={banTypeColors[selectedBan.banType]}>
+                                        <Badge className={banTypeColors[selectedBan.banType as BanType] || 'bg-white/10 text-foreground border-border'}>
                                             {selectedBan.banType.replace(/_/g, ' ')}
                                         </Badge>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span className="text-muted-foreground">Duration:</span>
-                                        <span className="text-foreground">{selectedBan.duration.replace(/_/g, ' ')}</span>
+                                        <span className="text-foreground">{formatDuration(selectedBan.duration)}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span className="text-muted-foreground">Status:</span>
@@ -754,7 +772,7 @@ export default function BanManagementPage() {
                             <div className="bg-white/5 rounded-lg p-4 border border-border">
                                 <h4 className="font-semibold text-foreground mb-3">Evidence & Documentation</h4>
                                 <ul className="space-y-2">
-                                    {selectedBan.evidence.map((item, index) => (
+                                    {selectedBan.evidence?.map((item, index) => (
                                         <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
                                             <Shield className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
                                             {item}
@@ -794,6 +812,8 @@ export default function BanManagementPage() {
                                     id="liftReason"
                                     className="bg-white/5 border-border text-foreground"
                                     placeholder="Explain why this ban is being lifted..."
+                                    value={liftReason}
+                                    onChange={(e) => setLiftReason(e.target.value)}
                                 />
                             </div>
 
@@ -806,14 +826,36 @@ export default function BanManagementPage() {
                                     Cancel
                                 </Button>
                                 <Button
-                                    onClick={() => {
-                                        console.log('Lifting ban:', selectedBan.id)
-                                        setShowLiftModal(false)
+                                    onClick={async () => {
+                                        if (!selectedBan) return
+                                        try {
+                                            setIsLifting(true)
+                                            const response = await fetch('/api/admin/safety/bans', {
+                                                method: 'PATCH',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                credentials: 'include',
+                                                body: JSON.stringify({
+                                                    banId: selectedBan.id,
+                                                    action: 'lift',
+                                                    reason: liftReason,
+                                                })
+                                            })
+                                            if (!response.ok) throw new Error('Failed to lift ban')
+                                            setShowLiftModal(false)
+                                            setLiftReason('')
+                                            await fetchBans()
+                                        } catch (err) {
+                                            console.error(err)
+                                            setError(err instanceof Error ? err.message : 'Failed to lift ban')
+                                        } finally {
+                                            setIsLifting(false)
+                                        }
                                     }}
+                                    disabled={isLifting}
                                     className="flex-1 bg-green-600 hover:bg-green-700 text-foreground"
                                 >
                                     <CheckCircle className="w-4 h-4 mr-2" />
-                                    Confirm Lift Ban
+                                    {isLifting ? 'Lifting...' : 'Confirm Lift Ban'}
                                 </Button>
                             </div>
                         </div>

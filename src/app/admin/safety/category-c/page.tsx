@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
     AlertTriangle,
     TrendingDown,
@@ -18,7 +18,8 @@ import {
     Users,
     Filter,
     Download,
-    Shield
+    Shield,
+    Loader2
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -214,26 +215,49 @@ const violationColors = {
 
 export default function CategoryCMonitoringPage() {
     const [activeTab, setActiveTab] = useState('critical')
-    const [channels] = useState<FlaggedChannel[]>(MOCK_FLAGGED_CHANNELS)
+    const [channels, setChannels] = useState<FlaggedChannel[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [selectedChannel, setSelectedChannel] = useState<FlaggedChannel | null>(null)
     const [showDetailsModal, setShowDetailsModal] = useState(false)
     const [showActionModal, setShowActionModal] = useState(false)
     const [actionType, setActionType] = useState<'warning' | 'escalate' | 'restrict' | 'suspend'>('warning')
     const [actionNotes, setActionNotes] = useState('')
+    const [stats, setStats] = useState({
+        totalFlagged: 0,
+        critical: 0,
+        escalated: 0,
+        warningsIssued: 0,
+        avgQualityScore: 0,
+        totalViolations: 0
+    })
+
+    const fetchChannels = useCallback(async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            const response = await fetch('/api/admin/safety/category-c')
+            if (!response.ok) throw new Error('Failed to fetch flagged channels')
+            const data = await response.json()
+            setChannels(data.channels || [])
+            if (data.stats) {
+                setStats(data.stats)
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred')
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
+    useEffect(() => {
+        fetchChannels()
+    }, [fetchChannels])
 
     const criticalChannels = channels.filter(c => c.riskLevel === 'critical')
     const highRisk = channels.filter(c => c.riskLevel === 'high')
     const mediumRisk = channels.filter(c => c.riskLevel === 'medium')
     const monitoring = channels.filter(c => c.status === 'monitoring')
-
-    const stats = {
-        totalFlagged: channels.length,
-        critical: criticalChannels.length,
-        escalated: channels.filter(c => c.status === 'escalated').length,
-        warningsIssued: channels.reduce((sum, c) => sum + c.warningsIssued, 0),
-        avgQualityScore: Math.round(channels.reduce((sum, c) => sum + c.metrics.avgQualityScore, 0) / channels.length),
-        totalViolations: channels.reduce((sum, c) => c.violations.reduce((vSum, v) => vSum + v.count, 0) + sum, 0)
-    }
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-GB', {
@@ -257,13 +281,47 @@ export default function CategoryCMonitoringPage() {
         setShowActionModal(true)
     }
 
-    const handleSubmitAction = () => {
-        console.log('Action submitted:', {
-            channelId: selectedChannel?.id,
-            action: actionType,
-            notes: actionNotes
-        })
-        setShowActionModal(false)
+    const handleSubmitAction = async () => {
+        if (!selectedChannel) return
+        
+        try {
+            const response = await fetch('/api/admin/safety/category-c', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    channelId: selectedChannel.id,
+                    action: actionType,
+                    notes: actionNotes
+                })
+            })
+            
+            if (!response.ok) throw new Error('Failed to submit action')
+            
+            setShowActionModal(false)
+            fetchChannels() // Refresh the list
+        } catch (err) {
+            console.error('Failed to submit action:', err)
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-orange-900 to-gray-900 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-orange-900 to-gray-900 flex items-center justify-center">
+                <div className="text-center">
+                    <AlertTriangle className="w-12 h-12 text-orange-500 mx-auto mb-4" />
+                    <p className="text-red-400">{error}</p>
+                    <Button onClick={fetchChannels} className="mt-4">Retry</Button>
+                </div>
+            </div>
+        )
     }
 
     return (

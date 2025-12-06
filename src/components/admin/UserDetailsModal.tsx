@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useLocale } from 'next-intl'
 import {
     X,
     User,
@@ -13,8 +12,7 @@ import {
     Award,
     UserCheck,
     Edit,
-    Save,
-    AlertTriangle
+    Save
 } from 'lucide-react'
 
 interface UserDetailsModalProps {
@@ -72,7 +70,6 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [isEditing, setIsEditing] = useState(false)
-    const locale = useLocale()
     const [editForm, setEditForm] = useState({
         name: '',
         arabicName: '',
@@ -139,7 +136,7 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
     }
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString(locale === 'ar' ? 'ar-EG' : locale === 'de' ? 'de-DE' : 'en-US', {
+        return new Date(dateString).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -151,26 +148,24 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 bg-background bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#1a1a2e] rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden border border-white/10">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-border">
-                    <h2 className="text-xl font-semibold text-foreground">
-                        {locale === 'ar' ? 'تفاصيل المستخدم' : locale === 'de' ? 'Benutzerdetails' : 'User Details'}
-                    </h2>
+                <div className="flex items-center justify-between p-6 border-b border-white/10">
+                    <h2 className="text-xl font-semibold text-white">User Details</h2>
                     <div className="flex items-center gap-2">
                         {!isEditing && (
                             <button
                                 onClick={() => setIsEditing(true)}
-                                className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-foreground rounded-lg hover:bg-blue-700"
+                                className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                             >
                                 <Edit className="w-4 h-4" />
-                                {locale === 'ar' ? 'تعديل' : locale === 'de' ? 'Bearbeiten' : 'Edit'}
+                                Edit
                             </button>
                         )}
                         <button
                             onClick={onClose}
-                            className="p-2 text-muted-foreground hover:text-muted-foreground hover:bg-card-hover rounded-lg"
+                            className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg"
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -186,138 +181,101 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
                     )}
 
                     {error && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                            <p className="text-red-800">{error}</p>
+                        <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-4 mb-6">
+                            <p className="text-red-300">{error}</p>
                         </div>
                     )}
 
                     {user && (
                         <div className="space-y-6">
                             {/* Basic Info */}
-                            <div className="bg-background rounded-lg p-4">
-                                <h3 className="text-lg font-medium text-foreground mb-4">
-                                    {locale === 'ar' ? 'المعلومات الأساسية' : locale === 'de' ? 'Grundlegende Informationen' : 'Basic Information'}
-                                </h3>
+                            <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                                <h3 className="text-lg font-medium text-white mb-4">Basic Information</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {isEditing ? (
                                         <>
                                             <div>
-                                                <label className="block text-sm font-medium text-foreground mb-1">
-                                                    {locale === 'ar' ? 'الاسم' : locale === 'de' ? 'Name' : 'Name'}
-                                                </label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-1">Name</label>
                                                 <input
                                                     type="text"
                                                     value={editForm.name}
                                                     onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                                                    className="w-full border border-border rounded-lg px-3 py-2"
+                                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-foreground mb-1">
-                                                    {locale === 'ar' ? 'الاسم بالعربية' : locale === 'de' ? 'Arabischer Name' : 'Arabic Name'}
-                                                </label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-1">Arabic Name</label>
                                                 <input
                                                     type="text"
                                                     value={editForm.arabicName}
                                                     onChange={(e) => setEditForm({ ...editForm, arabicName: e.target.value })}
-                                                    className="w-full border border-border rounded-lg px-3 py-2"
+                                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-foreground mb-1">
-                                                    {locale === 'ar' ? 'رقم الهاتف' : locale === 'de' ? 'Telefon' : 'Phone'}
-                                                </label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-1">Phone</label>
                                                 <input
                                                     type="text"
                                                     value={editForm.phone}
                                                     onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                                                    className="w-full border border-border rounded-lg px-3 py-2"
+                                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-foreground mb-1">
-                                                    {locale === 'ar' ? 'الدور' : locale === 'de' ? 'Rolle' : 'Role'}
-                                                </label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-1">Role</label>
                                                 <select
                                                     value={editForm.role}
-                                                    onChange={(e) => setEditForm({ ...editForm, role: e.target.value as any })}
-                                                    className="w-full border border-border rounded-lg px-3 py-2"
+                                                    onChange={(e) => setEditForm({ ...editForm, role: e.target.value as 'ADMIN' | 'CREATOR' | 'LEARNER' })}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white"
                                                 >
-                                                    <option value="LEARNER">
-                                                        {locale === 'ar' ? 'متعلم' : locale === 'de' ? 'Lernender' : 'Learner'}
-                                                    </option>
-                                                    <option value="CREATOR">
-                                                        {locale === 'ar' ? 'مبدع' : locale === 'de' ? 'Ersteller' : 'Creator'}
-                                                    </option>
-                                                    <option value="ADMIN">
-                                                        {locale === 'ar' ? 'مسؤول' : locale === 'de' ? 'Administrator' : 'Admin'}
-                                                    </option>
+                                                    <option value="LEARNER">Learner</option>
+                                                    <option value="CREATOR">Creator</option>
+                                                    <option value="ADMIN">Admin</option>
                                                 </select>
                                             </div>
                                         </>
                                     ) : (
                                         <>
                                             <div className="flex items-center gap-3">
-                                                <User className="w-5 h-5 text-muted-foreground" />
+                                                <User className="w-5 h-5 text-gray-400" />
                                                 <div>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {locale === 'ar' ? 'الاسم' : locale === 'de' ? 'Name' : 'Name'}
-                                                    </p>
-                                                    <p className="font-medium">{user.name}</p>
-                                                    {user.arabicName && <p className="text-sm text-muted-foreground">{user.arabicName}</p>}
+                                                    <p className="text-sm text-gray-400">Name</p>
+                                                    <p className="font-medium text-white">{user.name}</p>
+                                                    {user.arabicName && <p className="text-sm text-gray-400">{user.arabicName}</p>}
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <Mail className="w-5 h-5 text-muted-foreground" />
+                                                <Mail className="w-5 h-5 text-gray-400" />
                                                 <div>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {locale === 'ar' ? 'البريد الإلكتروني' : locale === 'de' ? 'E-Mail' : 'Email'}
-                                                    </p>
-                                                    <p className="font-medium">{user.email}</p>
+                                                    <p className="text-sm text-gray-400">Email</p>
+                                                    <p className="font-medium text-white">{user.email}</p>
                                                     {user.emailVerified ? (
-                                                        <p className="text-sm text-green-600">
-                                                            {locale === 'ar' ? 'مؤكد' : locale === 'de' ? 'Verifiziert' : 'Verified'}
-                                                        </p>
+                                                        <p className="text-sm text-green-400">Verified</p>
                                                     ) : (
-                                                        <p className="text-sm text-red-600">
-                                                            {locale === 'ar' ? 'غير مؤكد' : locale === 'de' ? 'Nicht verifiziert' : 'Unverified'}
-                                                        </p>
+                                                        <p className="text-sm text-red-400">Unverified</p>
                                                     )}
                                                 </div>
                                             </div>
                                             {user.phone && (
                                                 <div className="flex items-center gap-3">
-                                                    <Phone className="w-5 h-5 text-muted-foreground" />
+                                                    <Phone className="w-5 h-5 text-gray-400" />
                                                     <div>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {locale === 'ar' ? 'رقم الهاتف' : locale === 'de' ? 'Telefon' : 'Phone'}
-                                                        </p>
-                                                        <p className="font-medium">{user.phone}</p>
+                                                        <p className="text-sm text-gray-400">Phone</p>
+                                                        <p className="font-medium text-white">{user.phone}</p>
                                                         {user.phoneVerified ? (
-                                                            <p className="text-sm text-green-600">
-                                                                {locale === 'ar' ? 'مؤكد' : locale === 'de' ? 'Verifiziert' : 'Verified'}
-                                                            </p>
+                                                            <p className="text-sm text-green-400">Verified</p>
                                                         ) : (
-                                                            <p className="text-sm text-red-600">
-                                                                {locale === 'ar' ? 'غير مؤكد' : locale === 'de' ? 'Nicht verifiziert' : 'Unverified'}
-                                                            </p>
+                                                            <p className="text-sm text-red-400">Unverified</p>
                                                         )}
                                                     </div>
                                                 </div>
                                             )}
                                             <div className="flex items-center gap-3">
-                                                <Shield className="w-5 h-5 text-muted-foreground" />
+                                                <Shield className="w-5 h-5 text-gray-400" />
                                                 <div>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {locale === 'ar' ? 'الدور' : locale === 'de' ? 'Rolle' : 'Role'}
-                                                    </p>
+                                                    <p className="text-sm text-gray-400">Role</p>
                                                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${roleColors[user.role]}`}>
-                                                        {user.role === 'LEARNER'
-                                                            ? (locale === 'ar' ? 'متعلم' : locale === 'de' ? 'Lernender' : 'Learner')
-                                                            : user.role === 'CREATOR'
-                                                                ? (locale === 'ar' ? 'مبدع' : locale === 'de' ? 'Ersteller' : 'Creator')
-                                                                : (locale === 'ar' ? 'مسؤول' : locale === 'de' ? 'Administrator' : 'Admin')
-                                                        }
+                                                        {user.role}
                                                     </span>
                                                 </div>
                                             </div>
@@ -327,23 +285,19 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
 
                                 {user.bio && !isEditing && (
                                     <div className="mt-4">
-                                        <p className="text-sm text-muted-foreground mb-1">
-                                            {locale === 'ar' ? 'السيرة الذاتية' : locale === 'de' ? 'Bio' : 'Bio'}
-                                        </p>
-                                        <p className="text-foreground">{user.bio}</p>
+                                        <p className="text-sm text-gray-400 mb-1">Bio</p>
+                                        <p className="text-white">{user.bio}</p>
                                     </div>
                                 )}
 
                                 {isEditing && (
                                     <div className="mt-4">
-                                        <label className="block text-sm font-medium text-foreground mb-1">
-                                            {locale === 'ar' ? 'السيرة الذاتية' : locale === 'de' ? 'Bio' : 'Bio'}
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-300 mb-1">Bio</label>
                                         <textarea
                                             value={editForm.bio}
                                             onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
                                             rows={3}
-                                            className="w-full border border-border rounded-lg px-3 py-2"
+                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white"
                                         />
                                     </div>
                                 )}
@@ -352,47 +306,38 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
                                     <div className="mt-4 flex gap-2">
                                         <button
                                             onClick={handleSaveEdit}
-                                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-foreground rounded-lg hover:bg-green-700"
+                                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                                         >
                                             <Save className="w-4 h-4" />
-                                            {locale === 'ar' ? 'حفظ التغييرات' : locale === 'de' ? 'Änderungen speichern' : 'Save Changes'}
+                                            Save Changes
                                         </button>
                                         <button
                                             onClick={() => setIsEditing(false)}
-                                            className="px-4 py-2 bg-gray-300 text-foreground rounded-lg hover:bg-gray-400"
+                                            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
                                         >
-                                            {locale === 'ar' ? 'إلغاء' : locale === 'de' ? 'Abbrechen' : 'Cancel'}
+                                            Cancel
                                         </button>
                                     </div>
                                 )}
                             </div>
 
                             {/* Account Status */}
-                            <div className="bg-background rounded-lg p-4">
-                                <h3 className="text-lg font-medium text-foreground mb-4">
-                                    {locale === 'ar' ? 'حالة الحساب' : locale === 'de' ? 'Kontostatus' : 'Account Status'}
-                                </h3>
+                            <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                                <h3 className="text-lg font-medium text-white mb-4">Account Status</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="flex items-center gap-3">
-                                        <Calendar className="w-5 h-5 text-muted-foreground" />
+                                        <Calendar className="w-5 h-5 text-gray-400" />
                                         <div>
-                                            <p className="text-sm text-muted-foreground">
-                                                {locale === 'ar' ? 'تاريخ الانضمام' : locale === 'de' ? 'Beigetreten' : 'Joined'}
-                                            </p>
-                                            <p className="font-medium">{formatDate(user.createdAt)}</p>
+                                            <p className="text-sm text-gray-400">Joined</p>
+                                            <p className="font-medium text-white">{formatDate(user.createdAt)}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <UserCheck className="w-5 h-5 text-muted-foreground" />
+                                        <UserCheck className="w-5 h-5 text-gray-400" />
                                         <div>
-                                            <p className="text-sm text-muted-foreground">
-                                                {locale === 'ar' ? 'التسجيل' : locale === 'de' ? 'Onboarding' : 'Onboarding'}
-                                            </p>
-                                            <p className={`font-medium ${user.onboardingCompleted ? 'text-green-600' : 'text-red-600'}`}>
-                                                {user.onboardingCompleted
-                                                    ? (locale === 'ar' ? 'مكتمل' : locale === 'de' ? 'Abgeschlossen' : 'Complete')
-                                                    : (locale === 'ar' ? 'غير مكتمل' : locale === 'de' ? 'Unvollständig' : 'Incomplete')
-                                                }
+                                            <p className="text-sm text-gray-400">Onboarding</p>
+                                            <p className={`font-medium ${user.onboardingCompleted ? 'text-green-400' : 'text-red-400'}`}>
+                                                {user.onboardingCompleted ? 'Complete' : 'Incomplete'}
                                             </p>
                                         </div>
                                     </div>
@@ -401,72 +346,61 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
 
                             {/* Quick Actions */}
                             {!isEditing && (
-                                <div className="bg-background rounded-lg p-4">
-                                    <h3 className="text-lg font-medium text-foreground mb-4">
-                                        {locale === 'ar' ? 'إجراءات سريعة' : locale === 'de' ? 'Schnellaktionen' : 'Quick Actions'}
-                                    </h3>
+                                <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                                    <h3 className="text-lg font-medium text-white mb-4">Quick Actions</h3>
                                     <div className="flex flex-wrap gap-2">
                                         {!user.emailVerified && (
                                             <button
                                                 onClick={() => handleUpdate('verifyEmail')}
-                                                className="px-3 py-2 bg-green-600 text-foreground rounded-lg hover:bg-green-700 text-sm"
+                                                className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
                                             >
-                                                {locale === 'ar' ? 'تأكيد البريد الإلكتروني' : locale === 'de' ? 'E-Mail verifizieren' : 'Verify Email'}
+                                                Verify Email
                                             </button>
                                         )}
                                         {user.emailVerified && (
                                             <button
                                                 onClick={() => handleUpdate('unverifyEmail')}
-                                                className="px-3 py-2 bg-yellow-600 text-foreground rounded-lg hover:bg-yellow-700 text-sm"
+                                                className="px-3 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-sm"
                                             >
-                                                {locale === 'ar' ? 'إلغاء تأكيد البريد الإلكتروني' : locale === 'de' ? 'E-Mail-Verifizierung aufheben' : 'Unverify Email'}
+                                                Unverify Email
                                             </button>
                                         )}
                                         {!user.onboardingCompleted && (
                                             <button
                                                 onClick={() => handleUpdate('completeOnboarding')}
-                                                className="px-3 py-2 bg-blue-600 text-foreground rounded-lg hover:bg-blue-700 text-sm"
+                                                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
                                             >
-                                                {locale === 'ar' ? 'إكمال التسجيل' : locale === 'de' ? 'Onboarding abschließen' : 'Complete Onboarding'}
+                                                Complete Onboarding
                                             </button>
                                         )}
                                         <button
                                             onClick={() => handleUpdate('updateRole', { role: user.role === 'LEARNER' ? 'CREATOR' : 'LEARNER' })}
-                                            className="px-3 py-2 bg-purple-600 text-foreground rounded-lg hover:bg-purple-700 text-sm"
+                                            className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm"
                                         >
-                                            {locale === 'ar' ? 'التبديل إلى' : locale === 'de' ? 'Wechseln zu' : 'Switch to'} {user.role === 'LEARNER'
-                                                ? (locale === 'ar' ? 'مبدع' : locale === 'de' ? 'Ersteller' : 'Creator')
-                                                : (locale === 'ar' ? 'متعلم' : locale === 'de' ? 'Lernender' : 'Learner')
-                                            }
+                                            Switch to {user.role === 'LEARNER' ? 'Creator' : 'Learner'}
                                         </button>
                                     </div>
                                 </div>
                             )}
 
                             {/* Activity Summary */}
-                            <div className="bg-background rounded-lg p-4">
-                                <h3 className="text-lg font-medium text-foreground mb-4">
-                                    {locale === 'ar' ? 'ملخص النشاط' : locale === 'de' ? 'Aktivitätsübersicht' : 'Activity Summary'}
-                                </h3>
+                            <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                                <h3 className="text-lg font-medium text-white mb-4">Activity Summary</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {user.role === 'LEARNER' && (
                                         <>
                                             <div className="flex items-center gap-3">
-                                                <BookOpen className="w-5 h-5 text-blue-600" />
+                                                <BookOpen className="w-5 h-5 text-blue-400" />
                                                 <div>
-                                                    <p className="text-2xl font-bold text-foreground">{user._count.enrollments}</p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {locale === 'ar' ? 'التسجيلات' : locale === 'de' ? 'Anmeldungen' : 'Enrollments'}
-                                                    </p>
+                                                    <p className="text-2xl font-bold text-white">{user._count.enrollments}</p>
+                                                    <p className="text-sm text-gray-400">Enrollments</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <Award className="w-5 h-5 text-green-600" />
+                                                <Award className="w-5 h-5 text-green-400" />
                                                 <div>
-                                                    <p className="text-2xl font-bold text-foreground">{user._count.subscriptions}</p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {locale === 'ar' ? 'الاشتراكات' : locale === 'de' ? 'Abonnements' : 'Subscriptions'}
-                                                    </p>
+                                                    <p className="text-2xl font-bold text-white">{user._count.subscriptions}</p>
+                                                    <p className="text-sm text-gray-400">Subscriptions</p>
                                                 </div>
                                             </div>
                                         </>
@@ -474,30 +408,24 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
                                     {user.role === 'CREATOR' && user.creator && (
                                         <>
                                             <div className="flex items-center gap-3">
-                                                <BookOpen className="w-5 h-5 text-blue-600" />
+                                                <BookOpen className="w-5 h-5 text-blue-400" />
                                                 <div>
-                                                    <p className="text-2xl font-bold text-foreground">{user.creator._count.courses}</p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {locale === 'ar' ? 'الدورات' : locale === 'de' ? 'Kurse' : 'Courses'}
-                                                    </p>
+                                                    <p className="text-2xl font-bold text-white">{user.creator._count.courses}</p>
+                                                    <p className="text-sm text-gray-400">Courses</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <UserCheck className="w-5 h-5 text-green-600" />
+                                                <UserCheck className="w-5 h-5 text-green-400" />
                                                 <div>
-                                                    <p className="text-2xl font-bold text-foreground">{user.creator.totalSubscribers}</p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {locale === 'ar' ? 'المشتركون' : locale === 'de' ? 'Abonnenten' : 'Subscribers'}
-                                                    </p>
+                                                    <p className="text-2xl font-bold text-white">{user.creator.totalSubscribers}</p>
+                                                    <p className="text-sm text-gray-400">Subscribers</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <Award className="w-5 h-5 text-yellow-600" />
+                                                <Award className="w-5 h-5 text-yellow-400" />
                                                 <div>
-                                                    <p className="text-2xl font-bold text-foreground">${user.creator.totalEarnings}</p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {locale === 'ar' ? 'الأرباح' : locale === 'de' ? 'Einnahmen' : 'Earnings'}
-                                                    </p>
+                                                    <p className="text-2xl font-bold text-white">${user.creator.totalEarnings}</p>
+                                                    <p className="text-sm text-gray-400">Earnings</p>
                                                 </div>
                                             </div>
                                         </>
@@ -507,26 +435,20 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
 
                             {/* Recent Enrollments */}
                             {user.role === 'LEARNER' && user.enrollments.length > 0 && (
-                                <div className="bg-background rounded-lg p-4">
-                                    <h3 className="text-lg font-medium text-foreground mb-4">
-                                        {locale === 'ar' ? 'التسجيلات الأخيرة' : locale === 'de' ? 'Aktuelle Anmeldungen' : 'Recent Enrollments'}
-                                    </h3>
+                                <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                                    <h3 className="text-lg font-medium text-white mb-4">Recent Enrollments</h3>
                                     <div className="space-y-3">
                                         {user.enrollments.map((enrollment) => (
-                                            <div key={enrollment.id} className="flex items-center justify-between p-3 bg-background rounded-lg">
+                                            <div key={enrollment.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                                                 <div>
-                                                    <p className="font-medium text-foreground">
-                                                        {locale === 'ar' ? enrollment.course.titleAr || enrollment.course.title : enrollment.course.title}
-                                                    </p>
-                                                    {locale !== 'ar' && (
-                                                        <p className="text-sm text-muted-foreground">{enrollment.course.titleAr}</p>
+                                                    <p className="font-medium text-white">{enrollment.course.title}</p>
+                                                    {enrollment.course.titleAr && (
+                                                        <p className="text-sm text-gray-400">{enrollment.course.titleAr}</p>
                                                     )}
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-sm font-medium text-foreground">
-                                                        {enrollment.progress}% {locale === 'ar' ? 'مكتمل' : locale === 'de' ? 'abgeschlossen' : 'complete'}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">{formatDate(enrollment.createdAt)}</p>
+                                                    <p className="text-sm font-medium text-white">{enrollment.progress}% complete</p>
+                                                    <p className="text-xs text-gray-400">{formatDate(enrollment.createdAt)}</p>
                                                 </div>
                                             </div>
                                         ))}

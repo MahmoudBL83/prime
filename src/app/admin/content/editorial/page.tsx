@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import {
     Star,
     TrendingUp,
     Award,
     Calendar,
     Eye,
+    Search,
     CheckCircle,
     XCircle,
     Clock,
@@ -16,7 +17,10 @@ import {
     BookOpen,
     Filter,
     Download,
-    BarChart3
+    BarChart3,
+    AlertTriangle,
+    Loader2,
+    RefreshCw
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -226,7 +230,12 @@ const sectionColors = {
 
 export default function EditorialPipelinePage() {
     const [activeTab, setActiveTab] = useState('review')
-    const [content] = useState<FeaturedContent[]>(MOCK_FEATURED_CONTENT)
+    const [content, setContent] = useState<FeaturedContent[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [search, setSearch] = useState('')
+    const [statusFilter, setStatusFilter] = useState<'all' | EditorialStatus>('all')
+    const [sectionFilter, setSectionFilter] = useState<'all' | FeaturedSection>('all')
     const [selectedContent, setSelectedContent] = useState<FeaturedContent | null>(null)
     const [showReviewModal, setShowReviewModal] = useState(false)
     const [showScheduleModal, setShowScheduleModal] = useState(false)
@@ -234,21 +243,52 @@ export default function EditorialPipelinePage() {
     const [featuredSection, setFeaturedSection] = useState<FeaturedSection>('homepage_hero')
     const [scheduledDate, setScheduledDate] = useState('')
     const [curatorNotes, setCuratorNotes] = useState('')
-
-    const nominated = content.filter(c => c.status === 'nominated')
-    const underReview = content.filter(c => c.status === 'under_review')
-    const approved = content.filter(c => c.status === 'approved')
-    const scheduled = content.filter(c => c.status === 'scheduled')
-    const published = content.filter(c => c.status === 'published')
-
-    const stats = {
-        totalNominated: nominated.length,
-        underReview: underReview.length,
-        approved: approved.length,
-        scheduled: scheduled.length,
-        published: published.length,
+    const [stats, setStats] = useState({
+        totalNominated: 0,
+        underReview: 0,
+        approved: 0,
+        scheduled: 0,
+        published: 0,
         avgConversionLift: 45
-    }
+    })
+
+    const fetchContent = useCallback(async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            const response = await fetch('/api/admin/content/editorial')
+            if (!response.ok) throw new Error('Failed to fetch editorial content')
+            const data = await response.json()
+            setContent(data.content || [])
+            if (data.stats) {
+                setStats(data.stats)
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred')
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
+    useEffect(() => {
+        fetchContent()
+    }, [fetchContent])
+
+    const filteredContent = useMemo(() => {
+        return content.filter((item) => {
+            const matchStatus = statusFilter === 'all' || item.status === statusFilter
+            const matchSection = sectionFilter === 'all' || item.featuredSection === sectionFilter
+            const term = search.trim().toLowerCase()
+            const matchSearch = !term || item.courseTitle.toLowerCase().includes(term) || item.creatorName.toLowerCase().includes(term)
+            return matchStatus && matchSection && matchSearch
+        })
+    }, [content, search, statusFilter, sectionFilter])
+
+    const nominated = filteredContent.filter(c => c.status === 'nominated')
+    const underReview = filteredContent.filter(c => c.status === 'under_review')
+    const approved = filteredContent.filter(c => c.status === 'approved')
+    const scheduled = filteredContent.filter(c => c.status === 'scheduled')
+    const published = filteredContent.filter(c => c.status === 'published')
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-GB', {
@@ -272,41 +312,126 @@ export default function EditorialPipelinePage() {
         setShowScheduleModal(true)
     }
 
-    const handleSubmitReview = () => {
-        console.log('Review submitted:', {
-            contentId: selectedContent?.id,
-            decision: reviewDecision,
-            notes: curatorNotes
-        })
-        setShowReviewModal(false)
+    const handleSubmitReview = async () => {
+        if (!selectedContent) return
+        
+        try {
+            const response = await fetch('/api/admin/content/editorial', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contentId: selectedContent.id,
+                    action: 'review',
+                    decision: reviewDecision,
+                    notes: curatorNotes
+                })
+            })
+            
+            if (!response.ok) throw new Error('Failed to submit review')
+            
+            setShowReviewModal(false)
+            fetchContent()
+        } catch (err) {
+            console.error('Failed to submit review:', err)
+        }
     }
 
-    const handleSubmitSchedule = () => {
-        console.log('Schedule submitted:', {
-            contentId: selectedContent?.id,
-            section: featuredSection,
-            date: scheduledDate
-        })
-        setShowScheduleModal(false)
+    const handleSubmitSchedule = async () => {
+        if (!selectedContent) return
+        
+        try {
+            const response = await fetch('/api/admin/content/editorial', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contentId: selectedContent.id,
+                    action: 'schedule',
+                    section: featuredSection,
+                    scheduledDate
+                })
+            })
+            
+            if (!response.ok) throw new Error('Failed to schedule content')
+            
+            setShowScheduleModal(false)
+            fetchContent()
+        } catch (err) {
+            console.error('Failed to schedule content:', err)
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center">
+                <div className="text-center">
+                    <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                    <p className="text-red-400">{error}</p>
+                    <Button onClick={fetchContent} className="mt-4">Retry</Button>
+                </div>
+            </div>
+        )
     }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-6">
             <div className="max-w-[1600px] mx-auto space-y-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div>
-                        <h1 className="text-3xl font-bold text-foreground mb-2">Category B Editorial Pipeline</h1>
+                        <h1 className="text-3xl font-bold text-foreground mb-1">Category B Editorial Pipeline</h1>
                         <p className="text-muted-foreground">Curate and feature premium content for platform discovery</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" className="bg-white/5 border-border text-muted-foreground hover:bg-white/10">
-                            <Filter className="w-4 h-4 mr-2" />
-                            Filter
+                    <div className="flex flex-wrap items-center gap-2">
+                        <div className="relative">
+                            <input
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Search courses or creators"
+                                className="pl-9 pr-3 py-2 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-gray-500 focus:ring-2 focus:ring-purple-500"
+                            />
+                            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        </div>
+                        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+                            <SelectTrigger className="w-[170px] bg-white/5 border-white/10 text-foreground">
+                                <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All statuses</SelectItem>
+                                <SelectItem value="nominated">Nominated</SelectItem>
+                                <SelectItem value="under_review">Under review</SelectItem>
+                                <SelectItem value="approved">Approved</SelectItem>
+                                <SelectItem value="scheduled">Scheduled</SelectItem>
+                                <SelectItem value="published">Published</SelectItem>
+                                <SelectItem value="rejected">Rejected</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select value={sectionFilter} onValueChange={(v) => setSectionFilter(v as any)}>
+                            <SelectTrigger className="w-[170px] bg-white/5 border-white/10 text-foreground">
+                                <SelectValue placeholder="Section" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All sections</SelectItem>
+                                <SelectItem value="homepage_hero">Homepage Hero</SelectItem>
+                                <SelectItem value="topic_spotlight">Topic Spotlight</SelectItem>
+                                <SelectItem value="new_releases">New Releases</SelectItem>
+                                <SelectItem value="trending_now">Trending Now</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Button variant="outline" onClick={fetchContent} className="bg-white/5 border-border text-muted-foreground hover:bg-white/10">
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Refresh
                         </Button>
                         <Button variant="outline" className="bg-white/5 border-border text-muted-foreground hover:bg-white/10">
                             <Download className="w-4 h-4 mr-2" />
-                            Performance Report
+                            Export CSV
                         </Button>
                     </div>
                 </div>

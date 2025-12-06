@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
     Shield,
     Search,
@@ -201,7 +201,10 @@ const actionColors = {
 }
 
 export default function DMCAWorkflowPage() {
-    const [requests, setRequests] = useState<DMCARequest[]>(MOCK_DMCA_REQUESTS)
+    const [requests, setRequests] = useState<DMCARequest[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [apiStats, setApiStats] = useState<{ total: number; pending: number; underReview: number; resolved: number } | null>(null)
     const [selectedRequest, setSelectedRequest] = useState<DMCARequest | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
     const [typeFilter, setTypeFilter] = useState<string>('all')
@@ -210,20 +213,43 @@ export default function DMCAWorkflowPage() {
     const [reviewNotes, setReviewNotes] = useState('')
     const [selectedAction, setSelectedAction] = useState<DMCARequest['actionTaken']>('content_removed')
 
+    const fetchRequests = useCallback(async () => {
+        try {
+            setLoading(true)
+            const params = new URLSearchParams()
+            if (statusFilter !== 'all') params.set('status', statusFilter)
+            if (typeFilter !== 'all') params.set('type', typeFilter)
+
+            const response = await fetch(`/api/admin/dmca?${params.toString()}`)
+            if (!response.ok) throw new Error('Failed to fetch DMCA requests')
+            
+            const data = await response.json()
+            setRequests(data.requests || [])
+            setApiStats(data.stats || null)
+            setError(null)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unknown error')
+        } finally {
+            setLoading(false)
+        }
+    }, [statusFilter, typeFilter])
+
+    useEffect(() => {
+        fetchRequests()
+    }, [fetchRequests])
+
     const stats = {
-        total: requests.length,
-        pending: requests.filter(r => r.status === 'pending').length,
-        underReview: requests.filter(r => r.status === 'under_review').length,
+        total: apiStats?.total || requests.length,
+        pending: apiStats?.pending || requests.filter(r => r.status === 'pending').length,
+        underReview: apiStats?.underReview || requests.filter(r => r.status === 'under_review').length,
         autoTakedowns: requests.filter(r => r.autoTakedownAt && new Date(r.autoTakedownAt) > new Date()).length
     }
 
     const filteredRequests = requests.filter(request => {
         const matchesSearch = request.requestNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
             request.contentTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            request.creator.name.toLowerCase().includes(searchTerm.toLowerCase())
-        const matchesType = typeFilter === 'all' || request.type === typeFilter
-        const matchesStatus = statusFilter === 'all' || request.status === statusFilter
-        return matchesSearch && matchesType && matchesStatus
+            (request.creator?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+        return matchesSearch
     })
 
     const formatDate = (dateString: string) => {
@@ -278,6 +304,43 @@ export default function DMCAWorkflowPage() {
         const hoursLeft = Math.floor((takedownDate.getTime() - now.getTime()) / (1000 * 60 * 60))
         if (hoursLeft <= 0) return 'Automatic takedown in progress'
         return `Auto-takedown in ${hoursLeft}h`
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
+                <div className="animate-pulse">
+                    <div className="h-10 bg-white/5 rounded-lg w-1/3 mb-4"></div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="bg-white/5 rounded-xl h-28"></div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
+                <div className="bg-red-600/20 border border-red-500/30 rounded-xl p-6">
+                    <div className="flex items-start gap-4">
+                        <AlertTriangle className="h-6 w-6 text-red-400" />
+                        <div>
+                            <h3 className="text-lg font-semibold text-white mb-1">Error loading DMCA requests</h3>
+                            <div className="text-sm text-red-300">{error}</div>
+                            <button 
+                                onClick={fetchRequests}
+                                className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (

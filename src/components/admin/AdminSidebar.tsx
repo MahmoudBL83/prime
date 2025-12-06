@@ -143,6 +143,7 @@ const navigation: NavigationItem[] = [
 export function AdminSidebar() {
     const pathname = usePathname()
     const { data: session } = useSession()
+    const notificationsActive = pathname.startsWith('/admin/notifications')
 
     return (
         <div className="flex h-full w-72 flex-col bg-background/40 backdrop-blur-xl border-r border-border">
@@ -204,11 +205,6 @@ export function AdminSidebar() {
                                                 />
                                                 <span>{item.name}</span>
                                             </div>
-                                            {item.badge && (
-                                                <Badge className="bg-red-600 text-foreground text-xs px-2">
-                                                    {item.badge}
-                                                </Badge>
-                                            )}
                                         </Link>
                                     </motion.li>
                                 )
@@ -220,11 +216,18 @@ export function AdminSidebar() {
                     <li className="mt-auto pb-4">
                         <div className="space-y-2">
                             {/* Notifications */}
-                            <button className="w-full flex items-center gap-x-3 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-xl transition-all">
+                            <Link
+                                href="/admin/notifications"
+                                className={cn(
+                                    'w-full flex items-center gap-x-3 px-3 py-2 text-sm rounded-xl transition-all border',
+                                    notificationsActive
+                                        ? 'text-foreground bg-gradient-to-r from-red-600/20 to-pink-600/20 border-red-500/30'
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-white/5 border-transparent'
+                                )}
+                            >
                                 <Bell className="h-5 w-5" />
                                 <span>Notifications</span>
-                                <Badge className="ml-auto bg-red-600 text-foreground text-xs">3</Badge>
-                            </button>
+                            </Link>
 
                             {/* Divider */}
                             <div className="border-t border-border my-2"></div>

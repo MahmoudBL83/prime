@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
     Shield,
     Users,
@@ -17,7 +17,8 @@ import {
     AlertTriangle,
     Download,
     History,
-    Search
+    Search,
+    Loader2
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -295,22 +296,47 @@ const permissionColors = {
 
 export default function PermissionsPage() {
     const [activeTab, setActiveTab] = useState('roles')
-    const [roles] = useState<Role[]>(MOCK_ROLES)
-    const [admins] = useState<AdminUser[]>(MOCK_ADMINS)
-    const [auditLogs] = useState<AuditLog[]>(MOCK_AUDIT_LOGS)
+    const [roles, setRoles] = useState<Role[]>([])
+    const [admins, setAdmins] = useState<AdminUser[]>([])
+    const [auditLogs, setAuditLogs] = useState<AuditLog[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [selectedRole, setSelectedRole] = useState<Role | null>(null)
     const [showRoleModal, setShowRoleModal] = useState(false)
     const [showEditModal, setShowEditModal] = useState(false)
     const [showAuditModal, setShowAuditModal] = useState(false)
     const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null)
+    const [stats, setStats] = useState({
+        totalRoles: 0,
+        totalAdmins: 0,
+        activeAdmins: 0,
+        totalAuditLogs: 0,
+        failedAttempts: 0
+    })
 
-    const stats = {
-        totalRoles: roles.length,
-        totalAdmins: admins.reduce((sum, r) => sum + (r.status === 'active' ? 1 : 0), 0),
-        activeAdmins: admins.filter(a => a.status === 'active').length,
-        totalAuditLogs: auditLogs.length,
-        failedAttempts: auditLogs.filter(l => l.status === 'failed').length
-    }
+    const fetchData = useCallback(async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            const response = await fetch('/api/admin/settings/permissions')
+            if (!response.ok) throw new Error('Failed to fetch permissions data')
+            const data = await response.json()
+            setRoles(data.roles || [])
+            setAdmins(data.admins || [])
+            setAuditLogs(data.auditLogs || [])
+            if (data.stats) {
+                setStats(data.stats)
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred')
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
+    useEffect(() => {
+        fetchData()
+    }, [fetchData])
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-GB', {
@@ -335,6 +361,26 @@ export default function PermissionsPage() {
     const handleViewLog = (log: AuditLog) => {
         setSelectedLog(log)
         setShowAuditModal(true)
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-900 to-gray-900 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-900 to-gray-900 flex items-center justify-center">
+                <div className="text-center">
+                    <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                    <p className="text-red-400">{error}</p>
+                    <Button onClick={fetchData} className="mt-4">Retry</Button>
+                </div>
+            </div>
+        )
     }
 
     return (

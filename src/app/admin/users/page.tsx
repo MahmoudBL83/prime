@@ -11,10 +11,12 @@ import {
     Edit,
     Eye,
     UserX,
-    Shield
+    Shield,
+    Loader2
 } from 'lucide-react'
 import UserDetailsModal from '@/components/admin/UserDetailsModal'
 import UserDeleteModal from '@/components/admin/UserDeleteModal'
+import AddUserModal from '@/components/admin/AddUserModal'
 
 interface User {
     id: string
@@ -59,26 +61,50 @@ export default function UsersPage() {
     const [statusFilter, setStatusFilter] = useState<string>('all')
     const [sortBy, setSortBy] = useState<string>('createdAt')
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1)
+    const [totalUsers, setTotalUsers] = useState(0)
+    const [totalPages, setTotalPages] = useState(1)
+    const [statistics, setStatistics] = useState<{
+        total: number
+        byRole: { ADMIN?: number; CREATOR?: number; LEARNER?: number }
+        emailVerified: number
+        recentRegistrations: number
+    } | null>(null)
+    const pageSize = 50
 
     // Modal states
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
     const [showDetailsModal, setShowDetailsModal] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [showAddUserModal, setShowAddUserModal] = useState(false)
     const [userToDelete, setUserToDelete] = useState<{ id: string; name: string; email: string } | null>(null)
+    const [exporting, setExporting] = useState(false)
 
     useEffect(() => {
         fetchUsers()
-    }, [])
+    }, [currentPage, roleFilter, statusFilter])
 
     const fetchUsers = async () => {
         try {
             setLoading(true)
-            const response = await fetch('/api/admin/users')
+            const params = new URLSearchParams({
+                page: currentPage.toString(),
+                limit: pageSize.toString(),
+            })
+            if (roleFilter !== 'all') params.set('role', roleFilter)
+            if (statusFilter !== 'all') params.set('status', statusFilter)
+            
+            const response = await fetch(`/api/admin/users?${params.toString()}`)
             if (!response.ok) {
                 throw new Error('Failed to fetch users')
             }
             const data = await response.json()
             setUsers(data.users)
+            setTotalUsers(data.pagination?.total || data.users.length)
+            setTotalPages(data.pagination?.pages || 1)
+            setStatistics(data.statistics || null)
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred')
         } finally {
@@ -172,21 +198,61 @@ export default function UsersPage() {
         fetchUsers()
     }
 
+    const handleExport = async (format: 'csv' | 'json' = 'csv') => {
+        try {
+            setExporting(true)
+            const params = new URLSearchParams({ format })
+            if (roleFilter !== 'all') params.set('role', roleFilter)
+            if (statusFilter !== 'all') params.set('status', statusFilter)
+
+            const response = await fetch(`/api/admin/users/export?${params.toString()}`)
+            
+            if (!response.ok) {
+                throw new Error('Failed to export users')
+            }
+
+            // Get the blob and create download link
+            const blob = await response.blob()
+            const contentDisposition = response.headers.get('Content-Disposition')
+            let filename = `users-export.${format}`
+            
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="(.+)"/)
+                if (filenameMatch) {
+                    filename = filenameMatch[1]
+                }
+            }
+
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = filename
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            window.URL.revokeObjectURL(url)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to export users')
+        } finally {
+            setExporting(false)
+        }
+    }
+
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
             </div>
         )
     }
 
     if (error) {
         return (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-800">Error: {error}</p>
+            <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-4 backdrop-blur-sm">
+                <p className="text-red-300">Error: {error}</p>
                 <button
                     onClick={fetchUsers}
-                    className="mt-2 text-red-600 hover:text-red-800 underline"
+                    className="mt-2 text-red-400 hover:text-red-300 underline"
                 >
                     Try again
                 </button>
@@ -199,15 +265,26 @@ export default function UsersPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-foreground">User Management</h1>
-                    <p className="text-muted-foreground mt-1">Manage and monitor all platform users</p>
+                    <h1 className="text-2xl font-bold text-white">User Management</h1>
+                    <p className="text-gray-400 mt-1">Manage and monitor all platform users</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 bg-background border border-border rounded-lg px-4 py-2 text-foreground hover:bg-background">
-                        <Download className="w-4 h-4" />
-                        Export
+                    <button 
+                        onClick={() => handleExport('csv')}
+                        disabled={exporting}
+                        className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white hover:bg-white/10 transition-colors backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {exporting ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                            <Download className="w-4 h-4" />
+                        )}
+                        {exporting ? 'Exporting...' : 'Export'}
                     </button>
-                    <button className="flex items-center gap-2 bg-blue-600 text-foreground rounded-lg px-4 py-2 hover:bg-blue-700">
+                    <button 
+                        onClick={() => setShowAddUserModal(true)}
+                        className="flex items-center gap-2 bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 transition-colors"
+                    >
                         <UserPlus className="w-4 h-4" />
                         Add User
                     </button>
@@ -216,63 +293,63 @@ export default function UsersPage() {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-background rounded-lg border border-border p-4">
+                <div className="bg-white/5 rounded-lg border border-white/10 p-4 backdrop-blur-sm">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-muted-foreground">Total Users</p>
-                            <p className="text-2xl font-semibold text-foreground">{users.length}</p>
+                            <p className="text-sm text-gray-400">Total Users</p>
+                            <p className="text-2xl font-semibold text-white">{statistics?.total || totalUsers}</p>
                         </div>
-                        <Users className="w-8 h-8 text-blue-600" />
+                        <Users className="w-8 h-8 text-blue-400" />
                     </div>
                 </div>
-                <div className="bg-background rounded-lg border border-border p-4">
+                <div className="bg-white/5 rounded-lg border border-white/10 p-4 backdrop-blur-sm">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-muted-foreground">Learners</p>
-                            <p className="text-2xl font-semibold text-foreground">
-                                {users.filter(u => u.role === 'LEARNER').length}
+                            <p className="text-sm text-gray-400">Learners</p>
+                            <p className="text-2xl font-semibold text-white">
+                                {statistics?.byRole?.LEARNER || 0}
                             </p>
                         </div>
-                        <Users className="w-8 h-8 text-green-600" />
+                        <Users className="w-8 h-8 text-green-400" />
                     </div>
                 </div>
-                <div className="bg-background rounded-lg border border-border p-4">
+                <div className="bg-white/5 rounded-lg border border-white/10 p-4 backdrop-blur-sm">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-muted-foreground">Creators</p>
-                            <p className="text-2xl font-semibold text-foreground">
-                                {users.filter(u => u.role === 'CREATOR').length}
+                            <p className="text-sm text-gray-400">Creators</p>
+                            <p className="text-2xl font-semibold text-white">
+                                {statistics?.byRole?.CREATOR || 0}
                             </p>
                         </div>
-                        <Users className="w-8 h-8 text-blue-600" />
+                        <Users className="w-8 h-8 text-blue-400" />
                     </div>
                 </div>
-                <div className="bg-background rounded-lg border border-border p-4">
+                <div className="bg-white/5 rounded-lg border border-white/10 p-4 backdrop-blur-sm">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-muted-foreground">Verified</p>
-                            <p className="text-2xl font-semibold text-foreground">
-                                {users.filter(u => u.emailVerified).length}
+                            <p className="text-sm text-gray-400">Verified</p>
+                            <p className="text-2xl font-semibold text-white">
+                                {statistics?.emailVerified || 0}
                             </p>
                         </div>
-                        <Shield className="w-8 h-8 text-green-600" />
+                        <Shield className="w-8 h-8 text-green-400" />
                     </div>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="bg-background rounded-lg border border-border p-4">
+            <div className="bg-white/5 rounded-lg border border-white/10 p-4 backdrop-blur-sm">
                 <div className="flex flex-col lg:flex-row gap-4">
                     {/* Search */}
                     <div className="flex-1">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                                 type="text"
                                 placeholder="Search users by name, email, or Arabic name..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
                     </div>
@@ -281,7 +358,7 @@ export default function UsersPage() {
                     <select
                         value={roleFilter}
                         onChange={(e) => setRoleFilter(e.target.value)}
-                        className="border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                         <option value="all">All Roles</option>
                         <option value="LEARNER">Learners</option>
@@ -293,7 +370,7 @@ export default function UsersPage() {
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                         <option value="all">All Status</option>
                         <option value="verified">Verified</option>
@@ -310,7 +387,7 @@ export default function UsersPage() {
                             setSortBy(field)
                             setSortOrder(order as 'asc' | 'desc')
                         }}
-                        className="border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                         <option value="createdAt-desc">Newest First</option>
                         <option value="createdAt-asc">Oldest First</option>
@@ -322,28 +399,28 @@ export default function UsersPage() {
             </div>
 
             {/* Users Table */}
-            <div className="bg-background rounded-lg border border-border overflow-hidden">
+            <div className="bg-white/5 rounded-lg border border-white/10 overflow-hidden backdrop-blur-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-background border-b border-border">
+                        <thead className="bg-white/5 border-b border-white/10">
                             <tr>
-                                <th className="text-left py-3 px-4 font-medium text-foreground">User</th>
-                                <th className="text-left py-3 px-4 font-medium text-foreground">Role</th>
-                                <th className="text-left py-3 px-4 font-medium text-foreground">Status</th>
-                                <th className="text-left py-3 px-4 font-medium text-foreground">Activity</th>
-                                <th className="text-left py-3 px-4 font-medium text-foreground">Joined</th>
-                                <th className="text-center py-3 px-4 font-medium text-foreground">Actions</th>
+                                <th className="text-left py-3 px-4 font-medium text-white">User</th>
+                                <th className="text-left py-3 px-4 font-medium text-white">Role</th>
+                                <th className="text-left py-3 px-4 font-medium text-white">Status</th>
+                                <th className="text-left py-3 px-4 font-medium text-white">Activity</th>
+                                <th className="text-left py-3 px-4 font-medium text-white">Joined</th>
+                                <th className="text-center py-3 px-4 font-medium text-white">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
+                        <tbody className="divide-y divide-white/10">
                             {sortedUsers.map((user) => (
-                                <tr key={user.id} className="hover:bg-background">
+                                <tr key={user.id} className="hover:bg-white/5">
                                     <td className="py-3 px-4">
                                         <div>
-                                            <div className="font-medium text-foreground">{user.name}</div>
-                                            <div className="text-sm text-muted-foreground">{user.email}</div>
+                                            <div className="font-medium text-white">{user.name}</div>
+                                            <div className="text-sm text-gray-400">{user.email}</div>
                                             {user.arabicName && (
-                                                <div className="text-sm text-muted-foreground">{user.arabicName}</div>
+                                                <div className="text-sm text-gray-400">{user.arabicName}</div>
                                             )}
                                         </div>
                                     </td>
@@ -359,7 +436,7 @@ export default function UsersPage() {
                                             {getUserStatus(user) === 'incomplete' && 'Incomplete'}
                                         </span>
                                     </td>
-                                    <td className="py-3 px-4 text-sm text-muted-foreground">
+                                    <td className="py-3 px-4 text-sm text-gray-400">
                                         {user.role === 'LEARNER' && (
                                             <div>{user._count.enrollments} enrollments</div>
                                         )}
@@ -367,36 +444,36 @@ export default function UsersPage() {
                                             <div>{user.creator?._count.courses || 0} courses</div>
                                         )}
                                         {user.role === 'ADMIN' && (
-                                            <div className="text-muted-foreground">Admin user</div>
+                                            <div className="text-gray-400">Admin user</div>
                                         )}
                                     </td>
-                                    <td className="py-3 px-4 text-sm text-muted-foreground">
+                                    <td className="py-3 px-4 text-sm text-gray-400">
                                         {formatDate(user.createdAt)}
                                     </td>
                                     <td className="py-3 px-4">
                                         <div className="flex items-center justify-center gap-1">
                                             <button
                                                 onClick={() => handleViewUser(user.id)}
-                                                className="p-1 text-muted-foreground hover:text-blue-600 hover:bg-blue-50 rounded"
+                                                className="p-1 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors"
                                                 title="View Details"
                                             >
                                                 <Eye className="w-4 h-4" />
                                             </button>
                                             <button
                                                 onClick={() => handleViewUser(user.id)}
-                                                className="p-1 text-muted-foreground hover:text-green-600 hover:bg-green-50 rounded"
+                                                className="p-1 text-gray-400 hover:text-green-400 hover:bg-green-500/10 rounded transition-colors"
                                                 title="Edit User"
                                             >
                                                 <Edit className="w-4 h-4" />
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteUser(user)}
-                                                className="p-1 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded"
+                                                className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
                                                 title="Delete User"
                                             >
                                                 <UserX className="w-4 h-4" />
                                             </button>
-                                            <button className="p-1 text-muted-foreground hover:text-muted-foreground hover:bg-background rounded">
+                                            <button className="p-1 text-gray-400 hover:text-gray-300 hover:bg-white/5 rounded transition-colors">
                                                 <MoreHorizontal className="w-4 h-4" />
                                             </button>
                                         </div>
@@ -408,17 +485,60 @@ export default function UsersPage() {
                 </div>
 
                 {sortedUsers.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
+                    <div className="text-center py-8 text-gray-400">
                         No users found matching your filters.
                     </div>
                 )}
             </div>
 
-            {/* Pagination would go here */}
+            {/* Pagination */}
             <div className="flex items-center justify-between">
-                <p className="text-sm text-foreground">
-                    Showing {sortedUsers.length} of {users.length} users
+                <p className="text-sm text-gray-400">
+                    Showing {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, totalUsers)} of {totalUsers} users
                 </p>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Previous
+                    </button>
+                    <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                            let pageNum: number
+                            if (totalPages <= 5) {
+                                pageNum = i + 1
+                            } else if (currentPage <= 3) {
+                                pageNum = i + 1
+                            } else if (currentPage >= totalPages - 2) {
+                                pageNum = totalPages - 4 + i
+                            } else {
+                                pageNum = currentPage - 2 + i
+                            }
+                            return (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setCurrentPage(pageNum)}
+                                    className={`px-3 py-1 rounded-lg transition-colors ${
+                                        currentPage === pageNum
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
+                                    }`}
+                                >
+                                    {pageNum}
+                                </button>
+                            )
+                        })}
+                    </div>
+                    <button
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Next
+                    </button>
+                </div>
             </div>
 
             {/* Modals */}
@@ -446,6 +566,12 @@ export default function UsersPage() {
                     userEmail={userToDelete.email}
                 />
             )}
+
+            <AddUserModal
+                isOpen={showAddUserModal}
+                onClose={() => setShowAddUserModal(false)}
+                onUserAdded={handleUserUpdated}
+            />
         </div>
     )
 }
