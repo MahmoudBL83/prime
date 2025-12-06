@@ -21,8 +21,9 @@ async function requireAdmin() {
 
 type ActionType = 'APPROVE_PITCH' | 'REQUEST_CHANGES' | 'DECLINE' | 'APPROVE_PUBLISH' | 'MOVE_TO_REVIEW'
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params
         const adminCheck = await requireAdmin()
         if ('error' in adminCheck) {
             return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status })
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             return NextResponse.json({ error: 'action is required' }, { status: 400 })
         }
 
-        const proposal = await prisma.signatureCourseProposal.findUnique({ where: { id: params.id } })
+        const proposal = await prisma.signatureCourseProposal.findUnique({ where: { id } })
         if (!proposal) {
             return NextResponse.json({ error: 'Proposal not found' }, { status: 404 })
         }
@@ -66,7 +67,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         }
 
         const updatedProposal = await prisma.signatureCourseProposal.update({
-            where: { id: params.id },
+            where: { id },
             data: {
                 stage: newStage,
                 reviewNotes: notes || proposal.reviewNotes,

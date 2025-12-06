@@ -271,7 +271,7 @@ export async function POST(request: NextRequest) {
         if (role === 'CREATOR') {
             await prisma.creator.create({
                 data: {
-                    userId: newUser.id
+                    user: { connect: { id: newUser.id } }
                 } satisfies Prisma.CreatorCreateInput
             })
         }
