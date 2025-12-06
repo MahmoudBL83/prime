@@ -170,7 +170,9 @@ export async function GET(req: NextRequest) {
 
                 const totalRatings = courses.reduce((sum, course) => sum + course.rating, 0)
                 const averageRating = courses.length > 0 ? totalRatings / courses.length : 0
-                const hasNewContent = latestPost ? (now.getTime() - latestPost.publishedAt.getTime()) <= 14 * 24 * 60 * 60 * 1000 : false
+                const hasNewContent = latestPost?.publishedAt
+                    ? (now.getTime() - latestPost.publishedAt.getTime()) <= 14 * 24 * 60 * 60 * 1000
+                    : false
                 const yearsOfExperience = Math.max(1, Math.floor((now.getTime() - new Date(creator.createdAt).getTime()) / (365 * 24 * 60 * 60 * 1000)))
 
                 // Prefer a real channel id if present for navigation
