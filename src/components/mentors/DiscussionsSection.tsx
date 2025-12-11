@@ -366,7 +366,7 @@ export default function DiscussionsSection({
                                                     />
                                                 ) : (
                                                     <AvatarPlaceholder 
-                                                        gender={guessGenderFromName(reply.user.name)} 
+                                                        name={reply.user.name} 
                                                         size={32} 
                                                         className="rounded-full flex-shrink-0"
                                                     />
