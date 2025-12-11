@@ -111,6 +111,8 @@ export async function POST(
             duration, 
             tier,
             maxAttendees,
+            meetingUrl,
+            meetingPassword,
             recordingUrl,
             status
         } = body
@@ -135,6 +137,8 @@ export async function POST(
                 duration,
                 tier: tier || 'BRONZE',
                 maxAttendees: maxAttendees || 100,
+                streamUrl: meetingUrl || null,
+                meetingPassword: meetingPassword || null,
                 recordingUrl: recordingUrl || null,
                 status: status || 'SCHEDULED'
             },

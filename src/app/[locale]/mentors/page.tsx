@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
+import { AvatarPlaceholder } from '@/components/ui/avatar-placeholder'
 
 // Dynamic imports for heavy components
 const SubscribeModal = lazy(() => import('@/components/modals/SubscribeModal'))
@@ -291,9 +292,7 @@ interface Creator {
         bio: string
     }
     expertise: string
-    basicMonthlyPrice: number
-    premiumMonthlyPrice: number
-    vipMonthlyPrice: number
+    basicMonthlyPrice?: number
     totalSubscribers: number
     totalEarnings: number
     stats: {
@@ -304,7 +303,9 @@ interface Creator {
     isOnline?: boolean
     hasNewContent?: boolean
     isSubscribed?: boolean // Add subscription status
-    subscribedTier?: 'Basic' | 'Premium' | 'VIP' | null // Add subscribed tier info
+    subscribedTier?: 'ALL_ACCESS' | 'Basic' | 'Premium' | 'VIP' | null // Add subscribed tier info
+    premiumMonthlyPrice?: number
+    vipMonthlyPrice?: number
 }
 
 export default function OnlyFansStyleMentorsPage() {
@@ -332,11 +333,7 @@ export default function OnlyFansStyleMentorsPage() {
     const [loadingCreatorPosts, setLoadingCreatorPosts] = useState(false)
     const [selectedPost, setSelectedPost] = useState<any>(null)
     const [editPostModalOpen, setEditPostModalOpen] = useState(false)
-    const [tierSubscribers, setTierSubscribers] = useState<{basic: number, premium: number, vip: number}>({
-        basic: 0,
-        premium: 0,
-        vip: 0
-    })
+    const [subscriberCount, setSubscriberCount] = useState(0)
     
     // Modal states
     const [subscribeModalOpen, setSubscribeModalOpen] = useState(false)
@@ -659,8 +656,11 @@ export default function OnlyFansStyleMentorsPage() {
             const response = await fetch(`/api/mentor-subscriptions?creatorId=${creatorId}&groupByTier=true`)
             if (response.ok) {
                 const data = await response.json()
-                // Assuming API returns {basic: count, premium: count, vip: count}
-                setTierSubscribers(data.tierCounts || {basic: 0, premium: 0, vip: 0})
+                const total = data.tierCounts?.total
+                    ?? data.tierCounts?.basic
+                    ?? data.total
+                    ?? 0
+                setSubscriberCount(total)
             }
         } catch (error) {
             console.error('Failed to fetch tier subscribers:', error)
@@ -727,7 +727,7 @@ export default function OnlyFansStyleMentorsPage() {
     }, [session, isArabic, locale, router])
 
     // Memoize subscribe handler
-    const handleSubscribe = useCallback(async (tier: 'BASIC' | 'PREMIUM' | 'VIP', duration: 'monthly' | 'yearly') => {
+    const handleSubscribe = useCallback(async () => {
         if (!selectedCreator) return
         
         try {
@@ -736,8 +736,8 @@ export default function OnlyFansStyleMentorsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     creatorId: selectedCreator.id,
-                    tier,
-                    duration
+                    tier: 'ALL_ACCESS',
+                    duration: 'monthly'
                 })
             })
 
@@ -797,8 +797,8 @@ export default function OnlyFansStyleMentorsPage() {
             // Show success toast
             toast.success(
                 isArabic 
-                    ? `تم إرسال ${amount} EGP بنجاح!` 
-                    : `Successfully sent ${amount} EGP!`
+                    ? `تم إرسال €${amount} بنجاح!` 
+                    : `Successfully sent €${amount}!`
             )
 
             // Refresh creator stats
@@ -975,7 +975,7 @@ export default function OnlyFansStyleMentorsPage() {
             onClick={() => handleCreatorClick(creator.id)}
         >
             <div className="aspect-video relative">
-                {creator.user.profileImage ? (
+                {creator.user.profileImage && creator.user.profileImage.length > 0 ? (
                     <Image
                         src={creator.user.profileImage}
                         alt={creator.user.name}
@@ -983,8 +983,12 @@ export default function OnlyFansStyleMentorsPage() {
                         className="object-cover"
                     />
                 ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-                        <DynamicIcon name="User" className="w-16 h-16 text-white" />
+                    <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+                        <AvatarPlaceholder 
+                            name={creator.user.name} 
+                            size={120} 
+                            className="rounded-full"
+                        />
                     </div>
                 )}
                 {creator.isOnline && (
@@ -1022,7 +1026,7 @@ export default function OnlyFansStyleMentorsPage() {
                 
                 <div className="flex items-center justify-between">
                     <span className="text-lg font-bold text-purple-400">
-                        ${creator.basicMonthlyPrice}/mo
+                        €{creator.basicMonthlyPrice ?? 0}/mo
                     </span>
                     <div className="flex items-center gap-2">
                         <Button
@@ -1267,18 +1271,18 @@ export default function OnlyFansStyleMentorsPage() {
                                             <div className="flex gap-3">
                                                 {/* Profile Image */}
                                                 <div className="flex-shrink-0 cursor-pointer" onClick={() => handleCreatorClick(post.channel.creator.id)}>
-                                                    {post.channel.creator.user.profileImage ? (
+                                                {post.channel.creator.user.profileImage ? (
                                                         <Image
                                                             src={post.channel.creator.user.profileImage}
                                                             alt={post.channel.creator.user.name}
                                                             width={48} height={48} className="rounded-full object-cover w-12 h-12"
                                                         />
                                                     ) : (
-                                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                                                            <span className="text-xl font-bold text-foreground">
-                                                                {post.channel.creator.user.name[0]}
-                                                            </span>
-                                                        </div>
+                                                        <AvatarPlaceholder 
+                                                            name={post.channel.creator.user.name} 
+                                                            size={48} 
+                                                            className="rounded-full"
+                                                        />
                                                     )}
                                                 </div>
 
@@ -1487,19 +1491,10 @@ export default function OnlyFansStyleMentorsPage() {
                                         {/* Active Subscriptions List */}
                                         <div className="space-y-4 mb-8">
                                             {creators.slice(0, 3).map((creator, i) => {
-                                                const tiers = ['Basic', 'Premium', 'VIP']
-                                                const tier = tiers[i % 3]
-                                                const prices = {
-                                                    Basic: creator.basicMonthlyPrice,
-                                                    Premium: creator.premiumMonthlyPrice,
-                                                    VIP: creator.vipMonthlyPrice
-                                                }
-                                                const benefits = {
-                                                    Basic: ['Access to all posts', 'Weekly updates', 'Community access'],
-                                                    Premium: ['Everything in Basic', 'Monthly Q&A sessions', 'Priority support', 'Exclusive resources'],
-                                                    VIP: ['Everything in Premium', '1-on-1 coaching sessions', 'Direct messaging', 'Custom content requests']
-                                                }
-                                                
+                                                const tier = 'All-Access'
+                                                const price = creator.basicMonthlyPrice
+                                                const benefits = ['All posts & live sessions', 'Community access', 'Priority DMs']
+
                                                 return (
                                                     <motion.div
                                                         key={`sub-${creator.id}`}
@@ -1521,9 +1516,11 @@ export default function OnlyFansStyleMentorsPage() {
                                                                             className="rounded-full object-cover"
                                                                         />
                                                                     ) : (
-                                                                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                                                                            <span className="text-2xl font-bold text-foreground">{creator.user.name[0]}</span>
-                                                                        </div>
+                                                                        <AvatarPlaceholder 
+                                                                            name={creator.user.name} 
+                                                                            size={64} 
+                                                                            className="rounded-full"
+                                                                        />
                                                                     )}
                                                                     <div>
                                                                         <div className="flex items-center gap-2 mb-1">
@@ -1533,12 +1530,8 @@ export default function OnlyFansStyleMentorsPage() {
                                                                         </div>
                                                                         <p className="text-sm text-muted-foreground">{creator.expertise}</p>
                                                                         <div className="flex items-center gap-2 mt-2">
-                                                                            <Badge className={`${
-                                                                                tier === 'VIP' ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
-                                                                                tier === 'Premium' ? 'bg-gradient-to-r from-purple-500 to-pink-500' :
-                                                                                'bg-gradient-to-r from-gray-500 to-gray-600'
-                                                                            } text-foreground border-0`}>
-                                                                                {tier} Member
+                                                                            <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-foreground border-0">
+                                                                                {tier}
                                                                             </Badge>
                                                                             <span className="text-xs text-green-400 flex items-center gap-1">
                                                                                 <div className="w-2 h-2 bg-green-400 rounded-full" />
@@ -1568,7 +1561,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                         {isArabic ? 'الفوترة' : 'Billing'}
                                                                     </h5>
                                                                     <p className="text-2xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                                                        {prices[tier as keyof typeof prices]} EGP
+                                                                        €{price || 0}
                                                                     </p>
                                                                     <p className="text-sm text-muted-foreground">
                                                                         {isArabic ? 'شهرياً' : 'per month'}
@@ -1615,7 +1608,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                     {isArabic ? 'المزايا المتضمنة' : 'Your Benefits'}
                                                                 </h5>
                                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                                    {benefits[tier as keyof typeof benefits].map((benefit, idx) => (
+                                                                    {benefits.map((benefit, idx) => (
                                                                         <div key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
                                                                             <DynamicIcon name="CheckCircle" className="w-4 h-4 text-purple-400 flex-shrink-0" />
                                                                             <span>{benefit}</span>
@@ -1626,18 +1619,16 @@ export default function OnlyFansStyleMentorsPage() {
 
                                                             {/* Actions */}
                                                             <div className="flex flex-wrap items-center gap-3">
-                                                                {tier !== 'VIP' && (
-                                                                    <Button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation()
-                                                                            toast.success(isArabic ? 'جاري الترقية...' : 'Upgrading...')
-                                                                        }}
-                                                                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-foreground font-bold px-6 py-2 rounded-full"
-                                                                    >
-                                                                        <DynamicIcon name="Crown" className="w-4 h-4 mr-2" />
-                                                                        {isArabic ? 'الترقية' : 'Upgrade Tier'}
-                                                                    </Button>
-                                                                )}
+                                                                <Button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation()
+                                                                        toast.success(isArabic ? 'جاري التحديث...' : 'Updating...')
+                                                                    }}
+                                                                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-foreground font-bold px-6 py-2 rounded-full"
+                                                                >
+                                                                    <DynamicIcon name="Crown" className="w-4 h-4 mr-2" />
+                                                                    {isArabic ? 'إدارة الاشتراك' : 'Manage Subscription'}
+                                                                </Button>
                                                                 <Button
                                                                     onClick={(e) => {
                                                                         e.stopPropagation()
@@ -1679,7 +1670,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                 </div>
                                                 <div className="text-center">
                                                     <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-1">
-                                                        347 EGP
+                                                        €347
                                                     </div>
                                                     <div className="text-xs text-muted-foreground">
                                                         {isArabic ? 'شهرياً' : 'Monthly Cost'}
@@ -1748,7 +1739,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                 {(creator.totalSubscribers / 1000).toFixed(1)}K subscribers
                                                             </span>
                                                             <span className="text-sm font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                                                {creator.basicMonthlyPrice} EGP/mo
+                                                                €{creator.basicMonthlyPrice}/mo
                                                             </span>
                                                         </div>
                                                     </motion.div>
@@ -1827,11 +1818,11 @@ export default function OnlyFansStyleMentorsPage() {
                                                                         width={48} height={48} className="rounded-full object-cover w-12 h-12"
                                                                     />
                                                                 ) : (
-                                                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                                                                        <span className="text-xl font-bold text-foreground">
-                                                                            {post.channel.creator.user.name[0]}
-                                                                        </span>
-                                                                    </div>
+                                                                    <AvatarPlaceholder 
+                                                                        name={post.channel.creator.user.name} 
+                                                                        size={48} 
+                                                                        className="rounded-full"
+                                                                    />
                                                                 )}
                                                             </div>
 
@@ -2017,7 +2008,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                 {(creator.totalSubscribers / 1000).toFixed(1)}K
                                                             </span>
                                                             <span className="font-bold text-white">
-                                                                {creator.basicMonthlyPrice} EGP/mo
+                                                                €{creator.basicMonthlyPrice}/mo
                                                             </span>
                                                         </div>
                                                     </div>
@@ -2171,142 +2162,52 @@ export default function OnlyFansStyleMentorsPage() {
                                         </div>
                                     </div>
 
-                                    {/* Subscription Tiers */}
+                                    {/* Subscription Tier (single) */}
                                     <div className="mb-6">
                                         <h2 className="text-2xl font-black text-foreground mb-4">
-                                            {isArabic ? 'خطط الاشتراك' : 'Subscription Tiers'}
+                                            {isArabic ? 'اشتراك واحد شامل' : 'All-Access Subscription'}
                                         </h2>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            {/* Basic Tier */}
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 20 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                className="bg-gradient-to-br from-gray-500/10 to-gray-600/10 border border-gray-500/30 rounded-2xl p-6 hover:border-gray-400 transition-all"
-                                            >
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center">
-                                                        <DynamicIcon name="Users" className="w-5 h-5 text-foreground" />
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="font-bold text-foreground">{isArabic ? 'أساسي' : 'Basic'}</h3>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {tierSubscribers.basic} {isArabic ? 'مشترك' : 'subscribers'}
-                                                        </p>
-                                                    </div>
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-2xl p-6 hover:border-purple-400 transition-all"
+                                        >
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                                                    <DynamicIcon name="Sparkles" className="w-6 h-6 text-foreground" />
                                                 </div>
-                                                <div className="mb-4">
-                                                    <span className="text-3xl font-black bg-gradient-to-r from-gray-400 to-gray-500 bg-clip-text text-transparent">
-                                                        {selectedCreator?.basicMonthlyPrice || 49} EGP
-                                                    </span>
-                                                    <span className="text-muted-foreground text-sm">/month</span>
+                                                <div>
+                                                    <h3 className="font-bold text-foreground">{isArabic ? 'اشتراك موحد' : 'Single Tier Access'}</h3>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {subscriberCount} {isArabic ? 'مشترك' : 'subscribers'}
+                                                    </p>
                                                 </div>
-                                                <ul className="space-y-2 text-sm text-muted-foreground">
-                                                    <li className="flex items-center gap-2">
-                                                        <DynamicIcon name="CheckCircle" className="w-4 h-4 text-gray-400" />
-                                                        All posts & updates
-                                                    </li>
-                                                    <li className="flex items-center gap-2">
-                                                        <DynamicIcon name="CheckCircle" className="w-4 h-4 text-gray-400" />
-                                                        Community access
-                                                    </li>
-                                                    <li className="flex items-center gap-2">
-                                                        <DynamicIcon name="CheckCircle" className="w-4 h-4 text-gray-400" />
-                                                        Weekly live sessions
-                                                    </li>
-                                                </ul>
-                                            </motion.div>
-
-                                            {/* Premium Tier */}
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 20 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: 0.1 }}
-                                                className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-500/50 rounded-2xl p-6 hover:border-purple-400 transition-all relative"
-                                            >
-                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-foreground text-xs font-bold px-3 py-1 rounded-full">
-                                                    POPULAR
-                                                </div>
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                                        <DynamicIcon name="Sparkles" className="w-5 h-5 text-foreground" />
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="font-bold text-foreground">{isArabic ? 'مميز' : 'Premium'}</h3>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {tierSubscribers.premium} {isArabic ? 'مشترك' : 'subscribers'}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="mb-4">
-                                                    <span className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                                        {selectedCreator?.premiumMonthlyPrice || 99} EGP
-                                                    </span>
-                                                    <span className="text-muted-foreground text-sm">/month</span>
-                                                </div>
-                                                <ul className="space-y-2 text-sm text-muted-foreground">
-                                                    <li className="flex items-center gap-2">
-                                                        <DynamicIcon name="CheckCircle" className="w-4 h-4 text-purple-400" />
-                                                        Everything in Basic
-                                                    </li>
-                                                    <li className="flex items-center gap-2">
-                                                        <DynamicIcon name="CheckCircle" className="w-4 h-4 text-purple-400" />
-                                                        Exclusive content
-                                                    </li>
-                                                    <li className="flex items-center gap-2">
-                                                        <DynamicIcon name="CheckCircle" className="w-4 h-4 text-purple-400" />
-                                                        Monthly Q&A
-                                                    </li>
-                                                    <li className="flex items-center gap-2">
-                                                        <DynamicIcon name="CheckCircle" className="w-4 h-4 text-purple-400" />
-                                                        Priority support
-                                                    </li>
-                                                </ul>
-                                            </motion.div>
-
-                                            {/* VIP Tier */}
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 20 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: 0.2 }}
-                                                className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-2xl p-6 hover:border-yellow-400 transition-all"
-                                            >
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center">
-                                                        <DynamicIcon name="Crown" className="w-5 h-5 text-foreground" />
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="font-bold text-foreground">{isArabic ? 'VIP' : 'VIP'}</h3>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {tierSubscribers.vip} {isArabic ? 'مشترك' : 'subscribers'}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="mb-4">
-                                                    <span className="text-3xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                                                        {selectedCreator?.vipMonthlyPrice || 199} EGP
-                                                    </span>
-                                                    <span className="text-muted-foreground text-sm">/month</span>
-                                                </div>
-                                                <ul className="space-y-2 text-sm text-muted-foreground">
-                                                    <li className="flex items-center gap-2">
-                                                        <DynamicIcon name="CheckCircle" className="w-4 h-4 text-yellow-400" />
-                                                        Everything in Premium
-                                                    </li>
-                                                    <li className="flex items-center gap-2">
-                                                        <DynamicIcon name="CheckCircle" className="w-4 h-4 text-yellow-400" />
-                                                        1-on-1 coaching
-                                                    </li>
-                                                    <li className="flex items-center gap-2">
-                                                        <DynamicIcon name="CheckCircle" className="w-4 h-4 text-yellow-400" />
-                                                        Direct messaging
-                                                    </li>
-                                                    <li className="flex items-center gap-2">
-                                                        <DynamicIcon name="CheckCircle" className="w-4 h-4 text-yellow-400" />
-                                                        Custom requests
-                                                    </li>
-                                                </ul>
-                                            </motion.div>
-                                        </div>
+                                            </div>
+                                            <div className="mb-4">
+                                                <span className="text-3xl font-black bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                                                    €{selectedCreator?.basicMonthlyPrice || 49}
+                                                </span>
+                                                <span className="text-muted-foreground text-sm">/month</span>
+                                            </div>
+                                            <ul className="space-y-2 text-sm text-muted-foreground">
+                                                <li className="flex items-center gap-2">
+                                                    <DynamicIcon name="CheckCircle" className="w-4 h-4 text-purple-400" />
+                                                    {isArabic ? 'جميع المنشورات والمحتوى الحي' : 'All posts and live content'}
+                                                </li>
+                                                <li className="flex items-center gap-2">
+                                                    <DynamicIcon name="CheckCircle" className="w-4 h-4 text-purple-400" />
+                                                    {isArabic ? 'جلسات مباشرة أسبوعية' : 'Weekly live sessions'}
+                                                </li>
+                                                <li className="flex items-center gap-2">
+                                                    <DynamicIcon name="CheckCircle" className="w-4 h-4 text-purple-400" />
+                                                    {isArabic ? 'محادثات مباشرة الأولوية' : 'Priority direct messages'}
+                                                </li>
+                                                <li className="flex items-center gap-2">
+                                                    <DynamicIcon name="CheckCircle" className="w-4 h-4 text-purple-400" />
+                                                    {isArabic ? 'الوصول إلى التقويم والجلسات' : 'Calendar & session booking'}
+                                                </li>
+                                            </ul>
+                                        </motion.div>
                                     </div>
 
                                     {/* Earnings Overview (Creator Stats) */}
@@ -2335,7 +2236,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                 <div className="text-3xl font-black text-foreground mb-1">
                                                     {creatorStats?.earnings?.lastMonth?.toLocaleString() || '0'}
                                                 </div>
-                                                <div className="text-xs text-muted-foreground">EGP</div>
+                                                <div className="text-xs text-muted-foreground">EUR</div>
                                             </div>
                                             <div className="bg-card border border-border rounded-2xl p-6">
                                                 <div className="text-sm text-muted-foreground mb-2">
@@ -2346,7 +2247,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                         ? ((selectedCreator as any).totalEarnings / 1000).toFixed(1) + 'K'
                                                         : '0'}
                                                 </div>
-                                                <div className="text-xs text-muted-foreground">EGP</div>
+                                                <div className="text-xs text-muted-foreground">EUR</div>
                                             </div>
                                             <div className="bg-card border border-border rounded-2xl p-6">
                                                 <div className="text-sm text-muted-foreground mb-2">
@@ -2355,7 +2256,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                 <div className="text-3xl font-black text-foreground mb-1">
                                                     {creatorStats?.earnings?.pending?.toLocaleString() || '0'}
                                                 </div>
-                                                <div className="text-xs text-muted-foreground">EGP</div>
+                                                <div className="text-xs text-muted-foreground">EUR</div>
                                             </div>
                                         </div>
                                     </div>
@@ -2441,15 +2342,15 @@ export default function OnlyFansStyleMentorsPage() {
                                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                                     <div className="text-center">
                                                         <div className="text-2xl font-black text-foreground">
-                                                            {creatorStats?.subscribers?.total?.toLocaleString() || tierSubscribers.basic + tierSubscribers.premium + tierSubscribers.vip}
+                                                            {creatorStats?.subscribers?.total?.toLocaleString() || subscriberCount}
                                                         </div>
                                                         <div className="text-xs text-muted-foreground">{isArabic ? 'مشترك نشط' : 'Active Subs'}</div>
                                                     </div>
                                                     <div className="text-center">
                                                         <div className="text-2xl font-black text-foreground">
-                                                            {creatorStats?.earnings?.thisMonth 
+                                                            €{creatorStats?.earnings?.thisMonth 
                                                                 ? (creatorStats.earnings.thisMonth / 1000).toFixed(1) + 'K'
-                                                                : '0'} EGP
+                                                                : '0'}
                                                         </div>
                                                         <div className="text-xs text-muted-foreground">{isArabic ? 'هذا الشهر' : 'This Month'}</div>
                                                     </div>
@@ -3015,7 +2916,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                     {isArabic ? 'الرصيد المتاح' : 'Available Balance'}
                                                                 </div>
                                                                 <div className="text-4xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                                                                    {creatorStats?.earnings?.available?.toLocaleString() || '0'} EGP
+                                                                    €{creatorStats?.earnings?.available?.toLocaleString() || '0'}
                                                                 </div>
                                                                 <div className="text-xs text-muted-foreground mt-1">
                                                                     {isArabic ? 'جاهز للسحب' : 'Ready to withdraw'}
@@ -3046,7 +2947,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                     {isArabic ? 'قيد المعالجة' : 'Pending Clearance'}
                                                                 </div>
                                                                 <div className="text-4xl font-black text-foreground">
-                                                                    {creatorStats?.earnings?.pending?.toLocaleString() || '0'} EGP
+                                                                    €{creatorStats?.earnings?.pending?.toLocaleString() || '0'}
                                                                 </div>
                                                                 <div className="text-xs text-muted-foreground mt-1">
                                                                     {isArabic ? 'متاح في 3-5 أيام' : 'Available in 3-5 days'}
@@ -3081,7 +2982,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                 <span className="text-green-400 font-bold">✓</span>
                                                                             </div>
                                                                             <div>
-                                                                                <div className="font-bold text-foreground">{withdrawal.amount?.toLocaleString() || '0'} EGP</div>
+                                                                                <div className="font-bold text-foreground">€{withdrawal.amount?.toLocaleString() || '0'}</div>
                                                                                 <div className="text-xs text-muted-foreground">
                                                                                     {new Date(withdrawal.time).toLocaleDateString()}
                                                                                 </div>
@@ -3112,7 +3013,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                         <div>
                                                             <div className="text-sm text-muted-foreground">{isArabic ? 'إجمالي الإيرادات' : 'Total Revenue'}</div>
                                                             <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                                                {creatorStats?.earnings?.total?.toLocaleString() || '0'} EGP
+                                                                €{creatorStats?.earnings?.total?.toLocaleString() || '0'}
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-2">
@@ -3121,33 +3022,24 @@ export default function OnlyFansStyleMentorsPage() {
                                                             <Button size="sm" className="bg-purple-500/20 text-purple-400">{isArabic ? '6 شهور' : '6M'}</Button>
                                                         </div>
                                                     </div>
-                                                    {/* Revenue Breakdown by Tier */}
-                                                    <div className="grid grid-cols-3 gap-4 mt-4">
-                                                        <div className="bg-gradient-to-br from-gray-500/10 to-gray-600/10 border border-gray-500/30 rounded-xl p-4">
-                                                            <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'أساسي' : 'Basic'}</div>
+                                                    {/* Revenue Breakdown - single tier */}
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                                        <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-xl p-4">
+                                                            <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'مشتركون نشطون' : 'Active Subscribers'}</div>
                                                             <div className="text-xl font-bold text-foreground">
-                                                                {creatorStats?.revenue?.basicRevenue?.toLocaleString() || '0'} EGP
+                                                                {subscriberCount.toLocaleString()} {isArabic ? 'مشترك' : 'subs'}
                                                             </div>
                                                             <div className="text-xs text-muted-foreground mt-1">
-                                                                {tierSubscribers.basic} {isArabic ? 'مشترك' : 'subscribers'}
+                                                                {isArabic ? 'اشتراك موحد' : 'Single-tier access'}
                                                             </div>
                                                         </div>
-                                                        <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/30 rounded-xl p-4">
-                                                            <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'بريميوم' : 'Premium'}</div>
+                                                        <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-4">
+                                                            <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'عائد شهري تقديري' : 'Est. Monthly MRR'}</div>
                                                             <div className="text-xl font-bold text-foreground">
-                                                                {creatorStats?.revenue?.premiumRevenue?.toLocaleString() || '0'} EGP
+                                                                €{(subscriberCount * (selectedCreator?.basicMonthlyPrice || 0)).toLocaleString()}
                                                             </div>
                                                             <div className="text-xs text-muted-foreground mt-1">
-                                                                {tierSubscribers.premium} {isArabic ? 'مشترك' : 'subscribers'}
-                                                            </div>
-                                                        </div>
-                                                        <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-xl p-4">
-                                                            <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'VIP' : 'VIP'}</div>
-                                                            <div className="text-xl font-bold text-foreground">
-                                                                {creatorStats?.revenue?.vipRevenue?.toLocaleString() || '0'} EGP
-                                                            </div>
-                                                            <div className="text-xs text-muted-foreground mt-1">
-                                                                {tierSubscribers.vip} {isArabic ? 'مشترك' : 'subscribers'}
+                                                                {isArabic ? 'يشمل الجلسات المباشرة' : 'Includes live sessions access'}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -3231,61 +3123,42 @@ export default function OnlyFansStyleMentorsPage() {
                                                     <DynamicIcon name="Users" className="w-5 h-5 text-purple-400" />
                                                     {isArabic ? 'تحليل المشتركين' : 'Subscriber Analytics'}
                                                 </h3>
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                                     <motion.div
-                                                        initial={{ opacity: 0, scale: 0.9 }}
+                                                        initial={{ opacity: 0, scale: 0.95 }}
                                                         animate={{ opacity: 1, scale: 1 }}
-                                                        className="bg-gradient-to-br from-gray-500/10 to-gray-600/10 border border-gray-500/30 rounded-2xl p-6"
+                                                        className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-2xl p-6"
                                                     >
                                                         <div className="flex items-center justify-between mb-3">
-                                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center">
+                                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
                                                                 <DynamicIcon name="Users" className="w-6 h-6 text-white" />
                                                             </div>
-                                                            <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">Basic</Badge>
+                                                            <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">{isArabic ? 'المشتركون' : 'Subscribers'}</Badge>
                                                         </div>
-                                                        <div className="text-4xl font-black text-foreground mb-2">{tierSubscribers.basic}</div>
-                                                        <div className="text-sm text-muted-foreground mb-3">{isArabic ? 'مشترك أساسي' : 'Basic subscribers'}</div>
+                                                        <div className="text-4xl font-black text-foreground mb-2">{subscriberCount}</div>
+                                                        <div className="text-sm text-muted-foreground mb-3">{isArabic ? 'اشتراك موحد' : 'Single-tier access'}</div>
                                                         <div className="text-sm text-foreground font-bold">
-                                                            {(tierSubscribers.basic * (selectedCreator?.basicMonthlyPrice || 0)).toLocaleString()} EGP/mo
+                                                            €{(subscriberCount * (selectedCreator?.basicMonthlyPrice || 0)).toLocaleString()}/mo
                                                         </div>
                                                     </motion.div>
 
                                                     <motion.div
-                                                        initial={{ opacity: 0, scale: 0.9 }}
+                                                        initial={{ opacity: 0, scale: 0.95 }}
                                                         animate={{ opacity: 1, scale: 1 }}
-                                                        transition={{ delay: 0.1 }}
-                                                        className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-500/50 rounded-2xl p-6"
+                                                        transition={{ delay: 0.08 }}
+                                                        className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-2xl p-6"
                                                     >
                                                         <div className="flex items-center justify-between mb-3">
-                                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                                                <DynamicIcon name="Sparkles" className="w-6 h-6 text-white" />
+                                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                                                                <DynamicIcon name="CalendarCheck" className="w-6 h-6 text-white" />
                                                             </div>
-                                                            <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">Premium</Badge>
+                                                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Live</Badge>
                                                         </div>
-                                                        <div className="text-4xl font-black text-foreground mb-2">{tierSubscribers.premium}</div>
-                                                        <div className="text-sm text-muted-foreground mb-3">{isArabic ? 'مشترك مميز' : 'Premium subscribers'}</div>
-                                                        <div className="text-sm text-foreground font-bold">
-                                                            {(tierSubscribers.premium * (selectedCreator?.premiumMonthlyPrice || 0)).toLocaleString()} EGP/mo
-                                                        </div>
-                                                    </motion.div>
-
-                                                    <motion.div
-                                                        initial={{ opacity: 0, scale: 0.9 }}
-                                                        animate={{ opacity: 1, scale: 1 }}
-                                                        transition={{ delay: 0.2 }}
-                                                        className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-2xl p-6"
-                                                    >
-                                                        <div className="flex items-center justify-between mb-3">
-                                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center">
-                                                                <DynamicIcon name="Crown" className="w-6 h-6 text-white" />
-                                                            </div>
-                                                            <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">VIP</Badge>
-                                                        </div>
-                                                        <div className="text-4xl font-black text-foreground mb-2">{tierSubscribers.vip}</div>
-                                                        <div className="text-sm text-muted-foreground mb-3">{isArabic ? 'مشترك VIP' : 'VIP subscribers'}</div>
-                                                        <div className="text-sm text-foreground font-bold">
-                                                            {(tierSubscribers.vip * (selectedCreator?.vipMonthlyPrice || 0)).toLocaleString()} EGP/mo
-                                                        </div>
+                                                        <div className="text-2xl font-black text-foreground mb-2">{isArabic ? 'جلسات مباشرة أسبوعية' : 'Weekly live sessions'}</div>
+                                                        <div className="text-sm text-muted-foreground mb-3">{isArabic ? 'متاحة من خلال التقويم' : 'Manage via calendar tab'}</div>
+                                                        <Button size="sm" onClick={() => setProfileTab('calendar')} className="bg-green-500/20 text-green-400 hover:bg-green-500/30">
+                                                            {isArabic ? 'افتح التقويم' : 'Open calendar'}
+                                                        </Button>
                                                     </motion.div>
                                                 </div>
 
@@ -3400,7 +3273,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                     </div>
                                                                     <div className="text-right">
                                                                         <div className="text-xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                                                            {(subscriber.totalSpent || 0).toLocaleString()} EGP
+                                                                            €{(subscriber.totalSpent || 0).toLocaleString()}
                                                                         </div>
                                                                         <div className="text-xs text-muted-foreground">{isArabic ? 'إجمالي الإنفاق' : 'Total spent'}</div>
                                                                     </div>
@@ -3436,7 +3309,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                             {activity.type === 'new_subscription' && `${activity.user} subscribed`}
                                                                             {activity.type === 'upgrade' && `${activity.user} upgraded subscription`}
                                                                             {activity.type === 'renewal' && `${activity.user} renewed subscription`}
-                                                                            {activity.type === 'tip' && `${activity.user} sent you ${activity.amount} EGP tip`}
+                                                                            {activity.type === 'tip' && `${activity.user} sent you €${activity.amount} tip`}
                                                                         </div>
                                                                         <div className="text-xs text-muted-foreground">
                                                                             {new Date(activity.time).toLocaleDateString()} {new Date(activity.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -3496,7 +3369,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {[
                                                         { title: '1,500 Subscribers', current: selectedCreator?.totalSubscribers || 0, target: 1500, color: 'purple' },
-                                                        { title: '15,000 EGP/month', current: creatorStats?.earnings?.thisMonth || 0, target: 15000, color: 'green' }
+                                                        { title: '€15,000/month', current: creatorStats?.earnings?.thisMonth || 0, target: 15000, color: 'green' }
                                                     ].map((goal, i) => (
                                                         <div key={i} className="bg-card border border-border rounded-2xl p-6">
                                                             <div className="flex items-center justify-between mb-3">
@@ -3532,18 +3405,17 @@ export default function OnlyFansStyleMentorsPage() {
                                                     </svg>
                                                     {isArabic ? 'المزايا والفوائد' : 'Member Perks & Benefits'}
                                                 </h3>
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                    {/* Basic Tier Perks */}
-                                                    <div className="bg-gradient-to-br from-gray-500/5 to-gray-600/5 border border-gray-500/20 rounded-2xl p-5">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-2xl p-5">
                                                         <div className="flex items-center gap-3 mb-4">
-                                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center">
+                                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
                                                                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                                 </svg>
                                                             </div>
                                                             <div>
-                                                                <h4 className="font-bold text-foreground">Basic</h4>
-                                                                <p className="text-xs text-muted-foreground">{selectedCreator?.basicMonthlyPrice || 49} EGP/mo</p>
+                                                                <h4 className="font-bold text-foreground">{isArabic ? 'اشتراك موحد' : 'All-Access'}</h4>
+                                                                <p className="text-xs text-muted-foreground">€{selectedCreator?.basicMonthlyPrice || 49}/mo</p>
                                                             </div>
                                                         </div>
                                                         <ul className="space-y-2 text-sm">
@@ -3551,120 +3423,63 @@ export default function OnlyFansStyleMentorsPage() {
                                                                 <svg className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                                 </svg>
-                                                                <span>{isArabic ? 'الوصول إلى جميع المنشورات' : 'Access to all posts'}</span>
+                                                                <span>{isArabic ? 'الوصول إلى جميع المنشورات والفيديو' : 'Access to all posts & video'}</span>
                                                             </li>
                                                             <li className="flex items-start gap-2 text-foreground">
                                                                 <svg className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                                 </svg>
-                                                                <span>{isArabic ? 'محتوى الأعضاء فقط' : 'Members-only content'}</span>
+                                                                <span>{isArabic ? 'جلسات مباشرة أسبوعية' : 'Weekly live sessions'}</span>
                                                             </li>
                                                             <li className="flex items-start gap-2 text-foreground">
                                                                 <svg className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                                 </svg>
-                                                                <span>{isArabic ? 'مجموعة الأعضاء' : 'Community group access'}</span>
+                                                                <span>{isArabic ? 'محادثات مباشرة أولوية' : 'Priority DMs & Q&A'}</span>
                                                             </li>
                                                             <li className="flex items-start gap-2 text-foreground">
                                                                 <svg className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                                 </svg>
-                                                                <span>{isArabic ? 'شارة الدعم' : 'Supporter badge'}</span>
+                                                                <span>{isArabic ? 'حجوزات عبر التقويم' : 'Calendar booking access'}</span>
                                                             </li>
                                                         </ul>
                                                     </div>
 
-                                                    {/* Premium Tier Perks */}
-                                                    <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-500/30 rounded-2xl p-5 relative">
-                                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                                                            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
-                                                                {isArabic ? 'الأكثر شعبية' : 'Most Popular'}
-                                                            </Badge>
-                                                        </div>
-                                                        <div className="flex items-center gap-3 mb-4 mt-2">
-                                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                                                <DynamicIcon name="Sparkles" className="w-5 h-5 text-white" />
-                                                            </div>
-                                                            <div>
-                                                                <h4 className="font-bold text-foreground">Premium</h4>
-                                                                <p className="text-xs text-muted-foreground">{selectedCreator?.premiumMonthlyPrice || 99} EGP/mo</p>
-                                                            </div>
-                                                        </div>
-                                                        <ul className="space-y-2 text-sm">
-                                                            <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <span className="font-semibold">{isArabic ? 'جميع مزايا Basic +' : 'All Basic perks +'}</span>
-                                                            </li>
-                                                            <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <span>{isArabic ? 'الوصول إلى الساعات المكتبية' : 'Office hours access'}</span>
-                                                            </li>
-                                                            <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <span>{isArabic ? 'أولوية في الأسئلة والأجوبة' : 'Priority Q&A responses'}</span>
-                                                            </li>
-                                                            <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <span>{isArabic ? '5 رموز ملاحظات شهرياً' : '5 feedback tokens/month'}</span>
-                                                            </li>
-                                                            <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <span>{isArabic ? 'شارة بريميوم' : 'Premium badge'}</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-
-                                                    {/* VIP Tier Perks */}
-                                                    <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-2xl p-5">
+                                                    <div className="bg-gradient-to-br from-emerald-500/10 to-green-500/10 border border-emerald-500/30 rounded-2xl p-5">
                                                         <div className="flex items-center gap-3 mb-4">
-                                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center">
-                                                                <DynamicIcon name="Crown" className="w-5 h-5 text-white" />
+                                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center">
+                                                                <DynamicIcon name="CalendarCheck" className="w-5 h-5 text-white" />
                                                             </div>
                                                             <div>
-                                                                <h4 className="font-bold text-foreground">VIP</h4>
-                                                                <p className="text-xs text-muted-foreground">{selectedCreator?.vipMonthlyPrice || 199} EGP/mo</p>
+                                                                <h4 className="font-bold text-foreground">{isArabic ? 'جلسات حية' : 'Live Sessions'}</h4>
+                                                                <p className="text-xs text-muted-foreground">{isArabic ? 'متاحة للمشتركين' : 'Included for members'}</p>
                                                             </div>
                                                         </div>
                                                         <ul className="space-y-2 text-sm">
                                                             <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <svg className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                                 </svg>
-                                                                <span className="font-semibold">{isArabic ? 'جميع مزايا Premium +' : 'All Premium perks +'}</span>
+                                                                <span>{isArabic ? 'انضم/احجز عبر التقويم' : 'Join/book through calendar'}</span>
                                                             </li>
                                                             <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <svg className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                                 </svg>
-                                                                <span>{isArabic ? '1 جلسة 1:1 شهرياً' : '1 monthly 1-on-1 session'}</span>
+                                                                <span>{isArabic ? 'تنبيهات مباشرة في الوقت الحقيقي' : 'Real-time live alerts'}</span>
                                                             </li>
                                                             <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <svg className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                                 </svg>
-                                                                <span>{isArabic ? 'ملاحظات غير محدودة' : 'Unlimited feedback'}</span>
+                                                                <span>{isArabic ? 'جلسات أسئلة وأجوبة تفاعلية' : 'Interactive Q&A segments'}</span>
                                                             </li>
                                                             <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <svg className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                                 </svg>
-                                                                <span>{isArabic ? 'وصول مباشر عبر الرسائل' : 'Direct messaging access'}</span>
-                                                            </li>
-                                                            <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <span>{isArabic ? 'شارة VIP الحصرية' : 'Exclusive VIP badge'}</span>
+                                                                <span>{isArabic ? 'إعادة تشغيل الجلسات للمشتركين' : 'Session replays for members'}</span>
                                                             </li>
                                                         </ul>
                                                     </div>
@@ -3701,7 +3516,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                         {isArabic ? '15 يوم متبقي' : '15d left'}
                                                                     </span>
                                                                 </div>
-                                                                <p className="text-xs text-muted-foreground mb-2">{isArabic ? 'أفضل مشروع يفوز بـ 5,000 جنيه' : 'Best project wins 5,000 EGP'}</p>
+                                                                <p className="text-xs text-muted-foreground mb-2">{isArabic ? 'أفضل مشروع يفوز بـ €5,000' : 'Best project wins €5,000'}</p>
                                                                 <div className="flex items-center gap-2 text-xs">
                                                                     <DynamicIcon name="Users" className="w-3 h-3" />
                                                                     <span className="text-muted-foreground">{isArabic ? '24 مشارك' : '24 participants'}</span>
@@ -3714,7 +3529,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                         {isArabic ? '7 أيام متبقية' : '7d left'}
                                                                     </span>
                                                                 </div>
-                                                                <p className="text-xs text-muted-foreground mb-2">{isArabic ? 'أعلى درجة تفوز بـ 3,000 جنيه' : 'Highest score wins 3,000 EGP'}</p>
+                                                                <p className="text-xs text-muted-foreground mb-2">{isArabic ? 'أعلى درجة تفوز بـ €3,000' : 'Highest score wins €3,000'}</p>
                                                                 <div className="flex items-center gap-2 text-xs">
                                                                     <DynamicIcon name="Users" className="w-3 h-3" />
                                                                     <span className="text-muted-foreground">{isArabic ? '38 مشارك' : '38 participants'}</span>
@@ -3867,7 +3682,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                 <div className="flex items-center justify-between text-[10px] text-white/50">
                                                     <span>{(creator.totalSubscribers / 1000).toFixed(1)}K {isArabic ? 'مشترك' : 'subs'}</span>
                                                     <span className="font-semibold text-white/80">
-                                                        {creator.basicMonthlyPrice} {isArabic ? 'ج.م' : 'EGP'}
+                                                        €{creator.basicMonthlyPrice}
                                                     </span>
                                                 </div>
                                             </div>
@@ -3962,7 +3777,17 @@ export default function OnlyFansStyleMentorsPage() {
                     <SubscribeModal
                         isOpen={subscribeModalOpen}
                         onClose={() => setSubscribeModalOpen(false)}
-                        creator={selectedCreator}
+                        creator={{
+                            id: selectedCreator.id,
+                            channelId: selectedCreator.channelId,
+                            user: {
+                                name: selectedCreator.user.name,
+                                arabicName: selectedCreator.user.arabicName,
+                                profileImage: selectedCreator.user.profileImage,
+                            },
+                            expertise: selectedCreator.expertise,
+                            basicMonthlyPrice: selectedCreator.basicMonthlyPrice ?? 0,
+                        }}
                         isArabic={isArabic}
                         onSuccess={() => {
                             // Refresh user subscriptions to update UI
@@ -4033,9 +3858,7 @@ export default function OnlyFansStyleMentorsPage() {
                                 youtube: '',
                                 website: ''
                             },
-                        basicMonthlyPrice: selectedCreator?.basicMonthlyPrice || 49,
-                        premiumMonthlyPrice: selectedCreator?.premiumMonthlyPrice || 99,
-                        vipMonthlyPrice: selectedCreator?.vipMonthlyPrice || 199
+                        basicMonthlyPrice: selectedCreator?.basicMonthlyPrice || 49
                     }}
                     isArabic={isArabic}
                 />

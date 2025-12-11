@@ -107,6 +107,12 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
         bankAccountIBAN: '',
         bankName: ''
     })
+    const [profileEdit, setProfileEdit] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        arabicName: ''
+    })
 
     useEffect(() => {
         if (isOpen && creatorId) {
@@ -121,6 +127,12 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                 teachingGoals: creator.teachingGoals || '',
                 bankAccountIBAN: creator.bankAccountIBAN || '',
                 bankName: creator.bankName || ''
+            })
+            setProfileEdit({
+                name: creator.user.name || '',
+                email: creator.user.email || '',
+                phone: creator.user.phone || '',
+                arabicName: creator.user.arabicName || ''
             })
         }
     }, [creator])
@@ -177,6 +189,35 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
             if (!response.ok) {
                 const errorData = await response.json()
                 throw new Error(errorData.error || 'Failed to update creator')
+            }
+
+            await fetchCreatorDetails()
+            onCreatorUpdated()
+            setIsEditing(false)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred')
+        }
+    }
+
+    const handleUpdateUserProfile = async () => {
+        try {
+            const response = await fetch(`/api/admin/users/${creator?.user.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'updateProfile',
+                    name: profileEdit.name,
+                    arabicName: profileEdit.arabicName,
+                    phone: profileEdit.phone,
+                    email: profileEdit.email
+                })
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.error || 'Failed to update mentor profile')
             }
 
             await fetchCreatorDetails()

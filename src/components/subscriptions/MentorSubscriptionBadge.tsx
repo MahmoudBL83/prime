@@ -3,7 +3,7 @@
 import { Check, Crown, Sparkles, Star } from 'lucide-react';
 
 interface MentorSubscriptionBadgeProps {
-  tier?: 'BASIC' | 'PREMIUM' | 'VIP';
+  tier?: 'ALL_ACCESS' | 'BASIC' | 'PREMIUM' | 'VIP';
   isSubscribed: boolean;
   locale?: string;
 }
@@ -18,6 +18,11 @@ export default function MentorSubscriptionBadge({
   if (!isSubscribed) return null;
 
   const tierConfig = {
+    ALL_ACCESS: {
+      icon: Sparkles,
+      gradient: 'from-purple-400 to-blue-500',
+      label: isArabic ? 'مشترك - وصول شامل' : 'Subscribed - All-Access',
+    },
     BASIC: {
       icon: Sparkles,
       gradient: 'from-blue-400 to-blue-600',

@@ -8,6 +8,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-hot-toast'
 import { useSession } from 'next-auth/react'
+import { AvatarPlaceholder } from '@/components/ui/avatar-placeholder'
 
 interface DiscussionComment {
     id: string
@@ -264,9 +265,11 @@ export default function DiscussionsSection({
                                             className="rounded-full object-cover w-10 h-10"
                                         />
                                     ) : (
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
-                                            <User className="w-5 h-5 text-white" />
-                                        </div>
+                                        <AvatarPlaceholder 
+                                            name={comment.user.name} 
+                                            size={40} 
+                                            className="rounded-full flex-shrink-0"
+                                        />
                                     )}
                                     
                                     <div className="flex-1 min-w-0">
@@ -362,9 +365,11 @@ export default function DiscussionsSection({
                                                         className="rounded-full object-cover w-8 h-8"
                                                     />
                                                 ) : (
-                                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center flex-shrink-0">
-                                                        <User className="w-4 h-4 text-white" />
-                                                    </div>
+                                                    <AvatarPlaceholder 
+                                                        gender={guessGenderFromName(reply.user.name)} 
+                                                        size={32} 
+                                                        className="rounded-full flex-shrink-0"
+                                                    />
                                                 )}
                                                 
                                                 <div className="flex-1 min-w-0">

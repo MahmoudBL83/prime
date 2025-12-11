@@ -16,6 +16,7 @@ import {
     Image as ImageIcon,
     Calendar,
     CheckCircle,
+    Check,
     Play,
     ArrowLeft,
     Share2,
@@ -43,7 +44,8 @@ import {
     UserPlus,
     Trophy,
     Activity,
-    RefreshCw
+    RefreshCw,
+    Copy
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -52,6 +54,8 @@ import Image from 'next/image'
 import { toast } from 'react-hot-toast'
 import { BookingModal } from '@/components/mentors/BookingModal'
 import ReviewModal from '@/components/mentors/ReviewModal'
+import { AvatarPlaceholder } from '@/components/ui/avatar-placeholder'
+import SubscribeModal from '@/components/modals/SubscribeModal'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'edge'
@@ -91,6 +95,7 @@ interface Post {
     timestamp?: string
     scheduledFor?: string
     isLocked: boolean
+    isPinned?: boolean
 }
 
 export default function OnlyFansMentorProfilePage() {
@@ -114,6 +119,7 @@ export default function OnlyFansMentorProfilePage() {
     const [searchQuery, setSearchQuery] = useState('')
     const [suggestedCreators, setSuggestedCreators] = useState<any[]>([])
     const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
+    const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false)
     const [upcomingSessions, setUpcomingSessions] = useState<any[]>([])
     const [sessionsLoading, setSessionsLoading] = useState(false)
     const [communityPosts, setCommunityPosts] = useState<any[]>([])
@@ -187,6 +193,8 @@ export default function OnlyFansMentorProfilePage() {
 
     // Session/Recording Modals
     const [showNewSessionModal, setShowNewSessionModal] = useState(false)
+    const [showEditSessionModal, setShowEditSessionModal] = useState(false)
+    const [editingSession, setEditingSession] = useState<any>(null)
     const [showNewRecordingModal, setShowNewRecordingModal] = useState(false)
     const [newSessionData, setNewSessionData] = useState({
         title: '',
@@ -196,7 +204,21 @@ export default function OnlyFansMentorProfilePage() {
         scheduledAt: '',
         duration: 60,
         tier: 'BRONZE',
-        maxAttendees: 100
+        maxAttendees: 100,
+        meetingUrl: '',
+        meetingPassword: ''
+    })
+    const [editSessionData, setEditSessionData] = useState({
+        title: '',
+        titleAr: '',
+        description: '',
+        descriptionAr: '',
+        scheduledAt: '',
+        duration: 60,
+        tier: 'BRONZE',
+        maxAttendees: 100,
+        meetingUrl: '',
+        meetingPassword: ''
     })
     const [newRecordingData, setNewRecordingData] = useState({
         title: '',
@@ -211,7 +233,21 @@ export default function OnlyFansMentorProfilePage() {
     const [recordingVideoFile, setRecordingVideoFile] = useState<File | null>(null)
     const [recordingVideoPreview, setRecordingVideoPreview] = useState<string | null>(null)
     const [savingSession, setSavingSession] = useState(false)
+    const [showEditArchivedModal, setShowEditArchivedModal] = useState(false)
+    const [editingArchivedSession, setEditingArchivedSession] = useState<any>(null)
+    const [editArchivedData, setEditArchivedData] = useState({
+        title: '',
+        titleAr: '',
+        description: '',
+        descriptionAr: '',
+        recordingUrl: '',
+        tier: 'BRONZE'
+    })
     const [showAddResourceModal, setShowAddResourceModal] = useState(false)
+    const [showAttendeesModal, setShowAttendeesModal] = useState(false)
+    const [selectedSessionForAttendees, setSelectedSessionForAttendees] = useState<any>(null)
+    const [sessionAttendees, setSessionAttendees] = useState<any[]>([])
+    const [loadingAttendees, setLoadingAttendees] = useState(false)
     const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null)
     const [newResourceData, setNewResourceData] = useState({
         title: '',
@@ -312,17 +348,48 @@ export default function OnlyFansMentorProfilePage() {
                     setChannelId(mentorId)
                 }
                 
-                // Set posts if available
-                setPosts(data.posts || [])
+                // Set posts from channel data - transform to Post interface
+                const apiPosts = data.channel?.posts || data.posts || []
+                const tierMap: Record<string, 'FREE' | 'BASIC' | 'PREMIUM' | 'VIP'> = {
+                    'FREE': 'FREE',
+                    'PUBLIC': 'FREE',
+                    'BRONZE': 'BASIC',
+                    'BASIC': 'BASIC',
+                    'SILVER': 'PREMIUM',
+                    'PREMIUM': 'PREMIUM',
+                    'GOLD': 'VIP',
+                    'VIP': 'VIP'
+                }
+                const transformedPosts = apiPosts.map((apiPost: any): Post => ({
+                    id: apiPost.id,
+                    type: apiPost.mediaType === 'VIDEO' ? 'video' : 
+                          apiPost.mediaType === 'IMAGE' ? 'image' : 
+                          apiPost.type?.toLowerCase() || 'text',
+                    content: isArabic && apiPost.contentAr ? apiPost.contentAr : (apiPost.content || apiPost.title || ''),
+                    media: apiPost.mediaUrl || undefined,
+                    tier: tierMap[apiPost.tier] || 'FREE',
+                    likes: apiPost.likesCount || 0,
+                    comments: apiPost.commentsCount || 0,
+                    views: apiPost.viewCount || 0,
+                    timestamp: apiPost.publishedAt || apiPost.createdAt || new Date().toISOString(),
+                    isLocked: !apiPost.hasAccess && apiPost.tier !== 'FREE' && apiPost.tier !== 'PUBLIC',
+                    isPinned: apiPost.isPinned || false,
+                    scheduledFor: apiPost.scheduledFor || undefined
+                }))
+                setPosts(transformedPosts)
+                setPostsLoading(false)
+                console.log('Loaded', transformedPosts.length, 'posts from database')
             } else {
                 console.error('API Error:', response.status, response.statusText)
                 const errorData = await response.json().catch(() => ({}))
                 console.error('Error details:', errorData)
                 toast.error(isArabic ? 'فشل تحميل البيانات' : 'Failed to load data')
+                setPostsLoading(false)
             }
         } catch (error) {
             console.error('Error fetching mentor data:', error)
             toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+            setPostsLoading(false)
         } finally {
             setLoading(false)
         }
@@ -355,67 +422,9 @@ export default function OnlyFansMentorProfilePage() {
         }
     }, [session, mentor, fetchUserSubscriptionStatus])
 
-    // Demo posts with realistic timestamps
-    const [posts, setPosts] = useState<Post[]>([
-        {
-            id: '1',
-            type: 'text',
-            content: 'Just wrapped up an amazing trading session! 📈 My VIP members are seeing incredible results. If you want to learn the strategies that actually work, join my VIP tier today! 💎',
-            tier: 'FREE',
-            likes: 234,
-            comments: 45,
-            views: 1890,
-            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-            isLocked: false
-        },
-        {
-            id: '2',
-            type: 'image',
-            content: 'Exclusive: My personal trading setup and the 5 indicators I use every single day. Premium members get access to my full indicator list! 🔥',
-            media: '/images/trading-setup.jpg',
-            tier: 'PREMIUM',
-            likes: 567,
-            comments: 89,
-            views: 3240,
-            timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
-            isLocked: true
-        },
-        {
-            id: '3',
-            type: 'video',
-            content: 'LIVE Market Analysis - Breaking down today\'s biggest moves and what to watch for tomorrow. VIP members join me for Q&A! 💼',
-            media: '/videos/market-analysis.mp4',
-            tier: 'VIP',
-            likes: 892,
-            comments: 156,
-            views: 5120,
-            timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), // 8 hours ago
-            isLocked: true
-        },
-        {
-            id: '4',
-            type: 'quote',
-            content: 'The market rewards patience and punishes emotion. Master your psychology, master the market. 🧠',
-            tier: 'FREE',
-            likes: 445,
-            comments: 67,
-            views: 2890,
-            timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-            isLocked: false
-        },
-        {
-            id: '5',
-            type: 'image',
-            content: '🎯 My Weekly Trading Results - Up 23.5% this week! VIP members get my daily trade alerts and can follow along in real-time.',
-            media: '/images/weekly-results.jpg',
-            tier: 'VIP',
-            likes: 1234,
-            comments: 234,
-            views: 8920,
-            timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-            isLocked: true
-        }
-    ])
+    // Posts from database - initialized as empty, populated from API
+    const [posts, setPosts] = useState<Post[]>([])
+    const [postsLoading, setPostsLoading] = useState(true)
 
     useEffect(() => {
         if (params.id) {
@@ -449,7 +458,8 @@ export default function OnlyFansMentorProfilePage() {
 
     useEffect(() => {
         if (activeTab === 'sessions' && mentor) {
-            fetchUpcomingSessions()
+            fetchUpcomingSessionsFromAPI()
+            fetchArchivedSessionsFromAPI()
         }
     }, [activeTab, mentor, currentSubscription])
 
@@ -1015,10 +1025,14 @@ export default function OnlyFansMentorProfilePage() {
     // Fetch upcoming sessions from API
     const fetchUpcomingSessionsFromAPI = async () => {
         if (!mentor) return
+        console.log('Fetching upcoming sessions for mentor:', mentor.id)
+        setSessionsLoading(true)
         try {
             const response = await fetch(`/api/mentors/${mentor.id}/sessions?type=upcoming`)
+            console.log('Sessions API response status:', response.status)
             if (response.ok) {
                 const data = await response.json()
+                console.log('Sessions data:', data)
                 // Transform API data to match the expected format
                 const transformedSessions = data.sessions?.map((session: any) => ({
                     id: session.id,
@@ -1034,12 +1048,16 @@ export default function OnlyFansMentorProfilePage() {
                     attendees: session.attendees?.length || 0,
                     maxAttendees: session.maxAttendees || 100,
                     description: isArabic && session.descriptionAr ? session.descriptionAr : session.description,
-                    joinLink: null
+                    joinLink: session.streamUrl || null,
+                    meetingPassword: session.meetingPassword || null,
+                    status: session.status
                 })) || []
                 setUpcomingSessions(transformedSessions)
             }
         } catch (error) {
             console.error('Error fetching upcoming sessions:', error)
+        } finally {
+            setSessionsLoading(false)
         }
     }
 
@@ -1223,7 +1241,9 @@ export default function OnlyFansMentorProfilePage() {
                     scheduledAt: new Date(newSessionData.scheduledAt).toISOString(),
                     duration: newSessionData.duration,
                     tier: newSessionData.tier,
-                    maxAttendees: newSessionData.maxAttendees
+                    maxAttendees: newSessionData.maxAttendees,
+                    meetingUrl: newSessionData.meetingUrl || null,
+                    meetingPassword: newSessionData.meetingPassword || null
                 })
             })
 
@@ -1232,7 +1252,8 @@ export default function OnlyFansMentorProfilePage() {
                 setShowNewSessionModal(false)
                 setNewSessionData({
                     title: '', titleAr: '', description: '', descriptionAr: '',
-                    scheduledAt: '', duration: 60, tier: 'BRONZE', maxAttendees: 100
+                    scheduledAt: '', duration: 60, tier: 'BRONZE', maxAttendees: 100,
+                    meetingUrl: '', meetingPassword: ''
                 })
                 // Refresh upcoming sessions list
                 fetchUpcomingSessionsFromAPI()
@@ -1242,6 +1263,59 @@ export default function OnlyFansMentorProfilePage() {
             }
         } catch (error) {
             console.error('Error creating session:', error)
+            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+        } finally {
+            setSavingSession(false)
+        }
+    }
+
+    // Handle edit existing session
+    const handleEditSession = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!mentor || !editingSession) return
+
+        if (!editSessionData.title.trim() || !editSessionData.scheduledAt) {
+            toast.error(isArabic ? 'الرجاء ملء الحقول المطلوبة' : 'Please fill in required fields')
+            return
+        }
+
+        setSavingSession(true)
+        try {
+            const response = await fetch(`/api/mentors/${mentor.id}/sessions`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessionId: editingSession.id,
+                    title: editSessionData.title,
+                    titleAr: editSessionData.titleAr || editSessionData.title,
+                    description: editSessionData.description,
+                    descriptionAr: editSessionData.descriptionAr || editSessionData.description,
+                    scheduledAt: new Date(editSessionData.scheduledAt).toISOString(),
+                    duration: editSessionData.duration,
+                    tier: editSessionData.tier,
+                    maxAttendees: editSessionData.maxAttendees,
+                    streamUrl: editSessionData.meetingUrl || null,
+                    meetingPassword: editSessionData.meetingPassword || null
+                })
+            })
+
+            if (response.ok) {
+                toast.success(isArabic ? 'تم تحديث الجلسة!' : 'Session updated!')
+                setShowEditSessionModal(false)
+                setEditingSession(null)
+                setEditSessionData({
+                    title: '', titleAr: '', description: '', descriptionAr: '',
+                    scheduledAt: '', duration: 60, tier: 'BRONZE', maxAttendees: 100,
+                    meetingUrl: '', meetingPassword: ''
+                })
+                // Refresh upcoming sessions list
+                fetchUpcomingSessionsFromAPI()
+            } else {
+                const error = await response.json()
+                toast.error(error.message || (isArabic ? 'فشل التحديث' : 'Failed to update'))
+            }
+        } catch (error) {
+            console.error('Error updating session:', error)
             toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
         } finally {
             setSavingSession(false)
@@ -1279,6 +1353,94 @@ export default function OnlyFansMentorProfilePage() {
             toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
         } finally {
             setDeletingSessionId(null)
+        }
+    }
+
+    // Handle update session status (start/end)
+    const handleUpdateSessionStatus = async (sessionId: string, newStatus: 'LIVE' | 'ENDED' | 'CANCELLED') => {
+        if (!mentor) return
+
+        try {
+            const updateData: any = {
+                sessionId,
+                status: newStatus
+            }
+            
+            // Set actualStartAt when starting session
+            if (newStatus === 'LIVE') {
+                updateData.actualStartAt = new Date().toISOString()
+            }
+            // Set actualEndAt when ending session
+            if (newStatus === 'ENDED' || newStatus === 'CANCELLED') {
+                updateData.actualEndAt = new Date().toISOString()
+            }
+
+            const response = await fetch(`/api/mentors/${mentor.id}/sessions`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updateData)
+            })
+
+            if (response.ok) {
+                const statusMessages = {
+                    'LIVE': isArabic ? 'تم بدء الجلسة!' : 'Session started!',
+                    'ENDED': isArabic ? 'تم إنهاء الجلسة!' : 'Session ended!',
+                    'CANCELLED': isArabic ? 'تم إلغاء الجلسة!' : 'Session cancelled!'
+                }
+                toast.success(statusMessages[newStatus])
+                fetchUpcomingSessionsFromAPI()
+                if (newStatus === 'ENDED') {
+                    fetchArchivedSessionsFromAPI()
+                }
+            } else {
+                const error = await response.json()
+                toast.error(error.message || (isArabic ? 'فشل التحديث' : 'Failed to update'))
+            }
+        } catch (error) {
+            console.error('Error updating session status:', error)
+            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+        }
+    }
+
+    // Handle edit archived session (add recording URL)
+    const handleEditArchivedSession = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!mentor || !editingArchivedSession) return
+
+        setSavingSession(true)
+        try {
+            const response = await fetch(`/api/mentors/${mentor.id}/sessions`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessionId: editingArchivedSession.id,
+                    title: editArchivedData.title,
+                    titleAr: editArchivedData.titleAr || editArchivedData.title,
+                    description: editArchivedData.description,
+                    descriptionAr: editArchivedData.descriptionAr || editArchivedData.description,
+                    recordingUrl: editArchivedData.recordingUrl || null,
+                    tier: editArchivedData.tier
+                })
+            })
+
+            if (response.ok) {
+                toast.success(isArabic ? 'تم تحديث التسجيل!' : 'Recording updated!')
+                setShowEditArchivedModal(false)
+                setEditingArchivedSession(null)
+                setEditArchivedData({
+                    title: '', titleAr: '', description: '', descriptionAr: '',
+                    recordingUrl: '', tier: 'BRONZE'
+                })
+                fetchArchivedSessionsFromAPI()
+            } else {
+                const error = await response.json()
+                toast.error(error.message || (isArabic ? 'فشل التحديث' : 'Failed to update'))
+            }
+        } catch (error) {
+            console.error('Error updating archived session:', error)
+            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+        } finally {
+            setSavingSession(false)
         }
     }
 
@@ -1666,7 +1828,7 @@ export default function OnlyFansMentorProfilePage() {
         toast.success(isFollowing ? (isArabic ? 'تم إلغاء المتابعة' : 'Unfollowed') : (isArabic ? 'تمت المتابعة' : 'Following!'))
     }, [session, isArabic, locale, router, isFollowing])
 
-    const handleSubscribe = async (tier: 'BASIC' | 'PREMIUM' | 'VIP') => {
+    const handleSubscribe = async () => {
         if (!session) {
             toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
             router.push(`/${locale}/login`)
@@ -1696,11 +1858,8 @@ export default function OnlyFansMentorProfilePage() {
         setIsSubscribing(true)
         
         try {
-            // Get the price based on tier
-            let price = 50 // default
-            if (tier === 'BASIC') price = mentor?.basicMonthlyPrice || 50
-            else if (tier === 'PREMIUM') price = mentor?.premiumMonthlyPrice || 100
-            else if (tier === 'VIP') price = mentor?.vipMonthlyPrice || 200
+            // Use basic price for all-access tier
+            const price = mentor?.basicMonthlyPrice || 50
 
             const response = await fetch('/api/subscriptions/subscribe', {
                 method: 'POST',
@@ -1711,7 +1870,7 @@ export default function OnlyFansMentorProfilePage() {
                     type: 'CATEGORY_C',
                     channelId: null, // Set to null to avoid foreign key constraint
                     creatorId: channelId, // Pass instructor ID for reference
-                    tier: tier,
+                    tier: 'ALL_ACCESS',
                     price: price,
                     billingCycle: 'monthly',
                     paymentMethodId: 'demo_payment_method' // In production, use Stripe
@@ -1721,11 +1880,11 @@ export default function OnlyFansMentorProfilePage() {
             const data = await response.json()
 
             if (response.ok) {
-                setCurrentSubscription(tier)
+                setCurrentSubscription('ALL_ACCESS')
                 toast.success(
                     isArabic 
-                        ? `🎉 تم الاشتراك في ${tier} بنجاح!` 
-                        : `🎉 Successfully subscribed to ${tier}!`
+                        ? '🎉 تم الاشتراك بنجاح!' 
+                        : '🎉 Successfully subscribed!'
                 )
                 
                 // Refresh subscription status
@@ -1778,30 +1937,9 @@ export default function OnlyFansMentorProfilePage() {
         }
     }
 
-    const handleUpgradeSubscription = async (newTier: 'BASIC' | 'PREMIUM' | 'VIP') => {
-        if (!session) {
-            toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
-            return
-        }
-
-        const confirmMessage = isArabic 
-            ? `هل تريد الترقية إلى ${newTier}؟` 
-            : `Upgrade to ${newTier} tier?`
-        
-        if (!confirm(confirmMessage)) return
-
-        // First cancel current subscription, then subscribe to new tier
-        setIsSubscribing(true)
-        try {
-            await handleCancelSubscription()
-            await handleSubscribe(newTier)
-            toast.success(isArabic ? `تمت الترقية إلى ${newTier}!` : `Upgraded to ${newTier}!`)
-        } catch (error) {
-            console.error('Upgrade error:', error)
-            toast.error(isArabic ? 'فشلت الترقية' : 'Upgrade failed')
-        } finally {
-            setIsSubscribing(false)
-        }
+    // No upgrade needed for single ALL_ACCESS tier
+    const handleUpgradeSubscription = async () => {
+        toast.success(isArabic ? 'لديك بالفعل وصول كامل!' : 'You already have full access!')
     }
 
     const handleLikePost = useCallback((postId: string) => {
@@ -2011,8 +2149,8 @@ export default function OnlyFansMentorProfilePage() {
     // Initialize data on component mount
     useEffect(() => {
         if (mentor) {
-            fetchUpcomingSessions()
-            fetchArchivedSessions()
+            fetchUpcomingSessionsFromAPI()
+            fetchArchivedSessionsFromAPI()
             fetchCommunityData()
             fetchSuggestedCreators()
             fetchResources()
@@ -2079,14 +2217,6 @@ export default function OnlyFansMentorProfilePage() {
             }
         }
     }, [mentor?.id, isCreatorView])
-
-    // Load sessions from API when sessions tab is active
-    useEffect(() => {
-        if (mentor && activeTab === 'sessions') {
-            fetchUpcomingSessionsFromAPI()
-            fetchArchivedSessionsFromAPI()
-        }
-    }, [mentor?.id, activeTab])
 
     // Load community posts from API
     useEffect(() => {
@@ -2176,15 +2306,17 @@ export default function OnlyFansMentorProfilePage() {
         return filtered
     }, [qaQuestions, qaFilter, sortBy])
 
-    // Get only user-created posts (filter out demo posts when user has created content)
-    const userCreatedPosts = useMemo(() => {
-        return posts.filter(p => p.id.startsWith('post-'))
-    }, [posts])
-    
-    // Use user-created posts if any exist, otherwise show demo posts for preview
+    // All posts come from database now
     const displayPosts = useMemo(() => {
-        return userCreatedPosts.length > 0 ? userCreatedPosts : posts
-    }, [userCreatedPosts, posts])
+        // Sort by pinned first, then by timestamp (most recent first)
+        return [...posts].sort((a, b) => {
+            if (a.isPinned && !b.isPinned) return -1
+            if (!a.isPinned && b.isPinned) return 1
+            const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0
+            const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0
+            return timeB - timeA
+        })
+    }, [posts])
 
     const mediaPosts = useMemo(() => 
         displayPosts.filter(post => post.type === 'image' || post.type === 'video')
@@ -2528,17 +2660,18 @@ export default function OnlyFansMentorProfilePage() {
                         <div className="flex items-end justify-between mb-6">
                             {/* Profile Image */}
                             <div className="relative">
-                                {mentor.user.profileImage ? (
+                                {mentor.user.profileImage && mentor.user.profileImage.length > 0 ? (
                                     <Image
                                         src={mentor.user.profileImage}
                                         alt={getMentorName()}
                                         width={120} height={120} className="rounded-full border-4 border-background object-cover w-28 h-28 sm:w-32 sm:h-32"
                                     />
                                 ) : (
-                                    <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                                        <span className="text-4xl font-bold text-foreground">
-                                            {getMentorName()[0]}
-                                        </span>
+                                    <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background overflow-hidden">
+                                        <AvatarPlaceholder 
+                                            name={getMentorName()} 
+                                            size={128} 
+                                        />
                                     </div>
                                 )}
                                 {mentor.stats.averageRating >= 4.5 && (
@@ -2668,7 +2801,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         router.push(`/${locale}/login`)
                                                         return
                                                     }
-                                                    document.getElementById('subscription-tiers')?.scrollIntoView({ behavior: 'smooth' })
+                                                    setIsSubscribeModalOpen(true)
                                                 }}
                                                 disabled={isSubscribing}
                                                 className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white font-bold px-8 py-2 rounded-full disabled:opacity-50 transition-all"
@@ -2787,24 +2920,11 @@ export default function OnlyFansMentorProfilePage() {
                                                     {isArabic ? 'أنت مشترك!' : 'You\'re Subscribed!'}
                                                 </h3>
                                                 <p className="text-sm text-white/50">
-                                                    {isArabic ? `عضوية ${currentSubscription} نشطة` : `${currentSubscription} membership active`}
+                                                    {isArabic ? 'عضوية وصول شامل نشطة' : 'All-Access membership active'}
                                                 </p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            {currentSubscription !== 'VIP' && (
-                                                <Button
-                                                    onClick={() => {
-                                                        const nextTier = currentSubscription === 'BASIC' ? 'PREMIUM' : 'VIP'
-                                                        handleUpgradeSubscription(nextTier as any)
-                                                    }}
-                                                    disabled={isSubscribing}
-                                                    className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white disabled:opacity-50"
-                                                >
-                                                    <Crown className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'ترقية' : 'Upgrade'}
-                                                </Button>
-                                            )}
                                             <Button
                                                 onClick={handleCancelSubscription}
                                                 className="bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10"
@@ -2816,105 +2936,6 @@ export default function OnlyFansMentorProfilePage() {
                                 </div>
                             )}
 
-                            {/* Subscription Tiers - Apple TV Minimal */}
-                            {!isCreatorView && (
-                            <div id="subscription-tiers" className="mb-6">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    {/* Basic Tier */}
-                                    {mentor.basicMonthlyPrice && (
-                                        <div className="bg-white/5 border border-white/10 rounded-xl p-5 hover:border-white/20 transition-all">
-                                            <div className="mb-4">
-                                                <div className="text-sm text-white/50 mb-1">Basic</div>
-                                                <div className="text-2xl font-semibold text-white">
-                                                    ${mentor.basicMonthlyPrice}<span className="text-sm text-white/50 font-normal">/mo</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="space-y-1.5 mb-5 text-sm text-white/60">
-                                                <div>{isArabic ? 'جميع المنشورات' : 'All posts'}</div>
-                                                <div>{isArabic ? 'الوصول للمجتمع' : 'Community access'}</div>
-                                                <div>{isArabic ? 'تحديثات أسبوعية' : 'Weekly updates'}</div>
-                                            </div>
-                                            
-                                            <Button 
-                                                onClick={() => handleSubscribe('BASIC')}
-                                                disabled={isSubscribing || currentSubscription === 'BASIC'}
-                                                className="w-full h-9 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white text-sm rounded-lg disabled:opacity-50"
-                                            >
-                                                {currentSubscription === 'BASIC' 
-                                                    ? (isArabic ? 'الحالية' : 'Current')
-                                                    : isSubscribing ? '...' 
-                                                    : (isArabic ? 'اشترك' : 'Subscribe')}
-                                            </Button>
-                                        </div>
-                                    )}
-
-                                    {/* Premium Tier */}
-                                    {mentor.premiumMonthlyPrice && (
-                                        <div className="bg-white/5 border border-white/20 rounded-xl p-5 hover:border-white/30 transition-all relative">
-                                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#0a84ff] text-white text-xs px-2 py-0.5 rounded-full">
-                                                {isArabic ? 'الأشهر' : 'Popular'}
-                                            </div>
-                                            
-                                            <div className="mb-4 mt-1">
-                                                <div className="text-sm text-white/50 mb-1">Premium</div>
-                                                <div className="text-2xl font-semibold text-white">
-                                                    ${mentor.premiumMonthlyPrice}<span className="text-sm text-white/50 font-normal">/mo</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="space-y-1.5 mb-5 text-sm text-white/60">
-                                                <div className="text-white">{isArabic ? 'كل مزايا Basic' : 'All Basic features'}</div>
-                                                <div>{isArabic ? 'جلسات مباشرة' : 'Live Q&A'}</div>
-                                                <div>{isArabic ? 'دعم مميز' : 'Priority support'}</div>
-                                                <div>{isArabic ? 'موارد حصرية' : 'Exclusive resources'}</div>
-                                            </div>
-                                            
-                                            <Button 
-                                                onClick={() => handleSubscribe('PREMIUM')}
-                                                disabled={isSubscribing || currentSubscription === 'PREMIUM'}
-                                                className="w-full h-9 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white text-sm rounded-lg disabled:opacity-50"
-                                            >
-                                                {currentSubscription === 'PREMIUM' 
-                                                    ? (isArabic ? 'الحالية' : 'Current')
-                                                    : isSubscribing ? '...' 
-                                                    : (isArabic ? 'اشترك' : 'Subscribe')}
-                                            </Button>
-                                        </div>
-                                    )}
-
-                                    {/* VIP Tier */}
-                                    {mentor.vipMonthlyPrice && (
-                                        <div className="bg-white/5 border border-white/10 rounded-xl p-5 hover:border-white/20 transition-all">
-                                            <div className="mb-4">
-                                                <div className="text-sm text-white/50 mb-1">VIP</div>
-                                                <div className="text-2xl font-semibold text-white">
-                                                    ${mentor.vipMonthlyPrice}<span className="text-sm text-white/50 font-normal">/mo</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="space-y-1.5 mb-5 text-sm text-white/60">
-                                                <div className="text-white">{isArabic ? 'كل مزايا Premium' : 'All Premium features'}</div>
-                                                <div>{isArabic ? 'جلسات 1:1' : '1-on-1 coaching'}</div>
-                                                <div>{isArabic ? 'رسائل مباشرة' : 'Direct messaging'}</div>
-                                                <div>{isArabic ? 'محتوى مخصص' : 'Custom content'}</div>
-                                            </div>
-                                            
-                                            <Button 
-                                                onClick={() => handleSubscribe('VIP')}
-                                                disabled={isSubscribing || currentSubscription === 'VIP'}
-                                                className="w-full h-9 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white text-sm rounded-lg disabled:opacity-50"
-                                            >
-                                                {currentSubscription === 'VIP' 
-                                                    ? (isArabic ? 'الحالية' : 'Current')
-                                                    : isSubscribing ? '...' 
-                                                    : (isArabic ? 'اشترك' : 'Subscribe')}
-                                            </Button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            )}
 
                             {/* Posts Feed */}
                             {displayPosts
@@ -2940,16 +2961,18 @@ export default function OnlyFansMentorProfilePage() {
                                     >
                                         {/* Post Header */}
                                         <div className="flex items-center gap-3 mb-4">
-                                            {mentor.user.profileImage ? (
+                                            {mentor.user.profileImage && mentor.user.profileImage.length > 0 ? (
                                                 <Image
                                                     src={mentor.user.profileImage}
                                                     alt={getMentorName()}
                                                     width={48} height={48} className="rounded-full object-cover w-12 h-12"
                                                 />
                                             ) : (
-                                                <div className="w-12 h-12 rounded-full bg-[#0a84ff] flex items-center justify-center">
-                                                    <span className="text-lg font-bold text-white">{getMentorName()[0]}</span>
-                                                </div>
+                                                <AvatarPlaceholder 
+                                                    name={getMentorName()} 
+                                                    size={48} 
+                                                    className="rounded-full"
+                                                />
                                             )}
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2">
@@ -3087,24 +3110,21 @@ export default function OnlyFansMentorProfilePage() {
                                                                 router.push(`/${locale}/login`)
                                                                 return
                                                             }
-                                                            document.getElementById('subscription-tiers')?.scrollIntoView({ behavior: 'smooth' })
+                                                            handleSubscribe()
                                                         }}
-                                                        className="w-full max-w-xs h-12 font-semibold rounded-full bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white transition-all"
+                                                        disabled={isSubscribing}
+                                                        className="w-full max-w-xs h-12 font-semibold rounded-full bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white transition-all disabled:opacity-50"
                                                     >
-                                                        <Crown className="w-4 h-4 mr-2" />
-                                                        {isArabic ? 'اشترك الآن' : 'Subscribe Now'}
+                                                        {isSubscribing ? (
+                                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                        ) : (
+                                                            <>
+                                                                <Crown className="w-4 h-4 mr-2" />
+                                                                {isArabic ? 'اشترك الآن' : 'Subscribe Now'}
+                                                            </>
+                                                        )}
                                                     </Button>
 
-                                                    {/* Benefits Preview */}
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            document.getElementById('subscription-tiers')?.scrollIntoView({ behavior: 'smooth' })
-                                                        }}
-                                                        className="text-sm text-muted-foreground hover:text-foreground transition-colors mt-4"
-                                                    >
-                                                        {isArabic ? 'عرض جميع الخطط' : 'View all plans'}
-                                                    </button>
                                                 </div>
                                             </div>
                                         ) : (
@@ -3307,11 +3327,11 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     className="rounded-full object-cover w-8 h-8"
                                                                                 />
                                                                             ) : (
-                                                                                <div className="w-8 h-8 rounded-full bg-[#0a84ff] flex items-center justify-center">
-                                                                                    <span className="text-xs font-bold text-white">
-                                                                                        {(isArabic && comment.author.arabicName ? comment.author.arabicName : comment.author.name)[0]}
-                                                                                    </span>
-                                                                                </div>
+                                                                                <AvatarPlaceholder 
+                                                                                    name={comment.author.name} 
+                                                                                    size={32} 
+                                                                                    className="rounded-full"
+                                                                                />
                                                                             )}
                                                                             <div className="flex-1">
                                                                                 <div className="bg-card-hover rounded-lg px-3 py-2">
@@ -3491,7 +3511,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 router.push(`/${locale}/login`)
                                                                 return
                                                             }
-                                                            handleSubscribe(post.tier as any)
+                                                            handleSubscribe()
                                                         }}
                                                         className="absolute inset-0 flex flex-col items-center justify-center p-4 hover:bg-background/95 transition-colors cursor-pointer"
                                                     >
@@ -3768,11 +3788,11 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="space-y-4">
                                         {upcomingSessions.map((session) => {
                                             const sessionDate = new Date(session.date)
-                                            const canJoin = currentSubscription && (
-                                                session.requiredTier === 'BASIC' ||
-                                                (session.requiredTier === 'PREMIUM' && ['PREMIUM', 'VIP'].includes(currentSubscription)) ||
-                                                (session.requiredTier === 'VIP' && currentSubscription === 'VIP')
-                                            )
+                                            // Tier hierarchy: BRONZE < SILVER < GOLD < PLATINUM
+                                            const tierHierarchy: Record<string, number> = { 'BRONZE': 1, 'SILVER': 2, 'GOLD': 3, 'PLATINUM': 4 }
+                                            const userTierLevel = currentSubscription ? (tierHierarchy[currentSubscription] || 0) : 0
+                                            const requiredTierLevel = tierHierarchy[session.requiredTier] || 1
+                                            const canJoin = userTierLevel >= requiredTierLevel
                                             const isLocked = !canJoin
 
                                             return (
@@ -3818,7 +3838,22 @@ export default function OnlyFansMentorProfilePage() {
                                                         {isCreatorView ? (
                                                             <div className="flex items-center gap-2">
                                                                 <button 
-                                                                    onClick={() => toast(isArabic ? 'التعديل قريباً' : 'Edit coming soon', { icon: '✏️' })}
+                                                                    onClick={() => {
+                                                                        setEditingSession(session)
+                                                                        setEditSessionData({
+                                                                            title: session.title || '',
+                                                                            titleAr: session.titleAr || '',
+                                                                            description: session.description || '',
+                                                                            descriptionAr: session.descriptionAr || '',
+                                                                            scheduledAt: session.date ? new Date(session.date).toISOString().slice(0, 16) : '',
+                                                                            duration: session.duration || 60,
+                                                                            tier: session.requiredTier || 'BRONZE',
+                                                                            maxAttendees: session.maxAttendees || 100,
+                                                                            meetingUrl: session.joinLink || '',
+                                                                            meetingPassword: session.meetingPassword || ''
+                                                                        })
+                                                                        setShowEditSessionModal(true)
+                                                                    }}
                                                                     className="p-2 hover:bg-card-hover rounded-lg transition-colors"
                                                                     title={isArabic ? 'تعديل الجلسة' : 'Edit session'}
                                                                 >
@@ -3876,21 +3911,107 @@ export default function OnlyFansMentorProfilePage() {
 
                                                     {/* Action Button */}
                                                     {isCreatorView ? (
-                                                        <div className="flex gap-2">
-                                                            <Button
-                                                                onClick={() => toast.success(isArabic ? 'قريباً' : 'Coming soon')}
-                                                                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-                                                            >
-                                                                <Users className="w-4 h-4 mr-2" />
-                                                                {isArabic ? `الحاضرون (${session.attendees})` : `Attendees (${session.attendees})`}
-                                                            </Button>
-                                                            <Button
-                                                                onClick={() => toast.success(isArabic ? 'قريباً' : 'Coming soon')}
-                                                                className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-                                                            >
-                                                                <Video className="w-4 h-4 mr-2" />
-                                                                {isArabic ? 'بدء الجلسة' : 'Start Session'}
-                                                            </Button>
+                                                        <div className="space-y-2">
+                                                            {/* Status Badge */}
+                                                            {session.status === 'LIVE' && (
+                                                                <div className="flex items-center gap-2 mb-2">
+                                                                    <span className="relative flex h-3 w-3">
+                                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                                                    </span>
+                                                                    <span className="text-sm font-bold text-red-500">
+                                                                        {isArabic ? 'مباشر الآن' : 'LIVE NOW'}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                            
+                                                            <div className="flex gap-2">
+                                                                <Button
+                                                                    onClick={async () => {
+                                                                        setSelectedSessionForAttendees(session)
+                                                                        setShowAttendeesModal(true)
+                                                                        setLoadingAttendees(true)
+                                                                        try {
+                                                                            const response = await fetch(`/api/sessions/${session.id}/join`)
+                                                                            if (response.ok) {
+                                                                                const data = await response.json()
+                                                                                setSessionAttendees(data.attendees || [])
+                                                                            }
+                                                                        } catch (error) {
+                                                                            console.error('Error fetching attendees:', error)
+                                                                        } finally {
+                                                                            setLoadingAttendees(false)
+                                                                        }
+                                                                    }}
+                                                                    className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                                                                >
+                                                                    <Users className="w-4 h-4 mr-2" />
+                                                                    {isArabic ? `الحاضرون (${session.attendees})` : `Attendees (${session.attendees})`}
+                                                                </Button>
+                                                                
+                                                                {session.status === 'SCHEDULED' ? (
+                                                                    <Button
+                                                                        onClick={() => {
+                                                                            if (session.joinLink) {
+                                                                                window.open(session.joinLink, '_blank')
+                                                                                handleUpdateSessionStatus(session.id, 'LIVE')
+                                                                            } else {
+                                                                                toast.error(isArabic ? 'لم يتم إضافة رابط الاجتماع بعد' : 'No meeting link added yet')
+                                                                            }
+                                                                        }}
+                                                                        className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                                                                    >
+                                                                        <Video className="w-4 h-4 mr-2" />
+                                                                        {session.joinLink 
+                                                                            ? (isArabic ? 'بدء الجلسة' : 'Start Session')
+                                                                            : (isArabic ? 'أضف رابط' : 'Add Link')
+                                                                        }
+                                                                    </Button>
+                                                                ) : session.status === 'LIVE' ? (
+                                                                    <Button
+                                                                        onClick={() => handleUpdateSessionStatus(session.id, 'ENDED')}
+                                                                        className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white"
+                                                                    >
+                                                                        <X className="w-4 h-4 mr-2" />
+                                                                        {isArabic ? 'إنهاء الجلسة' : 'End Session'}
+                                                                    </Button>
+                                                                ) : (
+                                                                    <Button
+                                                                        disabled
+                                                                        className="flex-1 bg-card text-muted-foreground border border-border"
+                                                                    >
+                                                                        <CheckCircle className="w-4 h-4 mr-2" />
+                                                                        {isArabic ? 'انتهت' : 'Ended'}
+                                                                    </Button>
+                                                                )}
+                                                            </div>
+                                                            
+                                                            {/* Quick actions for live session */}
+                                                            {session.status === 'LIVE' && session.joinLink && (
+                                                                <Button
+                                                                    onClick={() => window.open(session.joinLink, '_blank')}
+                                                                    size="sm"
+                                                                    className="w-full bg-card hover:bg-card-hover text-foreground border border-border"
+                                                                >
+                                                                    <Video className="w-3 h-3 mr-2" />
+                                                                    {isArabic ? 'العودة للجلسة' : 'Rejoin Session'}
+                                                                </Button>
+                                                            )}
+                                                            
+                                                            {session.joinLink && (
+                                                                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card/50 rounded-lg p-2">
+                                                                    <span className="truncate flex-1">{session.joinLink}</span>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            navigator.clipboard.writeText(session.joinLink)
+                                                                            toast.success(isArabic ? 'تم النسخ!' : 'Copied!')
+                                                                        }}
+                                                                        className="p-1 hover:bg-card rounded"
+                                                                    >
+                                                                        <Copy className="w-3 h-3" />
+                                                                    </button>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     ) : isLocked ? (
                                                         <Button
@@ -3908,19 +4029,56 @@ export default function OnlyFansMentorProfilePage() {
                                                             {isArabic ? `اشترك في ${session.requiredTier} للانضمام` : `Subscribe to ${session.requiredTier} to Join`}
                                                         </Button>
                                                     ) : (
-                                                        <Button
-                                                            onClick={() => {
-                                                                if (session.joinLink) {
-                                                                    router.push(session.joinLink)
-                                                                } else {
-                                                                    toast.success(isArabic ? 'ستتلقى رابط الانضمام قريباً' : 'You will receive the join link soon')
+                                                        <div className="space-y-2">
+                                                            {/* Live indicator for users */}
+                                                            {session.status === 'LIVE' && (
+                                                                <div className="flex items-center justify-center gap-2 mb-2 py-1 bg-red-500/10 rounded-lg">
+                                                                    <span className="relative flex h-3 w-3">
+                                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                                                    </span>
+                                                                    <span className="text-sm font-bold text-red-500">
+                                                                        {isArabic ? 'مباشر الآن!' : 'LIVE NOW!'}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                            <Button
+                                                                onClick={() => {
+                                                                    if (session.joinLink) {
+                                                                        // Open meeting link in new tab
+                                                                        window.open(session.joinLink, '_blank')
+                                                                        if (session.meetingPassword) {
+                                                                            toast.success(
+                                                                                isArabic 
+                                                                                    ? `كلمة مرور الاجتماع: ${session.meetingPassword}` 
+                                                                                    : `Meeting password: ${session.meetingPassword}`,
+                                                                                { duration: 10000 }
+                                                                            )
+                                                                        }
+                                                                    } else {
+                                                                        toast.success(isArabic ? 'ستتلقى رابط الانضمام قريباً' : 'You will receive the join link soon')
+                                                                    }
+                                                                }}
+                                                                className={`w-full font-semibold ${
+                                                                    session.status === 'LIVE' 
+                                                                        ? 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 animate-pulse'
+                                                                        : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600'
+                                                                } text-white`}
+                                                            >
+                                                                <Video className="w-4 h-4 mr-2" />
+                                                                {session.status === 'LIVE'
+                                                                    ? (isArabic ? 'انضم الآن!' : 'Join Now!')
+                                                                    : session.joinLink 
+                                                                        ? (isArabic ? 'انضم للجلسة' : 'Join Session')
+                                                                        : (isArabic ? 'الرابط قريباً' : 'Link Coming Soon')
                                                                 }
-                                                            }}
-                                                            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold"
-                                                        >
-                                                            <Video className="w-4 h-4 mr-2" />
-                                                            {isArabic ? 'انضم للجلسة' : 'Join Session'}
-                                                        </Button>
+                                                            </Button>
+                                                            {session.meetingPassword && session.joinLink && (
+                                                                <p className="text-xs text-muted-foreground text-center">
+                                                                    {isArabic ? 'كلمة المرور:' : 'Password:'} <span className="font-mono font-semibold text-foreground">{session.meetingPassword}</span>
+                                                                </p>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </motion.div>
                                             )
@@ -3971,6 +4129,49 @@ export default function OnlyFansMentorProfilePage() {
                                         </Button>
                                     )}
                                 </div>
+
+                                {/* Recording Analytics - Creator View Only */}
+                                {isCreatorView && displayArchivedSessions.length > 0 && (
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                                        <div className="bg-gradient-to-br from-pink-900/10 to-purple-900/10 border border-pink-500/20 rounded-lg p-3">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <Eye className="w-4 h-4 text-pink-400" />
+                                                <span className="text-xs text-muted-foreground">{isArabic ? 'إجمالي المشاهدات' : 'Total Views'}</span>
+                                            </div>
+                                            <p className="text-xl font-bold text-foreground">
+                                                {displayArchivedSessions.reduce((acc, s) => acc + (s.views || 0), 0).toLocaleString()}
+                                            </p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-blue-900/10 to-cyan-900/10 border border-blue-500/20 rounded-lg p-3">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <Clock className="w-4 h-4 text-blue-400" />
+                                                <span className="text-xs text-muted-foreground">{isArabic ? 'إجمالي الساعات' : 'Total Hours'}</span>
+                                            </div>
+                                            <p className="text-xl font-bold text-foreground">
+                                                {Math.round(displayArchivedSessions.reduce((acc, s) => acc + ((s.views || 0) * (s.duration || 60) / 60), 0))}h
+                                            </p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-green-900/10 to-emerald-900/10 border border-green-500/20 rounded-lg p-3">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <BarChart3 className="w-4 h-4 text-green-400" />
+                                                <span className="text-xs text-muted-foreground">{isArabic ? 'معدل الإكمال' : 'Completion Rate'}</span>
+                                            </div>
+                                            <p className="text-xl font-bold text-foreground">78%</p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-yellow-900/10 to-orange-900/10 border border-yellow-500/20 rounded-lg p-3">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <TrendingUp className="w-4 h-4 text-yellow-400" />
+                                                <span className="text-xs text-muted-foreground">{isArabic ? 'متوسط المشاهدات' : 'Avg Views'}</span>
+                                            </div>
+                                            <p className="text-xl font-bold text-foreground">
+                                                {displayArchivedSessions.length > 0 
+                                                    ? Math.round(displayArchivedSessions.reduce((acc, s) => acc + (s.views || 0), 0) / displayArchivedSessions.length)
+                                                    : 0
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Filter Tabs */}
                                 <div className="flex items-center gap-2 mb-6 flex-wrap">
@@ -4112,7 +4313,18 @@ export default function OnlyFansMentorProfilePage() {
                                                                     <div className="flex items-center gap-2">
                                                                         <Button
                                                                             size="sm"
-                                                                            onClick={() => toast(isArabic ? 'التعديل قريباً' : 'Edit coming soon', { icon: '✏️' })}
+                                                                            onClick={() => {
+                                                                                setEditingArchivedSession(session)
+                                                                                setEditArchivedData({
+                                                                                    title: session.title || '',
+                                                                                    titleAr: session.titleAr || '',
+                                                                                    description: session.description || '',
+                                                                                    descriptionAr: session.descriptionAr || '',
+                                                                                    recordingUrl: session.recordingUrl || '',
+                                                                                    tier: session.requiredTier || 'BRONZE'
+                                                                                })
+                                                                                setShowEditArchivedModal(true)
+                                                                            }}
                                                                             variant="outline"
                                                                         >
                                                                             <Edit2 className="w-3 h-3 mr-1" />
@@ -5724,7 +5936,7 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl p-4">
                                         <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'هذا الشهر' : 'This Month'}</div>
                                         <div className="text-2xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                                            {creatorStats.earnings.thisMonth.toLocaleString()} EGP
+                                            €{creatorStats.earnings.thisMonth.toLocaleString()}
                                         </div>
                                         <div className="text-xs text-green-400 mt-1 flex items-center gap-1">
                                             <TrendingUp className="w-3 h-3" />
@@ -5735,21 +5947,21 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-xl p-4">
                                         <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'الشهر الماضي' : 'Last Month'}</div>
                                         <div className="text-2xl font-black text-foreground">
-                                            {creatorStats.earnings.lastMonth.toLocaleString()} EGP
+                                            €{creatorStats.earnings.lastMonth.toLocaleString()}
                                         </div>
                                     </div>
 
                                     <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-4">
                                         <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'إجمالي الأرباح' : 'Total Earnings'}</div>
                                         <div className="text-2xl font-black text-foreground">
-                                            {creatorStats.earnings.total.toLocaleString()} EGP
+                                            €{creatorStats.earnings.total.toLocaleString()}
                                         </div>
                                     </div>
 
                                     <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-xl p-4">
                                         <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'قيد الانتظار' : 'Pending'}</div>
                                         <div className="text-2xl font-black text-foreground">
-                                            {creatorStats.earnings.pending.toLocaleString()} EGP
+                                            €{creatorStats.earnings.pending.toLocaleString()}
                                         </div>
                                     </div>
                                 </div>
@@ -5901,7 +6113,7 @@ export default function OnlyFansMentorProfilePage() {
                                             </div>
                                             <div className="text-right">
                                                 <div className="font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                                                    {sub.spent?.toLocaleString() ?? 0} EGP
+                                                    €{sub.spent?.toLocaleString() ?? 0}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">{isArabic ? 'إجمالي' : 'Total'}</div>
                                             </div>
@@ -6835,44 +7047,7 @@ export default function OnlyFansMentorProfilePage() {
                                 </div>
                             )}
 
-                            {/* Subscription Tiers Preview */}
-                            <div className="bg-card border border-border rounded-2xl overflow-hidden">
-                                <div className="p-4 border-b border-border">
-                                    <h3 className="font-bold text-foreground">{isArabic ? 'الفئات المتاحة' : 'Available Tiers'}</h3>
-                                </div>
-                                <div className="p-4 space-y-3">
-                                    {/* Basic Tier */}
-                                    <div className="p-3 rounded-xl bg-muted border border-border">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="font-semibold text-foreground">Basic</span>
-                                            <span className="text-sm font-bold text-purple-400">{mentor.basicMonthlyPrice || 49} EGP/mo</span>
-                                        </div>
-                                        <p className="text-xs text-muted-foreground">{isArabic ? 'محتوى أساسي' : 'Basic content'}</p>
-                                    </div>
-
-                                    {/* Premium Tier */}
-                                    <div className="p-3 rounded-xl bg-muted border border-border">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="font-semibold text-foreground">Premium</span>
-                                            <span className="text-sm font-bold text-purple-400">{mentor.premiumMonthlyPrice || 99} EGP/mo</span>
-                                        </div>
-                                        <p className="text-xs text-muted-foreground">{isArabic ? 'محتوى متميز' : 'Premium content'}</p>
-                                    </div>
-
-                                    {/* VIP Tier */}
-                                    <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="font-semibold text-foreground flex items-center gap-1">
-                                                <Crown className="w-4 h-4 text-purple-400" />
-                                                VIP
-                                            </span>
-                                            <span className="text-sm font-bold text-purple-400">{mentor.vipMonthlyPrice || 199} EGP/mo</span>
-                                        </div>
-                                        <p className="text-xs text-muted-foreground">{isArabic ? 'كل شيء + تدريب' : 'Everything + coaching'}</p>
-                                    </div>
-                                </div>
-                            </div>
-
+                            
                             {/* Suggested Creators */}
                             <div className="bg-[#1a1a1a] dark:bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl">
                                 <div className="p-4 border-b border-white/10">
@@ -7955,6 +8130,45 @@ export default function OnlyFansMentorProfilePage() {
                                         </div>
                                     </div>
 
+                                    {/* Meeting Link Section */}
+                                    <div className="border-t border-border pt-4">
+                                        <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                                            <Video className="w-4 h-4 text-purple-500" />
+                                            {isArabic ? 'رابط الاجتماع' : 'Meeting Link'}
+                                        </h4>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                                                    {isArabic ? 'رابط Zoom / Google Meet / Teams' : 'Zoom / Google Meet / Teams URL'}
+                                                </label>
+                                                <Input
+                                                    type="url"
+                                                    value={newSessionData.meetingUrl}
+                                                    onChange={(e) => setNewSessionData({ ...newSessionData, meetingUrl: e.target.value })}
+                                                    placeholder={isArabic ? 'مثال: https://zoom.us/j/123456789' : 'e.g., https://zoom.us/j/123456789'}
+                                                    className="bg-background border-border"
+                                                />
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    {isArabic 
+                                                        ? 'أضف رابط الاجتماع من Zoom أو Google Meet أو Microsoft Teams'
+                                                        : 'Add your meeting link from Zoom, Google Meet, or Microsoft Teams'}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                                                    {isArabic ? 'كلمة مرور الاجتماع (اختياري)' : 'Meeting Password (optional)'}
+                                                </label>
+                                                <Input
+                                                    type="text"
+                                                    value={newSessionData.meetingPassword}
+                                                    onChange={(e) => setNewSessionData({ ...newSessionData, meetingPassword: e.target.value })}
+                                                    placeholder={isArabic ? 'كلمة المرور إن وجدت' : 'Password if required'}
+                                                    className="bg-background border-border"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     {/* Actions */}
                                     <div className="flex items-center gap-3 pt-4">
                                         <Button
@@ -7984,6 +8198,519 @@ export default function OnlyFansMentorProfilePage() {
                                         </Button>
                                     </div>
                                 </form>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Edit Session Modal */}
+            <AnimatePresence>
+                {showEditSessionModal && editingSession && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        onClick={() => setShowEditSessionModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-card border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+                        >
+                            <div className="p-6">
+                                {/* Header */}
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                            <Edit2 className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-foreground">
+                                                {isArabic ? 'تعديل الجلسة' : 'Edit Session'}
+                                            </h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                {isArabic ? 'تحديث تفاصيل الجلسة' : 'Update session details'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowEditSessionModal(false)}
+                                        className="text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        <X className="w-6 h-6" />
+                                    </button>
+                                </div>
+
+                                {/* Form */}
+                                <form onSubmit={handleEditSession} className="space-y-6">
+                                    {/* Title */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-foreground mb-2">
+                                                {isArabic ? 'عنوان الجلسة (إنجليزي) *' : 'Session Title (English) *'}
+                                            </label>
+                                            <Input
+                                                value={editSessionData.title}
+                                                onChange={(e) => setEditSessionData({ ...editSessionData, title: e.target.value })}
+                                                placeholder={isArabic ? 'أدخل العنوان بالإنجليزية' : 'Enter title in English'}
+                                                className="bg-background border-border"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-foreground mb-2">
+                                                {isArabic ? 'عنوان الجلسة (عربي)' : 'Session Title (Arabic)'}
+                                            </label>
+                                            <Input
+                                                value={editSessionData.titleAr}
+                                                onChange={(e) => setEditSessionData({ ...editSessionData, titleAr: e.target.value })}
+                                                placeholder={isArabic ? 'أدخل العنوان بالعربية' : 'Enter title in Arabic'}
+                                                className="bg-background border-border"
+                                                dir="rtl"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Description */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-foreground mb-2">
+                                                {isArabic ? 'الوصف (إنجليزي)' : 'Description (English)'}
+                                            </label>
+                                            <textarea
+                                                value={editSessionData.description}
+                                                onChange={(e) => setEditSessionData({ ...editSessionData, description: e.target.value })}
+                                                placeholder={isArabic ? 'وصف الجلسة' : 'Session description'}
+                                                className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-foreground min-h-[80px] resize-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-foreground mb-2">
+                                                {isArabic ? 'الوصف (عربي)' : 'Description (Arabic)'}
+                                            </label>
+                                            <textarea
+                                                value={editSessionData.descriptionAr}
+                                                onChange={(e) => setEditSessionData({ ...editSessionData, descriptionAr: e.target.value })}
+                                                placeholder={isArabic ? 'وصف الجلسة بالعربية' : 'Session description in Arabic'}
+                                                className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-foreground min-h-[80px] resize-none"
+                                                dir="rtl"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Date, Duration, Tier, Max Attendees */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-foreground mb-2">
+                                                {isArabic ? 'التاريخ والوقت *' : 'Date & Time *'}
+                                            </label>
+                                            <Input
+                                                type="datetime-local"
+                                                value={editSessionData.scheduledAt}
+                                                onChange={(e) => setEditSessionData({ ...editSessionData, scheduledAt: e.target.value })}
+                                                className="bg-background border-border"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-foreground mb-2">
+                                                {isArabic ? 'المدة (دقيقة)' : 'Duration (min)'}
+                                            </label>
+                                            <Input
+                                                type="number"
+                                                value={editSessionData.duration}
+                                                onChange={(e) => setEditSessionData({ ...editSessionData, duration: Number(e.target.value) })}
+                                                min={15}
+                                                step={15}
+                                                className="bg-background border-border"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-foreground mb-2">
+                                                {isArabic ? 'الباقة المطلوبة' : 'Required Tier'}
+                                            </label>
+                                            <select
+                                                value={editSessionData.tier}
+                                                onChange={(e) => setEditSessionData({ ...editSessionData, tier: e.target.value })}
+                                                className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-foreground"
+                                            >
+                                                <option value="BRONZE">Bronze</option>
+                                                <option value="SILVER">Silver</option>
+                                                <option value="GOLD">Gold</option>
+                                                <option value="PLATINUM">Platinum</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-foreground mb-2">
+                                                {isArabic ? 'الحد الأقصى' : 'Max Attendees'}
+                                            </label>
+                                            <Input
+                                                type="number"
+                                                value={editSessionData.maxAttendees}
+                                                onChange={(e) => setEditSessionData({ ...editSessionData, maxAttendees: Number(e.target.value) })}
+                                                min={1}
+                                                className="bg-background border-border"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Meeting Link Section */}
+                                    <div className="border-t border-border pt-4">
+                                        <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                                            <Video className="w-4 h-4 text-purple-500" />
+                                            {isArabic ? 'رابط الاجتماع' : 'Meeting Link'}
+                                        </h4>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                                                    {isArabic ? 'رابط Zoom / Google Meet / Teams' : 'Zoom / Google Meet / Teams URL'}
+                                                </label>
+                                                <Input
+                                                    type="url"
+                                                    value={editSessionData.meetingUrl}
+                                                    onChange={(e) => setEditSessionData({ ...editSessionData, meetingUrl: e.target.value })}
+                                                    placeholder={isArabic ? 'مثال: https://zoom.us/j/123456789' : 'e.g., https://zoom.us/j/123456789'}
+                                                    className="bg-background border-border"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                                                    {isArabic ? 'كلمة مرور الاجتماع (اختياري)' : 'Meeting Password (optional)'}
+                                                </label>
+                                                <Input
+                                                    type="text"
+                                                    value={editSessionData.meetingPassword}
+                                                    onChange={(e) => setEditSessionData({ ...editSessionData, meetingPassword: e.target.value })}
+                                                    placeholder={isArabic ? 'كلمة المرور إن وجدت' : 'Password if required'}
+                                                    className="bg-background border-border"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="flex items-center gap-3 pt-4">
+                                        <Button
+                                            type="submit"
+                                            disabled={savingSession}
+                                            className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold"
+                                        >
+                                            {savingSession ? (
+                                                <>
+                                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                                                    {isArabic ? 'جاري الحفظ...' : 'Saving...'}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                                    {isArabic ? 'حفظ التغييرات' : 'Save Changes'}
+                                                </>
+                                            )}
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            onClick={() => setShowEditSessionModal(false)}
+                                            disabled={savingSession}
+                                            className="flex-1 bg-card hover:bg-card-hover text-foreground border border-border"
+                                        >
+                                            {isArabic ? 'إلغاء' : 'Cancel'}
+                                        </Button>
+                                    </div>
+                                </form>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Edit Archived Session Modal */}
+            <AnimatePresence>
+                {showEditArchivedModal && editingArchivedSession && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        onClick={() => setShowEditArchivedModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-card border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+                        >
+                            <div className="p-6">
+                                {/* Header */}
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+                                            <Play className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-foreground">
+                                                {isArabic ? 'تعديل التسجيل' : 'Edit Recording'}
+                                            </h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                {isArabic ? 'تحديث تفاصيل التسجيل ورابط الفيديو' : 'Update recording details and video URL'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowEditArchivedModal(false)}
+                                        className="text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        <X className="w-6 h-6" />
+                                    </button>
+                                </div>
+
+                                {/* Form */}
+                                <form onSubmit={handleEditArchivedSession} className="space-y-6">
+                                    {/* Title */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-foreground mb-2">
+                                                {isArabic ? 'عنوان التسجيل (إنجليزي)' : 'Recording Title (English)'}
+                                            </label>
+                                            <Input
+                                                value={editArchivedData.title}
+                                                onChange={(e) => setEditArchivedData({ ...editArchivedData, title: e.target.value })}
+                                                placeholder={isArabic ? 'أدخل العنوان بالإنجليزية' : 'Enter title in English'}
+                                                className="bg-background border-border"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-foreground mb-2">
+                                                {isArabic ? 'عنوان التسجيل (عربي)' : 'Recording Title (Arabic)'}
+                                            </label>
+                                            <Input
+                                                value={editArchivedData.titleAr}
+                                                onChange={(e) => setEditArchivedData({ ...editArchivedData, titleAr: e.target.value })}
+                                                placeholder={isArabic ? 'أدخل العنوان بالعربية' : 'Enter title in Arabic'}
+                                                className="bg-background border-border"
+                                                dir="rtl"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Description */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-foreground mb-2">
+                                                {isArabic ? 'الوصف (إنجليزي)' : 'Description (English)'}
+                                            </label>
+                                            <textarea
+                                                value={editArchivedData.description}
+                                                onChange={(e) => setEditArchivedData({ ...editArchivedData, description: e.target.value })}
+                                                placeholder={isArabic ? 'وصف التسجيل' : 'Recording description'}
+                                                className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-foreground min-h-[80px] resize-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-foreground mb-2">
+                                                {isArabic ? 'الوصف (عربي)' : 'Description (Arabic)'}
+                                            </label>
+                                            <textarea
+                                                value={editArchivedData.descriptionAr}
+                                                onChange={(e) => setEditArchivedData({ ...editArchivedData, descriptionAr: e.target.value })}
+                                                placeholder={isArabic ? 'وصف التسجيل بالعربية' : 'Recording description in Arabic'}
+                                                className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-foreground min-h-[80px] resize-none"
+                                                dir="rtl"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Recording URL - Main Feature */}
+                                    <div className="border-t border-border pt-4">
+                                        <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                                            <Video className="w-4 h-4 text-pink-500" />
+                                            {isArabic ? 'رابط التسجيل' : 'Recording URL'}
+                                        </h4>
+                                        <div>
+                                            <label className="block text-sm font-medium text-muted-foreground mb-2">
+                                                {isArabic ? 'رابط الفيديو (YouTube, Vimeo, إلخ)' : 'Video URL (YouTube, Vimeo, etc.)'}
+                                            </label>
+                                            <Input
+                                                type="url"
+                                                value={editArchivedData.recordingUrl}
+                                                onChange={(e) => setEditArchivedData({ ...editArchivedData, recordingUrl: e.target.value })}
+                                                placeholder={isArabic ? 'مثال: https://youtube.com/watch?v=...' : 'e.g., https://youtube.com/watch?v=...'}
+                                                className="bg-background border-border"
+                                            />
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                {isArabic 
+                                                    ? 'أضف رابط تسجيل الجلسة لعرضه للمشتركين'
+                                                    : 'Add the session recording URL for subscribers to watch'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Tier */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-foreground mb-2">
+                                            {isArabic ? 'الباقة المطلوبة للمشاهدة' : 'Required Tier to Watch'}
+                                        </label>
+                                        <select
+                                            value={editArchivedData.tier}
+                                            onChange={(e) => setEditArchivedData({ ...editArchivedData, tier: e.target.value })}
+                                            className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-foreground"
+                                        >
+                                            <option value="BRONZE">Bronze</option>
+                                            <option value="SILVER">Silver</option>
+                                            <option value="GOLD">Gold</option>
+                                            <option value="PLATINUM">Platinum</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="flex items-center gap-3 pt-4">
+                                        <Button
+                                            type="submit"
+                                            disabled={savingSession}
+                                            className="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold"
+                                        >
+                                            {savingSession ? (
+                                                <>
+                                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                                                    {isArabic ? 'جاري الحفظ...' : 'Saving...'}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                                    {isArabic ? 'حفظ التغييرات' : 'Save Changes'}
+                                                </>
+                                            )}
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            onClick={() => setShowEditArchivedModal(false)}
+                                            disabled={savingSession}
+                                            className="flex-1 bg-card hover:bg-card-hover text-foreground border border-border"
+                                        >
+                                            {isArabic ? 'إلغاء' : 'Cancel'}
+                                        </Button>
+                                    </div>
+                                </form>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Attendees Modal */}
+            <AnimatePresence>
+                {showAttendeesModal && selectedSessionForAttendees && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        onClick={() => setShowAttendeesModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden"
+                        >
+                            <div className="p-6">
+                                {/* Header */}
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                                            <Users className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-bold text-foreground">
+                                                {isArabic ? 'الحاضرون' : 'Session Attendees'}
+                                            </h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                {selectedSessionForAttendees.title}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowAttendeesModal(false)}
+                                        className="text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        <X className="w-6 h-6" />
+                                    </button>
+                                </div>
+
+                                {/* Attendees List */}
+                                <div className="max-h-[50vh] overflow-y-auto">
+                                    {loadingAttendees ? (
+                                        <div className="text-center py-12">
+                                            <div className="w-10 h-10 border-4 border-green-500/30 border-t-green-500 rounded-full animate-spin mx-auto mb-3" />
+                                            <p className="text-muted-foreground">
+                                                {isArabic ? 'جاري التحميل...' : 'Loading attendees...'}
+                                            </p>
+                                        </div>
+                                    ) : sessionAttendees.length === 0 ? (
+                                        <div className="text-center py-12">
+                                            <div className="w-16 h-16 rounded-full bg-card flex items-center justify-center mx-auto mb-4">
+                                                <Users className="w-8 h-8 text-muted-foreground" />
+                                            </div>
+                                            <h4 className="text-lg font-semibold text-foreground mb-2">
+                                                {isArabic ? 'لا يوجد حاضرون بعد' : 'No Attendees Yet'}
+                                            </h4>
+                                            <p className="text-sm text-muted-foreground">
+                                                {isArabic 
+                                                    ? 'سيظهر الحاضرون هنا عند انضمامهم للجلسة'
+                                                    : 'Attendees will appear here when they join the session'}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {sessionAttendees.map((attendee) => (
+                                                <div
+                                                    key={attendee.id}
+                                                    className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border"
+                                                >
+                                                    {attendee.profileImage ? (
+                                                        <Image
+                                                            src={attendee.profileImage}
+                                                            alt={attendee.name}
+                                                            width={40}
+                                                            height={40}
+                                                            className="rounded-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <AvatarPlaceholder name={attendee.name} size={40} />
+                                                    )}
+                                                    <div className="flex-1">
+                                                        <p className="font-semibold text-foreground">
+                                                            {isArabic && attendee.arabicName ? attendee.arabicName : attendee.name}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {isArabic ? 'انضم' : 'Joined'} {new Date(attendee.joinedAt).toLocaleTimeString(isArabic ? 'ar-EG' : 'en-US', {
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            })}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Footer */}
+                                <div className="mt-6 pt-4 border-t border-border">
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-muted-foreground">
+                                            {isArabic ? 'إجمالي الحاضرين:' : 'Total Attendees:'}
+                                        </span>
+                                        <span className="font-bold text-foreground">
+                                            {sessionAttendees.length} / {selectedSessionForAttendees.maxAttendees || 100}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </motion.div>
                     </motion.div>
@@ -8725,6 +9452,30 @@ export default function OnlyFansMentorProfilePage() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Subscribe Modal */}
+            {mentor && (
+                <SubscribeModal
+                    isOpen={isSubscribeModalOpen}
+                    onClose={() => setIsSubscribeModalOpen(false)}
+                    creator={{
+                        id: mentor.id,
+                        channelId: channelId || undefined,
+                        user: {
+                            name: mentor.user.name,
+                            arabicName: mentor.user.arabicName,
+                            profileImage: mentor.user.profileImage,
+                        },
+                        expertise: mentor.expertise,
+                        basicMonthlyPrice: mentor.basicMonthlyPrice || 0,
+                    }}
+                    isArabic={isArabic}
+                    onSuccess={() => {
+                        // Refresh subscription status
+                        refreshSubscriptionStatus()
+                    }}
+                />
+            )}
         </div>
     )
 }

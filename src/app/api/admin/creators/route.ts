@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { UserRole, KYCStatus } from '@prisma/client'
+import { hash } from 'bcryptjs'
+
+const MIN_PASSWORD = 8
 
 export async function GET(request: NextRequest) {
     try {
@@ -201,11 +204,91 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // TODO: Handle creator invitation from admin panel
-        return NextResponse.json(
-            { error: 'Creator invitation not implemented yet' },
-            { status: 501 }
-        )
+        const body = await request.json()
+        const {
+            name,
+            email,
+            password,
+            expertise,
+            teachingGoals,
+            kycStatus,
+            contractSigned,
+            phone,
+            arabicName
+        } = body
+
+        if (!name || !email || !password) {
+            return NextResponse.json(
+                { error: 'Name, email, and password are required' },
+                { status: 400 }
+            )
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return NextResponse.json(
+                { error: 'Invalid email format' },
+                { status: 400 }
+            )
+        }
+
+        if (password.length < MIN_PASSWORD) {
+            return NextResponse.json(
+                { error: `Password must be at least ${MIN_PASSWORD} characters` },
+                { status: 400 }
+            )
+        }
+
+        const existingUser = await prisma.user.findUnique({ where: { email: email.toLowerCase() } })
+        if (existingUser) {
+            return NextResponse.json(
+                { error: 'A user with this email already exists' },
+                { status: 409 }
+            )
+        }
+
+        const passwordHash = await hash(password, 12)
+
+        const creator = await prisma.$transaction(async (tx) => {
+            const user = await tx.user.create({
+                data: {
+                    name: name.trim(),
+                    email: email.toLowerCase().trim(),
+                    passwordHash,
+                    role: UserRole.CREATOR,
+                    arabicName: arabicName?.trim() || null,
+                    phone: phone?.trim() || null,
+                    onboardingCompleted: true,
+                    emailVerified: new Date()
+                }
+            })
+
+            const createdCreator = await tx.creator.create({
+                data: {
+                    userId: user.id,
+                    expertise: expertise?.trim() || null,
+                    teachingGoals: teachingGoals?.trim() || null,
+                    kycStatus: (kycStatus as KYCStatus) || KYCStatus.NOT_STARTED,
+                    contractSigned: Boolean(contractSigned),
+                    contractSignedAt: contractSigned ? new Date() : null
+                }
+            })
+
+            await tx.adminAuditLog.create({
+                data: {
+                    adminId: currentUser.id,
+                    adminName: currentUser.name,
+                    adminEmail: currentUser.email,
+                    action: 'ADMIN_CREATE_CREATOR',
+                    module: 'Creators',
+                    details: `Created creator ${email}`,
+                    status: 'SUCCESS'
+                }
+            })
+
+            return createdCreator
+        })
+
+        return NextResponse.json({ success: true, creator }, { status: 201 })
 
     } catch (error) {
         console.error('Admin creators POST API error:', error)

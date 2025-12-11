@@ -5,6 +5,7 @@ import { Star, ThumbsUp, CheckCircle, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
+import { AvatarPlaceholder, guessGenderFromName } from '@/components/ui/avatar-placeholder'
 
 interface Review {
     id: string
@@ -221,9 +222,11 @@ export default function ReviewsSection({ mentorId, isArabic, onWriteReview }: Re
                                             className="rounded-full object-cover w-12 h-12"
                                         />
                                     ) : (
-                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
-                                            <User className="w-6 h-6 text-white" />
-                                        </div>
+                                        <AvatarPlaceholder 
+                                            gender={guessGenderFromName(review.user.name)} 
+                                            size={48} 
+                                            className="rounded-full flex-shrink-0"
+                                        />
                                     )}
                                     
                                     <div className="flex-1 min-w-0">

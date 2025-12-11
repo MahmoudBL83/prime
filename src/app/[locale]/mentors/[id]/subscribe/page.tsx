@@ -1,491 +1,272 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { motion } from 'framer-motion';
-import confetti from 'canvas-confetti';
 import {
-  Crown,
   Star,
-  Sparkles,
-  Check,
-  MessageCircle,
-  Video,
-  Clock,
-  Shield,
-  ArrowLeft,
-  Zap,
   Users,
+  BookOpen,
+  ArrowLeft,
+  MessageCircle,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import SubscribeModal from '@/components/modals/SubscribeModal';
+import MentorSubscriptionBadge from '@/components/subscriptions/MentorSubscriptionBadge';
 import { useLocaleSafe } from '@/hooks/useTranslationsSafe';
+import toast from 'react-hot-toast';
+import { AvatarPlaceholder } from '@/components/ui/avatar-placeholder';
 
-interface SubscriptionTier {
-  tier: 'BASIC' | 'PREMIUM' | 'VIP';
-  name: string;
-  nameAr: string;
-  monthlyPrice: number;
-  yearlyPrice: number;
-  yearlySavings: number;
-  benefits: {
-    monthlyMessages: number | null;
-    monthlyMeetings: number | null;
-    meetingDuration: number;
-    accessToContent: boolean;
-    prioritySupport: boolean;
+interface MentorData {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    arabicName: string;
+    bio: string;
+    profileImage: string | null;
+  };
+  expertise: string;
+  basicMonthlyPrice: number;
+  totalSubscribers: number;
+  languages: string;
+  stats: {
+    totalFollowers: number;
+    totalCourses: number;
+    totalStudents: number;
+    averageRating: number;
+    yearsOfExperience: number;
   };
 }
 
-interface Creator {
+interface UserSubscription {
   id: string;
-  user: {
-    name: string;
-    arabicName: string;
-    profileImage?: string;
-    bio?: string;
-  };
-  expertise?: string;
-  totalSubscribers: number;
+  tier: 'ALL_ACCESS' | 'BASIC' | 'PREMIUM' | 'VIP';
+  status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED';
 }
 
 export default function MentorSubscribePage() {
-  const router = useRouter();
   const params = useParams();
+  const router = useRouter();
   const { data: session } = useSession();
   const currentLocale = useLocaleSafe();
   const isArabic = currentLocale === 'ar';
 
-  const mentorId = params.id as string;
-
-  const [creator, setCreator] = useState<Creator | null>(null);
-  const [tiers, setTiers] = useState<SubscriptionTier[]>([]);
-  const [billingPeriod, setBillingPeriod] = useState<'MONTHLY' | 'YEARLY'>('MONTHLY');
+  const [mentor, setMentor] = useState<MentorData | null>(null);
+  const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
-  const [subscribing, setSubscribing] = useState<string | null>(null);
-  const [currentSubscription, setCurrentSubscription] = useState<any>(null);
+  const [subscribeModalOpen, setSubscribeModalOpen] = useState(false);
+
+  const openSubscribe = () => setSubscribeModalOpen(true);
+  const closeSubscribe = () => setSubscribeModalOpen(false);
 
   useEffect(() => {
-    fetchSubscriptionTiers();
-    checkExistingSubscription();
-  }, [mentorId]);
+    if (params.id) {
+      fetchMentorData();
+      checkUserSubscription();
+    }
+  }, [params.id]);
 
-  const fetchSubscriptionTiers = async () => {
+  const fetchMentorData = async () => {
     try {
-      const response = await fetch(`/api/creators/${mentorId}/subscription-tiers`);
+      const response = await fetch(`/api/creators/${params.id}`);
       if (response.ok) {
         const data = await response.json();
-        setCreator({
-          id: data.creatorId,
+        setMentor({
+          id: params.id as string,
           user: {
-            name: data.creatorName,
-            arabicName: data.creatorNameAr,
-            profileImage: data.creatorImage,
+            id: data.user.id,
+            name: data.user.name,
+            arabicName: data.user.arabicName,
+            bio: data.user.bio || '',
+            profileImage: data.user.profileImage,
           },
-          totalSubscribers: 0,
+          expertise: data.expertise || '',
+          basicMonthlyPrice: data.basicMonthlyPrice,
+          totalSubscribers: data.totalSubscribers || 0,
+          languages: data.languages || 'English, Arabic',
+          stats: data.stats || {
+            totalFollowers: data.stats?.totalFollowers || 0,
+            totalCourses: data.stats?.totalCourses || 0,
+            totalStudents: data.stats?.totalStudents || 0,
+            averageRating: data.stats?.averageRating || 5.0,
+            yearsOfExperience: data.stats?.yearsOfExperience || 5,
+          },
         });
-        setTiers(data.tiers);
       }
     } catch (error) {
-      console.error('Error fetching tiers:', error);
+      console.error('Error fetching mentor data:', error);
+      toast.error(isArabic ? 'حدث خطأ' : 'An error occurred');
     } finally {
       setLoading(false);
     }
   };
 
-  const checkExistingSubscription = async () => {
+  const checkUserSubscription = async () => {
     if (!session?.user?.id) return;
 
     try {
       const response = await fetch('/api/mentor-subscriptions');
       if (response.ok) {
         const subscriptions = await response.json();
-        const existing = subscriptions.find(
-          (sub: any) => sub.creatorId === mentorId && sub.status === 'ACTIVE'
+        const subscription = subscriptions.find(
+          (sub: any) => sub.creatorId === params.id && sub.status === 'ACTIVE'
         );
-        setCurrentSubscription(existing);
+        setUserSubscription(subscription || null);
       }
     } catch (error) {
       console.error('Error checking subscription:', error);
     }
   };
 
-  const handleSubscribe = async (tier: string) => {
-    if (!session) {
-      router.push(`/${currentLocale}/auth/signin?callbackUrl=/mentors/${mentorId}/subscribe`);
-      return;
-    }
-
-    setSubscribing(tier);
-    try {
-      const response = await fetch('/api/mentor-subscriptions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          creatorId: mentorId,
-          tier,
-          billingPeriod,
-        }),
-      });
-
-      if (response.ok) {
-        // Celebrate! 🎉
-        confetti({
-          particleCount: 150,
-          spread: 100,
-          origin: { y: 0.6 },
-          colors: ['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981'],
-        });
-
-        // Show success message
-        setTimeout(() => {
-          router.push(`/${currentLocale}/subscriptions?success=true`);
-        }, 1500);
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to subscribe');
-      }
-    } catch (error) {
-      console.error('Subscribe error:', error);
-      alert('Failed to subscribe. Please try again.');
-    } finally {
-      setSubscribing(null);
-    }
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 border-4 border-purple-300/30 border-t-purple-400 rounded-full animate-spin"></div>
-          <p className="text-white text-lg">
-            {isArabic ? 'جاري التحميل...' : 'Loading subscription plans...'}
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">
+            {isArabic ? 'جاري التحميل...' : 'Loading...'}
           </p>
         </div>
       </div>
     );
   }
 
+  if (!mentor) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            {isArabic ? 'الموجه غير موجود' : 'Mentor not found'}
+          </h2>
+          <Button onClick={() => router.back()}>
+            {isArabic ? 'رجوع' : 'Go Back'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 py-8 shadow-xl">
-        <div className="container mx-auto px-4">
-          <button
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="container mx-auto px-4 py-6">
+          <Button
+            variant="ghost"
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors"
+            className="mb-4"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 mr-2" />
             {isArabic ? 'رجوع' : 'Back'}
-          </button>
+          </Button>
 
+          {/* Mentor Info */}
           <div className="flex items-center gap-6">
-            {/* Creator Avatar */}
-            {creator?.user.profileImage ? (
-              <img
-                src={creator.user.profileImage}
-                alt={creator.user.name}
-                className="w-24 h-24 rounded-full border-4 border-white/20 shadow-xl object-cover"
-              />
-            ) : (
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-white text-3xl font-bold border-4 border-white/20 shadow-xl">
-                {creator?.user.name[0]}
-              </div>
-            )}
+            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600">
+              {mentor.user.profileImage ? (
+                <img
+                  src={mentor.user.profileImage}
+                  alt={mentor.user.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <AvatarPlaceholder 
+                  name={mentor.user.name} 
+                  size={96} 
+                />
+              )}
+            </div>
 
-            {/* Creator Info */}
             <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                {isArabic ? creator?.user.arabicName : creator?.user.name}
-              </h1>
-              <p className="text-blue-100 text-lg">
-                {isArabic ? 'اشترك للوصول الحصري' : 'Subscribe for Exclusive Access'}
-              </p>
-              <div className="flex items-center gap-2 mt-3">
-                <Users className="w-4 h-4 text-blue-200" />
-                <span className="text-blue-100 text-sm">
-                  {creator?.totalSubscribers || 0} {isArabic ? 'مشترك' : 'subscribers'}
-                </span>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {isArabic ? mentor.user.arabicName : mentor.user.name}
+                </h1>
+                {userSubscription?.status === 'ACTIVE' && (
+                  <MentorSubscriptionBadge
+                    tier={userSubscription.tier}
+                    isSubscribed={true}
+                    locale={currentLocale}
+                  />
+                )}
+              </div>
+
+              <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  <span>
+                    {mentor.totalSubscribers} {isArabic ? 'مشترك' : 'subscribers'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <span>{mentor.stats.averageRating.toFixed(1)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4" />
+                  <span>
+                    {mentor.stats.totalCourses} {isArabic ? 'دورات' : 'courses'}
+                  </span>
+                </div>
               </div>
             </div>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="flex items-center gap-2"
+            >
+              <MessageCircle className="w-5 h-5" />
+              {isArabic ? 'مراسلة' : 'Message'}
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Current Subscription Banner */}
-      {currentSubscription && (
-        <div className="bg-green-500/20 border-b-2 border-green-500/50 py-4">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center gap-3 text-green-300">
-              <Check className="w-5 h-5" />
-              <span className="font-semibold">
-                {isArabic
-                  ? `مشترك حالياً في خطة ${currentSubscription.tier}`
-                  : `Currently subscribed to ${currentSubscription.tier} plan`}
-              </span>
+      {/* Subscription Plan */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-3xl mx-auto grid gap-6">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-center shadow-lg">
+            <p className="text-lg font-semibold mb-2">
+              {isArabic ? 'خطة واحدة تشمل كل المزايا' : 'One simple plan with everything included'}
+            </p>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              {isArabic ? 'كل المحتوى، الجلسات المباشرة، الرسائل وأولوية الدعم' : 'All content, live sessions, messaging, and priority support'}
+            </p>
+            <div className="text-4xl font-black bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent mb-1">
+              €{mentor.basicMonthlyPrice}
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Billing Period Toggle */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center mb-12">
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-2 border border-gray-700">
-            <div className="flex gap-2">
-              <button
-                onClick={() => setBillingPeriod('MONTHLY')}
-                className={`px-8 py-3 rounded-xl font-semibold transition-all ${
-                  billingPeriod === 'MONTHLY'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                {isArabic ? 'شهرياً' : 'Monthly'}
-              </button>
-              <button
-                onClick={() => setBillingPeriod('YEARLY')}
-                className={`px-8 py-3 rounded-xl font-semibold transition-all relative ${
-                  billingPeriod === 'YEARLY'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                {isArabic ? 'سنوياً' : 'Yearly'}
-                <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                  {isArabic ? 'وفّر' : 'Save'}
-                </span>
-              </button>
-            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 mb-6">{isArabic ? 'شهرياً • إلغاء في أي وقت' : 'Monthly • Cancel anytime'}</div>
+            <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-2 mb-6">
+              <li>{isArabic ? 'جلسات مباشرة أسبوعية لكل الموجهين' : 'Weekly live sessions with every mentor'}</li>
+              <li>{isArabic ? 'وصول كامل لكل المحتوى والوسائط' : 'Full access to all posts and media'}</li>
+              <li>{isArabic ? 'مراسلات ذات أولوية ودعم سريع' : 'Priority messaging and quick support'}</li>
+              <li>{isArabic ? 'حجوزات عبر التقويم عند الحاجة' : 'Calendar bookings when needed'}</li>
+            </ul>
+            <Button onClick={openSubscribe} className="w-full md:w-auto bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold px-6 py-3 rounded-full">
+              {isArabic ? 'اشترك الآن' : 'Subscribe Now'}
+            </Button>
           </div>
         </div>
 
-        {/* Subscription Tiers */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {tiers.map((tier, index) => {
-            const tierConfig = {
-              BASIC: {
-                gradient: 'from-blue-400 to-blue-600',
-                icon: Sparkles,
-                badge: isArabic ? 'للمبتدئين' : 'STARTER',
-                popular: false,
-              },
-              PREMIUM: {
-                gradient: 'from-purple-400 to-purple-600',
-                icon: Star,
-                badge: isArabic ? 'الأكثر شعبية' : 'POPULAR',
-                popular: true,
-              },
-              VIP: {
-                gradient: 'from-yellow-400 to-yellow-600',
-                icon: Crown,
-                badge: isArabic ? 'الأفضل' : 'BEST VALUE',
-                popular: false,
-              },
-            };
-
-            const config = tierConfig[tier.tier];
-            const Icon = config.icon;
-            const price = billingPeriod === 'MONTHLY' ? tier.monthlyPrice : tier.yearlyPrice;
-            const isCurrentTier = currentSubscription?.tier === tier.tier;
-
-            return (
-              <motion.div
-                key={tier.tier}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={`relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 ${
-                  config.popular ? 'ring-4 ring-purple-500 scale-105' : ''
-                }`}
-              >
-                {/* Popular Badge */}
-                {config.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <div className={`bg-gradient-to-r ${config.gradient} text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg`}>
-                      {config.badge}
-                    </div>
-                  </div>
-                )}
-
-                {/* Tier Icon */}
-                <div className={`w-20 h-20 bg-gradient-to-br ${config.gradient} rounded-3xl flex items-center justify-center mb-6 mx-auto`}>
-                  <Icon className="w-10 h-10 text-white" />
-                </div>
-
-                {/* Tier Name */}
-                <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-3">
-                  {isArabic ? tier.nameAr : tier.name}
-                </h3>
-
-                {/* Price */}
-                <div className="text-center mb-8">
-                  <div className="flex items-baseline justify-center gap-1 mb-2">
-                    <span className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      {price}
-                    </span>
-                    <span className="text-gray-600 dark:text-gray-400 text-lg">
-                      {isArabic ? 'ج.م' : 'EGP'}
-                    </span>
-                  </div>
-                  <div className="text-gray-500 dark:text-gray-400">
-                    {billingPeriod === 'MONTHLY'
-                      ? isArabic ? 'شهرياً' : 'per month'
-                      : isArabic ? 'سنوياً' : 'per year'}
-                  </div>
-
-                  {/* Yearly Savings */}
-                  {billingPeriod === 'YEARLY' && tier.yearlySavings > 0 && (
-                    <div className="mt-3 inline-block bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-4 py-2 rounded-full text-sm font-semibold">
-                      <Zap className="w-4 h-4 inline mr-1" />
-                      {isArabic ? `وفّر ${tier.yearlySavings} ج.م` : `Save ${tier.yearlySavings} EGP`}
-                    </div>
-                  )}
-                </div>
-
-                {/* Benefits */}
-                <div className="space-y-4 mb-8">
-                  {/* Messages */}
-                  <div className="flex items-start gap-3">
-                    <div className={`w-6 h-6 bg-gradient-to-br ${config.gradient} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                      <MessageCircle className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-900 dark:text-white">
-                        {tier.benefits.monthlyMessages === null
-                          ? isArabic ? 'رسائل غير محدودة' : 'Unlimited Messages'
-                          : isArabic
-                          ? `${tier.benefits.monthlyMessages} رسالة/شهر`
-                          : `${tier.benefits.monthlyMessages} messages/month`}
-                      </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {isArabic ? 'دردشة خاصة مباشرة' : 'Direct private chat'}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Meetings */}
-                  <div className="flex items-start gap-3">
-                    <div className={`w-6 h-6 bg-gradient-to-br ${config.gradient} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                      <Video className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-900 dark:text-white">
-                        {tier.benefits.monthlyMeetings === null
-                          ? isArabic ? 'اجتماعات غير محدودة' : 'Unlimited Meetings'
-                          : isArabic
-                          ? `${tier.benefits.monthlyMeetings} اجتماع/شهر`
-                          : `${tier.benefits.monthlyMeetings} meeting${tier.benefits.monthlyMeetings > 1 ? 's' : ''}/month`}
-                      </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {isArabic
-                          ? `${tier.benefits.meetingDuration} دقيقة لكل اجتماع`
-                          : `${tier.benefits.meetingDuration} min per session`}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Content Access */}
-                  {tier.benefits.accessToContent && (
-                    <div className="flex items-start gap-3">
-                      <div className={`w-6 h-6 bg-gradient-to-br ${config.gradient} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                        <Check className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-900 dark:text-white">
-                          {isArabic ? 'جميع الدورات' : 'All Courses'}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {isArabic ? 'وصول كامل للمحتوى' : 'Full content access'}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Priority Support */}
-                  {tier.benefits.prioritySupport && (
-                    <div className="flex items-start gap-3">
-                      <div className={`w-6 h-6 bg-gradient-to-br ${config.gradient} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                        <Shield className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-900 dark:text-white">
-                          {isArabic ? 'دعم ذو أولوية' : 'Priority Support'}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {isArabic ? 'استجابة سريعة' : 'Fast response time'}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Subscribe Button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleSubscribe(tier.tier)}
-                  disabled={subscribing !== null || isCurrentTier}
-                  className={`w-full py-4 rounded-2xl font-bold text-lg transition-all shadow-lg ${
-                    isCurrentTier
-                      ? 'bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed'
-                      : `bg-gradient-to-r ${config.gradient} text-white hover:shadow-2xl`
-                  }`}
-                >
-                  {subscribing === tier.tier ? (
-                    <div className="flex items-center justify-center gap-3">
-                      <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      <span>{isArabic ? 'جاري الاشتراك...' : 'Subscribing...'}</span>
-                    </div>
-                  ) : isCurrentTier ? (
-                    isArabic ? 'الخطة الحالية' : 'Current Plan'
-                  ) : (
-                    isArabic ? 'اشترك الآن' : 'Subscribe Now'
-                  )}
-                </motion.button>
-
-                {/* Auto-renew Notice */}
-                <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
-                  {isArabic ? 'يتجدد تلقائياً. يمكن الإلغاء في أي وقت' : 'Auto-renews. Cancel anytime'}
-                </p>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Trust Indicators */}
-        <div className="mt-16 max-w-4xl mx-auto">
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700">
-            <div className="grid md:grid-cols-3 gap-6 text-center">
-              <div>
-                <Shield className="w-8 h-8 text-green-400 mx-auto mb-3" />
-                <h4 className="font-semibold text-white mb-2">
-                  {isArabic ? 'آمن ومضمون' : 'Safe & Secure'}
-                </h4>
-                <p className="text-sm text-gray-400">
-                  {isArabic ? 'معلومات الدفع محمية' : 'Your payment info is protected'}
-                </p>
-              </div>
-              <div>
-                <Clock className="w-8 h-8 text-blue-400 mx-auto mb-3" />
-                <h4 className="font-semibold text-white mb-2">
-                  {isArabic ? 'إلغاء في أي وقت' : 'Cancel Anytime'}
-                </h4>
-                <p className="text-sm text-gray-400">
-                  {isArabic ? 'لا يوجد التزام طويل الأجل' : 'No long-term commitment'}
-                </p>
-              </div>
-              <div>
-                <Zap className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
-                <h4 className="font-semibold text-white mb-2">
-                  {isArabic ? 'وصول فوري' : 'Instant Access'}
-                </h4>
-                <p className="text-sm text-gray-400">
-                  {isArabic ? 'ابدأ فوراً بعد الاشتراك' : 'Start immediately after subscribing'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <SubscribeModal
+          isOpen={subscribeModalOpen}
+          onClose={closeSubscribe}
+          creator={{
+            id: mentor.id,
+            channelId: undefined,
+            user: {
+              name: mentor.user.name,
+              arabicName: mentor.user.arabicName,
+              profileImage: mentor.user.profileImage,
+            },
+            expertise: mentor.expertise,
+            basicMonthlyPrice: mentor.basicMonthlyPrice,
+          }}
+          isArabic={isArabic}
+          onSuccess={() => checkUserSubscription()}
+        />
       </div>
     </div>
   );

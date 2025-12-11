@@ -34,7 +34,8 @@ const channelInclude = {
             currency: true,
             subscriberCount: true,
             isActive: true
-        }
+        },
+        orderBy: { price: 'asc' }
     },
     channelSubscriptions: {
         select: {
@@ -156,8 +157,11 @@ function mapChannel(channel: ChannelWithRelations, reportMap: Record<string, num
         reportCount
     })
 
-    const tierPrices = channel.membershipTiers.filter(tier => tier.isActive).map(tier => tier.price)
-    const minTier = tierPrices.length ? Math.min(...tierPrices) : null
+    const activeTiers = channel.membershipTiers.filter(tier => tier.isActive)
+    const primaryTier = activeTiers.length
+        ? activeTiers[0]
+        : channel.membershipTiers[0]
+    const minTier = primaryTier ? primaryTier.price : null
 
     return {
         id: channel.id,
@@ -176,13 +180,15 @@ function mapChannel(channel: ChannelWithRelations, reportMap: Record<string, num
             monthly: minTier,
             annual: minTier ? Number((minTier * 12 * 0.85).toFixed(2)) : null
         },
-        tiers: channel.membershipTiers.map(tier => ({
-            id: tier.id,
-            name: tier.name,
-            price: tier.price,
-            currency: tier.currency,
-            subscriberCount: tier.subscriberCount
-        })),
+        tiers: primaryTier
+            ? [{
+                id: primaryTier.id,
+                name: primaryTier.name,
+                price: primaryTier.price,
+                currency: primaryTier.currency,
+                subscriberCount: primaryTier.subscriberCount
+            }]
+            : [],
         compliance: {
             policyViolations: reportCount,
             contentFlags: reportCount,

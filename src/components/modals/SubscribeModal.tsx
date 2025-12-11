@@ -21,64 +21,29 @@ interface SubscribeModalProps {
         }
         expertise: string
         basicMonthlyPrice: number
-        premiumMonthlyPrice: number
-        vipMonthlyPrice: number
     }
     isArabic?: boolean
     onSuccess?: () => void // Add success callback
 }
 
 export default function SubscribeModal({ isOpen, onClose, creator, isArabic = false, onSuccess }: SubscribeModalProps) {
-    const [selectedTier, setSelectedTier] = useState<'BASIC' | 'PREMIUM' | 'VIP'>('PREMIUM')
     const [isProcessing, setIsProcessing] = useState(false)
 
     const tiers = [
         {
-            id: 'BASIC' as const,
-            name: isArabic ? 'أساسي' : 'Basic',
+            id: 'ALL_ACCESS' as const,
+            name: isArabic ? 'وصول شامل' : 'All-Access',
             price: creator.basicMonthlyPrice,
-            color: 'from-gray-500 to-gray-600',
-            borderColor: 'border-gray-500/30',
-            bgColor: 'from-gray-500/10 to-gray-600/10',
+            color: 'from-purple-500 to-blue-500',
+            borderColor: 'border-purple-500/40',
+            bgColor: 'from-purple-500/10 to-blue-500/10',
             icon: '🎯',
             benefits: [
-                isArabic ? 'جميع المنشورات والتحديثات' : 'Access to all posts & updates',
-                isArabic ? 'الوصول إلى المجتمع' : 'Community access',
+                isArabic ? 'كل المحتوى والوسائط' : 'All posts & media',
                 isArabic ? 'جلسات مباشرة أسبوعية' : 'Weekly live sessions',
-                isArabic ? 'محتوى حصري' : 'Exclusive content'
-            ]
-        },
-        {
-            id: 'PREMIUM' as const,
-            name: isArabic ? 'مميز' : 'Premium',
-            price: creator.premiumMonthlyPrice,
-            color: 'from-purple-500 to-pink-500',
-            borderColor: 'border-purple-500/50',
-            bgColor: 'from-purple-500/10 to-pink-500/10',
-            icon: '⭐',
-            popular: true,
-            benefits: [
-                isArabic ? 'كل شيء في الأساسي' : 'Everything in Basic',
-                isArabic ? 'جلسات Q&A شهرية' : 'Monthly Q&A sessions',
-                isArabic ? 'دعم ذو أولوية' : 'Priority support',
-                isArabic ? 'موارد حصرية' : 'Exclusive resources',
-                isArabic ? 'خصومات على الدورات' : 'Course discounts'
-            ]
-        },
-        {
-            id: 'VIP' as const,
-            name: 'VIP',
-            price: creator.vipMonthlyPrice,
-            color: 'from-yellow-500 to-orange-500',
-            borderColor: 'border-yellow-500/30',
-            bgColor: 'from-yellow-500/10 to-orange-500/10',
-            icon: '👑',
-            benefits: [
-                isArabic ? 'كل شيء في المميز' : 'Everything in Premium',
-                isArabic ? 'جلسات تدريب فردية' : '1-on-1 coaching sessions',
-                isArabic ? 'المراسلة المباشرة' : 'Direct messaging',
-                isArabic ? 'طلبات محتوى مخصص' : 'Custom content requests',
-                isArabic ? 'وصول مبكر للمحتوى' : 'Early content access'
+                isArabic ? 'أولوية في الرسائل والأسئلة' : 'Priority DMs & Q&A',
+                isArabic ? 'حجوزات عبر التقويم' : 'Calendar bookings',
+                isArabic ? 'وصول للمجتمع' : 'Community access'
             ]
         }
     ]
@@ -98,7 +63,7 @@ export default function SubscribeModal({ isOpen, onClose, creator, isArabic = fa
                     type: 'CATEGORY_C',
                     creatorId: creator.id, // Use creator ID directly
                     channelId: creator.channelId, // Optional channel ID
-                    tier: selectedTier, // Basic, Premium, VIP
+                    tier: 'ALL_ACCESS', // Always use single tier
                     billingCycle: 'monthly',
                     paymentMethodId: null // Will be handled by payment flow later
                 })
@@ -109,8 +74,8 @@ export default function SubscribeModal({ isOpen, onClose, creator, isArabic = fa
             if (response.ok) {
                 toast.success(
                     isArabic 
-                        ? `تم الاشتراك بنجاح في ${tiers.find(t => t.id === selectedTier)?.name}!` 
-                        : `Successfully subscribed to ${tiers.find(t => t.id === selectedTier)?.name}!`
+                        ? `تم الاشتراك بنجاح في ${tiers[0].name}!` 
+                        : `Successfully subscribed to ${tiers[0].name}!`
                 )
                 onClose()
                 // Call success callback instead of reloading
@@ -190,45 +155,31 @@ export default function SubscribeModal({ isOpen, onClose, creator, isArabic = fa
                         <div className="p-6">
                             <p className="text-center text-muted-foreground mb-6">
                                 {isArabic 
-                                    ? 'اختر خطة الاشتراك المناسبة لك'
-                                    : 'Choose the subscription plan that\'s right for you'}
+                                    ? 'خطة واحدة تمنحك كل شيء'
+                                    : 'One simple plan with everything included'}
                             </p>
 
-                            {/* Tier Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            {/* Single Tier Card */}
+                            <div className="grid grid-cols-1 gap-4 mb-6">
                                 {tiers.map((tier) => (
-                                    <motion.button
+                                    <motion.div
                                         key={tier.id}
-                                        onClick={() => setSelectedTier(tier.id)}
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        className={`relative text-left bg-gradient-to-br ${tier.bgColor} border-2 ${
-                                            selectedTier === tier.id ? tier.borderColor : 'border-transparent'
-                                        } rounded-2xl p-6 transition-all ${
-                                            selectedTier === tier.id ? 'shadow-lg' : ''
-                                        }`}
+                                        whileHover={{ scale: 1.01 }}
+                                        className={`relative text-left bg-gradient-to-br ${tier.bgColor} border-2 ${tier.borderColor} rounded-2xl p-6 transition-all shadow-lg`}
                                     >
-                                        {tier.popular && (
-                                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                                                {isArabic ? 'الأكثر شعبية' : 'MOST POPULAR'}
-                                            </div>
-                                        )}
-
                                         <div className="flex items-center justify-between mb-4">
                                             <div>
                                                 <div className="text-3xl mb-2">{tier.icon}</div>
                                                 <h3 className="text-xl font-bold text-foreground">{tier.name}</h3>
                                             </div>
-                                            {selectedTier === tier.id && (
-                                                <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${tier.color} flex items-center justify-center`}>
-                                                    <Check className="w-5 h-5 text-white" />
-                                                </div>
-                                            )}
+                                            <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${tier.color} flex items-center justify-center`}>
+                                                <Crown className="w-5 h-5 text-white" />
+                                            </div>
                                         </div>
 
                                         <div className="mb-4">
                                             <span className={`text-3xl font-black bg-gradient-to-r ${tier.color} bg-clip-text text-transparent`}>
-                                                {tier.price} EGP
+                                                €{tier.price}
                                             </span>
                                             <span className="text-muted-foreground text-sm">
                                                 /{isArabic ? 'شهر' : 'month'}
@@ -243,7 +194,7 @@ export default function SubscribeModal({ isOpen, onClose, creator, isArabic = fa
                                                 </li>
                                             ))}
                                         </ul>
-                                    </motion.button>
+                                    </motion.div>
                                 ))}
                             </div>
 
@@ -258,7 +209,7 @@ export default function SubscribeModal({ isOpen, onClose, creator, isArabic = fa
                                 ) : (
                                     <>
                                         <Sparkles className="w-5 h-5 mr-2" />
-                                        {isArabic ? `اشترك الآن - ${tiers.find(t => t.id === selectedTier)?.price} EGP/شهر` : `Subscribe Now - ${tiers.find(t => t.id === selectedTier)?.price} EGP/mo`}
+                                        {isArabic ? `اشترك الآن - €${tiers[0].price}/شهر` : `Subscribe Now - €${tiers[0].price}/mo`}
                                     </>
                                 )}
                             </Button>

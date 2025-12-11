@@ -9,6 +9,7 @@ import { Suspense, memo } from 'react'
 // Icons will be loaded dynamically
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { AvatarPlaceholder } from '@/components/ui/avatar-placeholder'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'edge'
@@ -405,11 +406,11 @@ export default function MentorsPage() {
                                                     className="fallback-content absolute inset-0 w-full h-full flex items-center justify-center"
                                                     style={{ display: mentor.user.profileImage ? 'none' : 'flex' }}
                                                 >
-                                                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center">
-                                                        <span className="text-foreground text-2xl font-bold">
-                                                            {(mentor.user.arabicName || mentor.user.name).charAt(0)}
-                                                        </span>
-                                                    </div>
+                                                    <AvatarPlaceholder 
+                                                        name={mentor.user.name} 
+                                                        size={96} 
+                                                        className="rounded-full"
+                                                    />
                                                 </div>
 
                                                 {/* Hover overlay */}

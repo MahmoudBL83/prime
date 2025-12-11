@@ -65,6 +65,13 @@ export default function CreatorApplicationPage() {
         password: '',
         confirmPassword: ''
     })
+
+    const steps = [
+        { id: 1, title: 'Profile', description: 'Tell us about your expertise' },
+        { id: 2, title: 'Identity', description: 'Verify who you are' },
+        { id: 3, title: 'Review', description: 'Confirm and submit' }
+    ]
+    const [currentStep, setCurrentStep] = useState(1)
     
     const createEmptyFormState = () => ({
         expertise: '',
@@ -106,11 +113,36 @@ export default function CreatorApplicationPage() {
         }
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        
+    const handleNextStep = () => {
+        if (currentStep === 1) {
+            if (!formData.expertise.trim() || !formData.motivation.trim()) {
+                toast.error('Please complete your expertise and motivation to continue')
+                return
+            }
+        }
+
+        if (currentStep === 2) {
+            if (!idCardFile) {
+                toast.error('Please upload your national ID card to continue')
+                return
+            }
+        }
+
+        setCurrentStep((prev) => Math.min(prev + 1, steps.length))
+    }
+
+    const handlePrevStep = () => {
+        setCurrentStep((prev) => Math.max(prev - 1, 1))
+    }
+
+    const submitApplication = async () => {
         if (!session?.user) {
             toast.error('Please sign in to submit your application')
+            return
+        }
+
+        if (!idCardFile) {
+            toast.error('Identity verification is required before submitting')
             return
         }
         
@@ -119,29 +151,27 @@ export default function CreatorApplicationPage() {
         try {
             let nationalIdImageUrl = ''
 
-            // Upload ID card if provided
-            if (idCardFile) {
-                setUploadingIdCard(true)
-                const uploadFormData = new FormData()
-                uploadFormData.append('file', idCardFile)
-                uploadFormData.append('type', 'national-id')
+            // Upload ID card (required)
+            setUploadingIdCard(true)
+            const uploadFormData = new FormData()
+            uploadFormData.append('file', idCardFile)
+            uploadFormData.append('type', 'national-id')
 
-                const uploadResponse = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: uploadFormData
-                })
+            const uploadResponse = await fetch('/api/upload', {
+                method: 'POST',
+                body: uploadFormData
+            })
 
-                if (uploadResponse.ok) {
-                    const uploadData = await uploadResponse.json()
-                    nationalIdImageUrl = uploadData.url
-                } else {
-                    toast.error('Failed to upload ID card')
-                    setSubmitting(false)
-                    setUploadingIdCard(false)
-                    return
-                }
+            if (uploadResponse.ok) {
+                const uploadData = await uploadResponse.json()
+                nationalIdImageUrl = uploadData.url
+            } else {
+                toast.error('Failed to upload ID card')
+                setSubmitting(false)
                 setUploadingIdCard(false)
+                return
             }
+            setUploadingIdCard(false)
 
             const response = await fetch('/api/creator/apply', {
                 method: 'POST',
@@ -150,7 +180,7 @@ export default function CreatorApplicationPage() {
                 },
                 body: JSON.stringify({
                     ...formData,
-                    nationalIdImage: nationalIdImageUrl || undefined
+                    nationalIdImage: nationalIdImageUrl
                 })
             })
 
@@ -168,6 +198,17 @@ export default function CreatorApplicationPage() {
         } finally {
             setSubmitting(false)
         }
+    }
+
+    const handleFormSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        if (currentStep < steps.length) {
+            handleNextStep()
+            return
+        }
+
+        await submitApplication()
     }
 
     const handleWithdrawApplication = async () => {
@@ -838,7 +879,7 @@ export default function CreatorApplicationPage() {
                         </div>
                     ) : (
                         /* Application Form - Only show when authenticated */
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleFormSubmit}>
                         <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-8">
                             <div className="flex items-start gap-4 mb-8">
                                 <div className="p-3 bg-purple-500/20 rounded-full">
@@ -852,221 +893,281 @@ export default function CreatorApplicationPage() {
                                 </div>
                             </div>
 
-                            {/* Progress Indicator */}
+                            {/* Stepper */}
                             <div className="mb-8">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium text-foreground">
-                                        {isArabic ? 'التقدم' : 'Progress'}
-                                    </span>
-                                    <span className="text-sm text-muted-foreground">
-                                        {formData.expertise && formData.motivation ? '100%' : 
-                                         formData.expertise || formData.motivation ? '50%' : '0%'}
-                                    </span>
-                                </div>
-                                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                                    <div 
-                                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
-                                        style={{ 
-                                            width: formData.expertise && formData.motivation ? '100%' : 
-                                                   formData.expertise || formData.motivation ? '50%' : '0%'
-                                        }}
-                                    />
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex items-center justify-between">
+                                        {steps.map((step) => {
+                                            const isActive = currentStep === step.id
+                                            const isDone = currentStep > step.id
+                                            return (
+                                                <div key={step.id} className="flex-1 flex items-center gap-3">
+                                                    <div
+                                                        className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
+                                                            isDone
+                                                                ? 'bg-green-500 text-white'
+                                                                : isActive
+                                                                    ? 'bg-white text-black'
+                                                                    : 'bg-white/10 text-white'
+                                                        }`}
+                                                    >
+                                                        {isDone ? '✓' : step.id}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-semibold text-foreground">{step.title}</p>
+                                                        <p className="text-xs text-muted-foreground">{step.description}</p>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                                            style={{ width: `${(currentStep - 1) / (steps.length - 1) * 100}%` }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="space-y-8">
-                                {/* Section 1: Professional Information */}
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-2 pb-3 border-b border-white/10">
-                                        <FileText className="w-5 h-5 text-purple-400" />
-                                        <h3 className="text-lg font-semibold text-foreground">
-                                            {isArabic ? 'المعلومات المهنية' : 'Professional Information'}
-                                        </h3>
-                                    </div>
-                                {/* Expertise */}
-                                <div>
-                                    <label htmlFor="expertise" className="block text-sm font-medium text-foreground mb-2">
-                                        Area of Expertise <span className="text-red-400">*</span>
-                                    </label>
-                                    <input
-                                        id="expertise"
-                                        type="text"
-                                        value={formData.expertise}
-                                        onChange={(e) => handleChange('expertise', e.target.value)}
-                                        placeholder="e.g., Web Development, Graphic Design, Marketing"
-                                        required
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
-                                    />
-                                </div>
-
-                                {/* Experience Years */}
-                                <div>
-                                    <label htmlFor="experienceYears" className="block text-sm font-medium text-foreground mb-2">
-                                        Years of Experience
-                                    </label>
-                                    <input
-                                        id="experienceYears"
-                                        type="number"
-                                        min="0"
-                                        value={formData.experienceYears}
-                                        onChange={(e) => handleChange('experienceYears', e.target.value)}
-                                        placeholder="How many years of experience do you have?"
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
-                                    />
-                                </div>
-
-                                {/* Sample Content URL */}
-                                <div>
-                                    <label htmlFor="sampleContentUrl" className="block text-sm font-medium text-foreground mb-2">
-                                        Sample Content URL
-                                    </label>
-                                    <input
-                                        id="sampleContentUrl"
-                                        type="url"
-                                        value={formData.sampleContentUrl}
-                                        onChange={(e) => handleChange('sampleContentUrl', e.target.value)}
-                                        placeholder="https://youtube.com/watch?v=..."
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
-                                    />
-                                    <p className="text-sm text-muted-foreground mt-1">
-                                        Link to a video, article, or project that showcases your expertise
-                                    </p>
-                                </div>
-
-                                {/* Portfolio URL */}
-                                <div>
-                                    <label htmlFor="portfolioUrl" className="block text-sm font-medium text-foreground mb-2">
-                                        Portfolio URL
-                                    </label>
-                                    <input
-                                        id="portfolioUrl"
-                                        type="url"
-                                        value={formData.portfolioUrl}
-                                        onChange={(e) => handleChange('portfolioUrl', e.target.value)}
-                                        placeholder="https://yourportfolio.com"
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
-                                    />
-                                </div>
-
-                                {/* Social Proof */}
-                                <div>
-                                    <label htmlFor="socialProof" className="block text-sm font-medium text-foreground mb-2">
-                                        Social Media & Achievements
-                                    </label>
-                                    <textarea
-                                        id="socialProof"
-                                        value={formData.socialProof}
-                                        onChange={(e) => handleChange('socialProof', e.target.value)}
-                                        placeholder="Share your social media handles, follower counts, certifications, awards, or other achievements"
-                                        rows={4}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
-                                    />
-                                    <p className="text-sm text-muted-foreground mt-1">
-                                        Help us understand your reach and credibility
-                                    </p>
-                                </div>
-
-                                {/* Motivation */}
-                                <div>
-                                    <label htmlFor="motivation" className="block text-sm font-medium text-foreground mb-2">
-                                        Why do you want to be a creator? <span className="text-red-400">*</span>
-                                    </label>
-                                    <textarea
-                                        id="motivation"
-                                        value={formData.motivation}
-                                        onChange={(e) => handleChange('motivation', e.target.value)}
-                                        placeholder="Tell us about your passion for teaching, what you want to create, and how you'll help learners..."
-                                        rows={6}
-                                        required
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
-                                    />
-                                </div>
-                                </div>
-
-                                {/* Section 2: Verification Documents */}
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-2 pb-3 border-b border-white/10">
-                                        <Shield className="w-5 h-5 text-green-400" />
-                                        <h3 className="text-lg font-semibold text-foreground">
-                                            {isArabic ? 'التحقق من الهوية' : 'Identity Verification'}
-                                        </h3>
-                                        <span className="ml-2 px-2 py-0.5 bg-green-500/20 text-green-400 text-xs font-medium rounded-full">
-                                            {isArabic ? 'اختياري' : 'Optional'}
-                                        </span>
-                                    </div>
-
-                                    {/* ID Card Upload */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-foreground mb-2">
-                                            {isArabic ? 'بطاقة الهوية الوطنية' : 'National ID Card'}
-                                        </label>
-                                        <p className="text-sm text-muted-foreground mb-4">
-                                            {isArabic 
-                                                ? 'رفع بطاقة هويتك يساعدنا في التحقق من حسابك بشكل أسرع ويزيد من مصداقيتك كمنشئ محتوى.'
-                                                : 'Uploading your ID helps us verify your account faster and increases your credibility as a creator.'}
-                                        </p>
-
-                                        {!idCardPreview ? (
-                                            <label className="block cursor-pointer">
-                                                <div className="border-2 border-dashed border-white/20 rounded-xl p-8 hover:border-purple-500/50 hover:bg-white/5 transition-all">
-                                                    <div className="flex flex-col items-center gap-3">
-                                                        <div className="p-4 bg-purple-500/20 rounded-full">
-                                                            <Upload className="w-8 h-8 text-purple-400" />
-                                                        </div>
-                                                        <div className="text-center">
-                                                            <p className="text-foreground font-medium mb-1">
-                                                                {isArabic ? 'انقر للرفع أو اسحب وأفلت' : 'Click to upload or drag and drop'}
-                                                            </p>
-                                                            <p className="text-sm text-muted-foreground">
-                                                                {isArabic ? 'PNG، JPG، WEBP حتى 5MB' : 'PNG, JPG, WEBP up to 5MB'}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <input
-                                                    type="file"
-                                                    accept="image/jpeg,image/jpg,image/png,image/webp"
-                                                    onChange={handleIdCardUpload}
-                                                    className="hidden"
-                                                />
-                                            </label>
-                                        ) : (
-                                            <div className="relative border border-white/10 rounded-xl overflow-hidden">
-                                                <img
-                                                    src={idCardPreview}
-                                                    alt="ID Card Preview"
-                                                    className="w-full h-64 object-contain bg-black/20"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={removeIdCard}
-                                                    className="absolute top-3 right-3 p-2 bg-red-500 hover:bg-red-600 rounded-full transition-colors"
-                                                >
-                                                    <X className="w-4 h-4 text-white" />
-                                                </button>
-                                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                                                    <div className="flex items-center gap-2 text-white">
-                                                        <CheckCircle className="w-5 h-5 text-green-400" />
-                                                        <span className="text-sm font-medium">
-                                                            {isArabic ? 'تم رفع بطاقة الهوية' : 'ID Card Uploaded'}
-                                                        </span>
-                                                    </div>
-                                                </div>
+                                {/* Step 1: Professional Information */}
+                                {currentStep === 1 && (
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+                                            <FileText className="w-5 h-5 text-purple-400" />
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-foreground">
+                                                    {isArabic ? 'المعلومات المهنية' : 'Professional Information'}
+                                                </h3>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {isArabic ? 'اجعلنا نتعرف عليك وما يمكنك تقديمه.' : 'Help us understand your craft and style.'}
+                                                </p>
                                             </div>
-                                        )}
-
-                                        <div className="mt-3 flex items-start gap-2 text-sm text-muted-foreground">
-                                            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                                            <p>
-                                                {isArabic
-                                                    ? 'معلوماتك الشخصية آمنة ومحمية. نحن نستخدمها فقط للتحقق من الهوية.'
-                                                    : 'Your personal information is secure and protected. We only use it for identity verification.'}
-                                            </p>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="md:col-span-2">
+                                                <label htmlFor="expertise" className="block text-sm font-medium text-foreground mb-2">
+                                                    {isArabic ? 'مجال الخبرة' : 'Area of Expertise'} <span className="text-red-400">*</span>
+                                                </label>
+                                                <input
+                                                    id="expertise"
+                                                    type="text"
+                                                    value={formData.expertise}
+                                                    onChange={(e) => handleChange('expertise', e.target.value)}
+                                                    placeholder={isArabic ? 'مثال: تطوير الويب، التصميم الجرافيكي' : 'e.g., Web Development, Graphic Design'}
+                                                    required
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor="experienceYears" className="block text-sm font-medium text-foreground mb-2">
+                                                    {isArabic ? 'سنوات الخبرة' : 'Years of Experience'}
+                                                </label>
+                                                <input
+                                                    id="experienceYears"
+                                                    type="number"
+                                                    min="0"
+                                                    value={formData.experienceYears}
+                                                    onChange={(e) => handleChange('experienceYears', e.target.value)}
+                                                    placeholder={isArabic ? 'عدد السنوات' : 'How many years?'}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor="portfolioUrl" className="block text-sm font-medium text-foreground mb-2">
+                                                    {isArabic ? 'رابط معرض الأعمال' : 'Portfolio URL'}
+                                                </label>
+                                                <input
+                                                    id="portfolioUrl"
+                                                    type="url"
+                                                    value={formData.portfolioUrl}
+                                                    onChange={(e) => handleChange('portfolioUrl', e.target.value)}
+                                                    placeholder="https://yourportfolio.com"
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor="sampleContentUrl" className="block text-sm font-medium text-foreground mb-2">
+                                                    {isArabic ? 'رابط عمل مميز' : 'Sample Content URL'}
+                                                </label>
+                                                <input
+                                                    id="sampleContentUrl"
+                                                    type="url"
+                                                    value={formData.sampleContentUrl}
+                                                    onChange={(e) => handleChange('sampleContentUrl', e.target.value)}
+                                                    placeholder="https://youtube.com/watch?v=..."
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20"
+                                                />
+                                                <p className="text-sm text-muted-foreground mt-1">
+                                                    {isArabic ? 'ارفق عملاً واحداً يوضح أسلوبك.' : 'Share one link that best represents your style.'}
+                                                </p>
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label htmlFor="socialProof" className="block text-sm font-medium text-foreground mb-2">
+                                                    {isArabic ? 'وسائل التواصل والإنجازات' : 'Social Media & Achievements'}
+                                                </label>
+                                                <textarea
+                                                    id="socialProof"
+                                                    value={formData.socialProof}
+                                                    onChange={(e) => handleChange('socialProof', e.target.value)}
+                                                    placeholder={isArabic ? 'روابط حساباتك، الشهادات، الإنجازات...' : 'Handles, certifications, awards, audience size...'}
+                                                    rows={4}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
+                                                />
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label htmlFor="motivation" className="block text-sm font-medium text-foreground mb-2">
+                                                    {isArabic ? 'دافعك للإنشاء' : 'Why do you want to be a creator?'} <span className="text-red-400">*</span>
+                                                </label>
+                                                <textarea
+                                                    id="motivation"
+                                                    value={formData.motivation}
+                                                    onChange={(e) => handleChange('motivation', e.target.value)}
+                                                    placeholder={isArabic ? 'حدثنا عن شغفك وأفكارك للمحتوى.' : "Tell us about your passion and what you'll create."}
+                                                    rows={6}
+                                                    required
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                )}
 
-                                {/* Submit Button */}
+                                {/* Step 2: Verification Documents (Mandatory) */}
+                                {currentStep === 2 && (
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+                                            <Shield className="w-5 h-5 text-green-400" />
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-foreground">
+                                                    {isArabic ? 'التحقق من الهوية (إلزامي)' : 'Identity Verification (Required)'}
+                                                </h3>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {isArabic ? 'نحتاج هوية حكومية سارية لمتابعة الطلب.' : 'A valid government ID is required to continue.'}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-foreground mb-2">
+                                                {isArabic ? 'بطاقة الهوية الوطنية' : 'National ID Card'} <span className="text-red-400">*</span>
+                                            </label>
+                                            <p className="text-sm text-muted-foreground mb-4">
+                                                {isArabic 
+                                                    ? 'ارفع صورة واضحة للوجه الأمامي لبطاقة الهوية. لن نشاركها مع أي طرف ثالث.'
+                                                    : 'Upload a clear front photo of your ID. We never share it with third parties.'}
+                                            </p>
+
+                                            {!idCardPreview ? (
+                                                <label className="block cursor-pointer">
+                                                    <div className="border-2 border-dashed border-white/20 rounded-xl p-8 hover:border-green-500/60 hover:bg-white/5 transition-all">
+                                                        <div className="flex flex-col items-center gap-3">
+                                                            <div className="p-4 bg-green-500/20 rounded-full">
+                                                                <Upload className="w-8 h-8 text-green-400" />
+                                                            </div>
+                                                            <div className="text-center">
+                                                                <p className="text-foreground font-medium mb-1">
+                                                                    {isArabic ? 'انقر للرفع أو اسحب وأفلت' : 'Click to upload or drag and drop'}
+                                                                </p>
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {isArabic ? 'PNG، JPG، WEBP حتى 5MB' : 'PNG, JPG, WEBP up to 5MB'}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                                                        onChange={handleIdCardUpload}
+                                                        className="hidden"
+                                                    />
+                                                </label>
+                                            ) : (
+                                                <div className="relative border border-white/10 rounded-xl overflow-hidden">
+                                                    <img
+                                                        src={idCardPreview}
+                                                        alt={isArabic ? 'معاينة بطاقة الهوية' : 'ID Card Preview'}
+                                                        className="w-full h-64 object-contain bg-black/20"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={removeIdCard}
+                                                        className="absolute top-3 right-3 p-2 bg-red-500 hover:bg-red-600 rounded-full transition-colors"
+                                                    >
+                                                        <X className="w-4 h-4 text-white" />
+                                                    </button>
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                                                        <div className="flex items-center gap-2 text-white">
+                                                            <CheckCircle className="w-5 h-5 text-green-400" />
+                                                            <span className="text-sm font-medium">
+                                                                {isArabic ? 'تم رفع بطاقة الهوية' : 'ID Card Uploaded'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="mt-3 flex items-start gap-2 text-sm text-muted-foreground">
+                                                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                                <p>
+                                                    {isArabic
+                                                        ? 'نستخدم بياناتك فقط للتحقق من الهوية ضمن سياسات الخصوصية والأمان لدينا.'
+                                                        : 'Used only for identity verification under our privacy and security policy.'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Step 3: Review */}
+                                {currentStep === 3 && (
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+                                            <Shield className="w-5 h-5 text-purple-400" />
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-foreground">
+                                                    {isArabic ? 'مراجعة نهائية' : 'Final Review'}
+                                                </h3>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {isArabic ? 'تأكد من صحة البيانات قبل الإرسال.' : 'Confirm everything looks right before you submit.'}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                                <p className="text-sm text-muted-foreground mb-1">{isArabic ? 'الخبرة' : 'Expertise'}</p>
+                                                <p className="text-foreground font-semibold break-words">{formData.expertise || '-'}</p>
+                                            </div>
+                                            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                                <p className="text-sm text-muted-foreground mb-1">{isArabic ? 'الخبرة (سنوات)' : 'Experience (years)'}</p>
+                                                <p className="text-foreground font-semibold">{formData.experienceYears || '0'}</p>
+                                            </div>
+                                            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                                <p className="text-sm text-muted-foreground mb-1">{isArabic ? 'المعرض' : 'Portfolio'}</p>
+                                                <p className="text-foreground font-semibold break-words">{formData.portfolioUrl || '-'}</p>
+                                            </div>
+                                            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                                <p className="text-sm text-muted-foreground mb-1">{isArabic ? 'عينة محتوى' : 'Sample content'}</p>
+                                                <p className="text-foreground font-semibold break-words">{formData.sampleContentUrl || '-'}</p>
+                                            </div>
+                                            <div className="md:col-span-2 bg-white/5 border border-white/10 rounded-xl p-4">
+                                                <p className="text-sm text-muted-foreground mb-1">{isArabic ? 'الدافع' : 'Motivation'}</p>
+                                                <p className="text-foreground whitespace-pre-wrap">{formData.motivation || '-'}</p>
+                                            </div>
+                                            <div className="md:col-span-2 bg-white/5 border border-white/10 rounded-xl p-4">
+                                                <p className="text-sm text-muted-foreground mb-1">{isArabic ? 'التحقق من الهوية' : 'Identity verification'}</p>
+                                                <div className="flex items-center gap-2 text-foreground">
+                                                    <CheckCircle className="w-4 h-4 text-green-400" />
+                                                    <span>{idCardFile ? (isArabic ? 'تم إرفاق بطاقة الهوية' : 'ID card attached') : (isArabic ? 'لم يتم الرفع بعد' : 'Not uploaded yet')}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Actions */}
                                 <div className="flex flex-col gap-4 pt-6">
                                     {uploadingIdCard && (
                                         <div className="flex items-center gap-3 px-4 py-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
@@ -1077,29 +1178,52 @@ export default function CreatorApplicationPage() {
                                         </div>
                                     )}
                                     
-                                    <div className="flex gap-4">
-                                        <button
-                                            type="submit"
-                                            disabled={submitting || uploadingIdCard}
-                                            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-8 py-4 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                        >
-                                            {submitting ? (
-                                                <>
-                                                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                                                    {isArabic ? 'جارٍ الإرسال...' : 'Submitting...'}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Sparkles className="w-5 h-5" />
-                                                    {isArabic ? 'إرسال الطلب' : 'Submit Application'}
-                                                </>
-                                            )}
-                                        </button>
+                                    <div className="flex flex-col md:flex-row gap-3">
+                                        {currentStep > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={handlePrevStep}
+                                                className="w-full md:w-auto px-6 py-3 border border-white/20 text-foreground font-semibold rounded-full hover:bg-white/5 transition-all"
+                                            >
+                                                {isArabic ? 'السابق' : 'Back'}
+                                            </button>
+                                        )}
+
+                                        {currentStep < steps.length && (
+                                            <button
+                                                type="button"
+                                                onClick={handleNextStep}
+                                                className="w-full md:w-auto px-8 py-3 bg-white hover:bg-white/90 text-black font-semibold rounded-full transition-all"
+                                            >
+                                                {isArabic ? 'التالي' : 'Next step'}
+                                            </button>
+                                        )}
+
+                                        {currentStep === steps.length && (
+                                            <button
+                                                type="submit"
+                                                disabled={submitting || uploadingIdCard}
+                                                className="w-full md:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-8 py-3 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                            >
+                                                {submitting ? (
+                                                    <>
+                                                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                                                        {isArabic ? 'جارٍ الإرسال...' : 'Submitting...'}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Sparkles className="w-5 h-5" />
+                                                        {isArabic ? 'إرسال الطلب' : 'Submit application'}
+                                                    </>
+                                                )}
+                                            </button>
+                                        )}
+
                                         <button
                                             type="button"
                                             onClick={() => router.push(`/${locale}/`)}
                                             disabled={submitting || uploadingIdCard}
-                                            className="px-8 py-4 border border-white/20 text-foreground font-semibold rounded-full hover:bg-white/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full md:w-auto px-6 py-3 border border-white/20 text-foreground font-semibold rounded-full hover:bg-white/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {isArabic ? 'إلغاء' : 'Cancel'}
                                         </button>

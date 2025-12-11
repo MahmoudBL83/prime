@@ -3,21 +3,19 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { motion } from 'framer-motion';
 import {
   Star,
   Users,
   BookOpen,
-  Award,
   ArrowLeft,
   MessageCircle,
-  CheckCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import SubscriptionTierCard from '@/components/subscriptions/SubscriptionTierCard';
+import SubscribeModal from '@/components/modals/SubscribeModal';
 import MentorSubscriptionBadge from '@/components/subscriptions/MentorSubscriptionBadge';
 import { useLocaleSafe } from '@/hooks/useTranslationsSafe';
 import toast from 'react-hot-toast';
+import { AvatarPlaceholder } from '@/components/ui/avatar-placeholder';
 
 interface MentorData {
   id: string;
@@ -30,11 +28,6 @@ interface MentorData {
   };
   expertise: string;
   basicMonthlyPrice: number;
-  basicYearlyPrice: number;
-  premiumMonthlyPrice: number;
-  premiumYearlyPrice: number;
-  vipMonthlyPrice: number;
-  vipYearlyPrice: number;
   totalSubscribers: number;
   languages: string;
   stats: {
@@ -48,7 +41,7 @@ interface MentorData {
 
 interface UserSubscription {
   id: string;
-  tier: 'BASIC' | 'PREMIUM' | 'VIP';
+  tier: 'ALL_ACCESS' | 'BASIC' | 'PREMIUM' | 'VIP';
   status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED';
 }
 
@@ -62,7 +55,10 @@ export default function MentorSubscribePage() {
   const [mentor, setMentor] = useState<MentorData | null>(null);
   const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
-  const [billingPeriod, setBillingPeriod] = useState<'MONTHLY' | 'YEARLY'>('MONTHLY');
+  const [subscribeModalOpen, setSubscribeModalOpen] = useState(false);
+
+  const openSubscribe = () => setSubscribeModalOpen(true);
+  const closeSubscribe = () => setSubscribeModalOpen(false);
 
   useEffect(() => {
     if (params.id) {
@@ -73,34 +69,28 @@ export default function MentorSubscribePage() {
 
   const fetchMentorData = async () => {
     try {
-      // Fetch subscription tiers
-      const response = await fetch(`/api/creators/${params.id}/subscription-tiers`);
+      const response = await fetch(`/api/creators/${params.id}`);
       if (response.ok) {
         const data = await response.json();
         setMentor({
           id: params.id as string,
           user: {
-            id: data.creatorId,
-            name: data.creatorName,
-            arabicName: data.creatorNameAr,
-            bio: '',
-            profileImage: data.creatorImage,
+            id: data.user.id,
+            name: data.user.name,
+            arabicName: data.user.arabicName,
+            bio: data.user.bio || '',
+            profileImage: data.user.profileImage,
           },
-          expertise: '',
-          basicMonthlyPrice: data.tiers[0].monthlyPrice,
-          basicYearlyPrice: data.tiers[0].yearlyPrice,
-          premiumMonthlyPrice: data.tiers[1].monthlyPrice,
-          premiumYearlyPrice: data.tiers[1].yearlyPrice,
-          vipMonthlyPrice: data.tiers[2].monthlyPrice,
-          vipYearlyPrice: data.tiers[2].yearlyPrice,
-          totalSubscribers: 0,
-          languages: 'English, Arabic',
-          stats: {
-            totalFollowers: 0,
-            totalCourses: 0,
-            totalStudents: 0,
-            averageRating: 5.0,
-            yearsOfExperience: 5,
+          expertise: data.expertise || '',
+          basicMonthlyPrice: data.basicMonthlyPrice,
+          totalSubscribers: data.totalSubscribers || 0,
+          languages: data.languages || 'English, Arabic',
+          stats: data.stats || {
+            totalFollowers: data.stats?.totalFollowers || 0,
+            totalCourses: data.stats?.totalCourses || 0,
+            totalStudents: data.stats?.totalStudents || 0,
+            averageRating: data.stats?.averageRating || 5.0,
+            yearsOfExperience: data.stats?.yearsOfExperience || 5,
           },
         });
       }
@@ -126,43 +116,6 @@ export default function MentorSubscribePage() {
       }
     } catch (error) {
       console.error('Error checking subscription:', error);
-    }
-  };
-
-  const handleSubscribe = async (tier: string, billingPeriod: string) => {
-    if (!session?.user?.id) {
-      toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in');
-      router.push(`/${currentLocale}/auth/signin`);
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/mentor-subscriptions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          creatorId: params.id,
-          tier,
-          billingPeriod,
-        }),
-      });
-
-      if (response.ok) {
-        toast.success(
-          isArabic
-            ? '🎉 تم الاشتراك بنجاح!'
-            : '🎉 Successfully subscribed!'
-        );
-        checkUserSubscription();
-      } else {
-        const error = await response.json();
-        toast.error(error.error || (isArabic ? 'فشل الاشتراك' : 'Subscription failed'));
-      }
-    } catch (error) {
-      console.error('Subscription error:', error);
-      toast.error(isArabic ? 'حدث خطأ' : 'An error occurred');
     }
   };
 
@@ -194,54 +147,6 @@ export default function MentorSubscribePage() {
     );
   }
 
-  const subscriptionTiers = [
-    {
-      tier: 'BASIC' as const,
-      name: 'Basic',
-      nameAr: 'أساسي',
-      monthlyPrice: mentor.basicMonthlyPrice,
-      yearlyPrice: mentor.basicYearlyPrice,
-      yearlySavings: mentor.basicMonthlyPrice * 12 - mentor.basicYearlyPrice,
-      benefits: {
-        monthlyMessages: 10,
-        monthlyMeetings: 1,
-        meetingDuration: 30,
-        accessToContent: true,
-        prioritySupport: false,
-      },
-    },
-    {
-      tier: 'PREMIUM' as const,
-      name: 'Premium',
-      nameAr: 'متميز',
-      monthlyPrice: mentor.premiumMonthlyPrice,
-      yearlyPrice: mentor.premiumYearlyPrice,
-      yearlySavings: mentor.premiumMonthlyPrice * 12 - mentor.premiumYearlyPrice,
-      benefits: {
-        monthlyMessages: 50,
-        monthlyMeetings: 4,
-        meetingDuration: 60,
-        accessToContent: true,
-        prioritySupport: true,
-      },
-    },
-    {
-      tier: 'VIP' as const,
-      name: 'VIP',
-      nameAr: 'كبار الشخصيات',
-      monthlyPrice: mentor.vipMonthlyPrice,
-      yearlyPrice: mentor.vipYearlyPrice,
-      yearlySavings: mentor.vipMonthlyPrice * 12 - mentor.vipYearlyPrice,
-      benefits: {
-        monthlyMessages: null,
-        monthlyMeetings: null,
-        meetingDuration: 90,
-        accessToContent: true,
-        prioritySupport: true,
-      },
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
@@ -266,9 +171,10 @@ export default function MentorSubscribePage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-white text-3xl font-bold">
-                  {mentor.user.name[0]}
-                </div>
+                <AvatarPlaceholder 
+                  name={mentor.user.name} 
+                  size={96} 
+                />
               )}
             </div>
 
@@ -318,115 +224,49 @@ export default function MentorSubscribePage() {
         </div>
       </div>
 
-      {/* Subscription Plans */}
+      {/* Subscription Plan */}
       <div className="container mx-auto px-4 py-12">
-        {/* Billing Period Toggle */}
-        <div className="flex justify-center mb-8">
-          <div className="inline-flex bg-gray-200 dark:bg-gray-700 rounded-xl p-1">
-            <button
-              onClick={() => setBillingPeriod('MONTHLY')}
-              className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                billingPeriod === 'MONTHLY'
-                  ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-md'
-                  : 'text-gray-600 dark:text-gray-400'
-              }`}
-            >
-              {isArabic ? 'شهري' : 'Monthly'}
-            </button>
-            <button
-              onClick={() => setBillingPeriod('YEARLY')}
-              className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                billingPeriod === 'YEARLY'
-                  ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-md'
-                  : 'text-gray-600 dark:text-gray-400'
-              }`}
-            >
-              {isArabic ? 'سنوي' : 'Yearly'}
-              <span className="ml-2 text-xs text-green-600 dark:text-green-400">
-                {isArabic ? 'وفّر حتى 20%' : 'Save up to 20%'}
-              </span>
-            </button>
+        <div className="max-w-3xl mx-auto grid gap-6">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-center shadow-lg">
+            <p className="text-lg font-semibold mb-2">
+              {isArabic ? 'خطة واحدة تشمل كل المزايا' : 'One simple plan with everything included'}
+            </p>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              {isArabic ? 'كل المحتوى، الجلسات المباشرة، الرسائل وأولوية الدعم' : 'All content, live sessions, messaging, and priority support'}
+            </p>
+            <div className="text-4xl font-black bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent mb-1">
+              €{mentor.basicMonthlyPrice}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 mb-6">{isArabic ? 'شهرياً • إلغاء في أي وقت' : 'Monthly • Cancel anytime'}</div>
+            <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-2 mb-6">
+              <li>{isArabic ? 'جلسات مباشرة أسبوعية لكل الموجهين' : 'Weekly live sessions with every mentor'}</li>
+              <li>{isArabic ? 'وصول كامل لكل المحتوى والوسائط' : 'Full access to all posts and media'}</li>
+              <li>{isArabic ? 'مراسلات ذات أولوية ودعم سريع' : 'Priority messaging and quick support'}</li>
+              <li>{isArabic ? 'حجوزات عبر التقويم عند الحاجة' : 'Calendar bookings when needed'}</li>
+            </ul>
+            <Button onClick={openSubscribe} className="w-full md:w-auto bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold px-6 py-3 rounded-full">
+              {isArabic ? 'اشترك الآن' : 'Subscribe Now'}
+            </Button>
           </div>
         </div>
 
-        {/* Subscription Tier Cards */}
-        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {subscriptionTiers.map((tier) => (
-            <SubscriptionTierCard
-              key={tier.tier}
-              tier={tier}
-              billingPeriod={billingPeriod}
-              creatorId={mentor.id}
-              isSubscribed={userSubscription?.tier === tier.tier && userSubscription?.status === 'ACTIVE'}
-              onSubscribe={handleSubscribe}
-              locale={currentLocale}
-            />
-          ))}
-        </div>
-
-        {/* Features Comparison */}
-        <div className="mt-16 max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-8">
-            {isArabic ? 'مقارنة الميزات' : 'Feature Comparison'}
-          </h2>
-
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                    {isArabic ? 'الميزة' : 'Feature'}
-                  </th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-blue-600">Basic</th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-purple-600">Premium</th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-yellow-600">VIP</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                <tr>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                    {isArabic ? 'الرسائل الشهرية' : 'Monthly Messages'}
-                  </td>
-                  <td className="px-6 py-4 text-center text-sm">10</td>
-                  <td className="px-6 py-4 text-center text-sm">50</td>
-                  <td className="px-6 py-4 text-center text-sm">
-                    <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                    {isArabic ? 'الاجتماعات الشهرية' : 'Monthly Meetings'}
-                  </td>
-                  <td className="px-6 py-4 text-center text-sm">1</td>
-                  <td className="px-6 py-4 text-center text-sm">4</td>
-                  <td className="px-6 py-4 text-center text-sm">
-                    <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                    {isArabic ? 'مدة الاجتماع' : 'Meeting Duration'}
-                  </td>
-                  <td className="px-6 py-4 text-center text-sm">30 min</td>
-                  <td className="px-6 py-4 text-center text-sm">60 min</td>
-                  <td className="px-6 py-4 text-center text-sm">90 min</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                    {isArabic ? 'دعم ذو أولوية' : 'Priority Support'}
-                  </td>
-                  <td className="px-6 py-4 text-center text-sm">-</td>
-                  <td className="px-6 py-4 text-center text-sm">
-                    <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                  </td>
-                  <td className="px-6 py-4 text-center text-sm">
-                    <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <SubscribeModal
+          isOpen={subscribeModalOpen}
+          onClose={closeSubscribe}
+          creator={{
+            id: mentor.id,
+            channelId: undefined,
+            user: {
+              name: mentor.user.name,
+              arabicName: mentor.user.arabicName,
+              profileImage: mentor.user.profileImage,
+            },
+            expertise: mentor.expertise,
+            basicMonthlyPrice: mentor.basicMonthlyPrice,
+          }}
+          isArabic={isArabic}
+          onSuccess={() => checkUserSubscription()}
+        />
       </div>
     </div>
   );

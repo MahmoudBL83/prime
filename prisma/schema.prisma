@@ -23,6 +23,9 @@ model User {
   arabicName            String?
   profileImage          String?
   bio                   String?
+  loginDisabled         Boolean   @default(false)
+  passwordResetRequired Boolean   @default(false)
+  featureFlags          Json?
   age                   String?
   birthDate             DateTime?
   country               String?
@@ -137,6 +140,9 @@ model User {
   // Cohort-Based Learning
   cohortMemberships  CohortMember[]
   sessionAttendances SessionAttendance[]
+
+  // Live Session Attendees
+  sessionAttendees SessionAttendee[] @relation("SessionAttendees")
 
   // Message Request Relations
   sentMessageRequests     MessageRequest[] @relation("SentMessageRequests")
@@ -2335,25 +2341,26 @@ model PostBookmark {
 
 // Live Sessions (Category C)
 model LiveSession {
-  id            String            @id @default(cuid())
-  channelId     String
-  title         String
-  titleAr       String?
-  description   String?
-  descriptionAr String?
-  scheduledAt   DateTime
-  duration      Int // Duration in minutes
-  streamUrl     String? // RTMP/WebRTC URL
-  streamKey     String? // Private stream key
-  recordingUrl  String? // Recording after session
-  status        LiveSessionStatus @default(SCHEDULED)
-  maxAttendees  Int? // Max concurrent viewers
-  tier          String            @default("BRONZE") // Minimum tier to attend (BRONZE, SILVER, GOLD)
-  actualStartAt DateTime?
-  actualEndAt   DateTime?
-  viewCount     Int               @default(0)
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  id              String            @id @default(cuid())
+  channelId       String
+  title           String
+  titleAr         String?
+  description     String?
+  descriptionAr   String?
+  scheduledAt     DateTime
+  duration        Int // Duration in minutes
+  streamUrl       String? // Meeting URL (Zoom/Meet/Teams)
+  streamKey       String? // Private stream key
+  meetingPassword String? // Meeting password if required
+  recordingUrl    String? // Recording after session
+  status          LiveSessionStatus @default(SCHEDULED)
+  maxAttendees    Int? // Max concurrent viewers
+  tier            String            @default("BRONZE") // Minimum tier to attend (BRONZE, SILVER, GOLD)
+  actualStartAt   DateTime?
+  actualEndAt     DateTime?
+  viewCount       Int               @default(0)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
   channel   CreatorChannel    @relation(fields: [channelId], references: [id], onDelete: Cascade)
   attendees SessionAttendee[]
@@ -2379,6 +2386,7 @@ model SessionAttendee {
   duration  Int? // Watch time in seconds
 
   session LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User        @relation("SessionAttendees", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, userId])
   @@index([sessionId])

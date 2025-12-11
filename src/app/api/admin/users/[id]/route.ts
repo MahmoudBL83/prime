@@ -62,6 +62,20 @@ export async function GET(
                             }
                         }
                     }
+                },
+                blockedUsers: {
+                    include: {
+                        blocked: {
+                            select: { id: true, name: true, email: true }
+                        }
+                    }
+                },
+                blockedByUsers: {
+                    include: {
+                        blocker: {
+                            select: { id: true, name: true, email: true }
+                        }
+                    }
                 }
             }
         })
@@ -114,6 +128,8 @@ export async function PATCH(
 
         const body = await request.json()
         const { action, ...updateData } = body
+        const targetEmail = (updateData.targetEmail as string | undefined)?.toLowerCase().trim()
+        const targetUserId = updateData.targetUserId as string | undefined
 
         // Prevent admin from changing their own role or deleting themselves
         if (id === currentUser.id) {
@@ -150,9 +166,53 @@ export async function PATCH(
                         arabicName: updateData.arabicName,
                         phone: updateData.phone,
                         bio: updateData.bio,
+                        email: updateData.email ? updateData.email.toLowerCase() : undefined,
                     }
                 })
                 break
+
+            case 'disableLogin':
+                updatedUser = await prisma.user.update({
+                    where: { id },
+                    data: { loginDisabled: true }
+                })
+                break
+
+            case 'enableLogin':
+                updatedUser = await prisma.user.update({
+                    where: { id },
+                    data: { loginDisabled: false }
+                })
+                break
+
+            case 'requirePasswordReset':
+                updatedUser = await prisma.user.update({
+                    where: { id },
+                    data: { passwordResetRequired: true }
+                })
+                break
+
+            case 'clearPasswordReset':
+                updatedUser = await prisma.user.update({
+                    where: { id },
+                    data: { passwordResetRequired: false }
+                })
+                break
+
+            case 'setFeatureFlags': {
+                const flags = updateData.featureFlags as Record<string, any> | undefined
+                if (!flags || typeof flags !== 'object') {
+                    return NextResponse.json(
+                        { error: 'featureFlags must be an object' },
+                        { status: 400 }
+                    )
+                }
+                updatedUser = await prisma.user.update({
+                    where: { id },
+                    data: { featureFlags: flags }
+                })
+                break
+            }
 
             case 'verifyEmail':
                 updatedUser = await prisma.user.update({
@@ -174,6 +234,235 @@ export async function PATCH(
                     data: { onboardingCompleted: true } as any
                 })
                 break
+
+            case 'blockUser': {
+                const targetUser = targetUserId
+                    ? await prisma.user.findUnique({ where: { id: targetUserId } })
+                    : targetEmail
+                        ? await prisma.user.findUnique({ where: { email: targetEmail } })
+                        : null
+
+                if (!targetUser) {
+                    return NextResponse.json(
+                        { error: 'Target user not found' },
+                        { status: 404 }
+                    )
+                }
+
+                if (targetUser.id === id) {
+                    return NextResponse.json(
+                        { error: 'Cannot block the same user' },
+                        { status: 400 }
+                    )
+                }
+
+                await prisma.userBlock.upsert({
+                    where: {
+                        blockerId_blockedId: {
+                            blockerId: id,
+                            blockedId: targetUser.id,
+                        },
+                    },
+                    update: {},
+                    create: {
+                        blockerId: id,
+                        blockedId: targetUser.id,
+                    },
+                })
+
+                await prisma.adminAuditLog.create({
+                    data: {
+                        adminId: currentUser.id,
+                        adminName: currentUser.name,
+                        adminEmail: currentUser.email,
+                        action: 'ADMIN_BLOCK_USER',
+                        module: 'Users',
+                        details: `Blocked ${targetUser.email} on behalf of ${id}`,
+                        status: 'SUCCESS'
+                    }
+                })
+
+                updatedUser = await prisma.user.findUnique({ where: { id } })
+                break
+            }
+
+            case 'blockUserFromTarget': {
+                // Make target the blocker, current user the blocked party
+                const targetUser = targetUserId
+                    ? await prisma.user.findUnique({ where: { id: targetUserId } })
+                    : targetEmail
+                        ? await prisma.user.findUnique({ where: { email: targetEmail } })
+                        : null
+
+                if (!targetUser) {
+                    return NextResponse.json(
+                        { error: 'Target user not found' },
+                        { status: 404 }
+                    )
+                }
+
+                if (targetUser.id === id) {
+                    return NextResponse.json(
+                        { error: 'Cannot create self-block' },
+                        { status: 400 }
+                    )
+                }
+
+                await prisma.userBlock.upsert({
+                    where: {
+                        blockerId_blockedId: {
+                            blockerId: targetUser.id,
+                            blockedId: id,
+                        },
+                    },
+                    update: {},
+                    create: {
+                        blockerId: targetUser.id,
+                        blockedId: id,
+                    },
+                })
+
+                await prisma.adminAuditLog.create({
+                    data: {
+                        adminId: currentUser.id,
+                        adminName: currentUser.name,
+                        adminEmail: currentUser.email,
+                        action: 'ADMIN_BLOCK_USER_FROM_TARGET',
+                        module: 'Users',
+                        details: `Blocked ${id} from contacting ${targetUser.email}`,
+                        status: 'SUCCESS'
+                    }
+                })
+
+                updatedUser = await prisma.user.findUnique({ where: { id } })
+                break
+            }
+
+            case 'mutualBlock': {
+                const targetUser = targetUserId
+                    ? await prisma.user.findUnique({ where: { id: targetUserId } })
+                    : targetEmail
+                        ? await prisma.user.findUnique({ where: { email: targetEmail } })
+                        : null
+
+                if (!targetUser) {
+                    return NextResponse.json(
+                        { error: 'Target user not found' },
+                        { status: 404 }
+                    )
+                }
+
+                if (targetUser.id === id) {
+                    return NextResponse.json(
+                        { error: 'Cannot create self-block' },
+                        { status: 400 }
+                    )
+                }
+
+                await prisma.$transaction([
+                    prisma.userBlock.upsert({
+                        where: { blockerId_blockedId: { blockerId: id, blockedId: targetUser.id } },
+                        update: {},
+                        create: { blockerId: id, blockedId: targetUser.id },
+                    }),
+                    prisma.userBlock.upsert({
+                        where: { blockerId_blockedId: { blockerId: targetUser.id, blockedId: id } },
+                        update: {},
+                        create: { blockerId: targetUser.id, blockedId: id },
+                    }),
+                ])
+
+                await prisma.adminAuditLog.create({
+                    data: {
+                        adminId: currentUser.id,
+                        adminName: currentUser.name,
+                        adminEmail: currentUser.email,
+                        action: 'ADMIN_MUTUAL_BLOCK',
+                        module: 'Users',
+                        details: `Mutual block between ${id} and ${targetUser.email}`,
+                        status: 'SUCCESS'
+                    }
+                })
+
+                updatedUser = await prisma.user.findUnique({ where: { id } })
+                break
+            }
+
+            case 'clearBlocksBetween': {
+                const targetUser = targetUserId
+                    ? await prisma.user.findUnique({ where: { id: targetUserId } })
+                    : targetEmail
+                        ? await prisma.user.findUnique({ where: { email: targetEmail } })
+                        : null
+
+                if (!targetUser) {
+                    return NextResponse.json(
+                        { error: 'Target user not found' },
+                        { status: 404 }
+                    )
+                }
+
+                await prisma.userBlock.deleteMany({
+                    where: {
+                        OR: [
+                            { blockerId: id, blockedId: targetUser.id },
+                            { blockerId: targetUser.id, blockedId: id },
+                        ]
+                    }
+                })
+
+                await prisma.adminAuditLog.create({
+                    data: {
+                        adminId: currentUser.id,
+                        adminName: currentUser.name,
+                        adminEmail: currentUser.email,
+                        action: 'ADMIN_CLEAR_BLOCKS',
+                        module: 'Users',
+                        details: `Cleared blocks between ${id} and ${targetUser.email}`,
+                        status: 'SUCCESS'
+                    }
+                })
+
+                updatedUser = await prisma.user.findUnique({ where: { id } })
+                break
+            }
+
+            case 'unblockUser': {
+                const targetUser = targetUserId
+                    ? await prisma.user.findUnique({ where: { id: targetUserId } })
+                    : targetEmail
+                        ? await prisma.user.findUnique({ where: { email: targetEmail } })
+                        : null
+
+                if (!targetUser) {
+                    return NextResponse.json(
+                        { error: 'Target user not found' },
+                        { status: 404 }
+                    )
+                }
+
+                await prisma.userBlock.deleteMany({
+                    where: {
+                        blockerId: id,
+                        blockedId: targetUser.id,
+                    },
+                })
+
+                await prisma.adminAuditLog.create({
+                    data: {
+                        adminId: currentUser.id,
+                        adminName: currentUser.name,
+                        adminEmail: currentUser.email,
+                        action: 'ADMIN_UNBLOCK_USER',
+                        module: 'Users',
+                        details: `Unblocked ${targetUser.email} on behalf of ${id}`,
+                        status: 'SUCCESS'
+                    }
+                })
+
+                updatedUser = await prisma.user.findUnique({ where: { id } })
+                break
+            }
 
             default:
                 return NextResponse.json(

@@ -12,7 +12,8 @@ import {
     Award,
     UserCheck,
     Edit,
-    Save
+    Save,
+    ShieldX
 } from 'lucide-react'
 
 interface UserDetailsModalProps {
@@ -33,6 +34,9 @@ interface UserDetails {
     emailVerified: string | null
     phoneVerified: string | null
     onboardingCompleted: boolean
+    loginDisabled?: boolean
+    passwordResetRequired?: boolean
+    featureFlags?: Record<string, any>
     createdAt: string
     updatedAt: string
     _count: {
@@ -57,6 +61,8 @@ interface UserDetails {
             titleAr: string
         }
     }>
+    blockedUsers?: Array<{ blocked: { id: string; name: string; email: string } }>
+    blockedByUsers?: Array<{ blocker: { id: string; name: string; email: string } }>
 }
 
 const roleColors = {
@@ -77,6 +83,9 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
         bio: '',
         role: 'LEARNER' as 'ADMIN' | 'CREATOR' | 'LEARNER'
     })
+    const [blockTarget, setBlockTarget] = useState('')
+    const [blockLoading, setBlockLoading] = useState(false)
+    const [flagsInput, setFlagsInput] = useState('')
 
     useEffect(() => {
         if (isOpen && userId) {
@@ -101,6 +110,7 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
                 bio: data.user.bio || '',
                 role: data.user.role
             })
+            setFlagsInput(JSON.stringify(data.user.featureFlags || {}, null, 2))
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred')
         } finally {
@@ -110,6 +120,7 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
 
     const handleUpdate = async (action: string, data: any = {}) => {
         try {
+            setBlockLoading(action === 'blockUser' || action === 'unblockUser')
             const response = await fetch(`/api/admin/users/${userId}`, {
                 method: 'PATCH',
                 headers: {
@@ -127,6 +138,8 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
             onUserUpdated()
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred')
+        } finally {
+            setBlockLoading(false)
         }
     }
 
@@ -143,6 +156,54 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
             hour: '2-digit',
             minute: '2-digit'
         })
+    }
+
+    const requireTarget = () => {
+        if (!blockTarget.trim()) {
+            setError('Provide a target email or user ID')
+            return false
+        }
+        return true
+    }
+
+    const handleBlockUser = async () => {
+        if (!requireTarget()) return
+        await handleUpdate('blockUser', { targetEmail: blockTarget.trim() })
+        setBlockTarget('')
+    }
+
+    const handleBlockUserFromTarget = async () => {
+        if (!requireTarget()) return
+        await handleUpdate('blockUserFromTarget', { targetEmail: blockTarget.trim() })
+        setBlockTarget('')
+    }
+
+    const handleMutualBlock = async () => {
+        if (!requireTarget()) return
+        await handleUpdate('mutualBlock', { targetEmail: blockTarget.trim() })
+        setBlockTarget('')
+    }
+
+    const handleClearBlocks = async () => {
+        if (!requireTarget()) return
+        await handleUpdate('clearBlocksBetween', { targetEmail: blockTarget.trim() })
+        setBlockTarget('')
+    }
+
+    const handleUnblockUser = async (targetUserId: string) => {
+        await handleUpdate('unblockUser', { targetUserId })
+    }
+
+    const handleSaveFeatureFlags = async () => {
+        try {
+            const parsed = flagsInput.trim() ? JSON.parse(flagsInput) : {}
+            if (parsed === null || Array.isArray(parsed) || typeof parsed !== 'object') {
+                throw new Error('Feature flags must be a JSON object')
+            }
+            await handleUpdate('setFeatureFlags', { featureFlags: parsed })
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Invalid feature flags JSON')
+        }
     }
 
     if (!isOpen) return null
@@ -341,7 +402,53 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
                                             </p>
                                         </div>
                                     </div>
+                                    <div className="flex items-center gap-3">
+                                        <Shield className="w-5 h-5 text-gray-400" />
+                                        <div>
+                                            <p className="text-sm text-gray-400">Login access</p>
+                                            <p className={`font-medium ${user.loginDisabled ? 'text-red-400' : 'text-green-400'}`}>
+                                                {user.loginDisabled ? 'Disabled' : 'Enabled'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <Shield className="w-5 h-5 text-gray-400" />
+                                        <div>
+                                            <p className="text-sm text-gray-400">Password reset required</p>
+                                            <p className={`font-medium ${user.passwordResetRequired ? 'text-yellow-400' : 'text-gray-300'}`}>
+                                                {user.passwordResetRequired ? 'Pending reset' : 'Not required'}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+
+                            {/* Feature Flags */}
+                            <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="text-lg font-medium text-white">Feature Flags</h3>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setFlagsInput(JSON.stringify(user.featureFlags || {}, null, 2))}
+                                            className="px-3 py-1 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600"
+                                        >
+                                            Reset to current
+                                        </button>
+                                        <button
+                                            onClick={handleSaveFeatureFlags}
+                                            className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                        >
+                                            Save Flags
+                                        </button>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-400 mb-2">Provide a JSON object of feature toggles. Example: {`{"beta":true,"group":"staff"}`}</p>
+                                <textarea
+                                    value={flagsInput}
+                                    onChange={(e) => setFlagsInput(e.target.value)}
+                                    rows={6}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-sm"
+                                />
                             </div>
 
                             {/* Quick Actions */}
@@ -373,6 +480,30 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
                                                 Complete Onboarding
                                             </button>
                                         )}
+                                        <button
+                                            onClick={() => handleUpdate('disableLogin')}
+                                            className="px-3 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 text-sm"
+                                        >
+                                            Disable Login
+                                        </button>
+                                        <button
+                                            onClick={() => handleUpdate('enableLogin')}
+                                            className="px-3 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 text-sm"
+                                        >
+                                            Enable Login
+                                        </button>
+                                        <button
+                                            onClick={() => handleUpdate('requirePasswordReset')}
+                                            className="px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm"
+                                        >
+                                            Require Password Reset
+                                        </button>
+                                        <button
+                                            onClick={() => handleUpdate('clearPasswordReset')}
+                                            className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm"
+                                        >
+                                            Clear Reset Requirement
+                                        </button>
                                         <button
                                             onClick={() => handleUpdate('updateRole', { role: user.role === 'LEARNER' ? 'CREATOR' : 'LEARNER' })}
                                             className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm"
@@ -429,6 +560,101 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
                                                 </div>
                                             </div>
                                         </>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Blocking Controls */}
+                            <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-medium text-white">User Blocking</h3>
+                                    <span className="text-xs text-gray-400">Admin-only moderation</span>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm text-gray-300">Block another user on behalf of this user</label>
+                                        <div className="flex flex-col md:flex-row gap-2">
+                                            <input
+                                                type="text"
+                                                value={blockTarget}
+                                                onChange={(e) => setBlockTarget(e.target.value)}
+                                                placeholder="Target email or user ID"
+                                                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder:text-gray-500"
+                                            />
+                                            <button
+                                                onClick={handleBlockUser}
+                                                disabled={blockLoading}
+                                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-60"
+                                            >
+                                                {blockLoading ? 'Blocking...' : 'Block'}
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                            <button
+                                                onClick={handleBlockUserFromTarget}
+                                                disabled={blockLoading}
+                                                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-60 text-sm"
+                                            >
+                                                {blockLoading ? 'Working...' : 'Block this user from target'}
+                                            </button>
+                                            <button
+                                                onClick={handleMutualBlock}
+                                                disabled={blockLoading}
+                                                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-60 text-sm"
+                                            >
+                                                {blockLoading ? 'Working...' : 'Mutual block'}
+                                            </button>
+                                            <button
+                                                onClick={handleClearBlocks}
+                                                disabled={blockLoading}
+                                                className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-60 text-sm"
+                                            >
+                                                {blockLoading ? 'Working...' : 'Clear blocks between both'}
+                                            </button>
+                                        </div>
+                                        <p className="text-xs text-gray-400">Scenarios: block target from contacting this user, block this user from target, mutual block, or clear all blocks between them.</p>
+                                    </div>
+
+                                    {user.blockedUsers && user.blockedUsers.length > 0 && (
+                                        <div className="mt-4">
+                                            <p className="text-sm text-gray-300 mb-2">Currently blocked by this user</p>
+                                            <div className="space-y-2">
+                                                {user.blockedUsers.map((entry) => (
+                                                    <div key={entry.blocked.id} className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+                                                        <div>
+                                                            <p className="text-white text-sm">{entry.blocked.name}</p>
+                                                            <p className="text-xs text-gray-400">{entry.blocked.email}</p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleUnblockUser(entry.blocked.id)}
+                                                            disabled={blockLoading}
+                                                            className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-60"
+                                                        >
+                                                            <ShieldX className="w-4 h-4" />
+                                                            Unblock
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {user.blockedByUsers && user.blockedByUsers.length > 0 && (
+                                        <div className="mt-4">
+                                            <p className="text-sm text-gray-300 mb-2">Blocked by other users</p>
+                                            <div className="space-y-2">
+                                                {user.blockedByUsers.map((entry) => (
+                                                    <div key={entry.blocker.id} className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+                                                        <div>
+                                                            <p className="text-white text-sm">{entry.blocker.name}</p>
+                                                            <p className="text-xs text-gray-400">{entry.blocker.email}</p>
+                                                        </div>
+                                                        <span className="text-xs text-gray-400">Cannot message this user</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </div>
