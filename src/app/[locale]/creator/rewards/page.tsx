@@ -33,6 +33,7 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
+import { CreatorSidebar, CreatorHeader } from '@/components/creator'
 
 interface Reward {
     id: string
@@ -138,36 +139,24 @@ export default function CreatorRewardsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+            <div className="min-h-screen bg-background">
+                <CreatorHeader title="Rewards" titleAr="المكافآت" />
+                <div className="flex">
+                    <CreatorSidebar />
+                    <main className="flex-1 p-8 flex items-center justify-center">
+                        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+                    </main>
+                </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 py-8 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <Link href={`/${locale}/creator/dashboard`}>
-                                <Button variant="ghost" size="sm">
-                                    <ArrowLeft className="w-4 h-4 mr-2" />
-                                    {isArabic ? 'لوحة التحكم' : 'Dashboard'}
-                                </Button>
-                            </Link>
-                        </div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center gap-3">
-                            <Trophy className="w-10 h-10 text-purple-400" />
-                            {isArabic ? 'المكافآت والمنح الدراسية' : 'Rewards & Scholarships'}
-                        </h1>
-                        <p className="text-gray-400 mt-2">
-                            {isArabic
-                                ? 'قم بإنشاء وإدارة المكافآت للطلاب المتفوقين'
-                                : 'Create and manage rewards for top-performing students'}
-                        </p>
-                    </div>
+        <div className="min-h-screen bg-background">
+            <CreatorHeader 
+                title="Rewards & Scholarships" 
+                titleAr="المكافآت والمنح الدراسية"
+                rightContent={
                     <Button
                         onClick={() => setShowCreateModal(true)}
                         className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
@@ -175,7 +164,21 @@ export default function CreatorRewardsPage() {
                         <Plus className="w-4 h-4 mr-2" />
                         {isArabic ? 'إنشاء مكافأة' : 'Create Reward'}
                     </Button>
-                </div>
+                }
+            />
+            
+            <div className="flex">
+                <CreatorSidebar />
+                
+                <main className="flex-1 p-8">
+                    {/* Page Description */}
+                    <div className="mb-8">
+                        <p className="text-muted-foreground">
+                            {isArabic
+                                ? 'قم بإنشاء وإدارة المكافآت للطلاب المتفوقين'
+                                : 'Create and manage rewards for top-performing students'}
+                        </p>
+                    </div>
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -353,6 +356,7 @@ export default function CreatorRewardsPage() {
                         ))}
                     </div>
                 )}
+                </main>
             </div>
 
             {/* Create Reward Modal - Simplified for now */}

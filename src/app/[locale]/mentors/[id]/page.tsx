@@ -45,7 +45,8 @@ import {
     Trophy,
     Activity,
     RefreshCw,
-    Copy
+    Copy,
+    Globe
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -55,7 +56,8 @@ import { toast } from 'react-hot-toast'
 import { BookingModal } from '@/components/mentors/BookingModal'
 import ReviewModal from '@/components/mentors/ReviewModal'
 import { AvatarPlaceholder } from '@/components/ui/avatar-placeholder'
-import SubscribeModal from '@/components/modals/SubscribeModal'
+import { MentorPaymentModal } from '@/components/modals/MentorPaymentModal'
+import { useAuthModal } from '@/contexts/AuthModalContext'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'edge'
@@ -70,16 +72,28 @@ interface MentorData {
         profileImage: string | null
     }
     expertise: string
+    languages?: string
+    timezone?: string
     totalSubscribers: number
-    basicMonthlyPrice?: number
-    premiumMonthlyPrice?: number
-    vipMonthlyPrice?: number
+    monthlyPrice?: number // Single subscription price in EUR
+    currency?: string
+    hourlyRate?: number | null
+    availableForMeetings?: boolean
+    socialLinks?: {
+        youtube?: string
+        twitter?: string
+        linkedin?: string
+        instagram?: string
+        website?: string
+    } | null
     stats: {
         totalFollowers: number
         totalCourses: number
         averageRating: number
         yearsOfExperience: number
         totalPosts: number
+        totalStudents?: number
+        completedMeetings?: number
     }
 }
 
@@ -102,6 +116,7 @@ export default function OnlyFansMentorProfilePage() {
     const params = useParams()
     const router = useRouter()
     const { data: session } = useSession()
+    const { openAuthModal } = useAuthModal()
     const locale = (params.locale as string) || 'en'
     const isArabic = locale === 'ar'
 
@@ -119,7 +134,7 @@ export default function OnlyFansMentorProfilePage() {
     const [searchQuery, setSearchQuery] = useState('')
     const [suggestedCreators, setSuggestedCreators] = useState<any[]>([])
     const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
-    const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false)
+    const [showMentorPaymentModal, setShowMentorPaymentModal] = useState(false)
     const [upcomingSessions, setUpcomingSessions] = useState<any[]>([])
     const [sessionsLoading, setSessionsLoading] = useState(false)
     const [communityPosts, setCommunityPosts] = useState<any[]>([])
@@ -164,7 +179,7 @@ export default function OnlyFansMentorProfilePage() {
     const [uploadPreview, setUploadPreview] = useState<string | null>(null)
     const [viewingMedia, setViewingMedia] = useState<{type: 'image' | 'video', url: string} | null>(null)
     const [editingPost, setEditingPost] = useState<Post | null>(null)
-    const [activeTierIndex, setActiveTierIndex] = useState(1) // 0=BASIC, 1=PREMIUM, 2=VIP
+    const [activeTierIndex, setActiveTierIndex] = useState(0) // Single tier (ALL_ACCESS)
     const [showEditProfileModal, setShowEditProfileModal] = useState(false)
     const [editProfileData, setEditProfileData] = useState({
         name: '',
@@ -173,9 +188,7 @@ export default function OnlyFansMentorProfilePage() {
         expertise: '',
         location: '',
         hourlyRate: 0,
-        basicPrice: 0,
-        premiumPrice: 0,
-        vipPrice: 0
+        monthlyPrice: 29 // Single tier in EUR
     })
     const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | null>(null)
     const [coverPhotoPreview, setCoverPhotoPreview] = useState<string | null>(null)
@@ -584,25 +597,13 @@ export default function OnlyFansMentorProfilePage() {
                     // Store the subscription ID for cancel operations
                     setActiveSubscriptionId(channelSubscription.id)
                     
-                    // Extract tier from metadata first, then fall back to price comparison
-                    if (channelSubscription.metadata?.tier) {
-                        setCurrentSubscription(channelSubscription.metadata.tier)
-                    } else {
-                        // Fallback: determine tier based on price
-                        const price = channelSubscription.pricePerMonth
-                        if (price >= (mentor?.vipMonthlyPrice || 200)) {
-                            setCurrentSubscription('VIP')
-                        } else if (price >= (mentor?.premiumMonthlyPrice || 100)) {
-                            setCurrentSubscription('PREMIUM')
-                        } else {
-                            setCurrentSubscription('BASIC')
-                        }
-                    }
+                    // Single tier - always ALL_ACCESS
+                    setCurrentSubscription('ALL_ACCESS')
                     
                     console.log('Found subscription for creator:', {
                         subscriptionId: channelSubscription.id,
                         channelId,
-                        tier: channelSubscription.metadata?.tier,
+                        tier: 'ALL_ACCESS',
                         price: channelSubscription.pricePerMonth
                     })
                 } else {
@@ -1858,8 +1859,8 @@ export default function OnlyFansMentorProfilePage() {
         setIsSubscribing(true)
         
         try {
-            // Use basic price for all-access tier
-            const price = mentor?.basicMonthlyPrice || 50
+            // Use single tier price in EUR
+            const price = mentor?.monthlyPrice || 29
 
             const response = await fetch('/api/subscriptions/subscribe', {
                 method: 'POST',
@@ -2700,9 +2701,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             expertise: mentor.expertise || '',
                                                             location: (mentor.user as any).location || '',
                                                             hourlyRate: (mentor as any).hourlyRate || 0,
-                                                            basicPrice: mentor.basicMonthlyPrice || 0,
-                                                            premiumPrice: mentor.premiumMonthlyPrice || 0,
-                                                            vipPrice: mentor.vipMonthlyPrice || 0
+                                                            monthlyPrice: mentor.monthlyPrice || 29 // Single tier EUR
                                                         })
                                                     }
                                                     console.log('Opening modal...')
@@ -2798,10 +2797,12 @@ export default function OnlyFansMentorProfilePage() {
                                             <Button
                                                 onClick={() => {
                                                     if (!session) {
-                                                        router.push(`/${locale}/login`)
+                                                        openAuthModal('signin', {
+                                                            onSuccess: () => setShowMentorPaymentModal(true),
+                                                        })
                                                         return
                                                     }
-                                                    setIsSubscribeModalOpen(true)
+                                                    setShowMentorPaymentModal(true)
                                                 }}
                                                 disabled={isSubscribing}
                                                 className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white font-bold px-8 py-2 rounded-full disabled:opacity-50 transition-all"
@@ -3093,9 +3094,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     {/* Price Tag */}
                                                     <div className="flex items-center gap-2 mb-6">
                                                         <span className="text-4xl font-black text-white">
-                                                            ${post.tier === 'VIP' ? mentor.vipMonthlyPrice : 
-                                                              post.tier === 'PREMIUM' ? mentor.premiumMonthlyPrice : 
-                                                              mentor.basicMonthlyPrice}
+                                                            €{mentor.monthlyPrice || 29}
                                                         </span>
                                                         <span className="text-white/60">
                                                             /{isArabic ? 'شهر' : 'month'}
@@ -5870,10 +5869,28 @@ export default function OnlyFansMentorProfilePage() {
                                 <p className="text-muted-foreground leading-relaxed mb-6">{mentor.user.bio}</p>
                                 
                                 <div className="space-y-4 pt-4 border-t border-border">
+                                    {mentor.expertise && (
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-muted-foreground">{isArabic ? 'التخصص' : 'Expertise'}</span>
+                                            <span className="text-foreground font-semibold">{mentor.expertise}</span>
+                                        </div>
+                                    )}
                                     <div className="flex items-center justify-between">
                                         <span className="text-muted-foreground">{isArabic ? 'الخبرة' : 'Experience'}</span>
                                         <span className="text-foreground font-semibold">{mentor.stats.yearsOfExperience}+ {isArabic ? 'سنوات' : 'years'}</span>
                                     </div>
+                                    {mentor.languages && (
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-muted-foreground">{isArabic ? 'اللغات' : 'Languages'}</span>
+                                            <span className="text-foreground font-semibold">{mentor.languages}</span>
+                                        </div>
+                                    )}
+                                    {mentor.timezone && (
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-muted-foreground">{isArabic ? 'المنطقة الزمنية' : 'Timezone'}</span>
+                                            <span className="text-foreground font-semibold">{mentor.timezone}</span>
+                                        </div>
+                                    )}
                                     <div className="flex items-center justify-between">
                                         <span className="text-muted-foreground">{isArabic ? 'التقييم' : 'Rating'}</span>
                                         <span className="text-foreground font-semibold flex items-center gap-1">
@@ -5885,7 +5902,60 @@ export default function OnlyFansMentorProfilePage() {
                                         <span className="text-muted-foreground">{isArabic ? 'المنشورات' : 'Total Posts'}</span>
                                         <span className="text-foreground font-semibold">{mentor.stats.totalPosts}</span>
                                     </div>
+                                    {mentor.availableForMeetings && (
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-muted-foreground">{isArabic ? 'متاح للاجتماعات' : 'Available for Meetings'}</span>
+                                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                                                {isArabic ? 'متاح' : 'Available'}
+                                            </Badge>
+                                        </div>
+                                    )}
+                                    {mentor.hourlyRate && (
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-muted-foreground">{isArabic ? 'سعر الساعة' : 'Hourly Rate'}</span>
+                                            <span className="text-foreground font-semibold">€{mentor.hourlyRate}/hr</span>
+                                        </div>
+                                    )}
                                 </div>
+
+                                {/* Social Links */}
+                                {mentor.socialLinks && Object.values(mentor.socialLinks).some(v => v) && (
+                                    <div className="pt-4 mt-4 border-t border-border">
+                                        <h4 className="text-sm font-semibold text-foreground mb-3">{isArabic ? 'روابط التواصل' : 'Social Links'}</h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {mentor.socialLinks.youtube && (
+                                                <a href={mentor.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 text-red-400 rounded-full text-sm hover:bg-red-500/20 transition-colors">
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                                                    YouTube
+                                                </a>
+                                            )}
+                                            {mentor.socialLinks.twitter && (
+                                                <a href={mentor.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 text-blue-400 rounded-full text-sm hover:bg-blue-500/20 transition-colors">
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                                    Twitter
+                                                </a>
+                                            )}
+                                            {mentor.socialLinks.linkedin && (
+                                                <a href={mentor.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-blue-600/10 text-blue-500 rounded-full text-sm hover:bg-blue-600/20 transition-colors">
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                                                    LinkedIn
+                                                </a>
+                                            )}
+                                            {mentor.socialLinks.instagram && (
+                                                <a href={mentor.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-pink-500/10 text-pink-400 rounded-full text-sm hover:bg-pink-500/20 transition-colors">
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                                                    Instagram
+                                                </a>
+                                            )}
+                                            {mentor.socialLinks.website && (
+                                                <a href={mentor.socialLinks.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 text-purple-400 rounded-full text-sm hover:bg-purple-500/20 transition-colors">
+                                                    <Globe className="w-4 h-4" />
+                                                    {isArabic ? 'الموقع' : 'Website'}
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     )}
@@ -7134,9 +7204,7 @@ export default function OnlyFansMentorProfilePage() {
                     mentorName={getMentorName()}
                     isArabic={isArabic}
                     currentSubscription={currentSubscription}
-                    basicPrice={mentor.basicMonthlyPrice}
-                    premiumPrice={mentor.premiumMonthlyPrice}
-                    vipPrice={mentor.vipMonthlyPrice}
+                    monthlyPrice={mentor.monthlyPrice}
                 />
             )}
 
@@ -7852,7 +7920,7 @@ export default function OnlyFansMentorProfilePage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'السعر بالساعة ($)' : 'Hourly Rate ($)'}
+                                            {isArabic ? 'السعر بالساعة (€)' : 'Hourly Rate (€)'}
                                         </label>
                                         <Input
                                             type="number"
@@ -7864,40 +7932,13 @@ export default function OnlyFansMentorProfilePage() {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'Basic ($)' : 'Basic ($)'}
+                                            {isArabic ? 'سعر الاشتراك (€)' : 'Subscription Price (€)'}
                                         </label>
                                         <Input
                                             type="number"
-                                            value={editProfileData.basicPrice}
-                                            onChange={(e) => setEditProfileData({ ...editProfileData, basicPrice: Number(e.target.value) })}
-                                            placeholder="50"
-                                            className="bg-background border-border"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'Premium ($)' : 'Premium ($)'}
-                                        </label>
-                                        <Input
-                                            type="number"
-                                            value={editProfileData.premiumPrice}
-                                            onChange={(e) => setEditProfileData({ ...editProfileData, premiumPrice: Number(e.target.value) })}
-                                            placeholder="100"
-                                            className="bg-background border-border"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'VIP ($)' : 'VIP ($)'}
-                                        </label>
-                                        <Input
-                                            type="number"
-                                            value={editProfileData.vipPrice}
-                                            onChange={(e) => setEditProfileData({ ...editProfileData, vipPrice: Number(e.target.value) })}
-                                            placeholder="200"
+                                            value={editProfileData.monthlyPrice}
+                                            onChange={(e) => setEditProfileData({ ...editProfileData, monthlyPrice: Number(e.target.value) })}
+                                            placeholder="29"
                                             className="bg-background border-border"
                                         />
                                     </div>
@@ -7908,18 +7949,27 @@ export default function OnlyFansMentorProfilePage() {
                                     <Button
                                         onClick={async () => {
                                             try {
-                                                // Save to localStorage for now (in production, this would be an API call)
+                                                // Save to API to sync with creator dashboard
+                                                const response = await fetch('/api/creator/settings/profile', {
+                                                    method: 'PATCH',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({
+                                                        name: editProfileData.name,
+                                                        arabicName: editProfileData.arabicName,
+                                                        bio: editProfileData.bio,
+                                                        expertise: editProfileData.expertise,
+                                                        hourlyRate: editProfileData.hourlyRate,
+                                                        monthlyPrice: editProfileData.monthlyPrice,
+                                                        profileImage: profilePhotoPreview || undefined
+                                                    })
+                                                })
+
+                                                if (!response.ok) {
+                                                    throw new Error('Failed to save profile')
+                                                }
+                                                
+                                                // Update mentor state immediately
                                                 if (mentor) {
-                                                    const profileKey = `mentor_profile_${mentor.id}`
-                                                    const savedData = {
-                                                        ...editProfileData,
-                                                        profilePhoto: profilePhotoPreview || mentor.user.profileImage,
-                                                        coverPhoto: coverPhotoPreview || null,
-                                                        updatedAt: new Date().toISOString()
-                                                    }
-                                                    localStorage.setItem(profileKey, JSON.stringify(savedData))
-                                                    
-                                                    // Update mentor state immediately
                                                     setMentor({
                                                         ...mentor,
                                                         user: {
@@ -7929,20 +7979,14 @@ export default function OnlyFansMentorProfilePage() {
                                                             bio: editProfileData.bio || mentor.user.bio,
                                                             profileImage: profilePhotoPreview || mentor.user.profileImage
                                                         },
-                                                        basicMonthlyPrice: editProfileData.basicPrice || mentor.basicMonthlyPrice,
-                                                        premiumMonthlyPrice: editProfileData.premiumPrice || mentor.premiumMonthlyPrice,
-                                                        vipMonthlyPrice: editProfileData.vipPrice || mentor.vipMonthlyPrice
+                                                        expertise: editProfileData.expertise || mentor.expertise,
+                                                        hourlyRate: editProfileData.hourlyRate || mentor.hourlyRate,
+                                                        monthlyPrice: editProfileData.monthlyPrice || mentor.monthlyPrice
                                                     })
                                                 }
                                                 
                                                 toast.success(isArabic ? 'تم حفظ التغييرات!' : 'Changes saved!')
                                                 setShowEditProfileModal(false)
-                                                
-                                                // Don't reset photo states - keep the uploaded images
-                                                // setProfilePhotoPreview(null)
-                                                // setCoverPhotoPreview(null)
-                                                // setProfilePhotoFile(null)
-                                                // setCoverPhotoFile(null)
                                             } catch (error) {
                                                 console.error('Error saving profile:', error)
                                                 toast.error(isArabic ? 'فشل حفظ التغييرات' : 'Failed to save changes')
@@ -9453,21 +9497,19 @@ export default function OnlyFansMentorProfilePage() {
                 )}
             </AnimatePresence>
 
-            {/* Subscribe Modal */}
+            {/* Mentor Payment Modal */}
             {mentor && (
-                <SubscribeModal
-                    isOpen={isSubscribeModalOpen}
-                    onClose={() => setIsSubscribeModalOpen(false)}
-                    creator={{
+                <MentorPaymentModal
+                    isOpen={showMentorPaymentModal}
+                    onClose={() => setShowMentorPaymentModal(false)}
+                    mentor={{
                         id: mentor.id,
                         channelId: channelId || undefined,
-                        user: {
-                            name: mentor.user.name,
-                            arabicName: mentor.user.arabicName,
-                            profileImage: mentor.user.profileImage,
-                        },
+                        name: mentor.user.name,
+                        arabicName: mentor.user.arabicName,
+                        profileImage: mentor.user.profileImage,
                         expertise: mentor.expertise,
-                        basicMonthlyPrice: mentor.basicMonthlyPrice || 0,
+                        price: mentor.monthlyPrice || 29, // EUR
                     }}
                     isArabic={isArabic}
                     onSuccess={() => {

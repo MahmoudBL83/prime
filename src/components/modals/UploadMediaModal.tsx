@@ -816,7 +816,7 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
                                                 {tierAccess === 'ppv' && (
                                                     <div className="flex items-center justify-between text-sm">
                                                         <span className="text-muted-foreground">{isArabic ? 'السعر' : 'Price'}</span>
-                                                        <span className="font-semibold text-foreground">{ppvPrice} EGP</span>
+                                                        <span className="font-semibold text-foreground">€{ppvPrice}</span>
                                                     </div>
                                                 )}
                                                 <div className="flex items-center justify-between text-sm">

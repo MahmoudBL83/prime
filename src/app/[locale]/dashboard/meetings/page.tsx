@@ -302,7 +302,7 @@ export default function MeetingsPage() {
                                     </div>
                                     <div>
                                         <p className="text-gray-400 text-sm">{isArabic ? 'السعر' : 'Price'}</p>
-                                        <p className="font-semibold text-white">{meeting.price} {isArabic ? 'ج.م' : 'EGP'}</p>
+                                        <p className="font-semibold text-white">€{meeting.price}</p>
                                     </div>
                                 </div>
                             )}

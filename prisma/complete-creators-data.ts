@@ -54,7 +54,7 @@ async function main() {
             const mainExpertise = creator.expertise?.split(',')[0].trim() || 'General'
             const category = expertiseToCategory[mainExpertise] || 'General'
             const language = creator.languages?.includes('German') ? 'DE' : 'EN'
-            const price = creator.basicMonthlyPrice || 500
+            const price = (creator as any).monthlyPrice || creator.basicMonthlyPrice || 29 // EUR
             const monthlyRevenue = creator.totalSubscribers * price * 0.85
 
             // ============ COURSES ============
@@ -168,7 +168,7 @@ async function main() {
                         creatorId: creator.id,
                         sourceType: 'CHANNEL_SUBSCRIPTION' as EarningType,
                         amount: monthlyRevenue * 0.7,
-                        currency: 'EGP',
+                        currency: 'EUR',
                         period: monthlyPeriod,
                         description: `Subscription revenue - ${now.toLocaleString('en-US', { month: 'long', year: 'numeric' })}`,
                         status: 'COMPLETED',
@@ -187,7 +187,7 @@ async function main() {
                         creatorId: creator.id,
                         sourceType: 'COURSE_ENROLLMENT' as EarningType,
                         amount: monthlyRevenue * 0.2,
-                        currency: 'EGP',
+                        currency: 'EUR',
                         period: monthlyPeriod,
                         description: `Course enrollment revenue - ${now.toLocaleString('en-US', { month: 'long', year: 'numeric' })}`,
                         status: 'COMPLETED',
@@ -205,7 +205,7 @@ async function main() {
                         creatorId: creator.id,
                         sourceType: 'TIP' as EarningType,
                         amount: monthlyRevenue * 0.1,
-                        currency: 'EGP',
+                        currency: 'EUR',
                         period: monthlyPeriod,
                         description: `Tips & donations - ${now.toLocaleString('en-US', { month: 'long', year: 'numeric' })}`,
                         status: 'COMPLETED',
@@ -223,7 +223,7 @@ async function main() {
                         creatorId: creator.id,
                         sourceType: 'CHANNEL_SUBSCRIPTION' as EarningType,
                         amount: lastMonthRevenue * 0.7,
-                        currency: 'EGP',
+                        currency: 'EUR',
                         period: lastMonthPeriod,
                         description: `Subscription revenue - ${new Date(lastMonthYear, lastMonth - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })}`,
                         status: 'COMPLETED',
@@ -238,7 +238,7 @@ async function main() {
                         creatorId: creator.id,
                         sourceType: 'COURSE_ENROLLMENT' as EarningType,
                         amount: lastMonthRevenue * 0.2,
-                        currency: 'EGP',
+                        currency: 'EUR',
                         period: lastMonthPeriod,
                         description: `Course enrollment revenue - ${new Date(lastMonthYear, lastMonth - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })}`,
                         status: 'COMPLETED',
@@ -250,7 +250,7 @@ async function main() {
                         creatorId: creator.id,
                         sourceType: 'TIP' as EarningType,
                         amount: lastMonthRevenue * 0.1,
-                        currency: 'EGP',
+                        currency: 'EUR',
                         period: lastMonthPeriod,
                         description: `Tips & donations - ${new Date(lastMonthYear, lastMonth - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })}`,
                         status: 'COMPLETED',
@@ -298,7 +298,7 @@ async function main() {
         console.log(`   👥 ${c.totalSubscribers} subscribers`)
         console.log(`   📚 ${c.courses.length} course(s)`)
         console.log(`   📊 ${c.analytics.length} analytics record(s)`)
-        console.log(`   💰 ${c.earnings.length} earning record(s) (${totalEarnings.toLocaleString()} EGP total)`)
+        console.log(`   💰 ${c.earnings.length} earning record(s) (€${totalEarnings.toLocaleString()} total)`)
     }
 
     console.log('\n' + '='.repeat(60))

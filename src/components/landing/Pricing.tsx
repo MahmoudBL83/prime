@@ -27,7 +27,7 @@ function buildPlans(locale: string): PricingPlan[] {
         premiumDesc: isAr ? 'وصول كامل لجميع المحتويات' : isDe ? 'Voller Zugriff auf alle Inhalte' : 'Full access to all content',
         ctaStart: isAr ? 'ابدأ الآن' : isDe ? 'Los geht\'s' : 'Get Started',
         ctaSubscribe: isAr ? 'اشترك الآن' : isDe ? 'Jetzt abonnieren' : 'Subscribe Now',
-        currency: isAr ? 'ج.م/' : isDe ? 'EGP/' : 'EGP/'
+        currency: '€/'
     };
 
     const normalFeatures = isAr
@@ -172,10 +172,10 @@ export function Pricing() {
                                             </p>
                                             <div className="flex items-end mb-8">
                                                 <span className="text-6xl font-black bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mr-2">
-                                                    {plan.price}
+                                                    €{plan.price}
                                                 </span>
                                                 <span className="text-lg text-muted-foreground font-bold pb-2">
-                                                    EGP/{plan.period}
+                                                    /{plan.period}
                                                 </span>
                                             </div>
                                         </div>

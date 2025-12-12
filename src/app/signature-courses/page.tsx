@@ -319,7 +319,7 @@ export default function SignatureCoursesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-2xl font-bold text-amber-600">
-                        {course.price} EGP
+                        €{course.price}
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="w-3 h-3" />

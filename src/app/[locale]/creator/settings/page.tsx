@@ -4,9 +4,6 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
 import {
-    ArrowLeft,
-    Home,
-    Bell,
     User,
     CreditCard,
     Shield,
@@ -14,10 +11,12 @@ import {
     Mail,
     Loader2,
     Save,
-    CheckCircle
+    CheckCircle,
+    Bell
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'react-hot-toast'
+import { CreatorSidebar, CreatorHeader } from '@/components/creator'
 
 export default function CreatorSettings() {
     const { data: session } = useSession()
@@ -36,6 +35,18 @@ export default function CreatorSettings() {
     const [languages, setLanguages] = useState('')
     const [timezone, setTimezone] = useState('')
 
+    // Social links
+    const [socialLinks, setSocialLinks] = useState({
+        youtube: '',
+        twitter: '',
+        linkedin: '',
+        instagram: '',
+        website: ''
+    })
+
+    // Subscription pricing (single tier in Euros)
+    const [monthlyPrice, setMonthlyPrice] = useState<number | null>(null)
+
     // Notification settings
     const [emailNotifications, setEmailNotifications] = useState(true)
     const [enrollmentNotifications, setEnrollmentNotifications] = useState(true)
@@ -46,6 +57,43 @@ export default function CreatorSettings() {
     const [bankName, setBankName] = useState('')
     const [bankAccountIBAN, setBankAccountIBAN] = useState('')
 
+    // Load initial data
+    useEffect(() => {
+        const fetchSettings = async () => {
+            setLoading(true)
+            try {
+                const response = await fetch('/api/creator/settings/profile')
+                if (response.ok) {
+                    const data = await response.json()
+                    if (data.creator) {
+                        setBio(data.creator.user?.bio || '')
+                        setExpertise(data.creator.expertise || '')
+                        setLanguages(data.creator.languages || '')
+                        setTimezone(data.creator.timezone || '')
+                        setMonthlyPrice(data.creator.monthlyPrice || null)
+                        // Load social links
+                        const links = data.creator.socialLinks || {}
+                        setSocialLinks({
+                            youtube: links.youtube || '',
+                            twitter: links.twitter || '',
+                            linkedin: links.linkedin || '',
+                            instagram: links.instagram || '',
+                            website: links.website || ''
+                        })
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load settings:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        
+        if (session?.user) {
+            fetchSettings()
+        }
+    }, [session])
+
     const handleSaveProfile = async () => {
         setSaving(true)
         try {
@@ -53,9 +101,12 @@ export default function CreatorSettings() {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    bio,
                     expertise,
                     languages,
-                    timezone
+                    timezone,
+                    monthlyPrice,
+                    socialLinks
                 })
             })
 
@@ -132,85 +183,29 @@ export default function CreatorSettings() {
         )
     }
 
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-background">
+                <CreatorHeader title="Settings" titleAr="الإعدادات" />
+                <div className="flex">
+                    <CreatorSidebar />
+                    <main className="flex-1 p-8 flex items-center justify-center">
+                        <div className="text-center">
+                            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-purple-500" />
+                            <p className="text-muted-foreground">{isArabic ? 'جاري تحميل الإعدادات...' : 'Loading settings...'}</p>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="min-h-screen bg-background">
-            {/* Header */}
-            <header className="sticky top-0 z-50 bg-card border-b border-border">
-                <div className="flex items-center justify-between px-6 py-4">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => router.back()}
-                            className="p-2 hover:bg-accent rounded-full transition-colors"
-                        >
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
-                        <button
-                            onClick={() => router.push(`/${locale}`)}
-                            className="p-2 hover:bg-accent rounded-full transition-colors"
-                        >
-                            <Home className="w-5 h-5" />
-                        </button>
-                        <div className="h-6 w-px bg-border" />
-                        <h1 className="text-xl font-bold">
-                            {isArabic ? 'الإعدادات' : 'Settings'}
-                        </h1>
-                    </div>
-                </div>
-            </header>
+            <CreatorHeader title="Settings" titleAr="الإعدادات" />
 
             <div className="flex">
-                {/* Sidebar */}
-                <aside className="w-64 min-h-screen bg-card border-r border-border sticky top-16">
-                    <nav className="p-4 space-y-1">
-                        <button
-                            onClick={() => setActiveTab('profile')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                                activeTab === 'profile'
-                                    ? 'bg-accent text-foreground font-semibold'
-                                    : 'text-muted-foreground hover:bg-accent/50'
-                            }`}
-                        >
-                            <User className="w-5 h-5" />
-                            <span>{isArabic ? 'الملف الشخصي' : 'Profile'}</span>
-                        </button>
-
-                        <button
-                            onClick={() => setActiveTab('notifications')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                                activeTab === 'notifications'
-                                    ? 'bg-accent text-foreground font-semibold'
-                                    : 'text-muted-foreground hover:bg-accent/50'
-                            }`}
-                        >
-                            <Bell className="w-5 h-5" />
-                            <span>{isArabic ? 'الإشعارات' : 'Notifications'}</span>
-                        </button>
-
-                        <button
-                            onClick={() => setActiveTab('payout')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                                activeTab === 'payout'
-                                    ? 'bg-accent text-foreground font-semibold'
-                                    : 'text-muted-foreground hover:bg-accent/50'
-                            }`}
-                        >
-                            <CreditCard className="w-5 h-5" />
-                            <span>{isArabic ? 'معلومات الدفع' : 'Payout Info'}</span>
-                        </button>
-
-                        <button
-                            onClick={() => setActiveTab('security')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                                activeTab === 'security'
-                                    ? 'bg-accent text-foreground font-semibold'
-                                    : 'text-muted-foreground hover:bg-accent/50'
-                            }`}
-                        >
-                            <Shield className="w-5 h-5" />
-                            <span>{isArabic ? 'الأمان' : 'Security'}</span>
-                        </button>
-                    </nav>
-                </aside>
+                <CreatorSidebar />
 
                 {/* Main Content */}
                 <main className="flex-1 p-8">
@@ -228,6 +223,23 @@ export default function CreatorSettings() {
                                 </div>
 
                                 <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+                                    {/* Bio Field */}
+                                    <div>
+                                        <label className="block text-sm font-semibold mb-2">
+                                            {isArabic ? 'نبذة عنك' : 'Bio'}
+                                        </label>
+                                        <p className="text-xs text-muted-foreground mb-2">
+                                            {isArabic ? 'هذا سيظهر في صفحة الملف الشخصي العامة للطلاب' : 'This will appear on your public profile page for students'}
+                                        </p>
+                                        <textarea
+                                            value={bio}
+                                            onChange={(e) => setBio(e.target.value)}
+                                            placeholder={isArabic ? 'اكتب نبذة عنك وخبراتك...' : 'Write about yourself and your experience...'}
+                                            rows={4}
+                                            className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                                        />
+                                    </div>
+
                                     <div>
                                         <label className="block text-sm font-semibold mb-2">
                                             {isArabic ? 'الخبرة' : 'Expertise'}
@@ -270,6 +282,100 @@ export default function CreatorSettings() {
                                             <option value="Europe/London">London (GMT)</option>
                                             <option value="America/New_York">New York (GMT-5)</option>
                                         </select>
+                                    </div>
+
+                                    {/* Subscription Pricing Section */}
+                                    <div className="border-t border-border pt-6">
+                                        <h3 className="text-lg font-semibold mb-4">
+                                            {isArabic ? 'سعر الاشتراك الشهري' : 'Monthly Subscription Price'}
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground mb-4">
+                                            {isArabic ? 'حدد سعر الاشتراك الشهري للطلاب' : 'Set your monthly subscription price for students'}
+                                        </p>
+                                        <div className="max-w-xs">
+                                            <label className="block text-sm font-semibold mb-2">
+                                                {isArabic ? 'السعر الشهري' : 'Monthly Price'}
+                                            </label>
+                                            <div className="relative">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                                                <input
+                                                    type="number"
+                                                    value={monthlyPrice || ''}
+                                                    onChange={(e) => setMonthlyPrice(e.target.value ? Number(e.target.value) : null)}
+                                                    placeholder="29"
+                                                    min="0"
+                                                    step="0.01"
+                                                    className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                />
+                                            </div>
+                                            <p className="text-xs text-muted-foreground mt-2">
+                                                {isArabic ? 'سيتم عرض هذا السعر للطلاب في صفحة ملفك الشخصي' : 'This price will be shown to students on your profile page'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Social Links Section */}
+                                    <div className="border-t border-border pt-6">
+                                        <h3 className="text-lg font-semibold mb-4">
+                                            {isArabic ? 'روابط التواصل الاجتماعي' : 'Social Links'}
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground mb-4">
+                                            {isArabic ? 'أضف روابط ملفاتك الشخصية على مواقع التواصل الاجتماعي' : 'Add links to your social media profiles'}
+                                        </p>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium mb-2">YouTube</label>
+                                                <input
+                                                    type="url"
+                                                    value={socialLinks.youtube}
+                                                    onChange={(e) => setSocialLinks({...socialLinks, youtube: e.target.value})}
+                                                    placeholder="https://youtube.com/@channel"
+                                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium mb-2">Twitter / X</label>
+                                                <input
+                                                    type="url"
+                                                    value={socialLinks.twitter}
+                                                    onChange={(e) => setSocialLinks({...socialLinks, twitter: e.target.value})}
+                                                    placeholder="https://twitter.com/username"
+                                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium mb-2">LinkedIn</label>
+                                                <input
+                                                    type="url"
+                                                    value={socialLinks.linkedin}
+                                                    onChange={(e) => setSocialLinks({...socialLinks, linkedin: e.target.value})}
+                                                    placeholder="https://linkedin.com/in/username"
+                                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium mb-2">Instagram</label>
+                                                <input
+                                                    type="url"
+                                                    value={socialLinks.instagram}
+                                                    onChange={(e) => setSocialLinks({...socialLinks, instagram: e.target.value})}
+                                                    placeholder="https://instagram.com/username"
+                                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                />
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-medium mb-2">
+                                                    {isArabic ? 'الموقع الإلكتروني' : 'Website'}
+                                                </label>
+                                                <input
+                                                    type="url"
+                                                    value={socialLinks.website}
+                                                    onChange={(e) => setSocialLinks({...socialLinks, website: e.target.value})}
+                                                    placeholder="https://yourwebsite.com"
+                                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div className="flex justify-end">

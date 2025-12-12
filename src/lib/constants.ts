@@ -290,7 +290,7 @@ export const valueProps: ValueProp[] = [
         descriptionAr: "الوصول إلى آلاف الدورات التعليمية من أفضل الخبراء",
         descriptionEn: "Access thousands of courses from top experts",
         icon: "BookOpen",
-        priceRange: "99-250 ج.م/شهر"
+        priceRange: "€29-99/شهر"
     },
     {
         id: "mentors",
@@ -299,7 +299,7 @@ export const valueProps: ValueProp[] = [
         descriptionAr: "تابع المدربين المفضلين واحصل على محتوى حصري",
         descriptionEn: "Follow favorite mentors and get exclusive content",
         icon: "Users",
-        priceRange: "80-500 ج.م/شهر"
+        priceRange: "€19-99/شهر"
     },
     {
         id: "study-buddy",
@@ -317,8 +317,8 @@ export const pricingTiers: PricingTier[] = [
         id: "category-a",
         nameAr: "المكتبة الشاملة",
         nameEn: "All-Access Library",
-        price: 199,
-        currency: "ج.م",
+        price: 49,
+        currency: "€",
         features: [
             "الوصول إلى جميع الدورات",
             "محتوى جديد كل أسبوع",
@@ -330,8 +330,8 @@ export const pricingTiers: PricingTier[] = [
         id: "category-c",
         nameAr: "قنوات المدربين",
         nameEn: "Mentor Channels",
-        price: 150,
-        currency: "ج.م",
+        price: 29,
+        currency: "€",
         features: [
             "الوصول إلى قنوات المدربين",
             "محتوى حصري للمشتركين",

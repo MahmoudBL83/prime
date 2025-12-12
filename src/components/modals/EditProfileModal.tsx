@@ -20,9 +20,7 @@ interface EditProfileModalProps {
         profileImage?: string | null
         coverImage?: string | null
         socialLinks?: any
-        basicMonthlyPrice?: number
-        premiumMonthlyPrice?: number
-        vipMonthlyPrice?: number
+        monthlyPrice?: number // Single tier in EUR
     }
     isArabic?: boolean
 }
@@ -33,9 +31,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
         arabicName: currentProfile.arabicName || '',
         bio: currentProfile.bio || '',
         expertise: currentProfile.expertise || '',
-        basicMonthlyPrice: currentProfile.basicMonthlyPrice || 49,
-        premiumMonthlyPrice: currentProfile.premiumMonthlyPrice || 99,
-        vipMonthlyPrice: currentProfile.vipMonthlyPrice || 199,
+        monthlyPrice: currentProfile.monthlyPrice || 29, // Single tier in EUR
         socialLinks: currentProfile.socialLinks || {
             twitter: '',
             instagram: '',
@@ -68,9 +64,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
             arabicName: currentProfile.arabicName || '',
             bio: currentProfile.bio || '',
             expertise: currentProfile.expertise || '',
-            basicMonthlyPrice: currentProfile.basicMonthlyPrice || 49,
-            premiumMonthlyPrice: currentProfile.premiumMonthlyPrice || 99,
-            vipMonthlyPrice: currentProfile.vipMonthlyPrice || 199,
+            monthlyPrice: currentProfile.monthlyPrice || 29, // Single tier in EUR
             socialLinks: currentProfile.socialLinks || {
                 twitter: '',
                 instagram: '',
@@ -392,85 +386,43 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                                 <div className="space-y-6">
                                     <p className="text-muted-foreground text-sm">
                                         {isArabic 
-                                            ? 'حدد أسعار اشتراكاتك الشهرية لكل فئة'
-                                            : 'Set your monthly subscription prices for each tier'}
+                                            ? 'حدد سعر الاشتراك الشهري'
+                                            : 'Set your monthly subscription price'}
                                     </p>
 
-                                    {/* Basic Tier */}
-                                    <div className="bg-gradient-to-br from-gray-500/10 to-gray-600/10 border border-gray-500/30 rounded-2xl p-6">
+                                    {/* Single All-Access Tier */}
+                                    <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border-2 border-purple-500/50 rounded-2xl p-6">
                                         <div className="flex items-center justify-between mb-4">
                                             <div>
                                                 <h3 className="text-lg font-bold text-foreground">
-                                                    {isArabic ? 'الاشتراك الأساسي' : 'Basic Tier'}
+                                                    {isArabic ? 'الاشتراك الشامل' : 'All-Access Subscription'}
                                                 </h3>
                                                 <p className="text-sm text-muted-foreground">
-                                                    {isArabic ? 'للمحتوى الأساسي' : 'For basic content access'}
+                                                    {isArabic ? 'كل المحتوى، الجلسات المباشرة، المراسلة وأولوية الدعم' : 'All content, live sessions, messaging & priority support'}
                                                 </p>
                                             </div>
-                                            <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">Basic</Badge>
+                                            <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">All-Access</Badge>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'السعر الشهري (EGP)' : 'Monthly Price (EGP)'}
+                                                {isArabic ? 'السعر الشهري (€)' : 'Monthly Price (€)'}
                                             </label>
-                                            <Input
-                                                type="number"
-                                                value={formData.basicMonthlyPrice}
-                                                onChange={(e) => setFormData({ ...formData, basicMonthlyPrice: parseFloat(e.target.value) })}
-                                                min="1"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Premium Tier */}
-                                    <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-500/50 rounded-2xl p-6">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div>
-                                                <h3 className="text-lg font-bold text-foreground">
-                                                    {isArabic ? 'الاشتراك المميز' : 'Premium Tier'}
-                                                </h3>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {isArabic ? 'محتوى حصري وجلسات Q&A' : 'Exclusive content & Q&A sessions'}
-                                                </p>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                                                <Input
+                                                    type="number"
+                                                    value={formData.monthlyPrice}
+                                                    onChange={(e) => setFormData({ ...formData, monthlyPrice: parseFloat(e.target.value) })}
+                                                    min="1"
+                                                    className="pl-8"
+                                                />
                                             </div>
-                                            <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">Premium</Badge>
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'السعر الشهري (EGP)' : 'Monthly Price (EGP)'}
-                                            </label>
-                                            <Input
-                                                type="number"
-                                                value={formData.premiumMonthlyPrice}
-                                                onChange={(e) => setFormData({ ...formData, premiumMonthlyPrice: parseFloat(e.target.value) })}
-                                                min="1"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* VIP Tier */}
-                                    <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-2xl p-6">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div>
-                                                <h3 className="text-lg font-bold text-foreground">
-                                                    {isArabic ? 'اشتراك VIP' : 'VIP Tier'}
-                                                </h3>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {isArabic ? 'تدريب فردي ومراسلة مباشرة' : '1-on-1 coaching & direct messaging'}
-                                                </p>
-                                            </div>
-                                            <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">VIP</Badge>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'السعر الشهري (EGP)' : 'Monthly Price (EGP)'}
-                                            </label>
-                                            <Input
-                                                type="number"
-                                                value={formData.vipMonthlyPrice}
-                                                onChange={(e) => setFormData({ ...formData, vipMonthlyPrice: parseFloat(e.target.value) })}
-                                                min="1"
-                                            />
+                                        <div className="mt-4 text-xs text-muted-foreground space-y-1">
+                                            <p>✓ {isArabic ? 'وصول كامل لكل المحتوى' : 'Full access to all content'}</p>
+                                            <p>✓ {isArabic ? 'جلسات مباشرة أسبوعية' : 'Weekly live sessions'}</p>
+                                            <p>✓ {isArabic ? 'مراسلات ذات أولوية' : 'Priority messaging'}</p>
+                                            <p>✓ {isArabic ? 'حجوزات عبر التقويم' : 'Calendar bookings'}</p>
                                         </div>
                                     </div>
                                 </div>

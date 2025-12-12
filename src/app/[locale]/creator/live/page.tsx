@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { 
     Plus,
@@ -16,8 +16,11 @@ import {
     StopCircle,
     X,
     Video,
-    Shield
+    Shield,
+    Loader2
 } from 'lucide-react';
+import { CreatorSidebar, CreatorHeader } from '@/components/creator';
+import { Button } from '@/components/ui/button';
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'edge'
@@ -198,36 +201,53 @@ export default function LiveSessionsListPage() {
         return session.status.toLowerCase() === filter;
     });
 
+    const params = useParams();
+    const locale = params.locale as string;
+    const isArabic = locale === 'ar';
+
     if (status === 'loading' || loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-400">Loading sessions...</p>
+            <div className="min-h-screen bg-background">
+                <CreatorHeader title="Live Sessions" titleAr="الجلسات المباشرة" />
+                <div className="flex">
+                    <CreatorSidebar />
+                    <main className="flex-1 p-8 flex items-center justify-center">
+                        <div className="text-center">
+                            <Loader2 className="w-16 h-16 animate-spin mx-auto mb-4 text-purple-500" />
+                            <p className="text-muted-foreground">{isArabic ? 'جاري التحميل...' : 'Loading sessions...'}</p>
+                        </div>
+                    </main>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 py-8 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                            Live Sessions
-                        </h1>
-                        <p className="text-gray-400">Manage your live streaming sessions</p>
-                    </div>
-                    <button
-                        onClick={() => router.push('/creator/live/schedule')}
-                        className="bg-gradient-to-r from-purple-500 to-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:from-purple-600 hover:to-blue-700 transition-all duration-300 flex items-center gap-2"
+        <div className="min-h-screen bg-background">
+            <CreatorHeader 
+                title="Live Sessions" 
+                titleAr="الجلسات المباشرة"
+                rightContent={
+                    <Button
+                        onClick={() => router.push(`/${locale}/creator/live/schedule`)}
+                        className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700"
                     >
-                        <Plus className="w-5 h-5" />
-                        Schedule Session
-                    </button>
-                </div>
+                        <Plus className="w-5 h-5 mr-2" />
+                        {isArabic ? 'جدولة جلسة' : 'Schedule Session'}
+                    </Button>
+                }
+            />
+            
+            <div className="flex">
+                <CreatorSidebar />
+                
+                <main className="flex-1 p-8">
+                    {/* Page Description */}
+                    <div className="mb-8">
+                        <p className="text-muted-foreground">
+                            {isArabic ? 'إدارة جلسات البث المباشر الخاصة بك' : 'Manage your live streaming sessions'}
+                        </p>
+                    </div>
 
                 {/* Filter Tabs */}
                 <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
@@ -378,27 +398,30 @@ export default function LiveSessionsListPage() {
                 {deleteConfirm && (
                     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                         <div className="bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-8 max-w-md w-full">
-                            <h3 className="text-2xl font-bold text-white mb-4">Confirm Delete</h3>
+                            <h3 className="text-2xl font-bold text-white mb-4">{isArabic ? 'تأكيد الحذف' : 'Confirm Delete'}</h3>
                             <p className="text-gray-400 mb-6">
-                                Are you sure you want to delete this session? This action cannot be undone.
+                                {isArabic 
+                                    ? 'هل أنت متأكد أنك تريد حذف هذه الجلسة؟ لا يمكن التراجع عن هذا الإجراء.'
+                                    : 'Are you sure you want to delete this session? This action cannot be undone.'}
                             </p>
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => handleDelete(deleteConfirm)}
                                     className="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300"
                                 >
-                                    Delete
+                                    {isArabic ? 'حذف' : 'Delete'}
                                 </button>
                                 <button
                                     onClick={() => setDeleteConfirm(null)}
                                     className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300"
                                 >
-                                    Cancel
+                                    {isArabic ? 'إلغاء' : 'Cancel'}
                                 </button>
                             </div>
                         </div>
                     </div>
                 )}
+                </main>
             </div>
         </div>
     );

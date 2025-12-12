@@ -292,7 +292,8 @@ interface Creator {
         bio: string
     }
     expertise: string
-    basicMonthlyPrice?: number
+    monthlyPrice?: number // Single tier in EUR
+    currency?: string
     totalSubscribers: number
     totalEarnings: number
     stats: {
@@ -303,9 +304,7 @@ interface Creator {
     isOnline?: boolean
     hasNewContent?: boolean
     isSubscribed?: boolean // Add subscription status
-    subscribedTier?: 'ALL_ACCESS' | 'Basic' | 'Premium' | 'VIP' | null // Add subscribed tier info
-    premiumMonthlyPrice?: number
-    vipMonthlyPrice?: number
+    subscribedTier?: 'ALL_ACCESS' | null // Single tier only
 }
 
 export default function OnlyFansStyleMentorsPage() {
@@ -1026,7 +1025,7 @@ export default function OnlyFansStyleMentorsPage() {
                 
                 <div className="flex items-center justify-between">
                     <span className="text-lg font-bold text-purple-400">
-                        €{creator.basicMonthlyPrice ?? 0}/mo
+                        €{creator.monthlyPrice ?? 29}/mo
                     </span>
                     <div className="flex items-center gap-2">
                         <Button
@@ -1492,7 +1491,7 @@ export default function OnlyFansStyleMentorsPage() {
                                         <div className="space-y-4 mb-8">
                                             {creators.slice(0, 3).map((creator, i) => {
                                                 const tier = 'All-Access'
-                                                const price = creator.basicMonthlyPrice
+                                                const price = creator.monthlyPrice
                                                 const benefits = ['All posts & live sessions', 'Community access', 'Priority DMs']
 
                                                 return (
@@ -1739,7 +1738,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                 {(creator.totalSubscribers / 1000).toFixed(1)}K subscribers
                                                             </span>
                                                             <span className="text-sm font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                                                €{creator.basicMonthlyPrice}/mo
+                                                                €{creator.monthlyPrice}/mo
                                                             </span>
                                                         </div>
                                                     </motion.div>
@@ -2008,7 +2007,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                 {(creator.totalSubscribers / 1000).toFixed(1)}K
                                                             </span>
                                                             <span className="font-bold text-white">
-                                                                €{creator.basicMonthlyPrice}/mo
+                                                                €{creator.monthlyPrice}/mo
                                                             </span>
                                                         </div>
                                                     </div>
@@ -2185,7 +2184,7 @@ export default function OnlyFansStyleMentorsPage() {
                                             </div>
                                             <div className="mb-4">
                                                 <span className="text-3xl font-black bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                                                    €{selectedCreator?.basicMonthlyPrice || 49}
+                                                    €{selectedCreator?.monthlyPrice || 49}
                                                 </span>
                                                 <span className="text-muted-foreground text-sm">/month</span>
                                             </div>
@@ -3036,7 +3035,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                         <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-4">
                                                             <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'عائد شهري تقديري' : 'Est. Monthly MRR'}</div>
                                                             <div className="text-xl font-bold text-foreground">
-                                                                €{(subscriberCount * (selectedCreator?.basicMonthlyPrice || 0)).toLocaleString()}
+                                                                €{(subscriberCount * (selectedCreator?.monthlyPrice || 0)).toLocaleString()}
                                                             </div>
                                                             <div className="text-xs text-muted-foreground mt-1">
                                                                 {isArabic ? 'يشمل الجلسات المباشرة' : 'Includes live sessions access'}
@@ -3138,7 +3137,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                         <div className="text-4xl font-black text-foreground mb-2">{subscriberCount}</div>
                                                         <div className="text-sm text-muted-foreground mb-3">{isArabic ? 'اشتراك موحد' : 'Single-tier access'}</div>
                                                         <div className="text-sm text-foreground font-bold">
-                                                            €{(subscriberCount * (selectedCreator?.basicMonthlyPrice || 0)).toLocaleString()}/mo
+                                                            €{(subscriberCount * (selectedCreator?.monthlyPrice || 0)).toLocaleString()}/mo
                                                         </div>
                                                     </motion.div>
 
@@ -3415,7 +3414,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                             </div>
                                                             <div>
                                                                 <h4 className="font-bold text-foreground">{isArabic ? 'اشتراك موحد' : 'All-Access'}</h4>
-                                                                <p className="text-xs text-muted-foreground">€{selectedCreator?.basicMonthlyPrice || 49}/mo</p>
+                                                                <p className="text-xs text-muted-foreground">€{selectedCreator?.monthlyPrice || 49}/mo</p>
                                                             </div>
                                                         </div>
                                                         <ul className="space-y-2 text-sm">
@@ -3682,7 +3681,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                 <div className="flex items-center justify-between text-[10px] text-white/50">
                                                     <span>{(creator.totalSubscribers / 1000).toFixed(1)}K {isArabic ? 'مشترك' : 'subs'}</span>
                                                     <span className="font-semibold text-white/80">
-                                                        €{creator.basicMonthlyPrice}
+                                                        €{creator.monthlyPrice}
                                                     </span>
                                                 </div>
                                             </div>
@@ -3786,7 +3785,7 @@ export default function OnlyFansStyleMentorsPage() {
                                 profileImage: selectedCreator.user.profileImage,
                             },
                             expertise: selectedCreator.expertise,
-                            basicMonthlyPrice: selectedCreator.basicMonthlyPrice ?? 0,
+                            monthlyPrice: selectedCreator.monthlyPrice ?? 0,
                         }}
                         isArabic={isArabic}
                         onSuccess={() => {
@@ -3858,7 +3857,7 @@ export default function OnlyFansStyleMentorsPage() {
                                 youtube: '',
                                 website: ''
                             },
-                        basicMonthlyPrice: selectedCreator?.basicMonthlyPrice || 49
+                        monthlyPrice: selectedCreator?.monthlyPrice || 49
                     }}
                     isArabic={isArabic}
                 />

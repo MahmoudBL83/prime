@@ -201,9 +201,13 @@ export async function GET(
                 bio: mentor.user.bio || 'Experienced professional educator' // Fallback bio
             },
             expertise: mentor.expertise || 'Professional Education',
-            basicMonthlyPrice: mentor.basicMonthlyPrice || 49,
-            premiumMonthlyPrice: mentor.premiumMonthlyPrice || 99,
-            vipMonthlyPrice: mentor.vipMonthlyPrice || 199,
+            languages: mentor.languages || 'English',
+            timezone: mentor.timezone || 'UTC',
+            monthlyPrice: (mentor as any).monthlyPrice || mentor.basicMonthlyPrice || 29, // Single tier price in EUR
+            currency: 'EUR',
+            hourlyRate: mentor.hourlyRate || null,
+            availableForMeetings: mentor.availableForMeetings ?? true,
+            socialLinks: mentor.socialLinks || null,
             totalSubscribers: mentor.totalSubscribers || 0,
             stats: {
                 averageRating: parseFloat(averageRating.toFixed(1)),
@@ -211,8 +215,8 @@ export async function GET(
                 yearsOfExperience,
                 totalStudents,
                 completedMeetings,
-                totalFollowers: mentor.totalSubscribers || 0, // Add this
-                totalCourses: mentor.courses.length // Add this
+                totalFollowers: mentor.totalSubscribers || 0,
+                totalCourses: mentor.courses.length
             },
             channel: channel ? {
                 id: channel.id,

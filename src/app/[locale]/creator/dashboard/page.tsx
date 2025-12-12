@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
+import { CreatorSidebar, CreatorHeader } from '@/components/creator'
 import { 
     Upload,
     Video,
@@ -27,9 +28,6 @@ import {
     BookOpen,
     Award,
     Target,
-    ArrowLeft,
-    Home,
-    Bell,
     Loader2
 } from 'lucide-react'
 
@@ -96,7 +94,6 @@ export default function CreatorDashboard() {
     const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
     const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState('overview')
-    const [navigating, setNavigating] = useState(false)
 
     // Fetch analytics data
     useEffect(() => {
@@ -174,102 +171,11 @@ export default function CreatorDashboard() {
     return (
         <div className="min-h-screen bg-background">
             {/* Header */}
-            <header className="sticky top-0 z-50 bg-card border-b border-border">
-                <div className="flex items-center justify-between px-6 py-4">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => router.push(`/${locale}`)}
-                            className="p-2 hover:bg-accent rounded-full transition-colors"
-                        >
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
-                        <button
-                            onClick={() => router.push(`/${locale}`)}
-                            className="p-2 hover:bg-accent rounded-full transition-colors"
-                        >
-                            <Home className="w-5 h-5" />
-                        </button>
-                        <div className="h-6 w-px bg-border" />
-                        <h1 className="text-xl font-bold">
-                            {isArabic ? 'استوديو المنشئ' : 'Creator Studio'}
-                        </h1>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <button className="p-2 hover:bg-accent rounded-full transition-colors">
-                            <Bell className="w-5 h-5" />
-                        </button>
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                            <span className="text-white font-bold">
-                                {session.user.name?.[0]?.toUpperCase() || 'C'}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <CreatorHeader />
 
             <div className="flex">
                 {/* Sidebar */}
-                <aside className="w-64 min-h-screen bg-card border-r border-border sticky top-16">
-                    <nav className="p-4 space-y-1">
-                        <button
-                            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all bg-accent text-foreground font-semibold"
-                        >
-                            <BarChart3 className="w-5 h-5" />
-                            <span>{isArabic ? 'لوحة التحكم' : 'Dashboard'}</span>
-                        </button>
-
-                        <button
-                            onClick={() => {
-                                setNavigating(true)
-                                router.push(`/${locale}/creator/courses`)
-                            }}
-                            disabled={navigating}
-                            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-muted-foreground hover:bg-accent/50"
-                        >
-                            <Video className="w-5 h-5" />
-                            <span>{isArabic ? 'الدورات' : 'Courses'}</span>
-                            {navigating && <Loader2 className="w-4 h-4 animate-spin ml-auto" />}
-                        </button>
-
-                        <button
-                            onClick={() => {
-                                setNavigating(true)
-                                router.push(`/${locale}/creator/analytics`)
-                            }}
-                            disabled={navigating}
-                            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-muted-foreground hover:bg-accent/50"
-                        >
-                            <TrendingUp className="w-5 h-5" />
-                            <span>{isArabic ? 'التحليلات' : 'Analytics'}</span>
-                        </button>
-
-                        <button
-                            onClick={() => {
-                                setNavigating(true)
-                                router.push(`/${locale}/creator/cohorts`)
-                            }}
-                            disabled={navigating}
-                            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-muted-foreground hover:bg-accent/50"
-                        >
-                            <Users className="w-5 h-5" />
-                            <span>{isArabic ? 'المجموعات التعليمية' : 'Cohorts'}</span>
-                        </button>
-
-                        <div className="h-px bg-border my-4" />
-
-                        <button
-                            onClick={() => {
-                                setNavigating(true)
-                                router.push(`/${locale}/creator/settings`)
-                            }}
-                            disabled={navigating}
-                            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-accent/50 transition-all"
-                        >
-                            <Settings className="w-5 h-5" />
-                            <span>{isArabic ? 'الإعدادات' : 'Settings'}</span>
-                        </button>
-                    </nav>
-                </aside>
+                <CreatorSidebar />
 
                 {/* Main Content */}
                 <main className="flex-1 p-8">

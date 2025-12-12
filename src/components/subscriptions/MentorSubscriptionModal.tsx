@@ -15,7 +15,7 @@ interface MentorSubscriptionModalProps {
     profileImage?: string;
     bio?: string;
     totalSubscribers?: number;
-    basicMonthlyPrice?: number;
+    monthlyPrice?: number; // Single tier in EUR
   };
   currentSubscription?: { tier: string } | null;
   onSubscribe: () => void;
@@ -33,7 +33,7 @@ export default function MentorSubscriptionModal({
   const [loading, setLoading] = useState(false);
   const isArabic = locale === 'ar';
   const isSubscribed = !!currentSubscription;
-  const price = mentor.basicMonthlyPrice || 49;
+  const price = mentor.monthlyPrice || 29; // Default €29
 
   const benefits = isArabic
     ? [
@@ -148,9 +148,9 @@ export default function MentorSubscriptionModal({
 
                 <div className="mb-4">
                   <span className="text-4xl font-black bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                    {price}
+                    €{price}
                   </span>
-                  <span className="text-muted-foreground ml-2">{isArabic ? 'ج.م/شهر' : 'EGP/mo'}</span>
+                  <span className="text-muted-foreground ml-2">{isArabic ? '/شهر' : '/mo'}</span>
                 </div>
 
                 <div className="mb-4 p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">

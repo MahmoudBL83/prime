@@ -24,9 +24,7 @@ interface BookingModalProps {
     mentorName: string
     isArabic: boolean
     currentSubscription: string | null
-    basicPrice?: number
-    premiumPrice?: number
-    vipPrice?: number
+    monthlyPrice?: number // Single tier in EUR
 }
 
 interface TimeSlot {
@@ -43,9 +41,7 @@ export function BookingModal({
     mentorName,
     isArabic,
     currentSubscription,
-    basicPrice = 100,
-    premiumPrice = 200,
-    vipPrice = 300
+    monthlyPrice = 29 // Default EUR
 }: BookingModalProps) {
     const { data: session } = useSession()
     const [step, setStep] = useState<'type' | 'slots' | 'confirm'>('type')
@@ -59,6 +55,11 @@ export function BookingModal({
         description: ''
     })
 
+    // Calculate session prices based on monthlyPrice (single tier in EUR)
+    const oneOnOnePrice = monthlyPrice // Full session price
+    const groupQaPrice = Math.round(monthlyPrice * 0.3) // 30% of monthly
+    const workshopPrice = Math.round(monthlyPrice * 0.5) // 50% of monthly
+
     // Meeting type configurations
     const meetingTypes = [
         {
@@ -67,9 +68,9 @@ export function BookingModal({
             title: isArabic ? 'جلسة فردية' : '1:1 Session',
             description: isArabic ? 'جلسة خاصة مع المدرب' : 'Private session with mentor',
             duration: 60,
-            price: vipPrice,
-            tier: 'VIP',
-            available: currentSubscription === 'VIP'
+            price: oneOnOnePrice,
+            tier: 'ALL_ACCESS',
+            available: !!currentSubscription
         },
         {
             type: 'GROUP_QA' as const,
@@ -77,9 +78,9 @@ export function BookingModal({
             title: isArabic ? 'جلسة أسئلة جماعية' : 'Group Q&A',
             description: isArabic ? 'جلسة أسئلة وأجوبة مع مجموعة' : 'Q&A session with a group',
             duration: 45,
-            price: premiumPrice * 0.3, // 30% of premium price
-            tier: 'PREMIUM',
-            available: ['PREMIUM', 'VIP'].includes(currentSubscription || '')
+            price: groupQaPrice,
+            tier: 'ALL_ACCESS',
+            available: !!currentSubscription
         },
         {
             type: 'WORKSHOP' as const,
@@ -87,8 +88,8 @@ export function BookingModal({
             title: isArabic ? 'ورشة عمل' : 'Workshop',
             description: isArabic ? 'ورشة عمل جماعية' : 'Group workshop session',
             duration: 90,
-            price: basicPrice * 0.5, // 50% of basic price
-            tier: 'BASIC',
+            price: workshopPrice,
+            tier: 'ALL_ACCESS',
             available: !!currentSubscription
         }
     ]
@@ -246,7 +247,7 @@ export function BookingModal({
                                                 <div className="absolute top-2 right-2">
                                                     <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
                                                         <Crown className="w-3 h-3 mr-1" />
-                                                        {type.tier}
+                                                        {isArabic ? 'اشترك' : 'Subscribe'}
                                                     </Badge>
                                                 </div>
                                             )}
@@ -263,7 +264,7 @@ export function BookingModal({
                                                             {type.duration} {isArabic ? 'دقيقة' : 'min'}
                                                         </span>
                                                         <span className="font-bold text-purple-400">
-                                                            {type.price} {isArabic ? 'ج.م' : 'EGP'}
+                                                            €{type.price}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -429,7 +430,7 @@ export function BookingModal({
                                         <div className="flex items-center justify-between pt-3 border-t border-border">
                                             <span className="text-muted-foreground font-semibold">{isArabic ? 'الإجمالي' : 'Total'}</span>
                                             <span className="text-xl font-bold text-purple-400">
-                                                {selectedMeetingType?.price} {isArabic ? 'ج.م' : 'EGP'}
+                                                €{selectedMeetingType?.price}
                                             </span>
                                         </div>
                                     </div>

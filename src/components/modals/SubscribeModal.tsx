@@ -20,7 +20,7 @@ interface SubscribeModalProps {
             profileImage: string | null
         }
         expertise: string
-        basicMonthlyPrice: number
+        monthlyPrice: number // Single tier in EUR
     }
     isArabic?: boolean
     onSuccess?: () => void // Add success callback
@@ -33,7 +33,7 @@ export default function SubscribeModal({ isOpen, onClose, creator, isArabic = fa
         {
             id: 'ALL_ACCESS' as const,
             name: isArabic ? 'وصول شامل' : 'All-Access',
-            price: creator.basicMonthlyPrice,
+            price: creator.monthlyPrice, // Single tier price in EUR
             color: 'from-purple-500 to-blue-500',
             borderColor: 'border-purple-500/40',
             bgColor: 'from-purple-500/10 to-blue-500/10',

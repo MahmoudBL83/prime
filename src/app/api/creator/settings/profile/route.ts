@@ -44,7 +44,8 @@ export async function GET(request: NextRequest) {
                         name: true,
                         email: true,
                         profileImage: true,
-                        arabicName: true
+                        arabicName: true,
+                        bio: true
                     }
                 }
             }
@@ -71,6 +72,7 @@ export async function GET(request: NextRequest) {
                 hourlyRate: creator.hourlyRate,
                 socialLinks: creator.socialLinks,
                 certifications: creator.certifications,
+                monthlyPrice: creator.monthlyPrice,
                 user: creator.user
             }
         })
@@ -86,7 +88,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * PATCH /api/creator/settings/profile
- * Update creator profile settings
+ * Update creator profile settings including profile image
  */
 export async function PATCH(request: NextRequest) {
     try {
@@ -103,10 +105,23 @@ export async function PATCH(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { expertise, languages, timezone } = body
+        const { 
+            expertise, 
+            languages, 
+            timezone, 
+            profileImage,
+            socialLinks,
+            availableForMeetings,
+            meetingTypes,
+            hourlyRate,
+            name,
+            arabicName,
+            bio,
+            monthlyPrice
+        } = body
 
         console.log('Session user ID:', session.user.id)
-        console.log('Request body:', { expertise, languages, timezone })
+        console.log('Request body:', { expertise, languages, timezone, profileImage: profileImage ? 'provided' : 'not provided' })
 
         // First, verify the user exists
         const user = await prisma.user.findUnique({
@@ -126,8 +141,22 @@ export async function PATCH(request: NextRequest) {
                     userId: session.user.id,
                     action: 'SIGN_IN_REQUIRED'
                 },
-                { status: 401 } // Changed to 401 since this is an auth issue
+                { status: 401 }
             )
+        }
+
+        // Update user profile fields if provided
+        const userUpdateData: any = {}
+        if (profileImage !== undefined) userUpdateData.profileImage = profileImage
+        if (name !== undefined) userUpdateData.name = name
+        if (arabicName !== undefined) userUpdateData.arabicName = arabicName
+        if (bio !== undefined) userUpdateData.bio = bio
+        
+        if (Object.keys(userUpdateData).length > 0) {
+            await prisma.user.update({
+                where: { id: session.user.id },
+                data: userUpdateData
+            })
         }
 
         // Get or create creator profile
@@ -156,7 +185,10 @@ export async function PATCH(request: NextRequest) {
                         contractSigned: false,
                         totalEarnings: 0,
                         totalSubscribers: 0,
-                        availableForMeetings: true
+                        availableForMeetings: availableForMeetings ?? true,
+                        meetingTypes: meetingTypes || [],
+                        hourlyRate: hourlyRate || 0,
+                        socialLinks: socialLinks || {}
                     }
                 })
 
@@ -169,7 +201,11 @@ export async function PATCH(request: NextRequest) {
                         id: creator.id,
                         expertise: creator.expertise,
                         languages: creator.languages,
-                        timezone: creator.timezone
+                        timezone: creator.timezone,
+                        availableForMeetings: creator.availableForMeetings,
+                        meetingTypes: creator.meetingTypes,
+                        hourlyRate: creator.hourlyRate,
+                        socialLinks: creator.socialLinks
                     }
                 })
             } catch (createError: any) {
@@ -188,12 +224,29 @@ export async function PATCH(request: NextRequest) {
         }
 
         // Update existing creator profile
+        const creatorUpdateData: any = {}
+        if (expertise !== undefined) creatorUpdateData.expertise = expertise
+        if (languages !== undefined) creatorUpdateData.languages = languages
+        if (timezone !== undefined) creatorUpdateData.timezone = timezone
+        if (availableForMeetings !== undefined) creatorUpdateData.availableForMeetings = availableForMeetings
+        if (meetingTypes !== undefined) creatorUpdateData.meetingTypes = meetingTypes
+        if (hourlyRate !== undefined) creatorUpdateData.hourlyRate = hourlyRate
+        if (socialLinks !== undefined) creatorUpdateData.socialLinks = socialLinks
+        if (monthlyPrice !== undefined) creatorUpdateData.monthlyPrice = monthlyPrice
+
         const updatedCreator = await prisma.creator.update({
             where: { id: creator.id },
-            data: {
-                expertise,
-                languages,
-                timezone
+            data: creatorUpdateData,
+            include: {
+                user: {
+                    select: {
+                        name: true,
+                        email: true,
+                        profileImage: true,
+                        arabicName: true,
+                        bio: true
+                    }
+                }
             }
         })
 
@@ -204,7 +257,12 @@ export async function PATCH(request: NextRequest) {
                 id: updatedCreator.id,
                 expertise: updatedCreator.expertise,
                 languages: updatedCreator.languages,
-                timezone: updatedCreator.timezone
+                timezone: updatedCreator.timezone,
+                availableForMeetings: updatedCreator.availableForMeetings,
+                meetingTypes: updatedCreator.meetingTypes,
+                hourlyRate: updatedCreator.hourlyRate,
+                socialLinks: updatedCreator.socialLinks,
+                user: updatedCreator.user
             }
         })
 

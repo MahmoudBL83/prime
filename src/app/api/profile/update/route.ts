@@ -23,9 +23,7 @@ export async function PATCH(req: NextRequest) {
             profileImage,
             coverImage,
             socialLinks,
-            basicMonthlyPrice,
-            premiumMonthlyPrice,
-            vipMonthlyPrice
+            monthlyPrice // Single tier in EUR
         } = body
 
         // Check if user exists first
@@ -61,15 +59,13 @@ export async function PATCH(req: NextRequest) {
         })
 
         if (creator) {
-            // Update Creator table
+            // Update Creator table with single tier price
             await prisma.creator.update({
                 where: { id: creator.id },
                 data: {
                     expertise,
                     socialLinks: socialLinks ? JSON.stringify(socialLinks) : undefined,
-                    basicMonthlyPrice: basicMonthlyPrice || null,
-                    premiumMonthlyPrice: premiumMonthlyPrice || null,
-                    vipMonthlyPrice: vipMonthlyPrice || null,
+                    monthlyPrice: monthlyPrice || null, // Single tier in EUR
                 }
             })
 
@@ -94,9 +90,7 @@ export async function PATCH(req: NextRequest) {
                         description: bio || null,
                         coverImage: coverImage || null,
                         tiers: {
-                            bronze: { price: basicMonthlyPrice || 49, benefits: [] },
-                            silver: { price: premiumMonthlyPrice || 99, benefits: [] },
-                            gold: { price: vipMonthlyPrice || 199, benefits: [] }
+                            allAccess: { price: monthlyPrice || 29, benefits: ['All content', 'Live sessions', 'Priority messaging'] }
                         }
                     }
                 })

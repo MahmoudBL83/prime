@@ -61,12 +61,8 @@ export async function GET(
         expertise: true,
         hourlyRate: true,
         totalSubscribers: true,
-        basicMonthlyPrice: true,
-        basicYearlyPrice: true,
-        premiumMonthlyPrice: true,
-        premiumYearlyPrice: true,
-        vipMonthlyPrice: true,
-        vipYearlyPrice: true,
+        monthlyPrice: true, // Single tier in EUR
+        basicMonthlyPrice: true, // Fallback
         subscriptionBenefits: true,
       },
     });

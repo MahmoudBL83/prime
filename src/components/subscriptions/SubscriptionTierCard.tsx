@@ -117,10 +117,7 @@ export default function SubscriptionTierCard({
       <div className="text-center mb-6">
         <div className="flex items-baseline justify-center gap-1">
           <span className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            {price}
-          </span>
-          <span className="text-muted-foreground dark:text-muted-foreground">
-            {isArabic ? 'ج.م' : 'EGP'}
+            €{price}
           </span>
         </div>
         <div className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
@@ -130,7 +127,7 @@ export default function SubscriptionTierCard({
         {/* Yearly Savings Badge */}
         {billingPeriod === 'YEARLY' && tier.yearlySavings > 0 && (
           <div className="mt-2 inline-block bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-3 py-1 rounded-full text-xs font-semibold">
-            {isArabic ? `وفّر ${tier.yearlySavings} ج.م` : `Save ${tier.yearlySavings} EGP`}
+            {isArabic ? `وفّر €${tier.yearlySavings}` : `Save €${tier.yearlySavings}`}
           </div>
         )}
       </div>

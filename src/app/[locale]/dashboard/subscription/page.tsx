@@ -283,7 +283,7 @@ export default function SubscriptionManagementPage() {
             
             <div className="text-right">
               <div className="text-3xl font-bold text-white mb-1">
-                {monthlyPrice} {isRtl ? 'ج.م' : 'EGP'}
+                €{monthlyPrice}
                 <span className="text-lg text-gray-400">
                   /{isRtl ? 'شهر' : 'month'}
                 </span>

@@ -27,7 +27,7 @@ interface MentorData {
     profileImage: string | null;
   };
   expertise: string;
-  basicMonthlyPrice: number;
+  monthlyPrice: number; // Single tier in EUR
   totalSubscribers: number;
   languages: string;
   stats: {
@@ -41,7 +41,7 @@ interface MentorData {
 
 interface UserSubscription {
   id: string;
-  tier: 'ALL_ACCESS' | 'BASIC' | 'PREMIUM' | 'VIP';
+  tier: 'ALL_ACCESS';
   status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED';
 }
 
@@ -82,7 +82,7 @@ export default function MentorSubscribePage() {
             profileImage: data.user.profileImage,
           },
           expertise: data.expertise || '',
-          basicMonthlyPrice: data.basicMonthlyPrice,
+          monthlyPrice: data.monthlyPrice || 29, // Single tier in EUR
           totalSubscribers: data.totalSubscribers || 0,
           languages: data.languages || 'English, Arabic',
           stats: data.stats || {
@@ -235,7 +235,7 @@ export default function MentorSubscribePage() {
               {isArabic ? 'كل المحتوى، الجلسات المباشرة، الرسائل وأولوية الدعم' : 'All content, live sessions, messaging, and priority support'}
             </p>
             <div className="text-4xl font-black bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent mb-1">
-              €{mentor.basicMonthlyPrice}
+              €{mentor.monthlyPrice}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400 mb-6">{isArabic ? 'شهرياً • إلغاء في أي وقت' : 'Monthly • Cancel anytime'}</div>
             <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-2 mb-6">
@@ -262,7 +262,7 @@ export default function MentorSubscribePage() {
               profileImage: mentor.user.profileImage,
             },
             expertise: mentor.expertise,
-            basicMonthlyPrice: mentor.basicMonthlyPrice,
+            monthlyPrice: mentor.monthlyPrice,
           }}
           isArabic={isArabic}
           onSuccess={() => checkUserSubscription()}

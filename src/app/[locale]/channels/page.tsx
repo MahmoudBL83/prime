@@ -389,7 +389,7 @@ function ChannelCard({
                     >
                         {channel.tiers.map((tier) => (
                             <option key={tier.tier} value={tier.tier}>
-                                {tier.tier} - {tier.price} {isArabic ? 'ج.م/شهر' : 'EGP/mo'}
+                                {tier.tier} - €{tier.price}{isArabic ? '/شهر' : '/mo'}
                             </option>
                         ))}
                     </select>
@@ -416,7 +416,7 @@ function ChannelCard({
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <div className="text-3xl font-bold text-purple-400">
-                            {currentTier?.price} {isArabic ? 'ج.م' : 'EGP'}
+                            €{currentTier?.price}
                         </div>
                         <div className="text-sm text-gray-400">
                             {isArabic ? 'شهرياً' : 'per month'}

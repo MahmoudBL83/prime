@@ -114,12 +114,8 @@ export async function POST(request: NextRequest) {
     const creatorPricing = await prisma.creator.findUnique({
       where: { id: creatorId },
       select: {
-        basicMonthlyPrice: true,
-        basicYearlyPrice: true,
-        premiumMonthlyPrice: true,
-        premiumYearlyPrice: true,
-        vipMonthlyPrice: true,
-        vipYearlyPrice: true,
+        monthlyPrice: true,
+        basicMonthlyPrice: true, // Fallback
         subscriptionBenefits: true,
       },
     });
@@ -131,38 +127,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate price based on tier and billing period
-    let price = 0;
-    let monthlyMessages = null;
-    let monthlyMeetings = null;
-    let meetingDuration = null;
-    let accessToContent = true;
-    let prioritySupport = false;
+    // Single tier pricing in EUR
+    const monthlyPrice = creatorPricing.monthlyPrice || creatorPricing.basicMonthlyPrice || 29;
 
-    if (tier === 'BASIC') {
-      price = billingPeriod === 'MONTHLY' 
-        ? creatorPricing.basicMonthlyPrice || 99
-        : creatorPricing.basicYearlyPrice || 999;
-      monthlyMessages = 10;
-      monthlyMeetings = 1;
-      meetingDuration = 30;
-    } else if (tier === 'PREMIUM') {
-      price = billingPeriod === 'MONTHLY'
-        ? creatorPricing.premiumMonthlyPrice || 199
-        : creatorPricing.premiumYearlyPrice || 1999;
-      monthlyMessages = 50;
-      monthlyMeetings = 4;
-      meetingDuration = 60;
-      prioritySupport = true;
-    } else if (tier === 'VIP') {
-      price = billingPeriod === 'MONTHLY'
-        ? creatorPricing.vipMonthlyPrice || 499
-        : creatorPricing.vipYearlyPrice || 4999;
-      monthlyMessages = null; // Unlimited
-      monthlyMeetings = null; // Unlimited
-      meetingDuration = 90;
-      prioritySupport = true;
-    }
+    // Calculate price based on billing period (single tier only)
+    let price = billingPeriod === 'MONTHLY' ? monthlyPrice : monthlyPrice * 10; // 10 months for yearly
+    let monthlyMessages = null; // Unlimited
+    let monthlyMeetings = null; // Unlimited
+    let meetingDuration = 60;
+    let accessToContent = true;
+    let prioritySupport = true;
 
     // Calculate end date
     const startDate = new Date();

@@ -209,9 +209,9 @@ export default function CreatorsPage() {
     }
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-EG', {
+        return new Intl.NumberFormat('de-DE', {
             style: 'currency',
-            currency: 'EGP'
+            currency: 'EUR'
         }).format(amount)
     }
 
@@ -249,7 +249,7 @@ export default function CreatorsPage() {
             
             if (!data.creators) throw new Error('No data')
             
-            const headers = ['ID', 'User ID', 'Name', 'Email', 'KYC Status', 'Expertise', 'Courses', 'Subscribers', 'Earnings (EGP)', 'Contract Signed', 'Joined']
+            const headers = ['ID', 'User ID', 'Name', 'Email', 'KYC Status', 'Expertise', 'Courses', 'Subscribers', 'Earnings (EUR)', 'Contract Signed', 'Joined']
             const rows = data.creators.map((c: Creator) => [
                 c.id,
                 c.userId,

@@ -221,7 +221,7 @@ export default function SubscriptionsPage() {
               </h3>
             </div>
             <p className="text-4xl font-bold">
-              {totalSpent} <span className="text-xl">{isArabic ? 'ج.م' : 'EGP'}</span>
+              €{totalSpent}
             </p>
           </motion.div>
         </div>

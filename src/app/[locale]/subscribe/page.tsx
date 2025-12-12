@@ -80,7 +80,7 @@ export default function NetflixSubscribePage() {
                 body: JSON.stringify({
                     subscriptionType: planCategory, // CATEGORY_A or CATEGORY_B
                     amount: price,
-                    currency: 'EGP',
+                    currency: 'EUR',
                 }),
             })
 
@@ -600,8 +600,7 @@ export default function NetflixSubscribePage() {
                                             // Monthly Price Display
                                             <div>
                                                 <div className="text-5xl font-black text-white mb-2">
-                                                    {plan.monthlyPrice}
-                                                    <span className="text-xl font-normal text-gray-400"> {isArabic ? 'جنيه' : 'EGP'}</span>
+                                                    €{plan.monthlyPrice}
                                                 </div>
                                                 <p className="text-gray-400 text-sm">{currentT.monthlyPrice}</p>
                                             </div>
@@ -609,16 +608,15 @@ export default function NetflixSubscribePage() {
                                             // Annual Price Display
                                             <div>
                                                 <div className="text-5xl font-black text-green-400 mb-2">
-                                                    {plan.annualPrice}
-                                                    <span className="text-xl font-normal text-gray-400"> {isArabic ? 'جنيه' : 'EGP'}</span>
+                                                    €{plan.annualPrice}
                                                 </div>
                                                 <p className="text-green-400 text-sm font-semibold">
                                                     {isArabic ? 'وفّر 20% مع الاشتراك السنوي' : 'Save 20% with annual billing'}
                                                 </p>
                                                 <p className="text-gray-500 text-xs mt-1">
                                                     {isArabic 
-                                                        ? `${plan.monthlyPrice} جنيه شهرياً` 
-                                                        : `${plan.monthlyPrice} EGP per month`}
+                                                        ? `€${plan.monthlyPrice} شهرياً` 
+                                                        : `€${plan.monthlyPrice} per month`}
                                                 </p>
                                             </div>
                                         )}

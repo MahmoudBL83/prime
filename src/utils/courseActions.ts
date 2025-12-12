@@ -221,7 +221,7 @@ export function addToCart(courseId: string, courseTitle: string, price: number, 
   try {
     // For now, redirect to subscribe page with course selected
     // In the future, implement a proper cart system
-    toast.success(`"${courseTitle}" added to cart\nPrice: EGP ${price}`, {
+    toast.success(`"${courseTitle}" added to cart\nPrice: €${price}`, {
       icon: '🛒',
       duration: 4000
     });

@@ -192,7 +192,10 @@ model Creator {
   totalSubscribers       Int       @default(0)
   hourlyRate             Float? // Hourly rate for consultations (legacy)
 
-  // Mentor Subscription Pricing (OnlyFans-style)
+  // Single-tier subscription pricing (in Euros)
+  monthlyPrice        Float? // Monthly subscription price in EUR
+
+  // Legacy: Multi-tier Subscription Pricing (deprecated - use monthlyPrice instead)
   basicMonthlyPrice   Float? // Basic tier monthly price
   basicYearlyPrice    Float? // Basic tier yearly price
   premiumMonthlyPrice Float? // Premium tier monthly price

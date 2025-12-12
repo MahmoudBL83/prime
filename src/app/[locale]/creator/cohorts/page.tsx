@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import CreateCohortModal from '@/components/creator/CreateCohortModal';
 import { Button } from '@/components/ui/button';
+import { CreatorSidebar, CreatorHeader } from '@/components/creator';
 import {
   Users,
   Calendar,
@@ -24,15 +25,6 @@ import {
   CheckCircle,
   AlertCircle,
   XCircle,
-  ArrowLeft,
-  Home,
-  Play,
-  Upload,
-  MessageSquare,
-  Bell,
-  BarChart3,
-  Video,
-  Settings,
   Loader2,
 } from 'lucide-react';
 
@@ -87,7 +79,6 @@ export default function CohortsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedCohort, setSelectedCohort] = useState<Cohort | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [navigating, setNavigating] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -195,136 +186,16 @@ export default function CohortsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-background">
-      {/* YouTube Studio Header - Standalone */}
-      <header className="sticky top-0 z-50 bg-white dark:bg-card border-b border-slate-200 dark:border-border shadow-sm">
-        <div className="flex items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-4">
-            {/* Back and Home buttons */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => router.back()}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-accent rounded-full transition-colors"
-                title={isArabic ? 'رجوع' : 'Back'}
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => router.push(`/${locale}`)}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-accent rounded-full transition-colors"
-                title={isArabic ? 'الصفحة الرئيسية' : 'Home'}
-              >
-                <Home className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="h-8 w-px bg-slate-300 dark:bg-border" />
-
-            <Link href={`/${locale}/creator/dashboard`} className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
-                <Play className="w-6 h-6 text-white fill-white" />
-              </div>
-              <span className="text-xl font-bold">
-                {isArabic ? 'استوديو المنشئ' : 'Creator Studio'}
-              </span>
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {isArabic ? 'إنشاء مجموعة' : 'Create Cohort'}
-            </Button>
-            
-            <button 
-              className="relative p-2 hover:bg-accent rounded-full transition-colors"
-              title={isArabic ? 'الرسائل' : 'Messages'}
-              onClick={() => toast(isArabic ? 'الرسائل قريباً' : 'Messaging coming soon')}
-            >
-              <MessageSquare className="w-5 h-5" />
-            </button>
-            
-            <button className="p-2 hover:bg-accent rounded-full transition-colors">
-              <Bell className="w-5 h-5" />
-            </button>
-
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <span className="text-white font-bold">
-                {session?.user?.name?.[0]?.toUpperCase() || 'C'}
-              </span>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <CreatorHeader />
 
       <div className="flex">
-        {/* Sidebar - YouTube Studio Style */}
-        <aside className="w-64 min-h-screen bg-white dark:bg-card border-r border-slate-200 dark:border-border sticky top-16 shadow-sm">
-          <nav className="p-4 space-y-1">
-            <button
-              onClick={() => {
-                setNavigating(true);
-                router.push(`/${locale}/creator/dashboard`);
-              }}
-              disabled={navigating}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-slate-600 dark:text-muted-foreground hover:bg-slate-50 dark:hover:bg-accent/50"
-            >
-              <BarChart3 className="w-5 h-5" />
-              <span>{isArabic ? 'لوحة التحكم' : 'Dashboard'}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setNavigating(true);
-                router.push(`/${locale}/creator/courses`);
-              }}
-              disabled={navigating}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-slate-600 dark:text-muted-foreground hover:bg-slate-50 dark:hover:bg-accent/50"
-            >
-              <Video className="w-5 h-5" />
-              <span>{isArabic ? 'الدورات' : 'Courses'}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setNavigating(true);
-                router.push(`/${locale}/creator/analytics`);
-              }}
-              disabled={navigating}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-slate-600 dark:text-muted-foreground hover:bg-slate-50 dark:hover:bg-accent/50"
-            >
-              <TrendingUp className="w-5 h-5" />
-              <span>{isArabic ? 'التحليلات' : 'Analytics'}</span>
-            </button>
-
-            <button
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all bg-slate-100 dark:bg-accent text-slate-900 dark:text-foreground font-semibold"
-            >
-              <Users className="w-5 h-5" />
-              <span>{isArabic ? 'المجموعات التعليمية' : 'Cohorts'}</span>
-            </button>
-
-            <div className="h-px bg-slate-200 dark:bg-border my-4" />
-
-            <button
-              onClick={() => {
-                setNavigating(true);
-                router.push(`/${locale}/creator/settings`);
-              }}
-              disabled={navigating}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-muted-foreground hover:bg-slate-50 dark:hover:bg-accent/50 transition-all"
-            >
-              <Settings className="w-5 h-5" />
-              <span>{isArabic ? 'الإعدادات' : 'Settings'}</span>
-            </button>
-          </nav>
-        </aside>
+        {/* Sidebar */}
+        <CreatorSidebar />
 
         {/* Main Content */}
-        <main className="flex-1 p-8 bg-slate-50 dark:bg-background">
+        <main className="flex-1 p-8">
           <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 /**
  * GET /api/creator/profile
- * Get creator profile information
+ * Get creator profile information. Auto-creates profile if user is CREATOR role.
  */
 export async function GET(request: NextRequest) {
     try {
@@ -18,8 +18,29 @@ export async function GET(request: NextRequest) {
             )
         }
 
+        // Get user data first to check role
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                profileImage: true,
+                arabicName: true,
+                bio: true,
+                role: true
+            }
+        });
+
+        if (!user) {
+            return NextResponse.json(
+                { error: 'User not found' },
+                { status: 404 }
+            )
+        }
+
         // Get creator profile
-        const creator = await prisma.creator.findUnique({
+        let creator = await prisma.creator.findUnique({
             where: { userId: session.user.id },
             include: {
                 courses: {
@@ -40,25 +61,50 @@ export async function GET(request: NextRequest) {
             }
         })
 
-        if (!creator) {
-            return NextResponse.json(
-                { error: 'Creator profile not found' },
-                { status: 404 }
-            )
+        // Auto-create creator profile if user has CREATOR or ADMIN role
+        if (!creator && (user.role === 'CREATOR' || user.role === 'ADMIN')) {
+            console.log(`Auto-creating creator profile for user ${user.id} with role ${user.role}`)
+            
+            creator = await prisma.creator.create({
+                data: {
+                    user: { connect: { id: session.user.id } },
+                    expertise: '',
+                    languages: '',
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+                    kycStatus: 'NOT_STARTED',
+                    contractSigned: false,
+                    totalEarnings: 0,
+                    totalSubscribers: 0,
+                    availableForMeetings: true
+                },
+                include: {
+                    courses: {
+                        select: {
+                            id: true,
+                            title: true,
+                            titleAr: true,
+                            thumbnail: true,
+                            status: true,
+                            createdAt: true
+                        }
+                    },
+                    _count: {
+                        select: {
+                            courses: true
+                        }
+                    }
+                }
+            })
         }
 
-        // Get user data separately
-        const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                profileImage: true,
-                arabicName: true,
-                role: true
-            }
-        });
+        if (!creator) {
+            return NextResponse.json({
+                success: false,
+                error: 'Creator profile not found',
+                message: 'No creator profile exists for this user. Please complete onboarding.',
+                requiresOnboarding: true
+            }, { status: 404 })
+        }
 
         return NextResponse.json({
             success: true,

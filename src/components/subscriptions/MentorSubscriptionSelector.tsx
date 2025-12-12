@@ -111,15 +111,15 @@ export default function MentorSubscriptionSelector({
                                         </h3>
                                         <div className="flex items-baseline gap-1">
                                             <span className="text-4xl font-black">
-                                                {tier.monthlyPrice}
+                                                €{tier.monthlyPrice}
                                             </span>
                                             <span className="text-sm opacity-80">
-                                                {isArabic ? 'ج.م/شهر' : 'EGP/mo'}
+                                                {isArabic ? '/شهر' : '/mo'}
                                             </span>
                                         </div>
                                         {tier.yearlyPrice && (
                                             <p className="text-xs opacity-70 mt-1">
-                                                {isArabic ? 'أو' : 'or'} {tier.yearlyPrice} {isArabic ? 'ج.م/سنة' : 'EGP/year'}
+                                                {isArabic ? 'أو' : 'or'} €{tier.yearlyPrice} {isArabic ? '/سنة' : '/year'}
                                             </p>
                                         )}
                                     </div>

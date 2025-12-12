@@ -537,7 +537,7 @@ function ContentCard({ item }: { item: ContentItem }) {
                                     {item.price && (
                                         <div>
                                             <p className="text-muted-foreground text-xs">{t('price')}</p>
-                                            <p className="text-foreground font-bold">EGP {item.price}</p>
+                                            <p className="text-foreground font-bold">€{item.price}</p>
                                         </div>
                                     )}
                                     <Button

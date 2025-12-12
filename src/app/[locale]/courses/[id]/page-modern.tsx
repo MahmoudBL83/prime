@@ -578,9 +578,9 @@ export default function ModernCoursePage() {
                                         {/* Price */}
                                         <div className="text-center mb-6">
                                             <div className="text-3xl font-bold text-green-400 mb-1">
-                                                {currentLocale === 'ar' ? `${course.price} ج.م` : `EGP ${course.price}`}
+                                                €{course.price}
                                             </div>
-                                            <div className="text-gray-400 text-sm line-through">EGP {Math.floor(course.price * 1.5)}</div>
+                                            <div className="text-gray-400 text-sm line-through">€{Math.floor(course.price * 1.5)}</div>
                                             <div className="text-red-400 text-sm font-medium">30% OFF Limited Time</div>
                                         </div>
 
