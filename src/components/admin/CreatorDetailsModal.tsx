@@ -20,8 +20,14 @@ import {
     Download,
     Eye,
     Edit,
-    Save
+    Save,
+    Trash2,
+    Globe,
+    CreditCard,
+    Languages,
+    MapPin
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 interface CreatorDetailsModalProps {
     creatorId: string
@@ -46,6 +52,11 @@ interface CreatorDetails {
     contractSignedAt?: string
     totalEarnings: number
     totalSubscribers: number
+    monthlyPrice?: number
+    hourlyRate?: number
+    availableForMeetings?: boolean
+    languages?: string
+    timezone?: string
     createdAt: string
     updatedAt: string
     user: {
@@ -98,20 +109,36 @@ const kycStatusLabels = {
 export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCreatorUpdated }: CreatorDetailsModalProps) {
     const [creator, setCreator] = useState<CreatorDetails | null>(null)
     const [loading, setLoading] = useState(false)
+    const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [activeTab, setActiveTab] = useState<'overview' | 'kyc' | 'courses' | 'earnings'>('overview')
     const [isEditing, setIsEditing] = useState(false)
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+    
+    // Comprehensive edit form for creator
     const [editForm, setEditForm] = useState({
         expertise: '',
         teachingGoals: '',
         bankAccountIBAN: '',
-        bankName: ''
+        bankName: '',
+        monthlyPrice: '',
+        hourlyRate: '',
+        availableForMeetings: false,
+        languages: '',
+        timezone: '',
+        totalEarnings: '',
+        totalSubscribers: '',
+        kycStatus: 'NOT_STARTED' as CreatorDetails['kycStatus'],
+        contractSigned: false
     })
+    
+    // User profile edit form
     const [profileEdit, setProfileEdit] = useState({
         name: '',
         email: '',
         phone: '',
-        arabicName: ''
+        arabicName: '',
+        bio: ''
     })
 
     useEffect(() => {
@@ -126,13 +153,23 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                 expertise: creator.expertise || '',
                 teachingGoals: creator.teachingGoals || '',
                 bankAccountIBAN: creator.bankAccountIBAN || '',
-                bankName: creator.bankName || ''
+                bankName: creator.bankName || '',
+                monthlyPrice: creator.monthlyPrice?.toString() || '',
+                hourlyRate: creator.hourlyRate?.toString() || '',
+                availableForMeetings: creator.availableForMeetings || false,
+                languages: creator.languages || '',
+                timezone: creator.timezone || '',
+                totalEarnings: creator.totalEarnings?.toString() || '0',
+                totalSubscribers: creator.totalSubscribers?.toString() || '0',
+                kycStatus: creator.kycStatus,
+                contractSigned: creator.contractSigned
             })
             setProfileEdit({
                 name: creator.user.name || '',
                 email: creator.user.email || '',
                 phone: creator.user.phone || '',
-                arabicName: creator.user.arabicName || ''
+                arabicName: creator.user.arabicName || '',
+                bio: creator.user.bio || ''
             })
         }
     }, [creator])
@@ -177,13 +214,35 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
     }
 
     const handleSaveEdit = async () => {
+        setSaving(true)
         try {
             const response = await fetch(`/api/admin/creators/${creatorId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ action: 'updateProfile', ...editForm })
+                body: JSON.stringify({ 
+                    action: 'updateAll',
+                    expertise: editForm.expertise,
+                    teachingGoals: editForm.teachingGoals,
+                    bankAccountIBAN: editForm.bankAccountIBAN,
+                    bankName: editForm.bankName,
+                    monthlyPrice: editForm.monthlyPrice,
+                    hourlyRate: editForm.hourlyRate,
+                    availableForMeetings: editForm.availableForMeetings,
+                    languages: editForm.languages,
+                    timezone: editForm.timezone,
+                    totalEarnings: editForm.totalEarnings,
+                    totalSubscribers: editForm.totalSubscribers,
+                    kycStatus: editForm.kycStatus,
+                    contractSigned: editForm.contractSigned,
+                    user: {
+                        name: profileEdit.name,
+                        arabicName: profileEdit.arabicName,
+                        phone: profileEdit.phone,
+                        bio: profileEdit.bio
+                    }
+                })
             })
 
             if (!response.ok) {
@@ -194,8 +253,36 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
             await fetchCreatorDetails()
             onCreatorUpdated()
             setIsEditing(false)
+            toast.success('Creator updated successfully')
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred')
+            toast.error(err instanceof Error ? err.message : 'Failed to update')
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    const handleDeleteCreator = async () => {
+        setSaving(true)
+        try {
+            const response = await fetch(`/api/admin/creators/${creatorId}`, {
+                method: 'DELETE'
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.error || 'Failed to delete creator')
+            }
+
+            onCreatorUpdated()
+            onClose()
+            toast.success('Creator deleted successfully')
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred')
+            toast.error(err instanceof Error ? err.message : 'Failed to delete')
+        } finally {
+            setSaving(false)
+            setShowDeleteConfirm(false)
         }
     }
 
@@ -269,14 +356,42 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        {!isEditing && activeTab === 'overview' && (
-                            <button
-                                onClick={() => setIsEditing(true)}
-                                className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                            >
-                                <Edit className="w-4 h-4" />
-                                Edit
-                            </button>
+                        {!isEditing && (
+                            <>
+                                <button
+                                    onClick={() => setIsEditing(true)}
+                                    className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                    Edit All
+                                </button>
+                                <button
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    Delete
+                                </button>
+                            </>
+                        )}
+                        {isEditing && (
+                            <>
+                                <button
+                                    onClick={handleSaveEdit}
+                                    disabled={saving}
+                                    className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                                >
+                                    <Save className="w-4 h-4" />
+                                    {saving ? 'Saving...' : 'Save All'}
+                                </button>
+                                <button
+                                    onClick={() => setIsEditing(false)}
+                                    className="flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                                >
+                                    <X className="w-4 h-4" />
+                                    Cancel
+                                </button>
+                            </>
                         )}
                         <button
                             onClick={onClose}
@@ -330,9 +445,270 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
 
                     {creator && activeTab === 'overview' && (
                         <div className="space-y-6">
-                            {/* Basic Info */}
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div className="bg-card rounded-lg p-4 border border-border">
+                            {/* Delete Confirmation Modal */}
+                            {showDeleteConfirm && (
+                                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+                                    <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4 border border-border">
+                                        <h3 className="text-lg font-bold text-foreground mb-4">Confirm Delete</h3>
+                                        <p className="text-muted-foreground mb-6">
+                                            Are you sure you want to delete this creator profile? This action cannot be undone.
+                                            {creator._count.courses > 0 && (
+                                                <span className="block text-red-500 mt-2">
+                                                    Warning: This creator has {creator._count.courses} courses. You must delete or reassign them first.
+                                                </span>
+                                            )}
+                                        </p>
+                                        <div className="flex gap-3 justify-end">
+                                            <button
+                                                onClick={() => setShowDeleteConfirm(false)}
+                                                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                onClick={handleDeleteCreator}
+                                                disabled={saving || creator._count.courses > 0}
+                                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                                            >
+                                                {saving ? 'Deleting...' : 'Delete Creator'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {isEditing ? (
+                                /* Full Edit Mode */
+                                <div className="space-y-6">
+                                    {/* User Profile Section */}
+                                    <div className="bg-card rounded-lg p-4 border border-border">
+                                        <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+                                            <User className="w-5 h-5" />
+                                            User Profile
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-foreground mb-1">Name *</label>
+                                                <input
+                                                    type="text"
+                                                    value={profileEdit.name}
+                                                    onChange={(e) => setProfileEdit({ ...profileEdit, name: e.target.value })}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-foreground mb-1">Arabic Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={profileEdit.arabicName}
+                                                    onChange={(e) => setProfileEdit({ ...profileEdit, arabicName: e.target.value })}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                    dir="rtl"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-foreground mb-1">Email (Read-only)</label>
+                                                <input
+                                                    type="email"
+                                                    value={profileEdit.email}
+                                                    disabled
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-muted text-muted-foreground"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-foreground mb-1">Phone</label>
+                                                <input
+                                                    type="tel"
+                                                    value={profileEdit.phone}
+                                                    onChange={(e) => setProfileEdit({ ...profileEdit, phone: e.target.value })}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                />
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-medium text-foreground mb-1">Bio</label>
+                                                <textarea
+                                                    value={profileEdit.bio}
+                                                    onChange={(e) => setProfileEdit({ ...profileEdit, bio: e.target.value })}
+                                                    rows={3}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Creator Profile Section */}
+                                    <div className="bg-card rounded-lg p-4 border border-border">
+                                        <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+                                            <Award className="w-5 h-5" />
+                                            Creator Profile
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-medium text-foreground mb-1">Expertise</label>
+                                                <textarea
+                                                    value={editForm.expertise}
+                                                    onChange={(e) => setEditForm({ ...editForm, expertise: e.target.value })}
+                                                    rows={2}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                    placeholder="Areas of expertise..."
+                                                />
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-medium text-foreground mb-1">Teaching Goals</label>
+                                                <textarea
+                                                    value={editForm.teachingGoals}
+                                                    onChange={(e) => setEditForm({ ...editForm, teachingGoals: e.target.value })}
+                                                    rows={2}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                    placeholder="Teaching goals..."
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-foreground mb-1">Languages</label>
+                                                <input
+                                                    type="text"
+                                                    value={editForm.languages}
+                                                    onChange={(e) => setEditForm({ ...editForm, languages: e.target.value })}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                    placeholder="English, Arabic..."
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-foreground mb-1">Timezone</label>
+                                                <input
+                                                    type="text"
+                                                    value={editForm.timezone}
+                                                    onChange={(e) => setEditForm({ ...editForm, timezone: e.target.value })}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                    placeholder="UTC+2"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Pricing Section */}
+                                    <div className="bg-card rounded-lg p-4 border border-border">
+                                        <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+                                            <DollarSign className="w-5 h-5" />
+                                            Pricing & Availability
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-foreground mb-1">Monthly Price (€)</label>
+                                                <input
+                                                    type="number"
+                                                    value={editForm.monthlyPrice}
+                                                    onChange={(e) => setEditForm({ ...editForm, monthlyPrice: e.target.value })}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                    placeholder="29"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-foreground mb-1">Hourly Rate (€)</label>
+                                                <input
+                                                    type="number"
+                                                    value={editForm.hourlyRate}
+                                                    onChange={(e) => setEditForm({ ...editForm, hourlyRate: e.target.value })}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                    placeholder="50"
+                                                />
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={editForm.availableForMeetings}
+                                                    onChange={(e) => setEditForm({ ...editForm, availableForMeetings: e.target.checked })}
+                                                    className="w-5 h-5 rounded"
+                                                />
+                                                <label className="text-sm font-medium text-foreground">Available for Meetings</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Banking Section */}
+                                    <div className="bg-card rounded-lg p-4 border border-border">
+                                        <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+                                            <CreditCard className="w-5 h-5" />
+                                            Banking Details
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-foreground mb-1">Bank Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={editForm.bankName}
+                                                    onChange={(e) => setEditForm({ ...editForm, bankName: e.target.value })}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-foreground mb-1">IBAN</label>
+                                                <input
+                                                    type="text"
+                                                    value={editForm.bankAccountIBAN}
+                                                    onChange={(e) => setEditForm({ ...editForm, bankAccountIBAN: e.target.value })}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Status Section */}
+                                    <div className="bg-card rounded-lg p-4 border border-border">
+                                        <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+                                            <Shield className="w-5 h-5" />
+                                            Status & Metrics
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-foreground mb-1">KYC Status</label>
+                                                <select
+                                                    value={editForm.kycStatus}
+                                                    onChange={(e) => setEditForm({ ...editForm, kycStatus: e.target.value as CreatorDetails['kycStatus'] })}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                >
+                                                    <option value="NOT_STARTED">Not Started</option>
+                                                    <option value="PENDING">Pending</option>
+                                                    <option value="VERIFIED">Verified</option>
+                                                    <option value="REJECTED">Rejected</option>
+                                                </select>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={editForm.contractSigned}
+                                                    onChange={(e) => setEditForm({ ...editForm, contractSigned: e.target.checked })}
+                                                    className="w-5 h-5 rounded"
+                                                />
+                                                <label className="text-sm font-medium text-foreground">Contract Signed</label>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-foreground mb-1">Total Earnings (€)</label>
+                                                <input
+                                                    type="number"
+                                                    value={editForm.totalEarnings}
+                                                    onChange={(e) => setEditForm({ ...editForm, totalEarnings: e.target.value })}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-foreground mb-1">Total Subscribers</label>
+                                                <input
+                                                    type="number"
+                                                    value={editForm.totalSubscribers}
+                                                    onChange={(e) => setEditForm({ ...editForm, totalSubscribers: e.target.value })}
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                /* View Mode */
+                                <>
+                                    {/* Basic Info */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <div className="bg-card rounded-lg p-4 border border-border">
                                     <h3 className="text-lg font-medium text-foreground mb-4">
                                         Personal Information
                                     </h3>
@@ -413,126 +789,56 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                     Professional Information
                                 </h3>
                                 <div className="space-y-4">
-                                    {isEditing ? (
-                                        <>
-                                            <div>
-                                                <label className="block text-sm font-medium text-foreground mb-1">
-                                                    Expertise
-                                                </label>
-                                                <textarea
-                                                    value={editForm.expertise}
-                                                    onChange={(e) => setEditForm({ ...editForm, expertise: e.target.value })}
-                                                    rows={3}
-                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
-                                                    placeholder="Areas of expertise..."
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-foreground mb-1">
-                                                    Teaching Goals
-                                                </label>
-                                                <textarea
-                                                    value={editForm.teachingGoals}
-                                                    onChange={(e) => setEditForm({ ...editForm, teachingGoals: e.target.value })}
-                                                    rows={3}
-                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
-                                                    placeholder="Teaching goals and objectives..."
-                                                />
-                                            </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className="block text-sm font-medium text-foreground mb-1">
-                                                        Bank Name
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        value={editForm.bankName}
-                                                        onChange={(e) => setEditForm({ ...editForm, bankName: e.target.value })}
-                                                        className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
-                                                        placeholder="Bank name..."
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-foreground mb-1">
-                                                        Bank Account IBAN
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        value={editForm.bankAccountIBAN}
-                                                        onChange={(e) => setEditForm({ ...editForm, bankAccountIBAN: e.target.value })}
-                                                        className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
-                                                        placeholder="IBAN number..."
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={handleSaveEdit}
-                                                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                                                >
-                                                    <Save className="w-4 h-4" />
-                                                    Save Changes
-                                                </button>
-                                                <button
-                                                    onClick={() => setIsEditing(false)}
-                                                    className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
-                                                >
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            {creator.expertise && (
-                                                <div>
-                                                    <p className="text-sm text-muted-foreground mb-1">Expertise</p>
-                                                    <p className="text-foreground">{creator.expertise}</p>
-                                                </div>
-                                            )}
-                                            {creator.teachingGoals && (
-                                                <div>
-                                                    <p className="text-sm text-muted-foreground mb-1">Teaching Goals</p>
-                                                    <p className="text-foreground">{creator.teachingGoals}</p>
-                                                </div>
-                                            )}
-                                            {(creator.bankName || creator.bankAccountIBAN) && (
-                                                <div>
-                                                    <p className="text-sm text-muted-foreground mb-1">Banking Details</p>
-                                                    {creator.bankName && <p className="text-foreground">Bank: {creator.bankName}</p>}
-                                                    {creator.bankAccountIBAN && <p className="text-foreground">IBAN: {creator.bankAccountIBAN}</p>}
-                                                </div>
-                                            )}
-                                            {!creator.expertise && !creator.teachingGoals && !creator.bankName && !creator.bankAccountIBAN && (
-                                                <p className="text-muted-foreground">No professional information provided yet.</p>
-                                            )}
-                                        </>
+                                    {creator.expertise && (
+                                        <div>
+                                            <p className="text-sm text-muted-foreground mb-1">Expertise</p>
+                                            <p className="text-foreground">{creator.expertise}</p>
+                                        </div>
+                                    )}
+                                    {creator.teachingGoals && (
+                                        <div>
+                                            <p className="text-sm text-muted-foreground mb-1">Teaching Goals</p>
+                                            <p className="text-foreground">{creator.teachingGoals}</p>
+                                        </div>
+                                    )}
+                                    {(creator.bankName || creator.bankAccountIBAN) && (
+                                        <div>
+                                            <p className="text-sm text-muted-foreground mb-1">Banking Details</p>
+                                            {creator.bankName && <p className="text-foreground">Bank: {creator.bankName}</p>}
+                                            {creator.bankAccountIBAN && <p className="text-foreground">IBAN: {creator.bankAccountIBAN}</p>}
+                                        </div>
+                                    )}
+                                    {!creator.expertise && !creator.teachingGoals && !creator.bankName && !creator.bankAccountIBAN && (
+                                        <p className="text-muted-foreground">No professional information provided yet.</p>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Contract Status */}
-                            <div className="bg-card rounded-lg p-4 border border-border">
-                                <h3 className="text-lg font-medium text-foreground mb-4">
-                                    Contract Status
-                                </h3>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className={`font-medium ${creator.contractSigned ? 'text-green-600' : 'text-red-600'}`}>
-                                            {creator.contractSigned ? 'Contract Signed' : 'Contract Not Signed'}
-                                        </p>
-                                        {creator.contractSignedAt && (
-                                            <p className="text-sm text-muted-foreground">
-                                                Signed on {formatDate(creator.contractSignedAt)}
+                                {/* Contract Status */}
+                                <div className="bg-card rounded-lg p-4 border border-border">
+                                    <h3 className="text-lg font-medium text-foreground mb-4">
+                                        Contract Status
+                                    </h3>
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className={`font-medium ${creator.contractSigned ? 'text-green-600' : 'text-red-600'}`}>
+                                                {creator.contractSigned ? 'Contract Signed' : 'Contract Not Signed'}
                                             </p>
+                                            {creator.contractSignedAt && (
+                                                <p className="text-sm text-muted-foreground">
+                                                    Signed on {formatDate(creator.contractSignedAt)}
+                                                </p>
+                                            )}
+                                        </div>
+                                        {!creator.contractSigned && (
+                                            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                                Send Contract
+                                            </button>
                                         )}
                                     </div>
-                                    {!creator.contractSigned && (
-                                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                            Send Contract
-                                        </button>
-                                    )}
                                 </div>
-                            </div>
+                            </>
+                            )}
                         </div>
                     )}
 

@@ -148,6 +148,91 @@ export async function PATCH(
                         teachingGoals: updateData.teachingGoals,
                         bankAccountIBAN: updateData.bankAccountIBAN,
                         bankName: updateData.bankName,
+                        monthlyPrice: updateData.monthlyPrice ? parseFloat(updateData.monthlyPrice) : undefined,
+                        hourlyRate: updateData.hourlyRate ? parseFloat(updateData.hourlyRate) : undefined,
+                        availableForMeetings: updateData.availableForMeetings,
+                        languages: updateData.languages,
+                        timezone: updateData.timezone,
+                        updatedAt: new Date()
+                    }
+                })
+                break
+
+            case 'updateUserProfile':
+                // Update the associated user profile
+                const creator = await prisma.creator.findUnique({
+                    where: { id: id },
+                    select: { userId: true }
+                })
+
+                if (!creator) {
+                    return NextResponse.json({ error: 'Creator not found' }, { status: 404 })
+                }
+
+                await prisma.user.update({
+                    where: { id: creator.userId },
+                    data: {
+                        name: updateData.name,
+                        arabicName: updateData.arabicName,
+                        phone: updateData.phone,
+                        bio: updateData.bio,
+                        updatedAt: new Date()
+                    }
+                })
+
+                updatedCreator = await prisma.creator.findUnique({
+                    where: { id: id },
+                    include: { user: true }
+                })
+                break
+
+            case 'updateAll':
+                // Update both creator and user in one action
+                const creatorForUpdate = await prisma.creator.findUnique({
+                    where: { id: id },
+                    select: { userId: true }
+                })
+
+                if (!creatorForUpdate) {
+                    return NextResponse.json({ error: 'Creator not found' }, { status: 404 })
+                }
+
+                // Update user
+                if (updateData.user) {
+                    await prisma.user.update({
+                        where: { id: creatorForUpdate.userId },
+                        data: {
+                            name: updateData.user.name,
+                            arabicName: updateData.user.arabicName,
+                            phone: updateData.user.phone,
+                            bio: updateData.user.bio,
+                            updatedAt: new Date()
+                        }
+                    })
+                }
+
+                // Update creator
+                updatedCreator = await prisma.creator.update({
+                    where: { id: id },
+                    data: {
+                        expertise: updateData.expertise,
+                        teachingGoals: updateData.teachingGoals,
+                        bankAccountIBAN: updateData.bankAccountIBAN,
+                        bankName: updateData.bankName,
+                        monthlyPrice: updateData.monthlyPrice !== undefined ? parseFloat(updateData.monthlyPrice) : undefined,
+                        hourlyRate: updateData.hourlyRate !== undefined ? parseFloat(updateData.hourlyRate) : undefined,
+                        availableForMeetings: updateData.availableForMeetings,
+                        languages: updateData.languages,
+                        timezone: updateData.timezone,
+                        totalEarnings: updateData.totalEarnings !== undefined ? parseFloat(updateData.totalEarnings) : undefined,
+                        totalSubscribers: updateData.totalSubscribers !== undefined ? parseInt(updateData.totalSubscribers) : undefined,
+                        kycStatus: updateData.kycStatus ? updateData.kycStatus as KYCStatus : undefined,
+                        contractSigned: updateData.contractSigned,
+                        updatedAt: new Date()
+                    },
+                    include: { user: true }
+                })
+                break
                         updatedAt: new Date()
                     }
                 })

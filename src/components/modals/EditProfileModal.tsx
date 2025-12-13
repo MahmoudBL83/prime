@@ -2,17 +2,19 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Camera, Upload, Link as LinkIcon, Save, Loader2 } from 'lucide-react'
+import { X, Camera, Upload, Link as LinkIcon, Save, Loader2, Award } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
+import { CredentialsSection, Credential } from '@/components/credentials/CredentialsSection'
 
 interface EditProfileModalProps {
     isOpen: boolean
     onClose: () => void
     currentProfile: {
+        id?: string // Creator ID
         name: string
         arabicName?: string
         bio?: string
@@ -21,6 +23,7 @@ interface EditProfileModalProps {
         coverImage?: string | null
         socialLinks?: any
         monthlyPrice?: number // Single tier in EUR
+        credentials?: Credential[]
     }
     isArabic?: boolean
 }
@@ -46,7 +49,8 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
     const [coverImage, setCoverImage] = useState<File | null>(null)
     const [coverImagePreview, setCoverImagePreview] = useState(currentProfile.coverImage || '')
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [activeTab, setActiveTab] = useState<'basic' | 'pricing' | 'social'>('basic')
+    const [activeTab, setActiveTab] = useState<'basic' | 'pricing' | 'social' | 'credentials'>('basic')
+    const [credentials, setCredentials] = useState<Credential[]>(currentProfile.credentials || [])
 
     const profileImageRef = useRef<HTMLInputElement>(null)
     const coverImageRef = useRef<HTMLInputElement>(null)
@@ -59,6 +63,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
         })
         setProfileImagePreview(currentProfile.profileImage || '')
         setCoverImagePreview(currentProfile.coverImage || '')
+        setCredentials(currentProfile.credentials || [])
         setFormData({
             name: currentProfile.name || '',
             arabicName: currentProfile.arabicName || '',
@@ -233,6 +238,17 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                                     }`}
                                 >
                                     {isArabic ? 'الروابط' : 'Social Links'}
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('credentials')}
+                                    className={`px-4 py-2 rounded-full font-semibold transition-all flex items-center gap-2 ${
+                                        activeTab === 'credentials'
+                                            ? 'bg-purple-500 text-white'
+                                            : 'bg-card text-muted-foreground hover:text-foreground'
+                                    }`}
+                                >
+                                    <Award className="w-4 h-4" />
+                                    {isArabic ? 'الشهادات' : 'Credentials'}
                                 </button>
                             </div>
                         </div>
@@ -516,6 +532,28 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                                             placeholder="https://yourwebsite.com"
                                         />
                                     </div>
+                                </div>
+                            )}
+
+                            {/* Credentials Tab */}
+                            {activeTab === 'credentials' && currentProfile.id && (
+                                <CredentialsSection
+                                    creatorId={currentProfile.id}
+                                    credentials={credentials}
+                                    onCredentialsChange={setCredentials}
+                                    isArabic={isArabic}
+                                    isEditing={true}
+                                />
+                            )}
+
+                            {activeTab === 'credentials' && !currentProfile.id && (
+                                <div className="text-center py-12">
+                                    <Award className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                                    <p className="text-muted-foreground">
+                                        {isArabic 
+                                            ? 'يرجى حفظ الملف الشخصي أولاً لإدارة الشهادات'
+                                            : 'Please save profile first to manage credentials'}
+                                    </p>
                                 </div>
                             )}
 

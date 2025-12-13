@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { prisma } from '@/lib/prisma'
 
+// Use nodejs runtime for file system operations
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
     try {
@@ -44,31 +44,35 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Create unique filename
-        const timestamp = Date.now()
-        const ext = file.name.split('.').pop()
-        const filename = `${session.user.id}-${timestamp}.${ext}`
-        
-        // Ensure upload directory exists
-        const uploadDir = join(process.cwd(), 'public', 'uploads', 'avatars')
-        if (!existsSync(uploadDir)) {
-            await mkdir(uploadDir, { recursive: true })
-        }
-
-        // Save file
+        // Convert file to base64 data URL for storage
+        // This works in both development and production without filesystem access
         const bytes = await file.arrayBuffer()
         const buffer = Buffer.from(bytes)
-        const filepath = join(uploadDir, filename)
-        await writeFile(filepath, buffer)
+        const base64 = buffer.toString('base64')
+        const mimeType = file.type
+        const dataUrl = `data:${mimeType};base64,${base64}`
 
-        // Return public URL
-        const url = `/uploads/avatars/${filename}`
+        // For production, you should use a cloud storage service like:
+        // - Cloudinary
+        // - AWS S3
+        // - Vercel Blob
+        // - Uploadthing
+        
+        // For now, we'll store as base64 data URL which works everywhere
+        // Update user profile image in database
+        await prisma.user.update({
+            where: { id: session.user.id },
+            data: { profileImage: dataUrl }
+        })
 
-        return NextResponse.json({ url })
+        return NextResponse.json({ 
+            url: dataUrl,
+            message: 'Avatar uploaded successfully'
+        })
     } catch (error) {
         console.error('Avatar upload error:', error)
         return NextResponse.json(
-            { error: 'Upload failed' },
+            { error: 'Upload failed. Please try again.' },
             { status: 500 }
         )
     }

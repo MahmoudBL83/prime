@@ -13,7 +13,6 @@ import { useLocale } from 'next-intl'
 import Image from 'next/image'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'
 
 // Apple TV color palette
 const colors = {
@@ -156,6 +155,7 @@ export default function OnboardingPage() {
         setIsUploading(true)
 
         try {
+            // Show preview immediately
             const reader = new FileReader()
             reader.onloadend = () => {
                 setPhotoPreview(reader.result as string)
@@ -170,17 +170,20 @@ export default function OnboardingPage() {
                 body: formData,
             })
 
+            const data = await response.json()
+
             if (!response.ok) {
-                throw new Error('Upload failed')
+                throw new Error(data.error || 'Upload failed')
             }
 
-            const data = await response.json()
             setValue('avatar', data.url)
             toast.success(isArabic ? 'تم رفع الصورة بنجاح' : 'Photo uploaded successfully')
         } catch (error) {
             console.error('Upload error:', error)
-            toast.error(isArabic ? 'فشل رفع الصورة' : 'Failed to upload photo')
+            const errorMessage = error instanceof Error ? error.message : 'Failed to upload photo'
+            toast.error(isArabic ? 'فشل رفع الصورة: ' + errorMessage : 'Failed to upload photo: ' + errorMessage)
             setPhotoPreview(null)
+            setValue('avatar', '')
         } finally {
             setIsUploading(false)
         }

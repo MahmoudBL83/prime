@@ -37,8 +37,10 @@ export async function GET(req: NextRequest) {
                             include: {
                                 user: {
                                     select: {
+                                        id: true,
                                         name: true,
-                                        profileImage: true
+                                        profileImage: true,
+                                        email: true
                                     }
                                 }
                             }
@@ -107,9 +109,28 @@ export async function GET(req: NextRequest) {
                 status: sub.status,
                 startDate: sub.startDate,
                 endDate: sub.endDate,
+                createdAt: sub.createdAt,
                 cancelledAt: sub.cancelledAt,
+                cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
+                amount: sub.pricePerMonth,
                 pricePerMonth: sub.pricePerMonth,
-                metadata: sub.metadata ? JSON.parse(sub.metadata) : null, // Parse JSON metadata which may contain creatorId and tier
+                tier: sub.tier,
+                metadata: sub.metadata ? JSON.parse(sub.metadata) : null,
+                channelId: sub.channelId,
+                creatorId: sub.channel?.creator?.id,
+                // Include full creator object for the subscriptions page
+                creator: sub.channel?.creator ? {
+                    id: sub.channel.creator.id,
+                    expertise: sub.channel.creator.expertise,
+                    monthlyPrice: sub.channel.creator.monthlyPrice,
+                    totalSubscribers: sub.channel.creator.totalSubscribers,
+                    user: {
+                        id: sub.channel.creator.user.id,
+                        name: sub.channel.creator.user.name,
+                        profileImage: sub.channel.creator.user.profileImage,
+                        email: sub.channel.creator.user.email
+                    }
+                } : null,
                 channelInfo: sub.channel ? {
                     id: sub.channel.id,
                     name: sub.channel.name,

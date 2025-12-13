@@ -58,6 +58,7 @@ import ReviewModal from '@/components/mentors/ReviewModal'
 import { AvatarPlaceholder } from '@/components/ui/avatar-placeholder'
 import { MentorPaymentModal } from '@/components/modals/MentorPaymentModal'
 import { useAuthModal } from '@/contexts/AuthModalContext'
+import { CredentialsDisplay, Credential } from '@/components/credentials/CredentialsSection'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'edge'
@@ -198,6 +199,7 @@ export default function OnlyFansMentorProfilePage() {
     // Real data from localStorage
     const [realArchivedSessions, setRealArchivedSessions] = useState<any[]>([])
     const [realCommunityPosts, setRealCommunityPosts] = useState<any[]>([])
+    const [creatorCredentials, setCreatorCredentials] = useState<Credential[]>([])
 
     // Additional Community Management States (non-duplicate)
     const [memberFilter, setMemberFilter] = useState<'all' | 'vip' | 'premium' | 'basic'>('all')
@@ -413,6 +415,22 @@ export default function OnlyFansMentorProfilePage() {
         fetchUserSubscriptionStatus()
     }, [fetchUserSubscriptionStatus])
 
+    // Fetch creator credentials
+    const fetchCreatorCredentials = useCallback(async (creatorId: string) => {
+        try {
+            const response = await fetch(`/api/creators/${creatorId}/credentials`)
+            if (response.ok) {
+                const data = await response.json()
+                setCreatorCredentials(data.credentials || [])
+            } else {
+                setCreatorCredentials([])
+            }
+        } catch (error) {
+            console.error('Error fetching credentials:', error)
+            setCreatorCredentials([])
+        }
+    }, [])
+
     // Make refreshSubscriptionStatus available globally for modals
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -442,8 +460,28 @@ export default function OnlyFansMentorProfilePage() {
     useEffect(() => {
         if (params.id) {
             fetchMentorData()
+            // Fetch credentials using the mentor ID (which is the creator ID)
+            const creatorId = Array.isArray(params.id) ? params.id[0] : params.id
+            fetchCreatorCredentials(creatorId)
+            // Fetch follow status
+            if (session?.user) {
+                fetchFollowStatus(creatorId)
+            }
         }
-    }, [params.id])
+    }, [params.id, session?.user])
+
+    // Fetch follow status
+    const fetchFollowStatus = async (creatorId: string) => {
+        try {
+            const response = await fetch(`/api/creators/${creatorId}/follow`)
+            if (response.ok) {
+                const data = await response.json()
+                setIsFollowing(data.isFollowing)
+            }
+        } catch (error) {
+            console.error('Error fetching follow status:', error)
+        }
+    }
 
     useEffect(() => {
         // Check if current user is the creator/mentor
@@ -1819,15 +1857,35 @@ export default function OnlyFansMentorProfilePage() {
         }
     }, [newFeedbackRequest, feedbackTokens.available, mentor?.id, feedbackAttachment, isArabic])
 
-    const handleFollow = useCallback(() => {
+    const handleFollow = useCallback(async () => {
         if (!session) {
             toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
             router.push(`/${locale}/login`)
             return
         }
-        setIsFollowing(!isFollowing)
-        toast.success(isFollowing ? (isArabic ? 'تم إلغاء المتابعة' : 'Unfollowed') : (isArabic ? 'تمت المتابعة' : 'Following!'))
-    }, [session, isArabic, locale, router, isFollowing])
+
+        if (!mentor?.id) return
+
+        try {
+            const method = isFollowing ? 'DELETE' : 'POST'
+            const response = await fetch(`/api/creators/${mentor.id}/follow`, {
+                method
+            })
+
+            if (response.ok) {
+                setIsFollowing(!isFollowing)
+                toast.success(isFollowing 
+                    ? (isArabic ? 'تم إلغاء المتابعة' : 'Unfollowed') 
+                    : (isArabic ? 'تمت المتابعة' : 'Following!'))
+            } else {
+                const data = await response.json()
+                toast.error(data.error || (isArabic ? 'فشلت العملية' : 'Operation failed'))
+            }
+        } catch (error) {
+            console.error('Follow error:', error)
+            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+        }
+    }, [session, isArabic, locale, router, isFollowing, mentor?.id])
 
     const handleSubscribe = async () => {
         if (!session) {
@@ -1943,16 +2001,48 @@ export default function OnlyFansMentorProfilePage() {
         toast.success(isArabic ? 'لديك بالفعل وصول كامل!' : 'You already have full access!')
     }
 
-    const handleLikePost = useCallback((postId: string) => {
+    const handleLikePost = useCallback(async (postId: string) => {
         if (!session) {
             toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
             return
         }
-        setPosts(prev => prev.map(post => 
-            post.id === postId 
-                ? { ...post, likes: post.likes + 1 }
-                : post
-        ))
+        
+        try {
+            const response = await fetch(`/api/posts/${postId}/like`, {
+                method: 'POST'
+            })
+
+            if (response.ok) {
+                setPosts(prev => prev.map(post => 
+                    post.id === postId 
+                        ? { ...post, likes: post.likes + 1 }
+                        : post
+                ))
+            } else {
+                const data = await response.json()
+                // If already liked, try to unlike
+                if (data.error === 'Already liked') {
+                    const unlikeResponse = await fetch(`/api/posts/${postId}/like`, {
+                        method: 'DELETE'
+                    })
+                    if (unlikeResponse.ok) {
+                        setPosts(prev => prev.map(post => 
+                            post.id === postId 
+                                ? { ...post, likes: Math.max(0, post.likes - 1) }
+                                : post
+                        ))
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Like error:', error)
+            // Fallback to optimistic update
+            setPosts(prev => prev.map(post => 
+                post.id === postId 
+                    ? { ...post, likes: post.likes + 1 }
+                    : post
+            ))
+        }
     }, [session, isArabic])
 
     const toggleComments = useCallback(async (postId: string) => {
@@ -5954,6 +6044,16 @@ export default function OnlyFansMentorProfilePage() {
                                                 </a>
                                             )}
                                         </div>
+                                    </div>
+                                )}
+
+                                {/* Credentials / Qualifications */}
+                                {creatorCredentials.length > 0 && (
+                                    <div className="pt-4 mt-4 border-t border-border">
+                                        <CredentialsDisplay 
+                                            credentials={creatorCredentials} 
+                                            isArabic={isArabic} 
+                                        />
                                     </div>
                                 )}
                             </div>
