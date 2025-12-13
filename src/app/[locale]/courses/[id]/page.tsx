@@ -9,6 +9,8 @@ import Image from 'next/image';
 import { PaymentModal } from '@/components/PaymentModal';
 import { toast } from 'react-hot-toast';
 import { useAuthModal } from '@/contexts/AuthModalContext';
+import { courseMap } from '@/data/courses';
+import type { CourseData } from '@/data/courses';
 
 interface Episode {
     id: string;
@@ -21,19 +23,9 @@ interface Episode {
     thumbnail: string;
 }
 
-interface Course {
-    id: string;
-    title: string;
-    titleAr?: string;
-    category: string;
-    thumbnail?: string;
-    rating?: number;
-    year?: number;
-    duration?: string;
-    description?: string;
-    descriptionAr?: string;
+type Course = CourseData & {
     episodes?: Episode[];
-}
+};
 
 // Course data mapping by ID
 const coursesData: { [key: string]: Course } = {
@@ -409,10 +401,17 @@ export default function CourseDetailPage() {
         const foundCourse = coursesData[courseId];
         if (foundCourse) {
             setCourse(foundCourse);
-        } else {
-            // Fallback to first course if ID not found
-            setCourse(coursesData['lost-bus-german-survival']);
+            return;
         }
+
+        const sharedCourse = courseMap[courseId];
+        if (sharedCourse) {
+            setCourse(sharedCourse);
+            return;
+        }
+
+        // Fallback to a known course if ID not found
+        setCourse(coursesData['lost-bus-german-survival'] || courseMap['lost-bus-german-survival'] || null);
     }, [params.id]);
 
     const handleAcceptOffer = () => {

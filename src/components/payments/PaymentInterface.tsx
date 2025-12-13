@@ -73,8 +73,8 @@ export function PaymentInterface({ onSuccess, onError }: PaymentInterfaceProps) 
         defaultValues: {
             subscriptionType: 'CATEGORY_A',
             channelId: '',
-            amount: 99, // Default amount for Category A
-            currency: 'EGP',
+            amount: 49, // Default amount for Category A in EUR
+            currency: 'EUR',
         },
     })
 
@@ -83,7 +83,7 @@ export function PaymentInterface({ onSuccess, onError }: PaymentInterfaceProps) 
     // Update amount based on subscription type
     const handleSubscriptionTypeChange = (type: 'CATEGORY_A' | 'CATEGORY_C') => {
         setValue('subscriptionType', type)
-        setValue('amount', type === 'CATEGORY_A' ? 99 : 49) // Different pricing for categories
+        setValue('amount', type === 'CATEGORY_A' ? 49 : 29) // EUR pricing for categories
     }
 
     const onSubmit = async (data: PaymentForm) => {
@@ -294,7 +294,7 @@ export function PaymentInterface({ onSuccess, onError }: PaymentInterfaceProps) 
                                 <div>
                                     <h4 className="font-semibold">All-Access Library</h4>
                                     <p className="text-sm text-muted-foreground">Access to all Category A courses</p>
-                                    <p className="text-lg font-bold text-blue-600 mt-1">EGP 99/month</p>
+                                    <p className="text-lg font-bold text-blue-600 mt-1">€49/month</p>
                                 </div>
                                 {subscriptionType === 'CATEGORY_A' && (
                                     <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
@@ -316,7 +316,7 @@ export function PaymentInterface({ onSuccess, onError }: PaymentInterfaceProps) 
                                 <div>
                                     <h4 className="font-semibold">Mentor Channel</h4>
                                     <p className="text-sm text-muted-foreground">Access to specific mentor content</p>
-                                    <p className="text-lg font-bold text-blue-600 mt-1">EGP 49/month</p>
+                                    <p className="text-lg font-bold text-blue-600 mt-1">€29/month</p>
                                 </div>
                                 {subscriptionType === 'CATEGORY_C' && (
                                     <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
@@ -355,7 +355,7 @@ export function PaymentInterface({ onSuccess, onError }: PaymentInterfaceProps) 
                         Amount
                     </label>
                     <div className="mt-1 relative">
-                        <span className="absolute left-3 top-2 text-muted-foreground">EGP</span>
+                        <span className="absolute left-3 top-2 text-muted-foreground">€</span>
                         <input
                             type="number"
                             {...register('amount', { required: true, min: 1 })}

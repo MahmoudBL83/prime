@@ -1079,11 +1079,20 @@ export default function OnlyFansStyleMentorsPage() {
             <div className="container mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
                     {/* Left Sidebar - Navigation */}
-                    <div className={`fixed lg:static inset-y-0 left-0 z-50 w-72 lg:w-auto lg:col-span-3 p-4 bg-transparent transform transition-transform duration-300 lg:transform-none ${
+                    <div className={`fixed lg:static inset-y-0 left-0 z-50 w-[280px] sm:w-72 lg:w-auto lg:col-span-3 p-3 sm:p-4 bg-[#1f1f1f] lg:bg-transparent transform transition-transform duration-300 lg:transform-none ${
                         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
                     }`}>
                         <div className="lg:sticky lg:top-24">
-                            <nav className="space-y-2">
+                            {/* Mobile Close Button */}
+                            <button
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="lg:hidden absolute top-3 right-3 p-2 hover:bg-white/10 rounded-full transition-colors"
+                            >
+                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <nav className="space-y-2 mt-8 lg:mt-0">
                                 {/* Feed/Home Button */}
                                 <button
                                     onClick={handleSetFeedView}
@@ -1218,24 +1227,24 @@ export default function OnlyFansStyleMentorsPage() {
                     {/* Main Feed - Twitter Style */}
                     <div className="lg:col-span-6 min-h-screen" style={{ borderLeft: '0.5px solid hsla(0,0%,100%,.1)', borderRight: '0.5px solid hsla(0,0%,100%,.1)' }}>
                         {/* Header */}
-                        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl p-4 transition-colors" style={{ borderBottom: '0.5px solid hsla(0,0%,100%,.1)' }}>
-                            {/* Mobile Menu Button */}
-                            <button
-                                onClick={() => setIsMobileMenuOpen(true)}
-                                className="lg:hidden mr-4 p-2 hover:bg-white/5 rounded-full transition-colors inline-flex items-center justify-center"
-                            >
-                                <svg className="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                                </svg>
-                            </button>
-                            <h2 className="text-2xl font-black text-foreground inline-block">
+                        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl px-3 sm:px-4 py-3 transition-colors" style={{ borderBottom: '0.5px solid hsla(0,0%,100%,.1)' }}>
+                            <div className="flex items-center gap-2">
+                                {/* Mobile Menu Button */}
+                                <button
+                                    onClick={() => setIsMobileMenuOpen(true)}
+                                    className="lg:hidden p-2 hover:bg-white/5 rounded-full transition-colors flex-shrink-0"
+                                >
+                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                    </svg>
+                                </button>
+                                <h2 className="text-lg sm:text-2xl font-black text-foreground">
                                 {activeView === 'feed' && (isArabic ? 'الأخبار' : 'Feed')}
                                 {activeView === 'subscriptions' && (isArabic ? 'اشتراكاتي' : 'My Subscriptions')}
                                 {activeView === 'bookmarks' && (isArabic ? 'المحفوظات' : 'Bookmarks')}
                                 {activeView === 'creators' && (isArabic ? 'جميع المبدعين' : 'All Creators')}
                             </h2>
-
-
+                            </div>
                         </div>
 
                         {/* Feed Posts */}
@@ -1264,7 +1273,7 @@ export default function OnlyFansStyleMentorsPage() {
                             {activeView === 'feed' && !loadingPosts && posts.length > 0 && posts.map((post: any, i: number) => (
                                         <div
                                             key={post.id}
-                                            className="p-4 hover:bg-white/[0.02] transition-colors animate-fade-in"
+                                            className="px-3 sm:px-4 py-3 sm:py-4 hover:bg-white/[0.02] transition-colors animate-fade-in"
                                             style={{ animationDelay: `${i * 50}ms`, borderBottom: i < posts.length - 1 ? '0.5px solid hsla(0,0%,100%,.1)' : 'none' }}
                                         >
                                             <div className="flex gap-3">
@@ -1654,11 +1663,11 @@ export default function OnlyFansStyleMentorsPage() {
                                         </div>
 
                                         {/* Subscription Stats */}
-                                        <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-2xl p-6 mb-8">
-                                            <h4 className="text-lg font-bold text-foreground mb-4">
+                                        <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
+                                            <h4 className="text-base sm:text-lg font-bold text-foreground mb-3 sm:mb-4">
                                                 {isArabic ? 'إحصائيات الاشتراك' : 'Subscription Overview'}
                                             </h4>
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                                                 <div className="text-center">
                                                     <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-1">
                                                         3
@@ -1945,32 +1954,20 @@ export default function OnlyFansStyleMentorsPage() {
 
                             {/* Creators Grid View */}
                             {activeView === 'creators' && (
-                                <div className="p-4">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="p-3 sm:p-4 pb-20 sm:pb-4">
+                                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
                                         {creators.map((creator, idx) => (
                                             <div
                                                 key={creator.id}
                                                 onClick={() => handleCreatorClick(creator.id)}
-                                                className="lockup-card relative cursor-pointer overflow-hidden animate-fade-in"
+                                                className="group relative cursor-pointer overflow-hidden animate-fade-in border border-white/[.16] rounded-[14px] block w-full"
                                                 style={{ 
-                                                    animationDelay: `${idx * 50}ms`,
-                                                    border: '1px solid hsla(0, 0%, 100%, .16)',
-                                                    borderRadius: '14px',
-                                                    display: 'block',
-                                                    textDecoration: 'none',
-                                                    width: '100%'
+                                                    animationDelay: `${idx * 50}ms`
                                                 }}
                                             >
                                                 {/* Hover Scrim Overlay */}
                                                 <div 
-                                                    className="lockup-scrim absolute inset-0 pointer-events-none"
-                                                    style={{
-                                                        backgroundColor: 'rgba(51, 51, 51, .3)',
-                                                        borderRadius: '14px',
-                                                        opacity: 0,
-                                                        transition: 'opacity 0.1s ease-in',
-                                                        zIndex: 10
-                                                    }}
+                                                    className="absolute inset-0 pointer-events-none bg-[rgba(51,51,51,.3)] rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-100 z-10"
                                                 />
                                                 
                                 {/* Card Image */}
@@ -2015,30 +2012,24 @@ export default function OnlyFansStyleMentorsPage() {
                                             </div>
                                         ))}
                                     </div>
-                                    
-                                    <style jsx>{`
-                                        .lockup-card:hover .lockup-scrim {
-                                            opacity: 1 !important;
-                                        }
-                                    `}</style>
                                 </div>
                             )}
 
                             {/* Profile View - OnlyFans Style Creator Profile */}
                             {activeView === 'profile' && session && (
-                                <div className="p-6">
+                                <div className="p-3 sm:p-6 pb-20 sm:pb-6">
                                     {/* Cover Image */}
-                                    <div className="relative h-64 rounded-2xl overflow-visible mb-20 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-purple-600/20">
+                                    <div className="relative h-40 sm:h-64 rounded-xl sm:rounded-2xl overflow-visible mb-16 sm:mb-20 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-purple-600/20">
                                         <div className="absolute inset-0 rounded-2xl overflow-hidden">
                                             <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
                                         </div>
                                         
                                         {/* Profile Picture - Positioned at bottom of cover */}
-                                        <div className="absolute -bottom-16 left-6 z-10">
+                                        <div className="absolute -bottom-12 sm:-bottom-16 left-4 sm:left-6 z-10">
                                             <div className="relative">
                                                 <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
                                                 {selectedCreator?.user?.profileImage || (session.user as any)?.image ? (
-                                                    <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-background">
+                                                    <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-background">
                                                         <Image
                                                             src={selectedCreator?.user?.profileImage || (session.user as any)?.image || ''}
                                                             alt="Profile"
@@ -2047,24 +2038,24 @@ export default function OnlyFansStyleMentorsPage() {
                                                         />
                                                     </div>
                                                 ) : (
-                                                    <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center border-4 border-background">
-                                                        <span className="text-5xl font-bold text-foreground">
+                                                    <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center border-4 border-background">
+                                                        <span className="text-3xl sm:text-5xl font-bold text-foreground">
                                                             {selectedCreator?.user?.name?.[0] || session.user?.name?.[0] || 'U'}
                                                         </span>
                                                     </div>
                                                 )}
                                                 {/* Online Status */}
-                                                <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-background" />
+                                                <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 w-5 h-5 sm:w-6 sm:h-6 bg-green-500 rounded-full border-3 sm:border-4 border-background" />
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Profile Info - Below Cover */}
-                                    <div className="mb-6">
-                                        <div className="flex items-start justify-between mb-4">
+                                    <div className="mb-4 sm:mb-6">
+                                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0 mb-4">
                                             <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <h1 className="text-3xl font-black text-foreground">
+                                                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                                    <h1 className="text-xl sm:text-3xl font-black text-foreground">
                                                         {selectedCreator?.user?.name || session.user?.name || 'Your Name'}
                                                     </h1>
                                                     <DynamicIcon name="CheckCircle" className="w-6 h-6 text-purple-500 fill-purple-500" />
@@ -2094,22 +2085,22 @@ export default function OnlyFansStyleMentorsPage() {
                                             </div>
 
                                             {/* Action Buttons */}
-                                            <div className="flex gap-3">
+                                            <div className="flex gap-2 sm:gap-3 flex-wrap">
                                                 {/* Show edit/upload buttons only for own profile */}
                                                 {selectedCreator && session && selectedCreator.userId === session.user?.id ? (
                                                     <>
                                                         <Button
                                                             onClick={() => setEditProfileModalOpen(true)}
-                                                            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-foreground font-bold px-6 py-2 rounded-full"
+                                                            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-foreground font-bold px-4 sm:px-6 py-2 rounded-full text-sm sm:text-base"
                                                         >
                                                             {isArabic ? 'تعديل الملف' : 'Edit Profile'}
                                                         </Button>
                                                         <Button
                                                             onClick={() => setUploadModalOpen(true)}
-                                                            className="bg-card hover:bg-card-hover text-foreground font-semibold px-6 py-2 rounded-full border border-border"
+                                                            className="bg-card hover:bg-card-hover text-foreground font-semibold px-4 sm:px-6 py-2 rounded-full border border-border text-sm sm:text-base"
                                                         >
-                                                            <DynamicIcon name="Upload" className="w-4 h-4 mr-2" />
-                                                            {isArabic ? 'رفع محتوى' : 'Upload'}
+                                                            <DynamicIcon name="Upload" className="w-4 h-4 mr-1 sm:mr-2" />
+                                                            {isArabic ? 'رفع' : 'Upload'}
                                                         </Button>
                                                     </>
                                                 ) : (
@@ -2214,9 +2205,9 @@ export default function OnlyFansStyleMentorsPage() {
                                         <h2 className="text-2xl font-black text-foreground mb-4">
                                             {isArabic ? 'نظرة عامة على الأرباح' : 'Earnings Overview'}
                                         </h2>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                            <div className="bg-card border border-border rounded-2xl p-6">
-                                                <div className="text-sm text-muted-foreground mb-2">
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                                            <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-3 sm:p-6">
+                                                <div className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
                                                     {isArabic ? 'هذا الشهر' : 'This Month'}
                                                 </div>
                                                 <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-1">
@@ -2393,19 +2384,21 @@ export default function OnlyFansStyleMentorsPage() {
                                                 </div>
 
                                                 {/* Content Tabs */}
-                                                <div className="bg-card border border-border rounded-2xl overflow-hidden">
-                                                    <div className="flex items-center border-b border-border">
+                                                <div className="bg-card border border-border rounded-xl sm:rounded-2xl overflow-hidden">
+                                                    <div className="flex items-center border-b border-border overflow-x-auto scrollbar-hide">
                                                         <button
                                                             onClick={() => setProfileTab('posts')}
-                                                            className={`flex-1 py-4 px-6 font-semibold transition-all relative ${
+                                                            className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${
                                                                 profileTab === 'posts'
                                                                     ? 'text-foreground bg-card-hover'
                                                                     : 'text-muted-foreground hover:text-foreground'
                                                             }`}
                                                         >
-                                                            <div className="flex items-center justify-center gap-2">
-                                                                <DynamicIcon name="ImageIcon" className="w-4 h-4" />
-                                                                {isArabic ? 'جميع المنشورات' : 'All Posts'} ({creatorPosts.length})
+                                                            <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
+                                                                <DynamicIcon name="ImageIcon" className="w-3 h-3 sm:w-4 sm:h-4" />
+                                                                <span className="hidden sm:inline">{isArabic ? 'جميع المنشورات' : 'All Posts'}</span>
+                                                                <span className="sm:hidden">{isArabic ? 'الكل' : 'All'}</span>
+                                                                ({creatorPosts.length})
                                                             </div>
                                                             {profileTab === 'posts' && (
                                                                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" />
@@ -2413,14 +2406,14 @@ export default function OnlyFansStyleMentorsPage() {
                                                         </button>
                                                         <button
                                                             onClick={() => setProfileTab('media')}
-                                                            className={`flex-1 py-4 px-6 font-semibold transition-all relative ${
+                                                            className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${
                                                                 profileTab === 'media'
                                                                     ? 'text-foreground bg-card-hover'
                                                                     : 'text-muted-foreground hover:text-foreground'
                                                             }`}
                                                         >
-                                                            <div className="flex items-center justify-center gap-2">
-                                                                <DynamicIcon name="Film" className="w-4 h-4" />
+                                                            <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
+                                                                <DynamicIcon name="Film" className="w-3 h-3 sm:w-4 sm:h-4" />
                                                                 {isArabic ? 'صور' : 'Photos'} ({creatorPosts.filter(p => p.type === 'IMAGE').length})
                                                             </div>
                                                             {profileTab === 'media' && (
@@ -2429,14 +2422,14 @@ export default function OnlyFansStyleMentorsPage() {
                                                         </button>
                                                         <button
                                                             onClick={() => setProfileTab('videos')}
-                                                            className={`flex-1 py-4 px-6 font-semibold transition-all relative ${
+                                                            className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${
                                                                 profileTab === 'videos'
                                                                     ? 'text-foreground bg-card-hover'
                                                                     : 'text-muted-foreground hover:text-foreground'
                                                             }`}
                                                         >
-                                                            <div className="flex items-center justify-center gap-2">
-                                                                <DynamicIcon name="Video" className="w-4 h-4" />
+                                                            <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
+                                                                <DynamicIcon name="Video" className="w-3 h-3 sm:w-4 sm:h-4" />
                                                                 {isArabic ? 'فيديو' : 'Videos'} ({creatorPosts.filter(p => p.type === 'VIDEO').length})
                                                             </div>
                                                             {profileTab === 'videos' && (
@@ -2445,14 +2438,14 @@ export default function OnlyFansStyleMentorsPage() {
                                                         </button>
                                                         <button
                                                             onClick={() => setProfileTab('calendar')}
-                                                            className={`flex-1 py-4 px-6 font-semibold transition-all relative ${
+                                                            className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${
                                                                 profileTab === 'calendar'
                                                                     ? 'text-foreground bg-card-hover'
                                                                     : 'text-muted-foreground hover:text-foreground'
                                                             }`}
                                                         >
-                                                            <div className="flex items-center justify-center gap-2">
-                                                                <DynamicIcon name="Calendar" className="w-4 h-4" />
+                                                            <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
+                                                                <DynamicIcon name="Calendar" className="w-3 h-3 sm:w-4 sm:h-4" />
                                                                 {isArabic ? 'التقويم' : 'Calendar'}
                                                             </div>
                                                             {profileTab === 'calendar' && (
@@ -2461,15 +2454,16 @@ export default function OnlyFansStyleMentorsPage() {
                                                         </button>
                                                         <button
                                                             onClick={() => setProfileTab('stats')}
-                                                            className={`flex-1 py-4 px-6 font-semibold transition-all relative ${
+                                                            className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${
                                                                 profileTab === 'stats'
                                                                     ? 'text-foreground bg-card-hover'
                                                                     : 'text-muted-foreground hover:text-foreground'
                                                             }`}
                                                         >
-                                                            <div className="flex items-center justify-center gap-2">
-                                                                <DynamicIcon name="BarChart3" className="w-4 h-4" />
-                                                                {isArabic ? 'الإحصائيات' : 'Analytics'}
+                                                            <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
+                                                                <DynamicIcon name="BarChart3" className="w-3 h-3 sm:w-4 sm:h-4" />
+                                                                <span className="hidden sm:inline">{isArabic ? 'الإحصائيات' : 'Analytics'}</span>
+                                                                <span className="sm:hidden">{isArabic ? 'إحصاء' : 'Stats'}</span>
                                                             </div>
                                                             {profileTab === 'stats' && (
                                                                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" />
@@ -3046,38 +3040,38 @@ export default function OnlyFansStyleMentorsPage() {
                                             </div>
 
                                             {/* Quick Actions */}
-                                            <div className="mb-6">
-                                                <h3 className="text-lg font-bold text-foreground mb-3">{isArabic ? 'إجراءات سريعة' : 'Quick Actions'}</h3>
-                                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                                            <div className="mb-4 sm:mb-6">
+                                                <h3 className="text-base sm:text-lg font-bold text-foreground mb-2 sm:mb-3">{isArabic ? 'إجراءات سريعة' : 'Quick Actions'}</h3>
+                                                <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
                                                     <Button 
                                                         onClick={() => setUploadModalOpen(true)} 
                                                         variant="outline"
-                                                        className="flex flex-col items-center gap-2 h-auto py-4 hover:bg-purple-500/10 hover:border-purple-500/50 transition-all"
+                                                        className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-purple-500/10 hover:border-purple-500/50 transition-all"
                                                     >
-                                                        <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                                         </svg>
-                                                        <span className="text-xs font-semibold text-foreground">{isArabic ? 'منشور جديد' : 'New Post'}</span>
+                                                        <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'منشور' : 'Post'}</span>
                                                     </Button>
                                                     <Button 
                                                         onClick={() => toast.success(isArabic ? 'جدولة جلسة' : 'Schedule Session')} 
                                                         variant="outline"
-                                                        className="flex flex-col items-center gap-2 h-auto py-4 hover:bg-blue-500/10 hover:border-blue-500/50 transition-all"
+                                                        className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-blue-500/10 hover:border-blue-500/50 transition-all"
                                                     >
-                                                        <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                                         </svg>
-                                                        <span className="text-xs font-semibold text-foreground">{isArabic ? 'جدولة' : 'Schedule'}</span>
+                                                        <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'جدولة' : 'Schedule'}</span>
                                                     </Button>
                                                     <Button 
                                                         onClick={() => toast.success(isArabic ? 'تحميل مورد' : 'Upload Resource')} 
                                                         variant="outline"
-                                                        className="flex flex-col items-center gap-2 h-auto py-4 hover:bg-green-500/10 hover:border-green-500/50 transition-all"
+                                                        className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-green-500/10 hover:border-green-500/50 transition-all"
                                                     >
-                                                        <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                                         </svg>
-                                                        <span className="text-xs font-semibold text-foreground">{isArabic ? 'تحميل' : 'Upload'}</span>
+                                                        <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'رفع' : 'Upload'}</span>
                                                     </Button>
                                                     <Button 
                                                         onClick={() => {
@@ -3086,32 +3080,32 @@ export default function OnlyFansStyleMentorsPage() {
                                                         }}
                                                         variant="outline"
                                                         disabled={isNavigating}
-                                                        className="flex flex-col items-center gap-2 h-auto py-4 hover:bg-pink-500/10 hover:border-pink-500/50 transition-all"
+                                                        className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-pink-500/10 hover:border-pink-500/50 transition-all"
                                                     >
                                                         {isNavigating ? (
-                                                            <DynamicIcon name="Loader2" className="w-6 h-6 text-pink-500 animate-spin" />
+                                                            <DynamicIcon name="Loader2" className="w-5 h-5 sm:w-6 sm:h-6 text-pink-500 animate-spin" />
                                                         ) : (
-                                                            <DynamicIcon name="MessageCircle" className="w-6 h-6 text-pink-500" />
+                                                            <DynamicIcon name="MessageCircle" className="w-5 h-5 sm:w-6 sm:h-6 text-pink-500" />
                                                         )}
-                                                        <span className="text-xs font-semibold text-foreground">{isArabic ? 'الرسائل' : 'Messages'}</span>
+                                                        <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'رسائل' : 'DMs'}</span>
                                                     </Button>
                                                     <Button 
                                                         onClick={() => toast.success(isArabic ? 'إدارة المشتركين' : 'Manage Subscribers')} 
                                                         variant="outline"
-                                                        className="flex flex-col items-center gap-2 h-auto py-4 hover:bg-yellow-500/10 hover:border-yellow-500/50 transition-all"
+                                                        className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-yellow-500/10 hover:border-yellow-500/50 transition-all"
                                                     >
-                                                        <DynamicIcon name="Users" className="w-6 h-6 text-yellow-500" />
-                                                        <span className="text-xs font-semibold text-foreground">{isArabic ? 'المشتركون' : 'Subscribers'}</span>
+                                                        <DynamicIcon name="Users" className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
+                                                        <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'مشتركين' : 'Subs'}</span>
                                                     </Button>
                                                     <Button 
                                                         onClick={() => setProfileTab('stats')} 
                                                         variant="outline"
-                                                        className="flex flex-col items-center gap-2 h-auto py-4 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all"
+                                                        className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all"
                                                     >
-                                                        <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                                         </svg>
-                                                        <span className="text-xs font-semibold text-foreground">{isArabic ? 'التحليلات' : 'Analytics'}</span>
+                                                        <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'إحصاء' : 'Stats'}</span>
                                                     </Button>
                                                 </div>
                                             </div>
@@ -3629,28 +3623,15 @@ export default function OnlyFansStyleMentorsPage() {
                                         creators.slice(0, 5).map((creator, idx) => (
                                         <div
                                             key={creator.id}
-                                            className="lockup-card group cursor-pointer animate-fade-in"
+                                            className="group cursor-pointer animate-fade-in border border-white/[.16] rounded-[10px] overflow-hidden relative"
                                             style={{ 
-                                                animationDelay: `${idx * 50}ms`,
-                                                border: '1px solid hsla(0,0%,100%,.16)',
-                                                borderRadius: '10px',
-                                                overflow: 'hidden',
-                                                position: 'relative'
+                                                animationDelay: `${idx * 50}ms`
                                             }}
                                             onClick={() => handleCreatorClick(creator.id)}
                                         >
                                             {/* Lockup Scrim Overlay */}
                                             <div 
-                                                className="lockup-scrim"
-                                                style={{
-                                                    position: 'absolute',
-                                                    inset: 0,
-                                                    background: 'rgba(51, 51, 51, .3)',
-                                                    opacity: 0,
-                                                    transition: 'opacity 0.1s ease-in',
-                                                    pointerEvents: 'none',
-                                                    zIndex: 10
-                                                }}
+                                                className="absolute inset-0 bg-[rgba(51,51,51,.3)] opacity-0 group-hover:opacity-100 transition-opacity duration-100 pointer-events-none z-10"
                                             />
 
                                             {/* Image Container */}
@@ -3685,12 +3666,6 @@ export default function OnlyFansStyleMentorsPage() {
                                                     </span>
                                                 </div>
                                             </div>
-
-                                            <style jsx>{`
-                                                .lockup-card:hover .lockup-scrim {
-                                                    opacity: 1;
-                                                }
-                                            `}</style>
                                         </div>
                                     )))}
                                 </div>
@@ -3862,6 +3837,90 @@ export default function OnlyFansStyleMentorsPage() {
                     isArabic={isArabic}
                 />
             )}
+
+            {/* Mobile Bottom Navigation */}
+            <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-[#1f1f1f]/95 backdrop-blur-xl border-t border-white/10 safe-area-bottom">
+                <div className="flex items-center justify-around py-2 px-1">
+                    <button
+                        onClick={handleSetFeedView}
+                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${
+                            activeView === 'feed'
+                                ? 'text-[#0a84ff]'
+                                : 'text-white/60 hover:text-white'
+                        }`}
+                    >
+                        <svg className="w-6 h-6" fill={activeView === 'feed' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeView === 'feed' ? 0 : 2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        <span className="text-[10px] font-medium">{isArabic ? 'الرئيسية' : 'Feed'}</span>
+                    </button>
+
+                    <button
+                        onClick={handleSetCreatorsView}
+                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${
+                            activeView === 'creators'
+                                ? 'text-[#0a84ff]'
+                                : 'text-white/60 hover:text-white'
+                        }`}
+                    >
+                        <svg className="w-6 h-6" fill={activeView === 'creators' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeView === 'creators' ? 0 : 2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span className="text-[10px] font-medium">{isArabic ? 'المبدعون' : 'Creators'}</span>
+                    </button>
+
+                    <button
+                        onClick={handleSetSubscriptionsView}
+                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${
+                            activeView === 'subscriptions'
+                                ? 'text-[#0a84ff]'
+                                : 'text-white/60 hover:text-white'
+                        }`}
+                    >
+                        <svg className="w-6 h-6" fill={activeView === 'subscriptions' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeView === 'subscriptions' ? 0 : 2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                        </svg>
+                        <span className="text-[10px] font-medium">{isArabic ? 'اشتراكاتي' : 'Subs'}</span>
+                    </button>
+
+                    {session && (
+                        <button
+                            onClick={handleSetBookmarksView}
+                            className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${
+                                activeView === 'bookmarks'
+                                    ? 'text-[#0a84ff]'
+                                    : 'text-white/60 hover:text-white'
+                            }`}
+                        >
+                            <svg className="w-6 h-6" fill={activeView === 'bookmarks' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeView === 'bookmarks' ? 0 : 2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                            </svg>
+                            <span className="text-[10px] font-medium">{isArabic ? 'المحفوظات' : 'Saved'}</span>
+                        </button>
+                    )}
+
+                    {isCreatorAccount && (
+                        <button
+                            onClick={() => {
+                                if (session && isCreatorAccount) {
+                                    const userCreator = creators.find(c => c.userId === session.user?.id)
+                                    if (userCreator) {
+                                        router.push(`/${locale}/mentors/${userCreator.id}`)
+                                    }
+                                }
+                            }}
+                            className="flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all text-white/60 hover:text-white"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            <span className="text-[10px] font-medium">{isArabic ? 'حسابي' : 'Profile'}</span>
+                        </button>
+                    )}
+                </div>
+            </div>
+
+
         </div>
     )
 }

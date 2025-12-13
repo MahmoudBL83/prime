@@ -170,7 +170,7 @@ export function CoursePlayerGate({
                                         className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-foreground font-semibold py-3"
                                     >
                                         <Crown className="w-5 h-5 ml-2" />
-                                        اشترك الآن - 150 جنيه/شهر
+                                        اشترك الآن - €29/شهر
                                     </Button>
                                 </div>
                             </div>
@@ -225,7 +225,7 @@ export function CoursePlayerGate({
                                     className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-foreground font-semibold py-3"
                                 >
                                     <Crown className="w-5 h-5 ml-2" />
-                                    استمر في المشاهدة - 150 جنيه/شهر
+                                    استمر في المشاهدة - €29/شهر
                                 </Button>
 
                                 <Button
