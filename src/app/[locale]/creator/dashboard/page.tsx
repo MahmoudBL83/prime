@@ -10,6 +10,7 @@ import { toast } from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
 import { CreatorSidebar, CreatorHeader } from '@/components/creator'
+import { CreatorSidebarMobile } from '@/components/creator/CreatorSidebar'
 import { 
     Upload,
     Video,
@@ -43,14 +44,14 @@ const StatCard = ({
     icon: any
     trend?: { value: string; positive: boolean }
 }) => (
-    <div className="bg-white dark:bg-black border border-border dark:border-white/10 rounded-xl p-6 hover:border-[#0a84ff] dark:hover:border-[#0a84ff] transition-all">
-        <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-muted-foreground dark:text-white/60">{title}</span>
-            <Icon className="w-5 h-5 text-[#0a84ff]" />
+    <div className="bg-white dark:bg-black border border-border dark:border-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:border-[#0a84ff] dark:hover:border-[#0a84ff] transition-all">
+        <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground dark:text-white/60 line-clamp-1">{title}</span>
+            <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#0a84ff] flex-shrink-0" />
         </div>
-        <div className="text-3xl font-semibold mb-2 text-foreground dark:text-white">{value}</div>
+        <div className="text-lg sm:text-2xl md:text-3xl font-semibold mb-1 sm:mb-2 text-foreground dark:text-white truncate">{value}</div>
         {trend && (
-            <div className={`text-sm ${trend.positive ? 'text-green-500' : 'text-red-500'}`}>
+            <div className={`text-[10px] sm:text-xs md:text-sm ${trend.positive ? 'text-green-500' : 'text-red-500'}`}>
                 {trend.value}
             </div>
         )}
@@ -169,7 +170,7 @@ export default function CreatorDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background pb-16 lg:pb-0">
             {/* Header */}
             <CreatorHeader />
 
@@ -178,14 +179,14 @@ export default function CreatorDashboard() {
                 <CreatorSidebar />
 
                 {/* Main Content */}
-                <main className="flex-1 p-8">
+                <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 w-full">
                     <div className="max-w-7xl mx-auto">
                         {/* Application Status Banner */}
                         {session?.user?.applicationStatus && session.user.applicationStatus !== 'APPROVED' && (
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className={`mb-8 rounded-2xl border p-6 ${
+                        className={`mb-4 sm:mb-6 md:mb-8 rounded-xl sm:rounded-2xl border p-4 sm:p-6 ${
                             session.user.applicationStatus === 'PENDING' 
                                 ? 'bg-blue-500/10 border-blue-500/20 dark:bg-blue-500/5 dark:border-blue-500/10' 
                                 : session.user.applicationStatus === 'UNDER_REVIEW'
@@ -195,8 +196,8 @@ export default function CreatorDashboard() {
                                 : 'bg-orange-500/10 border-orange-500/20 dark:bg-orange-500/5 dark:border-orange-500/10'
                         }`}
                     >
-                        <div className="flex items-start gap-4">
-                            <div className={`p-2 rounded-full ${
+                        <div className="flex items-start gap-3 sm:gap-4">
+                            <div className={`p-1.5 sm:p-2 rounded-full flex-shrink-0 ${
                                 session.user.applicationStatus === 'PENDING'
                                     ? 'bg-blue-500/20 dark:bg-blue-500/10'
                                     : session.user.applicationStatus === 'UNDER_REVIEW'
@@ -205,7 +206,7 @@ export default function CreatorDashboard() {
                                     ? 'bg-red-500/20 dark:bg-red-500/10'
                                     : 'bg-orange-500/20 dark:bg-orange-500/10'
                             }`}>
-                                <AlertCircle className={`w-5 h-5 ${
+                                <AlertCircle className={`w-4 h-4 sm:w-5 sm:h-5 ${
                                     session.user.applicationStatus === 'PENDING'
                                         ? 'text-blue-500'
                                         : session.user.applicationStatus === 'UNDER_REVIEW'
@@ -215,14 +216,14 @@ export default function CreatorDashboard() {
                                         : 'text-orange-500'
                                 }`} />
                             </div>
-                            <div className="flex-1">
-                                <h3 className="font-semibold mb-1 text-foreground dark:text-white">
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold mb-1 text-sm sm:text-base text-foreground dark:text-white">
                                     {session.user.applicationStatus === 'PENDING' && 'Application Pending'}
                                     {session.user.applicationStatus === 'UNDER_REVIEW' && 'Under Review'}
                                     {session.user.applicationStatus === 'REJECTED' && 'Application Rejected'}
                                     {session.user.applicationStatus === 'RESUBMIT_REQUIRED' && 'Resubmission Required'}
                                 </h3>
-                                <p className="text-sm text-muted-foreground dark:text-white/60 mb-3">
+                                <p className="text-xs sm:text-sm text-muted-foreground dark:text-white/60 mb-3">
                                     {session.user.applicationStatus === 'PENDING' && 'Your application is being reviewed by our team.'}
                                     {session.user.applicationStatus === 'UNDER_REVIEW' && 'We\'ll contact you within 24-48 hours.'}
                                     {session.user.applicationStatus === 'REJECTED' && 'Please review the feedback and reapply.'}
@@ -242,17 +243,17 @@ export default function CreatorDashboard() {
                         )}
 
                         {/* Welcome Section */}
-                        <div className="mb-12">
-                            <h2 className="text-4xl font-bold mb-2 text-foreground dark:text-white">
+                        <div className="mb-6 sm:mb-8 md:mb-12">
+                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-foreground dark:text-white">
                                 Welcome back, {session.user.name}
                             </h2>
-                            <p className="text-lg text-muted-foreground dark:text-white/60">
+                            <p className="text-sm sm:text-base md:text-lg text-muted-foreground dark:text-white/60">
                                 Here's what's happening with your courses
                             </p>
                         </div>
 
                         {/* Stats Grid - Apple Style */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8 md:mb-12">
                             <StatCard
                                 title="Total Students"
                                 value={loading ? '...' : analytics?.totalStudents || 0}
@@ -288,12 +289,12 @@ export default function CreatorDashboard() {
                         </div>
 
                         {/* Content Grid */}
-                        <div className="grid lg:grid-cols-3 gap-8">
+                        <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
                             {/* Top Courses */}
                             <div className="lg:col-span-2">
-                                <div className="bg-white dark:bg-black border border-border dark:border-white/10 rounded-2xl p-8">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <h3 className="text-xl font-semibold text-foreground dark:text-white">Top Courses</h3>
+                                <div className="bg-white dark:bg-black border border-border dark:border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
+                                    <div className="flex items-center justify-between mb-4 sm:mb-6">
+                                        <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground dark:text-white">Top Courses</h3>
                                         <button 
                                             onClick={() => router.push(`/${locale}/creator/courses`)}
                                             className="text-sm text-[#0a84ff] hover:underline"
@@ -314,9 +315,9 @@ export default function CreatorDashboard() {
                                                 <div
                                                     key={course.id}
                                                     onClick={() => router.push(`/${locale}/creator/courses/${course.id}/edit`)}
-                                                    className="flex items-center gap-4 p-4 hover:bg-muted dark:hover:bg-white/5 rounded-xl transition-all cursor-pointer group"
+                                                    className="flex items-center gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 hover:bg-muted dark:hover:bg-white/5 rounded-lg sm:rounded-xl transition-all cursor-pointer group"
                                                 >
-                                                    <div className="relative w-28 h-16 rounded-lg overflow-hidden bg-muted dark:bg-white/5 flex-shrink-0">
+                                                    <div className="relative w-20 h-12 sm:w-24 sm:h-14 md:w-28 md:h-16 rounded-md sm:rounded-lg overflow-hidden bg-muted dark:bg-white/5 flex-shrink-0">
                                                         <Image
                                                             src={course.thumbnail}
                                                             alt={course.title}
@@ -329,23 +330,23 @@ export default function CreatorDashboard() {
                                                         />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <h4 className="font-medium mb-1 line-clamp-1 text-foreground dark:text-white group-hover:text-[#0a84ff]">
+                                                        <h4 className="font-medium mb-0.5 sm:mb-1 line-clamp-1 text-xs sm:text-sm md:text-base text-foreground dark:text-white group-hover:text-[#0a84ff]">
                                                             {course.title}
                                                         </h4>
-                                                        <div className="flex items-center gap-4 text-sm text-muted-foreground dark:text-white/60">
-                                                            <span>{course.enrollments} students</span>
-                                                            <span>•</span>
-                                                            <span>{course.completionRate}% completion</span>
+                                                        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 text-[10px] sm:text-xs md:text-sm text-muted-foreground dark:text-white/60">
+                                                            <span className="truncate">{course.enrollments} students</span>
+                                                            <span className="hidden sm:inline">•</span>
+                                                            <span className="hidden sm:inline truncate">{course.completionRate}% completion</span>
                                                         </div>
                                                     </div>
-                                                    <ChevronRight className="w-5 h-5 text-muted-foreground dark:text-white/40 group-hover:text-[#0a84ff]" />
+                                                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground dark:text-white/40 group-hover:text-[#0a84ff] flex-shrink-0" />
                                                 </div>
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="text-center py-12">
-                                            <Video className="w-12 h-12 mx-auto mb-4 text-muted-foreground dark:text-white/30" />
-                                            <p className="text-muted-foreground dark:text-white/60 mb-4">No courses yet</p>
+                                        <div className="text-center py-8 sm:py-12">
+                                            <Video className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-muted-foreground dark:text-white/30" />
+                                            <p className="text-sm sm:text-base text-muted-foreground dark:text-white/60 mb-3 sm:mb-4">No courses yet</p>
                                             <Button
                                                 onClick={() => router.push(`/${locale}/creator/courses/create`)}
                                                 className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-full"
@@ -359,40 +360,43 @@ export default function CreatorDashboard() {
                             </div>
 
                             {/* Quick Actions & Activity */}
-                            <div className="space-y-6">
+                            <div className="space-y-4 sm:space-y-6">
                                 {/* Quick Actions */}
-                                <div className="bg-white dark:bg-black border border-border dark:border-white/10 rounded-2xl p-6">
-                                    <h3 className="text-lg font-semibold mb-4 text-foreground dark:text-white">Quick Actions</h3>
+                                <div className="bg-white dark:bg-black border border-border dark:border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6">
+                                    <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground dark:text-white">Quick Actions</h3>
                                     <div className="space-y-2">
                                         <Button
                                             onClick={() => router.push(`/${locale}/creator/courses/create`)}
-                                            className="w-full justify-start bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white"
+                                            className="w-full justify-start bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white text-sm sm:text-base"
+                                            size="sm"
                                         >
-                                            <Upload className="w-4 h-4 mr-2" />
+                                            <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
                                             Create Course
                                         </Button>
                                         <Button
                                             onClick={() => router.push(`/${locale}/creator/analytics`)}
                                             variant="outline"
-                                            className="w-full justify-start"
+                                            className="w-full justify-start text-sm sm:text-base"
+                                            size="sm"
                                         >
-                                            <BarChart3 className="w-4 h-4 mr-2" />
+                                            <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
                                             View Analytics
                                         </Button>
                                         <Button
                                             onClick={() => router.push(`/${locale}/creator/cohorts`)}
                                             variant="outline"
-                                            className="w-full justify-start"
+                                            className="w-full justify-start text-sm sm:text-base"
+                                            size="sm"
                                         >
-                                            <Users className="w-4 h-4 mr-2" />
+                                            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
                                             Manage Cohorts
                                         </Button>
                                     </div>
                                 </div>
 
                                 {/* Recent Activity */}
-                                <div className="bg-white dark:bg-black border border-border dark:border-white/10 rounded-2xl p-6">
-                                    <h3 className="text-lg font-semibold mb-4 text-foreground dark:text-white">Recent Activity</h3>
+                                <div className="bg-white dark:bg-black border border-border dark:border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6">
+                                    <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground dark:text-white">Recent Activity</h3>
                                     {loading ? (
                                         <div className="space-y-3">
                                             {[1,2,3].map(i => (
@@ -400,17 +404,17 @@ export default function CreatorDashboard() {
                                             ))}
                                         </div>
                                     ) : analytics?.recentActivity && analytics.recentActivity.length > 0 ? (
-                                        <div className="space-y-3">
+                                        <div className="space-y-2 sm:space-y-3">
                                             {analytics.recentActivity.slice(0, 5).map((activity, index) => (
-                                                <div key={index} className="flex items-start gap-3 p-3 hover:bg-muted dark:hover:bg-white/5 rounded-lg transition-colors">
-                                                    <div className={`w-2 h-2 rounded-full mt-2 ${
+                                                <div key={index} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 hover:bg-muted dark:hover:bg-white/5 rounded-lg transition-colors">
+                                                    <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mt-1.5 sm:mt-2 flex-shrink-0 ${
                                                         activity.type === 'enrollment' ? 'bg-[#0a84ff]' : 'bg-yellow-500'
                                                     }`} />
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-sm mb-1 line-clamp-2 text-foreground dark:text-white">
+                                                        <p className="text-xs sm:text-sm mb-0.5 sm:mb-1 line-clamp-2 text-foreground dark:text-white">
                                                             {activity.message}
                                                         </p>
-                                                        <p className="text-xs text-muted-foreground dark:text-white/50">
+                                                        <p className="text-[10px] sm:text-xs text-muted-foreground dark:text-white/50">
                                                             {activity.time}
                                                         </p>
                                                     </div>
@@ -418,7 +422,7 @@ export default function CreatorDashboard() {
                                             ))}
                                         </div>
                                     ) : (
-                                        <p className="text-sm text-muted-foreground dark:text-white/60 text-center py-6">
+                                        <p className="text-xs sm:text-sm text-muted-foreground dark:text-white/60 text-center py-4 sm:py-6">
                                             No recent activity
                                         </p>
                                     )}
@@ -428,6 +432,9 @@ export default function CreatorDashboard() {
                     </div>
                 </main>
             </div>
+            
+            {/* Mobile Navigation */}
+            <CreatorSidebarMobile />
         </div>
     )
 }

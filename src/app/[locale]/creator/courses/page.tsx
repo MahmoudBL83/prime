@@ -28,6 +28,7 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'react-hot-toast'
 import Image from 'next/image'
 import { CreatorSidebar, CreatorHeader } from '@/components/creator'
+import { CreatorSidebarMobile } from '@/components/creator/CreatorSidebar'
 
 interface Course {
     id: string
@@ -254,7 +255,7 @@ export default function CreatorCourses() {
     }
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background pb-16 lg:pb-0">
             {/* Header */}
             <CreatorHeader />
 
@@ -263,21 +264,22 @@ export default function CreatorCourses() {
                 <CreatorSidebar />
 
                 {/* Main Content */}
-                <main className="flex-1 p-8">
+                <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 w-full">
                     <div className="max-w-7xl mx-auto">
                         {/* Header Actions */}
-                        <div className="flex items-center justify-between mb-8">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
                             <div>
-                                <h1 className="text-3xl font-bold mb-2">
+                                <h1 className="text-2xl sm:text-3xl font-bold mb-2">
                                     {isArabic ? 'إدارة الدورات' : 'Course Management'}
                                 </h1>
-                                <p className="text-muted-foreground">
+                                <p className="text-sm sm:text-base text-muted-foreground">
                                     {isArabic ? 'إنشاء وإدارة دوراتك التعليمية' : 'Create and manage your educational courses'}
                                 </p>
                             </div>
                             <Button
                                 onClick={() => router.push(`/${locale}/creator/courses/create`)}
-                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 w-full sm:w-auto"
+                                size="sm"
                             >
                                 <Plus className="w-4 h-4 mr-2" />
                                 {isArabic ? 'إنشاء دورة' : 'Create Course'}
@@ -285,7 +287,7 @@ export default function CreatorCourses() {
                         </div>
 
                         {/* Filters */}
-                        <div className="flex items-center gap-4 mb-6">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                             <div className="flex-1 relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                                 <input
@@ -626,6 +628,9 @@ export default function CreatorCourses() {
                     </div>
                 </main>
             </div>
+            
+            {/* Mobile Navigation */}
+            <CreatorSidebarMobile />
         </div>
     )
 }

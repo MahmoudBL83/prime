@@ -69,42 +69,42 @@ export function CreatorSidebar({ className = '' }: CreatorSidebarProps) {
     }
 
     return (
-        <aside className={`w-64 min-h-screen bg-card border-r border-border sticky top-16 ${className}`}>
-            <nav className="p-4 space-y-1">
+        <aside className={`hidden lg:block w-56 xl:w-64 min-h-screen bg-card border-r border-border sticky top-16 ${className}`}>
+            <nav className="p-3 xl:p-4 space-y-1">
                 {sidebarItems.map((item) => (
                     <button
                         key={item.id}
                         onClick={() => handleNavigation(item)}
                         disabled={navigating === item.id}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                        className={`w-full flex items-center gap-2 xl:gap-3 px-3 xl:px-4 py-2.5 xl:py-3 rounded-lg transition-all text-sm xl:text-base ${
                             isActive(item.href)
                                 ? 'bg-accent text-foreground font-semibold'
                                 : 'text-muted-foreground hover:bg-accent/50'
                         }`}
                     >
-                        <item.icon className="w-5 h-5" />
-                        <span>{isArabic ? item.labelAr : item.labelEn}</span>
+                        <item.icon className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" />
+                        <span className="truncate">{isArabic ? item.labelAr : item.labelEn}</span>
                         {navigating === item.id && (
                             <Loader2 className="w-4 h-4 animate-spin ml-auto" />
                         )}
                     </button>
                 ))}
 
-                <div className="h-px bg-border my-4" />
+                <div className="h-px bg-border my-3 xl:my-4" />
 
                 {bottomItems.map((item) => (
                     <button
                         key={item.id}
                         onClick={() => handleNavigation(item)}
                         disabled={navigating === item.id}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                        className={`w-full flex items-center gap-2 xl:gap-3 px-3 xl:px-4 py-2.5 xl:py-3 rounded-lg transition-all text-sm xl:text-base ${
                             isActive(item.href)
                                 ? 'bg-accent text-foreground font-semibold'
                                 : 'text-muted-foreground hover:bg-accent/50'
                         }`}
                     >
-                        <item.icon className="w-5 h-5" />
-                        <span>{isArabic ? item.labelAr : item.labelEn}</span>
+                        <item.icon className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" />
+                        <span className="truncate">{isArabic ? item.labelAr : item.labelEn}</span>
                         {navigating === item.id && (
                             <Loader2 className="w-4 h-4 animate-spin ml-auto" />
                         )}
@@ -138,24 +138,27 @@ export function CreatorSidebarMobile({ className = '' }: CreatorSidebarProps) {
     const allItems = [...sidebarItems.slice(0, 5), ...bottomItems.slice(0, 1)]
 
     return (
-        <div className={`fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 ${className}`}>
-            <nav className="flex items-center justify-around px-2 py-2">
+        <div className={`lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 safe-area-bottom ${className}`}>
+            <nav className="flex items-center justify-around px-1 sm:px-2 py-1.5 sm:py-2">
                 {allItems.map((item) => (
                     <button
                         key={item.id}
                         onClick={() => handleNavigation(item)}
                         disabled={navigating === item.id}
-                        className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all ${
+                        className={`flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all min-w-[60px] sm:min-w-[70px] ${
                             isActive(item.href)
-                                ? 'text-purple-500'
-                                : 'text-muted-foreground'
+                                ? 'text-purple-500 bg-purple-500/10'
+                                : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
                         {navigating === item.id ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" />
                         ) : (
-                            <item.icon className="w-5 h-5" />
+                            <item.icon className="w-5 h-5 sm:w-6 sm:h-6" />
                         )}
+                        <span className="text-[9px] sm:text-[10px] font-medium truncate max-w-full">
+                            {item.labelEn.split(' ')[0]}
+                        </span>
                     </button>
                 ))}
             </nav>

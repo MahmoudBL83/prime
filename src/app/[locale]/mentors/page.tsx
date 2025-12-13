@@ -2383,50 +2383,51 @@ export default function OnlyFansStyleMentorsPage() {
                                     {/* Creator Dashboard - Always Visible */}
                                     <div className="mt-6">
                                         {/* Creator Dashboard Header */}
-                                        <div className="mb-6 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-2xl p-6">
-                                                <div className="flex items-center justify-between mb-4">
+                                        <div className="mb-4 sm:mb-6 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl sm:rounded-2xl p-4 sm:p-6">
+                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                                                     <div>
-                                                        <h2 className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                                        <h2 className="text-xl sm:text-2xl md:text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                                                             {isArabic ? 'لوحة تحكم المنشئ' : 'Creator Dashboard'}
                                                         </h2>
-                                                        <p className="text-muted-foreground mt-1">
+                                                        <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
                                                             {isArabic ? 'إدارة محتواك والأرباح والمشتركين' : 'Manage your content, earnings, and subscribers'}
                                                         </p>
                                                     </div>
                                                     <Button
                                                         onClick={() => toast.success(isArabic ? 'قريباً!' : 'Coming soon!')}
-                                                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-foreground font-bold"
+                                                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-foreground font-bold text-sm sm:text-base w-full sm:w-auto"
                                                     >
                                                         <DynamicIcon name="Crown" className="w-4 h-4 mr-2" />
-                                                        {isArabic ? 'ترقية الحساب' : 'Upgrade Account'}
+                                                        <span className="hidden sm:inline">{isArabic ? 'ترقية الحساب' : 'Upgrade Account'}</span>
+                                                        <span className="sm:hidden">{isArabic ? 'ترقية' : 'Upgrade'}</span>
                                                     </Button>
                                                 </div>
                                                 {/* Quick Stats Bar */}
-                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                                    <div className="text-center">
-                                                        <div className="text-2xl font-black text-foreground">
+                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                                                    <div className="text-center bg-card/50 rounded-lg p-2 sm:p-3">
+                                                        <div className="text-lg sm:text-xl md:text-2xl font-black text-foreground">
                                                             {creatorStats?.subscribers?.total?.toLocaleString() || subscriberCount}
                                                         </div>
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'مشترك نشط' : 'Active Subs'}</div>
+                                                        <div className="text-[10px] sm:text-xs text-muted-foreground">{isArabic ? 'مشترك نشط' : 'Active Subs'}</div>
                                                     </div>
-                                                    <div className="text-center">
-                                                        <div className="text-2xl font-black text-foreground">
+                                                    <div className="text-center bg-card/50 rounded-lg p-2 sm:p-3">
+                                                        <div className="text-lg sm:text-xl md:text-2xl font-black text-foreground">
                                                             €{creatorStats?.earnings?.thisMonth 
                                                                 ? (creatorStats.earnings.thisMonth / 1000).toFixed(1) + 'K'
                                                                 : '0'}
                                                         </div>
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'هذا الشهر' : 'This Month'}</div>
+                                                        <div className="text-[10px] sm:text-xs text-muted-foreground">{isArabic ? 'هذا الشهر' : 'This Month'}</div>
                                                     </div>
-                                                    <div className="text-center">
-                                                        <div className="text-2xl font-black text-foreground">
+                                                    <div className="text-center bg-card/50 rounded-lg p-2 sm:p-3">
+                                                        <div className="text-lg sm:text-xl md:text-2xl font-black text-foreground">
                                                             {creatorStats?.content?.totalViews 
                                                                 ? (creatorStats.content.totalViews / 1000).toFixed(1) + 'K'
                                                                 : creatorPosts.reduce((sum, post) => sum + (post.viewCount || 0), 0).toLocaleString()}
                                                         </div>
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'المشاهدات' : 'Total Views'}</div>
+                                                        <div className="text-[10px] sm:text-xs text-muted-foreground">{isArabic ? 'المشاهدات' : 'Total Views'}</div>
                                                     </div>
-                                                    <div className="text-center">
-                                                        <div className={`text-2xl font-black ${
+                                                    <div className="text-center bg-card/50 rounded-lg p-2 sm:p-3">
+                                                        <div className={`text-lg sm:text-xl md:text-2xl font-black ${
                                                             (creatorStats?.earnings?.percentChange || 0) >= 0 
                                                                 ? 'text-green-400' 
                                                                 : 'text-red-400'
@@ -2435,24 +2436,25 @@ export default function OnlyFansStyleMentorsPage() {
                                                                 ? `${creatorStats.earnings.percentChange > 0 ? '+' : ''}${creatorStats.earnings.percentChange}%`
                                                                 : '+0%'}
                                                         </div>
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'النمو' : 'Growth'}</div>
+                                                        <div className="text-[10px] sm:text-xs text-muted-foreground">{isArabic ? 'النمو' : 'Growth'}</div>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             {/* Media Management Section - OnlyFans Style */}
-                                            <div className="mb-6">
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-                                                        <DynamicIcon name="ImageIcon" className="w-5 h-5 text-purple-400" />
+                                            <div className="mb-4 sm:mb-6">
+                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                                                    <h3 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+                                                        <DynamicIcon name="ImageIcon" className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
                                                         {isArabic ? 'إدارة المحتوى' : 'Content Management'}
                                                     </h3>
                                                     <Button
                                                         onClick={() => setUploadModalOpen(true)}
-                                                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold px-6 py-3 rounded-full flex items-center gap-2"
+                                                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-full flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
                                                     >
-                                                        <DynamicIcon name="Upload" className="w-5 h-5" />
-                                                        {isArabic ? 'رفع محتوى جديد' : 'Upload New Content'}
+                                                        <DynamicIcon name="Upload" className="w-4 h-4 sm:w-5 sm:h-5" />
+                                                        <span className="hidden sm:inline">{isArabic ? 'رفع محتوى جديد' : 'Upload New Content'}</span>
+                                                        <span className="sm:hidden">{isArabic ? 'رفع محتوى' : 'Upload'}</span>
                                                     </Button>
                                                 </div>
 
@@ -2589,34 +2591,34 @@ export default function OnlyFansStyleMentorsPage() {
                                                         {profileTab === 'posts' && (
                                                             <div className="space-y-4">
                                                                 {/* View Toggle */}
-                                                                <div className="flex items-center justify-between">
-                                                                    <div className="flex items-center gap-2">
+                                                                <div className="flex items-center justify-between mb-3">
+                                                                    <div className="flex items-center gap-1 sm:gap-2">
                                                                         <button
                                                                             onClick={() => setMediaView('grid')}
-                                                                            className={`p-2 rounded-lg transition-all ${
+                                                                            className={`p-1.5 sm:p-2 rounded-lg transition-all ${
                                                                                 mediaView === 'grid'
                                                                                     ? 'bg-purple-500 text-white'
                                                                                     : 'bg-card-hover text-muted-foreground hover:text-foreground'
                                                                             }`}
                                                                         >
-                                                                            <DynamicIcon name="Grid" className="w-4 h-4" />
+                                                                            <DynamicIcon name="Grid" className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                                                         </button>
                                                                         <button
                                                                             onClick={() => setMediaView('list')}
-                                                                            className={`p-2 rounded-lg transition-all ${
+                                                                            className={`p-1.5 sm:p-2 rounded-lg transition-all ${
                                                                                 mediaView === 'list'
                                                                                     ? 'bg-purple-500 text-white'
                                                                                     : 'bg-card-hover text-muted-foreground hover:text-foreground'
                                                                             }`}
                                                                         >
-                                                                            <DynamicIcon name="List" className="w-4 h-4" />
+                                                                            <DynamicIcon name="List" className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                                                         </button>
                                                                     </div>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <Button variant="outline" size="sm">
+                                                                    <div className="flex items-center gap-1 sm:gap-2">
+                                                                        <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
                                                                             {isArabic ? 'فلتر' : 'Filter'}
                                                                         </Button>
-                                                                        <Button variant="outline" size="sm">
+                                                                        <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
                                                                             {isArabic ? 'ترتيب' : 'Sort'}
                                                                         </Button>
                                                                     </div>
@@ -2624,7 +2626,7 @@ export default function OnlyFansStyleMentorsPage() {
 
                                                                 {/* Grid View */}
                                                                 {mediaView === 'grid' && (
-                                                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
                                                                         {loadingCreatorPosts ? (
                                                                             Array.from({ length: 8 }).map((_, i) => (
                                                                                 <div key={i} className="aspect-square bg-card-hover rounded-xl animate-pulse" />
@@ -2828,7 +2830,7 @@ export default function OnlyFansStyleMentorsPage() {
 
                                                         {/* Media Tab */}
                                                         {profileTab === 'media' && (
-                                                            <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                                                                 {loadingCreatorPosts ? (
                                                                     Array.from({ length: 12 }).map((_, i) => (
                                                                         <div key={i} className="aspect-square bg-card-hover rounded-lg animate-pulse" />
@@ -2872,7 +2874,7 @@ export default function OnlyFansStyleMentorsPage() {
 
                                                         {/* Videos Tab */}
                                                         {profileTab === 'videos' && (
-                                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                                                                 {loadingCreatorPosts ? (
                                                                     Array.from({ length: 6 }).map((_, i) => (
                                                                         <div key={i} className="aspect-video bg-card-hover rounded-xl animate-pulse" />
@@ -2929,7 +2931,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                         {/* Analytics Tab */}
                                                         {profileTab === 'stats' && (
                                                             <div className="space-y-4">
-                                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                                <div className="grid grid-cols-2 gap-2 sm:gap-4">
                                                                     <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-4">
                                                                         <DynamicIcon name="Heart" className="w-8 h-8 text-purple-400 mb-2" />
                                                                         <div className="text-2xl font-black text-foreground">
@@ -2966,29 +2968,29 @@ export default function OnlyFansStyleMentorsPage() {
                                             </div>
 
                                             {/* Withdrawal Section - OnlyFans Style */}
-                                            <div className="mb-6">
-                                                <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                                                    <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <div className="mb-4 sm:mb-6">
+                                                <h3 className="text-base sm:text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                                                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
                                                     {isArabic ? 'الأرباح والسحب' : 'Earnings & Withdrawals'}
                                                 </h3>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4">
                                                     {/* Available Balance */}
-                                                    <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-2xl p-6">
-                                                        <div className="flex items-center justify-between mb-4">
+                                                    <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl sm:rounded-2xl p-4 sm:p-6">
+                                                        <div className="flex items-center justify-between mb-3 sm:mb-4">
                                                             <div>
-                                                                <div className="text-sm text-muted-foreground mb-1">
+                                                                <div className="text-xs sm:text-sm text-muted-foreground mb-1">
                                                                     {isArabic ? 'الرصيد المتاح' : 'Available Balance'}
                                                                 </div>
-                                                                <div className="text-4xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                                                                <div className="text-2xl sm:text-3xl md:text-4xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                                                                     €{creatorStats?.earnings?.available?.toLocaleString() || '0'}
                                                                 </div>
-                                                                <div className="text-xs text-muted-foreground mt-1">
+                                                                <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                                                                     {isArabic ? 'جاهز للسحب' : 'Ready to withdraw'}
                                                                 </div>
                                                             </div>
-                                                            <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center">
+                                                            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
                                                                 <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                                                                 </svg>
@@ -3006,20 +3008,20 @@ export default function OnlyFansStyleMentorsPage() {
                                                     </div>
 
                                                     {/* Pending Clearance */}
-                                                    <div className="bg-card border border-border rounded-2xl p-6">
-                                                        <div className="flex items-center justify-between mb-4">
+                                                    <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
+                                                        <div className="flex items-center justify-between mb-3 sm:mb-4">
                                                             <div>
-                                                                <div className="text-sm text-muted-foreground mb-1">
+                                                                <div className="text-xs sm:text-sm text-muted-foreground mb-1">
                                                                     {isArabic ? 'قيد المعالجة' : 'Pending Clearance'}
                                                                 </div>
-                                                                <div className="text-4xl font-black text-foreground">
+                                                                <div className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground">
                                                                     €{creatorStats?.earnings?.pending?.toLocaleString() || '0'}
                                                                 </div>
-                                                                <div className="text-xs text-muted-foreground mt-1">
+                                                                <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                                                                     {isArabic ? 'متاح في 3-5 أيام' : 'Available in 3-5 days'}
                                                                 </div>
                                                             </div>
-                                                            <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                                                            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
                                                                 <svg className="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                                 </svg>
@@ -3069,23 +3071,23 @@ export default function OnlyFansStyleMentorsPage() {
                                             </div>
 
                                             {/* Revenue Analytics Chart */}
-                                            <div className="mb-6">
-                                                <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                                                    <DynamicIcon name="TrendingUp" className="w-5 h-5 text-purple-400" />
+                                            <div className="mb-4 sm:mb-6">
+                                                <h3 className="text-base sm:text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                                                    <DynamicIcon name="TrendingUp" className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
                                                     {isArabic ? 'تحليلات الإيرادات' : 'Revenue Analytics'}
                                                 </h3>
-                                                <div className="bg-card border border-border rounded-2xl p-6">
-                                                    <div className="flex items-center justify-between mb-6">
+                                                <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
                                                         <div>
-                                                            <div className="text-sm text-muted-foreground">{isArabic ? 'إجمالي الإيرادات' : 'Total Revenue'}</div>
-                                                            <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                                            <div className="text-xs sm:text-sm text-muted-foreground">{isArabic ? 'إجمالي الإيرادات' : 'Total Revenue'}</div>
+                                                            <div className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                                                                 €{creatorStats?.earnings?.total?.toLocaleString() || '0'}
                                                             </div>
                                                         </div>
-                                                        <div className="flex gap-2">
-                                                            <Button size="sm" variant="outline">{isArabic ? '7 أيام' : '7D'}</Button>
-                                                            <Button size="sm" variant="outline">{isArabic ? '30 يوم' : '30D'}</Button>
-                                                            <Button size="sm" className="bg-purple-500/20 text-purple-400">{isArabic ? '6 شهور' : '6M'}</Button>
+                                                        <div className="flex gap-1 sm:gap-2">
+                                                            <Button size="sm" variant="outline" className="text-xs px-2 sm:px-3">{isArabic ? '7 أيام' : '7D'}</Button>
+                                                            <Button size="sm" variant="outline" className="text-xs px-2 sm:px-3">{isArabic ? '30 يوم' : '30D'}</Button>
+                                                            <Button size="sm" className="bg-purple-500/20 text-purple-400 text-xs px-2 sm:px-3">{isArabic ? '6 شهور' : '6M'}</Button>
                                                         </div>
                                                     </div>
                                                     {/* Revenue Breakdown - single tier */}
