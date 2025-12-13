@@ -233,10 +233,6 @@ export async function PATCH(
                     include: { user: true }
                 })
                 break
-                        updatedAt: new Date()
-                    }
-                })
-                break
 
             case 'signContract':
                 updatedCreator = await prisma.creator.update({
