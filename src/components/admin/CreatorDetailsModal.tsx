@@ -709,135 +709,135 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                     {/* Basic Info */}
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         <div className="bg-card rounded-lg p-4 border border-border">
-                                    <h3 className="text-lg font-medium text-foreground mb-4">
-                                        Personal Information
-                                    </h3>
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-3">
-                                            <User className="w-5 h-5 text-muted-foreground" />
-                                            <div>
-                                                <p className="text-sm text-muted-foreground">Name</p>
-                                                <p className="font-medium text-foreground">{creator.user.name}</p>
-                                                {creator.user.arabicName && <p className="text-sm text-muted-foreground">{creator.user.arabicName}</p>}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <Mail className="w-5 h-5 text-muted-foreground" />
-                                            <div>
-                                                <p className="text-sm text-muted-foreground">Email</p>
-                                                <p className="font-medium text-foreground">{creator.user.email}</p>
-                                                {creator.user.emailVerified ? (
-                                                    <p className="text-sm text-green-600">Verified</p>
-                                                ) : (
-                                                    <p className="text-sm text-red-600">Unverified</p>
+                                            <h3 className="text-lg font-medium text-foreground mb-4">
+                                                Personal Information
+                                            </h3>
+                                            <div className="space-y-3">
+                                                <div className="flex items-center gap-3">
+                                                    <User className="w-5 h-5 text-muted-foreground" />
+                                                    <div>
+                                                        <p className="text-sm text-muted-foreground">Name</p>
+                                                        <p className="font-medium text-foreground">{creator.user.name}</p>
+                                                        {creator.user.arabicName && <p className="text-sm text-muted-foreground">{creator.user.arabicName}</p>}
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <Mail className="w-5 h-5 text-muted-foreground" />
+                                                    <div>
+                                                        <p className="text-sm text-muted-foreground">Email</p>
+                                                        <p className="font-medium text-foreground">{creator.user.email}</p>
+                                                        {creator.user.emailVerified ? (
+                                                            <p className="text-sm text-green-600">Verified</p>
+                                                        ) : (
+                                                            <p className="text-sm text-red-600">Unverified</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {creator.user.phone && (
+                                                    <div className="flex items-center gap-3">
+                                                        <Phone className="w-5 h-5 text-muted-foreground" />
+                                                        <div>
+                                                            <p className="text-sm text-muted-foreground">Phone</p>
+                                                            <p className="font-medium text-foreground">{creator.user.phone}</p>
+                                                        </div>
+                                                    </div>
                                                 )}
-                                            </div>
-                                        </div>
-                                        {creator.user.phone && (
-                                            <div className="flex items-center gap-3">
-                                                <Phone className="w-5 h-5 text-muted-foreground" />
-                                                <div>
-                                                    <p className="text-sm text-muted-foreground">Phone</p>
-                                                    <p className="font-medium text-foreground">{creator.user.phone}</p>
+                                                <div className="flex items-center gap-3">
+                                                    <Calendar className="w-5 h-5 text-muted-foreground" />
+                                                    <div>
+                                                        <p className="text-sm text-muted-foreground">Joined</p>
+                                                        <p className="font-medium text-foreground">{formatDate(creator.createdAt)}</p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        )}
-                                        <div className="flex items-center gap-3">
-                                            <Calendar className="w-5 h-5 text-muted-foreground" />
-                                            <div>
-                                                <p className="text-sm text-muted-foreground">Joined</p>
-                                                <p className="font-medium text-foreground">{formatDate(creator.createdAt)}</p>
+                                        </div>
+
+                                        {/* Performance Metrics */}
+                                        <div className="bg-card rounded-lg p-4 border border-border">
+                                            <h3 className="text-lg font-medium text-foreground mb-4">
+                                                Performance
+                                            </h3>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="bg-background rounded-lg p-3 border border-border">
+                                                    <div className="flex items-center gap-2">
+                                                        <BookOpen className="w-4 h-4 text-blue-600" />
+                                                        <span className="text-sm text-muted-foreground">Courses</span>
+                                                    </div>
+                                                    <p className="text-2xl font-bold text-foreground">{creator._count.courses}</p>
+                                                </div>
+                                                <div className="bg-background rounded-lg p-3 border border-border">
+                                                    <div className="flex items-center gap-2">
+                                                        <Users className="w-4 h-4 text-green-600" />
+                                                        <span className="text-sm text-muted-foreground">Subscribers</span>
+                                                    </div>
+                                                    <p className="text-2xl font-bold text-foreground">{creator.totalSubscribers}</p>
+                                                </div>
+                                                <div className="bg-background rounded-lg p-3 border border-border col-span-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <DollarSign className="w-4 h-4 text-green-600" />
+                                                        <span className="text-sm text-muted-foreground">Total Earnings</span>
+                                                    </div>
+                                                    <p className="text-2xl font-bold text-foreground">{formatCurrency(creator.totalEarnings)}</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Performance Metrics */}
-                                <div className="bg-card rounded-lg p-4 border border-border">
-                                    <h3 className="text-lg font-medium text-foreground mb-4">
-                                        Performance
-                                    </h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-background rounded-lg p-3 border border-border">
-                                            <div className="flex items-center gap-2">
-                                                <BookOpen className="w-4 h-4 text-blue-600" />
-                                                <span className="text-sm text-muted-foreground">Courses</span>
-                                            </div>
-                                            <p className="text-2xl font-bold text-foreground">{creator._count.courses}</p>
-                                        </div>
-                                        <div className="bg-background rounded-lg p-3 border border-border">
-                                            <div className="flex items-center gap-2">
-                                                <Users className="w-4 h-4 text-green-600" />
-                                                <span className="text-sm text-muted-foreground">Subscribers</span>
-                                            </div>
-                                            <p className="text-2xl font-bold text-foreground">{creator.totalSubscribers}</p>
-                                        </div>
-                                        <div className="bg-background rounded-lg p-3 border border-border col-span-2">
-                                            <div className="flex items-center gap-2">
-                                                <DollarSign className="w-4 h-4 text-green-600" />
-                                                <span className="text-sm text-muted-foreground">Total Earnings</span>
-                                            </div>
-                                            <p className="text-2xl font-bold text-foreground">{formatCurrency(creator.totalEarnings)}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Professional Info */}
-                            <div className="bg-card rounded-lg p-4 border border-border">
-                                <h3 className="text-lg font-medium text-foreground mb-4">
-                                    Professional Information
-                                </h3>
-                                <div className="space-y-4">
-                                    {creator.expertise && (
-                                        <div>
-                                            <p className="text-sm text-muted-foreground mb-1">Expertise</p>
-                                            <p className="text-foreground">{creator.expertise}</p>
-                                        </div>
-                                    )}
-                                    {creator.teachingGoals && (
-                                        <div>
-                                            <p className="text-sm text-muted-foreground mb-1">Teaching Goals</p>
-                                            <p className="text-foreground">{creator.teachingGoals}</p>
-                                        </div>
-                                    )}
-                                    {(creator.bankName || creator.bankAccountIBAN) && (
-                                        <div>
-                                            <p className="text-sm text-muted-foreground mb-1">Banking Details</p>
-                                            {creator.bankName && <p className="text-foreground">Bank: {creator.bankName}</p>}
-                                            {creator.bankAccountIBAN && <p className="text-foreground">IBAN: {creator.bankAccountIBAN}</p>}
-                                        </div>
-                                    )}
-                                    {!creator.expertise && !creator.teachingGoals && !creator.bankName && !creator.bankAccountIBAN && (
-                                        <p className="text-muted-foreground">No professional information provided yet.</p>
-                                    )}
-                                </div>
-                            </div>
-
-                                {/* Contract Status */}
-                                <div className="bg-card rounded-lg p-4 border border-border">
-                                    <h3 className="text-lg font-medium text-foreground mb-4">
-                                        Contract Status
-                                    </h3>
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className={`font-medium ${creator.contractSigned ? 'text-green-600' : 'text-red-600'}`}>
-                                                {creator.contractSigned ? 'Contract Signed' : 'Contract Not Signed'}
-                                            </p>
-                                            {creator.contractSignedAt && (
-                                                <p className="text-sm text-muted-foreground">
-                                                    Signed on {formatDate(creator.contractSignedAt)}
-                                                </p>
+                                    {/* Professional Info */}
+                                    <div className="bg-card rounded-lg p-4 border border-border">
+                                        <h3 className="text-lg font-medium text-foreground mb-4">
+                                            Professional Information
+                                        </h3>
+                                        <div className="space-y-4">
+                                            {creator.expertise && (
+                                                <div>
+                                                    <p className="text-sm text-muted-foreground mb-1">Expertise</p>
+                                                    <p className="text-foreground">{creator.expertise}</p>
+                                                </div>
+                                            )}
+                                            {creator.teachingGoals && (
+                                                <div>
+                                                    <p className="text-sm text-muted-foreground mb-1">Teaching Goals</p>
+                                                    <p className="text-foreground">{creator.teachingGoals}</p>
+                                                </div>
+                                            )}
+                                            {(creator.bankName || creator.bankAccountIBAN) && (
+                                                <div>
+                                                    <p className="text-sm text-muted-foreground mb-1">Banking Details</p>
+                                                    {creator.bankName && <p className="text-foreground">Bank: {creator.bankName}</p>}
+                                                    {creator.bankAccountIBAN && <p className="text-foreground">IBAN: {creator.bankAccountIBAN}</p>}
+                                                </div>
+                                            )}
+                                            {!creator.expertise && !creator.teachingGoals && !creator.bankName && !creator.bankAccountIBAN && (
+                                                <p className="text-muted-foreground">No professional information provided yet.</p>
                                             )}
                                         </div>
-                                        {!creator.contractSigned && (
-                                            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                                Send Contract
-                                            </button>
-                                        )}
                                     </div>
-                                </div>
-                            </>
+
+                                    {/* Contract Status */}
+                                    <div className="bg-card rounded-lg p-4 border border-border">
+                                        <h3 className="text-lg font-medium text-foreground mb-4">
+                                            Contract Status
+                                        </h3>
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className={`font-medium ${creator.contractSigned ? 'text-green-600' : 'text-red-600'}`}>
+                                                    {creator.contractSigned ? 'Contract Signed' : 'Contract Not Signed'}
+                                                </p>
+                                                {creator.contractSignedAt && (
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Signed on {formatDate(creator.contractSignedAt)}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            {!creator.contractSigned && (
+                                                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                                    Send Contract
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </>
                             )}
                         </div>
                     )}
