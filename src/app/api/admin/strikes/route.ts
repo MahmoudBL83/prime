@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { StrikeSeverity, AppealStatus } from '@prisma/client';
+import { sendEmail } from '@/lib/email';
 
 const RESOLVED_APPEAL_STATUSES: AppealStatus[] = [
   AppealStatus.UPHELD,
@@ -11,6 +12,230 @@ const RESOLVED_APPEAL_STATUSES: AppealStatus[] = [
   AppealStatus.REINSTATED,
   AppealStatus.REJECTED,
 ];
+
+/**
+ * Send strike notification email to creator
+ */
+async function sendStrikeNotificationEmail(
+  creatorEmail: string,
+  creatorName: string,
+  strike: {
+    severity: string;
+    reason: string;
+    contentType: string;
+  },
+  suspended: boolean
+) {
+  const severityColors: Record<string, string> = {
+    WARNING: '#F59E0B',
+    MINOR: '#3B82F6',
+    MAJOR: '#EF4444',
+    CRITICAL: '#7C2D12'
+  };
+  
+  const color = severityColors[strike.severity] || '#6B7280';
+  
+  await sendEmail({
+    to: creatorEmail,
+    subject: suspended 
+      ? `⚠️ Account Suspended - Policy Violation`
+      : `⚠️ Content Strike Issued - ${strike.severity}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: ${color}; padding: 30px; text-align: center;">
+          <h1 style="color: white; margin: 0;">
+            ${suspended ? '🚫 Account Suspended' : '⚠️ Content Strike'}
+          </h1>
+        </div>
+        <div style="padding: 30px; background: #ffffff;">
+          <p>Hi ${creatorName},</p>
+          
+          ${suspended ? `
+            <div style="background: #FEE2E2; border-left: 4px solid #DC2626; padding: 15px; margin: 20px 0;">
+              <p style="margin: 0; color: #DC2626; font-weight: bold;">Your account has been suspended</p>
+              <p style="margin: 10px 0 0 0; font-size: 14px;">Due to policy violations, your creator account has been temporarily suspended. Your courses and content are no longer visible to users.</p>
+            </div>
+          ` : ''}
+          
+          <div style="background: #F3F4F6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin: 0 0 15px 0;">Strike Details</h3>
+            <p style="margin: 5px 0;"><strong>Severity:</strong> <span style="color: ${color}; font-weight: bold;">${strike.severity}</span></p>
+            <p style="margin: 5px 0;"><strong>Content Type:</strong> ${strike.contentType}</p>
+            <p style="margin: 5px 0;"><strong>Reason:</strong> ${strike.reason}</p>
+          </div>
+          
+          <h3>What This Means</h3>
+          <ul>
+            <li>This strike has been recorded on your account</li>
+            <li>Multiple strikes may result in account suspension</li>
+            ${suspended ? '<li>Your content is currently hidden from users</li>' : ''}
+            <li>You may appeal this decision within 14 days</li>
+          </ul>
+          
+          <h3>How to Appeal</h3>
+          <p>If you believe this strike was issued in error, you can submit an appeal through your Creator Dashboard:</p>
+          <ol>
+            <li>Go to Creator Dashboard → Settings → Strikes</li>
+            <li>Find this strike and click "Appeal"</li>
+            <li>Provide a detailed explanation</li>
+          </ol>
+          
+          <div style="background: #FEF3C7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 14px;"><strong>Need help?</strong> Contact our creator support team for assistance.</p>
+          </div>
+          
+          <p style="color: #6B7280; font-size: 14px;">
+            Please review our Community Guidelines to ensure your content complies with our policies.
+          </p>
+        </div>
+      </div>
+    `
+  });
+}
+
+/**
+ * Send appeal result notification email
+ */
+async function sendAppealResultEmail(
+  creatorEmail: string,
+  creatorName: string,
+  strike: {
+    severity: string;
+    reason: string;
+  },
+  approved: boolean,
+  reinstated: boolean
+) {
+  await sendEmail({
+    to: creatorEmail,
+    subject: approved 
+      ? '✅ Appeal Approved - Strike Removed'
+      : '❌ Appeal Rejected - Strike Upheld',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: ${approved ? '#10B981' : '#EF4444'}; padding: 30px; text-align: center;">
+          <h1 style="color: white; margin: 0;">
+            ${approved ? '✅ Appeal Approved' : '❌ Appeal Rejected'}
+          </h1>
+        </div>
+        <div style="padding: 30px; background: #ffffff;">
+          <p>Hi ${creatorName},</p>
+          
+          <p>We have reviewed your appeal regarding the ${strike.severity} strike on your account.</p>
+          
+          ${approved ? `
+            <div style="background: #D1FAE5; border-left: 4px solid #10B981; padding: 15px; margin: 20px 0;">
+              <p style="margin: 0; color: #047857; font-weight: bold;">Good news! Your appeal has been approved.</p>
+              <p style="margin: 10px 0 0 0;">The strike has been removed from your account and will not count against you.</p>
+              ${reinstated ? '<p style="margin: 10px 0 0 0;"><strong>Your account has been reinstated.</strong> You can now access all creator features.</p>' : ''}
+            </div>
+          ` : `
+            <div style="background: #FEE2E2; border-left: 4px solid #DC2626; padding: 15px; margin: 20px 0;">
+              <p style="margin: 0; color: #DC2626; font-weight: bold;">Your appeal has been rejected.</p>
+              <p style="margin: 10px 0 0 0;">After careful review, we have determined that the strike was issued correctly and will remain on your account.</p>
+            </div>
+          `}
+          
+          <div style="background: #F3F4F6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin: 0 0 15px 0;">Original Strike</h3>
+            <p style="margin: 5px 0;"><strong>Severity:</strong> ${strike.severity}</p>
+            <p style="margin: 5px 0;"><strong>Reason:</strong> ${strike.reason}</p>
+          </div>
+          
+          ${!approved ? `
+            <p>If you have additional evidence or information, you may contact our support team for further review.</p>
+          ` : ''}
+          
+          <p style="color: #6B7280; font-size: 14px; margin-top: 30px;">
+            Thank you for your patience during this process.
+          </p>
+        </div>
+      </div>
+    `
+  });
+}
+
+/**
+ * Suspend a creator's account
+ * Note: Uses kycStatus to track suspension since Creator model doesn't have dedicated status field
+ * A suspended creator will have kycStatus = 'REJECTED' as a workaround
+ * Ideally, should add 'status' field to Creator model
+ */
+async function suspendCreatorAccount(creatorId: string, reason: string) {
+  // Get current creator info with their channels
+  const creator = await prisma.creator.findUnique({
+    where: { id: creatorId },
+    include: { channels: true }
+  })
+  
+  if (!creator) return;
+  
+  // Update creator - mark as suspended by prefixing expertise with marker
+  await prisma.creator.update({
+    where: { id: creatorId },
+    data: {
+      kycStatus: 'REJECTED', // Use REJECTED as suspension indicator
+      expertise: `SUSPENDED:${reason}|${creator.expertise || ''}` // Prefix expertise with suspension marker
+    }
+  });
+  
+  // Unpublish all their courses
+  await prisma.course.updateMany({
+    where: { 
+      creatorId: creatorId,
+      status: 'PUBLISHED'
+    },
+    data: {
+      status: 'DRAFT'
+    }
+  });
+  
+  // Cancel upcoming live sessions (through their channels)
+  if (creator.channels.length > 0) {
+    const channelIds = creator.channels.map(ch => ch.id)
+    await prisma.liveSession.updateMany({
+      where: {
+        channelId: { in: channelIds },
+        scheduledAt: { gte: new Date() },
+        status: 'SCHEDULED'
+      },
+      data: { 
+        status: 'CANCELLED' 
+      }
+    });
+  }
+  
+  console.log(`Creator ${creatorId} suspended: ${reason}`);
+}
+
+/**
+ * Reinstate a suspended creator account
+ */
+async function reinstateCreatorAccount(creatorId: string) {
+  const creator = await prisma.creator.findUnique({
+    where: { id: creatorId }
+  });
+  
+  if (!creator || !creator.expertise?.startsWith('SUSPENDED:')) {
+    return false;
+  }
+  
+  // Extract original expertise
+  const expertiseParts = creator.expertise.split('|');
+  const originalExpertise = expertiseParts.slice(1).join('|') || null;
+  
+  // Update creator status back to active
+  await prisma.creator.update({
+    where: { id: creatorId },
+    data: {
+      kycStatus: 'VERIFIED', // Reinstate to verified status
+      expertise: originalExpertise
+    }
+  });
+  
+  console.log(`Creator ${creatorId} reinstated`);
+  return true;
+}
 
 // Strike creation schema
 const strikeSchema = z.object({
@@ -191,20 +416,26 @@ export async function POST(req: NextRequest) {
     }
 
     if (shouldSuspend) {
-      // Update creator account status
-      // Note: This would require adding a 'status' field to Creator model
-      // For now, we'll just log it
-      console.log(`SUSPEND CREATOR: ${validatedData.creatorId} - ${suspensionReason}`);
-      
-      // TODO: Implement actual suspension logic
-      // - Set creator.status = 'SUSPENDED'
-      // - Unpublish all their courses
-      // - Cancel upcoming live sessions
-      // - Notify creator
+      // Suspend the creator account
+      await suspendCreatorAccount(validatedData.creatorId, suspensionReason);
     }
 
-    // TODO: Send notification email to creator
-    // await sendStrikeNotification(creator.user.email, strike);
+    // Send notification email to creator
+    try {
+      await sendStrikeNotificationEmail(
+        creator.user.email,
+        creator.user.name || 'Creator',
+        {
+          severity: validatedData.severity,
+          reason: validatedData.reason,
+          contentType: validatedData.contentType
+        },
+        shouldSuspend
+      );
+    } catch (emailError) {
+      console.error('Failed to send strike notification email:', emailError);
+      // Don't fail the request if email fails
+    }
 
     return NextResponse.json({
       success: true,
@@ -269,13 +500,46 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    // TODO: Send appeal result notification
-    // await sendAppealResultNotification(strike.creatorId, updated);
+    // Get creator info for email
+    const creator = await prisma.creator.findUnique({
+      where: { id: strike.creatorId },
+      include: { user: true }
+    });
+
+    // Check if we should reinstate a suspended account
+    let reinstated = false;
+    if (validatedData.action === 'APPROVE' && creator) {
+      // Check if this was the strike that caused suspension
+      // If the creator is suspended and this was a CRITICAL or 3rd MAJOR strike
+      if (strike.severity === 'CRITICAL' || strike.severity === 'MAJOR') {
+        reinstated = await reinstateCreatorAccount(strike.creatorId);
+      }
+    }
+
+    // Send appeal result notification
+    if (creator?.user?.email) {
+      try {
+        await sendAppealResultEmail(
+          creator.user.email,
+          creator.user.name || 'Creator',
+          {
+            severity: strike.severity,
+            reason: strike.reason
+          },
+          validatedData.action === 'APPROVE',
+          reinstated
+        );
+      } catch (emailError) {
+        console.error('Failed to send appeal result email:', emailError);
+        // Don't fail the request if email fails
+      }
+    }
 
     return NextResponse.json({
       success: true,
-      message: `Appeal ${validatedData.action.toLowerCase()}d`,
+      message: `Appeal ${validatedData.action.toLowerCase()}d${reinstated ? ' - Account reinstated' : ''}`,
       strike: updated,
+      reinstated,
     });
 
   } catch (error) {

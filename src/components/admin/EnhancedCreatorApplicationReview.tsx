@@ -124,6 +124,8 @@ export default function EnhancedCreatorApplicationReview() {
     // Modal states
     const [selectedApplication, setSelectedApplication] = useState<CreatorApplication | null>(null)
     const [showReviewModal, setShowReviewModal] = useState(false)
+    const [showIdImageModal, setShowIdImageModal] = useState(false)
+    const [idImageUrl, setIdImageUrl] = useState<string | null>(null)
     const [reviewAction, setReviewAction] = useState<'approve' | 'reject' | 'resubmit' | 'review'>('approve')
     const [reviewNotes, setReviewNotes] = useState('')
     const [rejectionReason, setRejectionReason] = useState('')
@@ -492,15 +494,16 @@ export default function EnhancedCreatorApplicationReview() {
                                                     </a>
                                                 )}
                                                 {application.nationalIdImage && (
-                                                    <a 
-                                                        href={application.nationalIdImage} 
-                                                        target="_blank" 
-                                                        rel="noopener noreferrer"
+                                                    <button 
+                                                        onClick={() => {
+                                                            setIdImageUrl(application.nationalIdImage)
+                                                            setShowIdImageModal(true)
+                                                        }}
                                                         className="text-green-400 hover:text-green-300 text-xs sm:text-sm flex items-center gap-1"
                                                     >
                                                         <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                                         National ID
-                                                    </a>
+                                                    </button>
                                                 )}
                                                 <span className="text-gray-500 text-xs sm:text-sm flex items-center gap-1">
                                                     <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -717,6 +720,55 @@ export default function EnhancedCreatorApplicationReview() {
                                 )}
                             </Button>
                         </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* National ID Image Modal */}
+            <Dialog open={showIdImageModal} onOpenChange={setShowIdImageModal}>
+                <DialogContent className="bg-gray-900 border-white/10 text-white max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>National ID Document</DialogTitle>
+                        <DialogDescription className="text-gray-400">
+                            Verify the applicant&apos;s identity document
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="mt-4">
+                        {idImageUrl ? (
+                            <div className="relative">
+                                <img 
+                                    src={idImageUrl} 
+                                    alt="National ID"
+                                    className="w-full h-auto max-h-[70vh] object-contain rounded-lg border border-white/10"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement
+                                        target.style.display = 'none'
+                                        target.parentElement?.insertAdjacentHTML('beforeend', 
+                                            '<div class="p-8 text-center text-gray-400"><p>Unable to load image</p><p class="text-sm mt-2 text-gray-500 break-all">' + idImageUrl + '</p></div>'
+                                        )
+                                    }}
+                                />
+                                <div className="mt-4 flex gap-2 justify-end">
+                                    <a 
+                                        href={idImageUrl}
+                                        download="national-id"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                        Download
+                                    </a>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setShowIdImageModal(false)}
+                                        className="bg-white/5 border-white/10 text-white"
+                                    >
+                                        Close
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-gray-400 text-center py-8">No image available</p>
+                        )}
                     </div>
                 </DialogContent>
             </Dialog>
