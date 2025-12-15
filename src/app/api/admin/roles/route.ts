@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
 // Permission categories and their permissions
-export const PERMISSION_DEFINITIONS = {
+const PERMISSION_DEFINITIONS = {
     users: {
         label: 'Users',
         permissions: {
@@ -120,7 +120,7 @@ const createRoleSchema = z.object({
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions)
-        
+
         if (!session?.user || session.user.role !== 'ADMIN') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
         }
@@ -230,7 +230,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions)
-        
+
         if (!session?.user || session.user.role !== 'ADMIN') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
         }
