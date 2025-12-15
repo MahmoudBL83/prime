@@ -413,10 +413,6 @@ export default function OnlyFansStyleMentorsPage() {
         }
     }, [session, isArabic, fetchUserBookmarks])
 
-    useEffect(() => {
-        filterCreators()
-    }, [searchQuery, creators])
-
     // Update creators with subscription status when subscriptions change
     useEffect(() => {
         if (userSubscriptions.length > 0 && creators.length > 0) {
@@ -712,6 +708,11 @@ export default function OnlyFansStyleMentorsPage() {
 
         setFilteredCreators(filtered)
     }, [creators, searchQuery, filterType])
+
+    // Call filterCreators when dependencies change
+    useEffect(() => {
+        filterCreators()
+    }, [filterCreators])
 
     // Memoize creator click handler
     const handleCreatorClick = useCallback((creatorId: string) => {
@@ -2018,8 +2019,35 @@ export default function OnlyFansStyleMentorsPage() {
                             {/* Creators Grid View */}
                             {activeView === 'creators' && (
                                 <div className="p-3 sm:p-4 pb-20 sm:pb-4">
+                                    {/* Search Bar for Creators View */}
+                                    <div className="mb-4 lg:hidden">
+                                        <div className="relative">
+                                            <DynamicIcon name="Search" className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                            <Input
+                                                type="text"
+                                                placeholder={isArabic ? 'ابحث عن منشئين...' : 'Search creators...'}
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                className="w-full bg-card border-border focus:border-purple-500 text-foreground pl-12 pr-4 py-3 rounded-full"
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    {/* No Results Message */}
+                                    {filteredCreators.length === 0 && searchQuery && (
+                                        <div className="text-center py-12">
+                                            <DynamicIcon name="Search" className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                                            <h3 className="text-xl font-bold text-foreground mb-2">
+                                                {isArabic ? 'لا توجد نتائج' : 'No results found'}
+                                            </h3>
+                                            <p className="text-muted-foreground">
+                                                {isArabic ? `لم يتم العثور على منشئين يطابقون "${searchQuery}"` : `No creators match "${searchQuery}"`}
+                                            </p>
+                                        </div>
+                                    )}
+                                    
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-                                        {creators.map((creator, idx) => (
+                                        {filteredCreators.map((creator, idx) => (
                                             <div
                                                 key={creator.id}
                                                 onClick={() => handleCreatorClick(creator.id)}

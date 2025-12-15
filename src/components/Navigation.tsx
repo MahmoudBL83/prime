@@ -19,10 +19,12 @@ import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { useLocaleSafe } from '@/hooks/useTranslationsSafe';
 import { useNavigationLoading } from '@/hooks/useNavigationLoading';
 import { motion, AnimatePresence } from 'framer-motion';
+import GlobalSearch from '@/components/search/GlobalSearch';
 
 export function Navigation() {
     const session = useSession();
     const pathname = usePathname();
+
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -110,9 +112,8 @@ export function Navigation() {
                                         key={item.key}
                                         onClick={() => navigateWithLoading(item.path, item.key)}
                                         disabled={isLoading(item.key)}
-                                        className={`text-sm font-semibold transition-opacity ${
-                                            active ? 'text-foreground dark:text-white' : 'text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white'
-                                        }`}
+                                        className={`text-sm font-semibold transition-opacity ${active ? 'text-foreground dark:text-white' : 'text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white'
+                                            }`}
                                     >
                                         {item.label}
                                     </button>
@@ -120,8 +121,15 @@ export function Navigation() {
                             })}
                         </div>
 
-                        {/* Right: Language, Messaging & Account */}
-                        <div className={`flex items-center ${locale === 'ar' ? 'space-x-reverse space-x-6' : 'space-x-6'}`}>
+                        {/* Right: Search, Language, Messaging & Account */}
+                        <div className={`flex items-center ${locale === 'ar' ? 'space-x-reverse space-x-4' : 'space-x-4'}`}>
+
+                            {/* Global Search */}
+                            <div className="hidden md:block">
+                                <GlobalSearch
+                                    placeholder={locale === 'ar' ? 'بحث...' : 'Search...'}
+                                />
+                            </div>
 
                             <div className="relative hidden lg:block">
                                 <button
@@ -218,15 +226,14 @@ export function Navigation() {
                                                     setIsMobileMenuOpen(false);
                                                 }}
                                                 disabled={isLoading(item.key)}
-                                                className={`block w-full text-left text-base py-2 transition-colors ${
-                                                    active ? 'text-foreground dark:text-white' : 'text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white'
-                                                }`}
+                                                className={`block w-full text-left text-base py-2 transition-colors ${active ? 'text-foreground dark:text-white' : 'text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white'
+                                                    }`}
                                             >
                                                 {item.label}
                                             </button>
                                         );
                                     })}
-                                    
+
                                     <div className="pt-4 border-t border-border dark:border-white/10">
                                         <p className="text-xs uppercase tracking-wide text-muted-foreground dark:text-white/60 mb-2">Language</p>
                                         <LanguageSwitcher locales={['en', 'de']} />

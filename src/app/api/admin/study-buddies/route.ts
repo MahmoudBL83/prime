@@ -6,6 +6,14 @@ import { Prisma, UserRole } from '@prisma/client'
 import { z } from 'zod'
 import type { Session } from 'next-auth'
 
+/**
+ * Admin Study Buddy Management API
+ * GET: List all matches with filters, search, pagination
+ * PATCH: Update match status
+ * POST: Moderation actions (block, unmatch, warn, resolve)
+ * DELETE: Delete match permanently
+ */
+
 const updateSchema = z.object({
     matchId: z.string().min(1),
     status: z.string().min(2).optional(),
@@ -13,11 +21,20 @@ const updateSchema = z.object({
     sharedGoals: z.array(z.string()).optional()
 })
 
+const moderationSchema = z.object({
+    matchId: z.string().min(1),
+    action: z.enum(['block', 'unmatch', 'warn', 'resolve', 'reactivate']),
+    reason: z.string().optional(),
+    notifyUsers: z.boolean().default(true),
+    blockBothUsers: z.boolean().default(false)
+})
+
 const matchInclude = {
     user1: {
         select: {
             id: true,
             name: true,
+            email: true,
             interests: true,
             studyBuddyPreferences: true
         }
@@ -26,6 +43,7 @@ const matchInclude = {
         select: {
             id: true,
             name: true,
+            email: true,
             interests: true,
             studyBuddyPreferences: true
         }
@@ -42,8 +60,6 @@ const matchInclude = {
 
 type MatchWithRelations = Prisma.StudyBuddyMatchGetPayload<{ include: typeof matchInclude }>
 
-type MatchResponse = ReturnType<typeof mapMatch>
-
 function assertAdmin(session: Session | null): asserts session is Session {
     if (!session?.user || session.user.role !== UserRole.ADMIN) {
         throw new Error('UNAUTHORIZED')
@@ -55,7 +71,7 @@ function parseJsonArray(raw?: string | null) {
     try {
         const parsed = JSON.parse(raw)
         return Array.isArray(parsed) ? parsed : []
-    } catch (error) {
+    } catch {
         return [] as string[]
     }
 }
@@ -76,7 +92,7 @@ function normalizeStatus(status: string | null) {
 function mapMatch(match: NonNullable<MatchWithRelations>) {
     const sharedSubjects = parseJsonArray(match.sharedSubjects)
     const sharedGoals = parseJsonArray(match.sharedGoals)
-    const completedSessions = match.studySessions.filter(session => session.status === 'COMPLETED').length
+    const completedSessions = match.studySessions.filter(s => s.status === 'COMPLETED').length
     const compatibilityScore = calculateCompatibility(sharedSubjects, sharedGoals, completedSessions)
 
     return {
@@ -92,11 +108,13 @@ function mapMatch(match: NonNullable<MatchWithRelations>) {
         user1: {
             id: match.user1.id,
             name: match.user1.name ?? 'Learner',
+            email: match.user1.email,
             interests: parseJsonArray(match.user1.interests)
         },
         user2: {
             id: match.user2.id,
             name: match.user2.name ?? 'Learner',
+            email: match.user2.email,
             interests: parseJsonArray(match.user2.interests)
         },
         studySessions: match.studySessions.map(session => ({
@@ -108,13 +126,7 @@ function mapMatch(match: NonNullable<MatchWithRelations>) {
     }
 }
 
-async function getMatchById(id: string) {
-    return prisma.studyBuddyMatch.findUnique({
-        where: { id },
-        include: matchInclude
-    })
-}
-
+// GET: List all matches with filters
 export async function GET(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions)
@@ -157,22 +169,17 @@ export async function GET(request: NextRequest) {
         ])
 
         const mapped = matches.map(mapMatch)
-        const totalMatches = total
-        const activeMatches = mapped.filter(match => ['active', 'accepted'].includes(match.status)).length
-        const reportedMatches = mapped.filter(match => match.status.includes('report') || match.status.includes('blocked')).length
-        const avgCompatibility = totalMatches ? Math.round(mapped.reduce((sum, match) => sum + match.compatibilityScore, 0) / totalMatches) : 0
-        const avgSessions = totalMatches ? Number((mapped.reduce((sum, match) => sum + match.sessionsCompleted, 0) / totalMatches).toFixed(1)) : 0
-        const matchSuccessRate = totalMatches ? Math.round((activeMatches / totalMatches) * 100) : 0
+        const activeMatches = mapped.filter(m => ['active', 'accepted'].includes(m.status)).length
+        const reportedMatches = mapped.filter(m => m.status.includes('report') || m.status.includes('block')).length
+        const avgCompatibility = total ? Math.round(mapped.reduce((sum, m) => sum + m.compatibilityScore, 0) / mapped.length) : 0
+        const avgSessions = total ? Number((mapped.reduce((sum, m) => sum + m.sessionsCompleted, 0) / mapped.length).toFixed(1)) : 0
+        const matchSuccessRate = total ? Math.round((activeMatches / mapped.length) * 100) : 0
 
         return NextResponse.json({
             matches: mapped,
-            meta: {
-                total: totalMatches,
-                page,
-                pageSize
-            },
+            meta: { total, page, pageSize },
             stats: {
-                totalMatches,
+                totalMatches: total,
                 activeMatches,
                 reportedMatches,
                 avgCompatibility,
@@ -189,6 +196,182 @@ export async function GET(request: NextRequest) {
     }
 }
 
+// POST: Moderation actions
+export async function POST(request: NextRequest) {
+    try {
+        const session = await getServerSession(authOptions)
+        assertAdmin(session)
+
+        const body = await request.json()
+        const parsed = moderationSchema.safeParse(body)
+
+        if (!parsed.success) {
+            return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
+        }
+
+        const { matchId, action, reason, notifyUsers, blockBothUsers } = parsed.data
+
+        const match = await prisma.studyBuddyMatch.findUnique({
+            where: { id: matchId },
+            include: matchInclude
+        })
+
+        if (!match) {
+            return NextResponse.json({ error: 'Match not found' }, { status: 404 })
+        }
+
+        let newStatus = match.status
+        let moderationEventType = ''
+        let notificationTitle = ''
+        let notificationMessage = ''
+
+        switch (action) {
+            case 'block': {
+                newStatus = 'BLOCKED'
+                moderationEventType = 'STUDY_BUDDY_BLOCKED'
+                notificationTitle = 'Study Buddy Match Blocked'
+                notificationMessage = `Your study buddy match has been blocked by admin. ${reason ? `Reason: ${reason}` : ''}`
+
+                // If blocking both users from matching again
+                if (blockBothUsers) {
+                    await prisma.userBlock.createMany({
+                        data: [
+                            { blockerId: match.user1Id, blockedId: match.user2Id },
+                            { blockerId: match.user2Id, blockedId: match.user1Id }
+                        ],
+                        skipDuplicates: true
+                    })
+                }
+                break
+            }
+
+            case 'unmatch': {
+                newStatus = 'UNMATCHED'
+                moderationEventType = 'STUDY_BUDDY_UNMATCHED'
+                notificationTitle = 'Study Buddy Unmatched'
+                notificationMessage = `Your study buddy match has been dissolved. ${reason ? `Reason: ${reason}` : ''}`
+                break
+            }
+
+            case 'warn': {
+                moderationEventType = 'STUDY_BUDDY_WARNING'
+                notificationTitle = 'Study Buddy Warning'
+                notificationMessage = `You have received a warning regarding your study buddy interactions. ${reason || 'Please follow community guidelines.'}`
+                // Don't change status, just log and notify
+                break
+            }
+
+            case 'resolve': {
+                newStatus = 'ACTIVE'
+                moderationEventType = 'STUDY_BUDDY_RESOLVED'
+                notificationTitle = 'Match Issue Resolved'
+                notificationMessage = 'The reported issue with your study buddy match has been resolved.'
+                break
+            }
+
+            case 'reactivate': {
+                newStatus = 'ACTIVE'
+                moderationEventType = 'STUDY_BUDDY_REACTIVATED'
+                notificationTitle = 'Match Reactivated'
+                notificationMessage = 'Your study buddy match has been reactivated.'
+                break
+            }
+        }
+
+        // Update match status
+        if (newStatus !== match.status) {
+            await prisma.studyBuddyMatch.update({
+                where: { id: matchId },
+                data: { status: newStatus }
+            })
+        }
+
+        // Create moderation events for both users
+        await prisma.moderationEvent.createMany({
+            data: [
+                {
+                    userId: match.user1Id,
+                    eventType: moderationEventType,
+                    severity: action === 'block' ? 'HIGH' : 'MEDIUM',
+                    status: 'RESOLVED',
+                    reason: reason || `Admin ${action} action`,
+                    source: 'ADMIN_ACTION',
+                    resolvedAt: new Date(),
+                    resolvedBy: session.user.id,
+                    metadata: { matchId, action, partnerId: match.user2Id }
+                },
+                {
+                    userId: match.user2Id,
+                    eventType: moderationEventType,
+                    severity: action === 'block' ? 'HIGH' : 'MEDIUM',
+                    status: 'RESOLVED',
+                    reason: reason || `Admin ${action} action`,
+                    source: 'ADMIN_ACTION',
+                    resolvedAt: new Date(),
+                    resolvedBy: session.user.id,
+                    metadata: { matchId, action, partnerId: match.user1Id }
+                }
+            ]
+        })
+
+        // Send notifications
+        if (notifyUsers && notificationTitle) {
+            await prisma.notification.createMany({
+                data: [
+                    {
+                        userId: match.user1Id,
+                        type: 'WARNING',
+                        title: notificationTitle,
+                        message: notificationMessage,
+                        metadata: { matchId, adminAction: true }
+                    },
+                    {
+                        userId: match.user2Id,
+                        type: 'WARNING',
+                        title: notificationTitle,
+                        message: notificationMessage,
+                        metadata: { matchId, adminAction: true }
+                    }
+                ]
+            })
+        }
+
+        // Log admin action
+        await prisma.adminAuditLog.create({
+            data: {
+                adminId: session.user.id,
+                action: `STUDY_BUDDY_${action.toUpperCase()}`,
+                module: 'Study Buddy Management',
+                details: `${action} match between ${match.user1.name} and ${match.user2.name}. ${reason || ''}`,
+                status: 'SUCCESS',
+                targetId: matchId,
+                targetType: 'STUDY_BUDDY_MATCH',
+                metadata: { matchId, action, reason, user1Id: match.user1Id, user2Id: match.user2Id }
+            }
+        })
+
+        // Fetch updated match
+        const updatedMatch = await prisma.studyBuddyMatch.findUnique({
+            where: { id: matchId },
+            include: matchInclude
+        })
+
+        return NextResponse.json({
+            success: true,
+            action,
+            match: updatedMatch ? mapMatch(updatedMatch) : null,
+            message: `Match ${action} successfully`
+        })
+    } catch (error) {
+        if (error instanceof Error && error.message === 'UNAUTHORIZED') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+        console.error('Admin study buddy moderation error:', error)
+        return NextResponse.json({ error: 'Failed to perform action' }, { status: 500 })
+    }
+}
+
+// PATCH: Update match details
 export async function PATCH(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions)
@@ -202,15 +385,9 @@ export async function PATCH(request: NextRequest) {
 
         const { matchId, status, sharedSubjects, sharedGoals } = parsed.data
         const payload: any = {}
-        if (status) {
-            payload.status = status
-        }
-        if (sharedSubjects) {
-            payload.sharedSubjects = JSON.stringify(sharedSubjects)
-        }
-        if (sharedGoals) {
-            payload.sharedGoals = JSON.stringify(sharedGoals)
-        }
+        if (status) payload.status = status
+        if (sharedSubjects) payload.sharedSubjects = JSON.stringify(sharedSubjects)
+        if (sharedGoals) payload.sharedGoals = JSON.stringify(sharedGoals)
 
         if (Object.keys(payload).length === 0) {
             return NextResponse.json({ error: 'No updates provided' }, { status: 400 })
@@ -229,5 +406,57 @@ export async function PATCH(request: NextRequest) {
         }
         console.error('Admin study buddy match update error:', error)
         return NextResponse.json({ error: 'Failed to update match' }, { status: 500 })
+    }
+}
+
+// DELETE: Permanently delete match
+export async function DELETE(request: NextRequest) {
+    try {
+        const session = await getServerSession(authOptions)
+        assertAdmin(session)
+
+        const { searchParams } = new URL(request.url)
+        const matchId = searchParams.get('id')
+
+        if (!matchId) {
+            return NextResponse.json({ error: 'Match ID is required' }, { status: 400 })
+        }
+
+        const match = await prisma.studyBuddyMatch.findUnique({
+            where: { id: matchId },
+            include: { user1: { select: { name: true } }, user2: { select: { name: true } } }
+        })
+
+        if (!match) {
+            return NextResponse.json({ error: 'Match not found' }, { status: 404 })
+        }
+
+        await prisma.studyBuddyMatch.delete({
+            where: { id: matchId }
+        })
+
+        // Log admin action
+        await prisma.adminAuditLog.create({
+            data: {
+                adminId: session.user.id,
+                action: 'STUDY_BUDDY_DELETE',
+                module: 'Study Buddy Management',
+                details: `Deleted match between ${match.user1.name} and ${match.user2.name}`,
+                status: 'SUCCESS',
+                targetId: matchId,
+                targetType: 'STUDY_BUDDY_MATCH'
+            }
+        })
+
+        return NextResponse.json({
+            success: true,
+            message: 'Match deleted successfully'
+        })
+    } catch (error) {
+        if (error instanceof Error && error.message === 'UNAUTHORIZED') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+        console.error('Admin study buddy delete error:', error)
+        return NextResponse.json({ error: 'Failed to delete match' }, { status: 500 })
     }
 }

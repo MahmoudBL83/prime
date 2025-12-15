@@ -183,10 +183,66 @@ model Creator {
   videoAssets            VideoAsset[]
   videoPlaylists         VideoPlaylist[]
   withdrawals            Withdrawal[]
+  coachingTokens         CoachingToken[]
+  coachingSessions       CoachingSession[]
 
   @@index([kycStatus])
   @@index([totalSubscribers])
   @@index([kycStatus, totalSubscribers])
+}
+
+// 1:1 Coaching Token System
+model CoachingToken {
+  id          String            @id @default(cuid())
+  userId      String
+  creatorId   String
+  channelId   String?
+  tier        String            @default("GOLD")
+  tokensTotal Int               @default(1)
+  tokensUsed  Int               @default(0)
+  purchasedAt DateTime          @default(now())
+  expiresAt   DateTime
+  status      String            @default("ACTIVE")
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  creator     Creator           @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  sessions    CoachingSession[]
+
+  @@index([userId])
+  @@index([creatorId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model CoachingSession {
+  id              String                @id @default(cuid())
+  tokenId         String
+  creatorId       String
+  learnerId       String
+  title           String?
+  titleAr         String?
+  description     String?
+  scheduledAt     DateTime
+  duration        Int                   @default(30)
+  status          CoachingSessionStatus @default(SCHEDULED)
+  meetingUrl      String?
+  meetingProvider String?               @default("internal")
+  notes           String?
+  feedback        Json?
+  rating          Int?
+  cancelReason    String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  token           CoachingToken         @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+  creator         Creator               @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([tokenId])
+  @@index([creatorId])
+  @@index([learnerId])
+  @@index([scheduledAt])
+  @@index([status])
 }
 
 model CreatorCredential {
@@ -3601,4 +3657,55 @@ enum RiskLevel {
   MEDIUM
   HIGH
   CRITICAL
+}
+
+enum CoachingSessionStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  RESCHEDULED
+}
+
+// ============================================
+// New Admin Models
+// ============================================
+
+model FeatureFlag {
+  id             String   @id @default(cuid())
+  key            String   @unique
+  name           String
+  description    String?
+  enabled        Boolean  @default(false)
+  rolloutPercent Int      @default(100)
+  targetRoles    String[] @default([])
+  targetUsers    String[] @default([])
+  environment    String   @default("production")
+  metadata       Json?
+  createdBy      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([key])
+  @@index([enabled])
+}
+
+// Study Buddy Matching Algorithm Settings
+model StudyBuddySettings {
+  id                   String   @id @default(cuid())
+  subjectOverlapWeight Int      @default(40)
+  timezoneMatchWeight  Int      @default(20)
+  goalAlignmentWeight  Int      @default(15)
+  studyPaceWeight      Int      @default(15)
+  availabilityWeight   Int      @default(10)
+  minCompatibility     Int      @default(50)
+  maxMatches           Int      @default(10)
+  cooldownHours        Int      @default(24)
+  isActive             Boolean  @default(true)
+  metadata             Json?
+  updatedBy            String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }
