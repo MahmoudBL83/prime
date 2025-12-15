@@ -23,7 +23,6 @@ export async function GET(request: NextRequest) {
         const adminId = searchParams.get('adminId')
         const startDate = searchParams.get('startDate')
         const endDate = searchParams.get('endDate')
-        const targetType = searchParams.get('targetType')
         const search = searchParams.get('search')
 
         const where: any = {}
@@ -40,9 +39,7 @@ export async function GET(request: NextRequest) {
             where.adminId = adminId
         }
 
-        if (targetType) {
-            where.targetType = { equals: targetType, mode: 'insensitive' }
-        }
+
 
         if (startDate || endDate) {
             where.createdAt = {}
@@ -130,8 +127,6 @@ export async function GET(request: NextRequest) {
                 module: log.module,
                 details: log.details,
                 status: log.status,
-                targetId: log.targetId,
-                targetType: log.targetType,
                 ipAddress: log.ipAddress,
                 userAgent: log.userAgent,
                 metadata: log.metadata,
