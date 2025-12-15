@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
                 type: 'COURSE_REVIEW',
                 title: action === 'approve' ? 'Course Approved!' : 'Course Review Update',
                 message: notificationMessage,
-                metadata: {
+                data: {
                     courseId,
                     action,
                     reason,
