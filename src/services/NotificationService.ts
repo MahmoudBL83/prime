@@ -1,10 +1,10 @@
 import { prisma } from '@/lib/prisma'
 
-export type NotificationType = 
-  | 'MESSAGE' 
-  | 'MENTION' 
-  | 'GROUP_INVITE' 
-  | 'GROUP_JOIN' 
+export type NotificationType =
+  | 'MESSAGE'
+  | 'MENTION'
+  | 'GROUP_INVITE'
+  | 'GROUP_JOIN'
   | 'REACTION'
   | 'SYSTEM'
   | 'STUDY_BUDDY_REQUEST'
@@ -15,6 +15,8 @@ export type NotificationType =
   | 'VIDEO_CALL_INCOMING'
   | 'VIDEO_CALL_SCHEDULED'
   | 'VIDEO_CALL_CANCELLED'
+  | 'VIDEO_CALL_ENDED'
+  | 'COURSE_REVIEW'
 
 export interface CreateNotificationData {
   userId: string
@@ -142,7 +144,7 @@ export class NotificationService {
   // Mark notifications as read
   static async markAsRead(userId: string, notificationIds?: string[]) {
     try {
-      const whereClause = notificationIds 
+      const whereClause = notificationIds
         ? { id: { in: notificationIds }, userId }
         : { userId, isRead: false }
 

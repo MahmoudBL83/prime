@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         }
 
         const { searchParams } = new URL(request.url)
-        const status = searchParams.get('status') || 'PENDING_REVIEW'
+        const status = searchParams.get('status') || 'UNDER_REVIEW'
         const page = parseInt(searchParams.get('page') || '1')
         const limit = parseInt(searchParams.get('limit') || '20')
         const skip = (page - 1) * limit
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
                 totalPages: Math.ceil(totalCount / limit)
             },
             stats: {
-                pendingReview: stats.find(s => s.status === 'PENDING_REVIEW')?._count.id || 0,
+                pendingReview: stats.find(s => s.status === 'UNDER_REVIEW')?._count.id || 0,
                 draft: stats.find(s => s.status === 'DRAFT')?._count.id || 0,
                 published: stats.find(s => s.status === 'PUBLISHED')?._count.id || 0,
                 rejected: stats.find(s => s.status === 'REJECTED')?._count.id || 0
@@ -196,6 +196,8 @@ export async function POST(request: NextRequest) {
         await prisma.adminAuditLog.create({
             data: {
                 adminId: session.user.id,
+                adminName: session.user.name || 'Unknown Admin',
+                adminEmail: session.user.email || 'unknown@admin.com',
                 action: `COURSE_${action.toUpperCase()}`,
                 module: 'Content Review',
                 details: `${action} course: ${course.title}. ${reason || ''}`,
