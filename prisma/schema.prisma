@@ -318,6 +318,7 @@ model Course {
   enrollmentEndDate  DateTime?
   createdAt          DateTime                 @default(now())
   updatedAt          DateTime                 @updatedAt
+  isHidden           Boolean                  @default(false)
   demoVideoUrl       String?
   achievements       Achievement[]
   assignments        Assignment[]
