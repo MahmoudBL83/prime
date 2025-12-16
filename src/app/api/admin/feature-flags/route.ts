@@ -19,7 +19,7 @@ const featureFlagSchema = z.object({
     targetRoles: z.array(z.string()).optional(),
     targetUsers: z.array(z.string()).optional(),
     environment: z.string().default('production'),
-    metadata: z.record(z.any()).optional()
+    metadata: z.record(z.string(), z.any()).optional()
 })
 
 // GET: List all feature flags or check specific flag
