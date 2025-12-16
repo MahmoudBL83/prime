@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
         const moderationHistory = await prisma.moderationEvent.findMany({
             where: {
                 source: 'ADMIN_ACTION',
-                eventType: { startsWith: 'CONTENT_' }
+                eventType: 'CONTENT_FLAG'
             },
             orderBy: { createdAt: 'desc' },
             take: 50,
@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
                     case 'remove':
                         result = await prisma.course.update({
                             where: { id: contentId },
-                            data: { status: 'ARCHIVED', isHidden: true }
+                            data: { status: 'REJECTED', isHidden: true }
                         })
                         break
                 }
