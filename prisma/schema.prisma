@@ -94,6 +94,7 @@ model User {
   scholarshipApps           ScholarshipApplication[]   @relation("ScholarshipApplicant")
   reviewedScholarships      ScholarshipApplication[]   @relation("ScholarshipReviewer")
   createdCampaigns          ScholarshipCampaign[]      @relation("CampaignCreator")
+  createdFeatureFlags       FeatureFlag[]              @relation("CreatedFeatureFlags")
   sessions                  Session[]
   sessionAttendances        SessionAttendance[]
   sessionAttendees          SessionAttendee[]          @relation("SessionAttendees")
@@ -3685,7 +3686,8 @@ model FeatureFlag {
   targetUsers    String[] @default([])
   environment    String   @default("production")
   metadata       Json?
-  createdBy      String?
+  createdBy      String
+  creator        User     @relation("CreatedFeatureFlags", fields: [createdBy], references: [id])
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

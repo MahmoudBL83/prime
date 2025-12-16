@@ -151,12 +151,16 @@ export async function POST(request: NextRequest) {
         await prisma.adminAuditLog.create({
             data: {
                 adminId: session.user.id,
+                adminName: session.user.name || 'Unknown Admin',
+                adminEmail: session.user.email || 'unknown@admin.com',
                 action: 'CREATE_FEATURE_FLAG',
                 module: 'Feature Flags',
                 details: `Created feature flag: ${flag.name} (${flag.key})`,
                 status: 'SUCCESS',
-                targetId: flag.id,
-                targetType: 'FEATURE_FLAG'
+                metadata: {
+                    targetId: flag.id,
+                    targetType: 'FEATURE_FLAG'
+                }
             }
         })
 
@@ -217,13 +221,15 @@ export async function PATCH(request: NextRequest) {
         await prisma.adminAuditLog.create({
             data: {
                 adminId: session.user.id,
+                adminName: session.user.name || 'Unknown Admin',
+                adminEmail: session.user.email || 'unknown@admin.com',
                 action: 'UPDATE_FEATURE_FLAG',
                 module: 'Feature Flags',
                 details: `Updated feature flag: ${flag.name}. Changes: ${JSON.stringify(updates)}`,
                 status: 'SUCCESS',
-                targetId: flag.id,
-                targetType: 'FEATURE_FLAG',
                 metadata: {
+                    targetId: flag.id,
+                    targetType: 'FEATURE_FLAG',
                     changes: updates,
                     previousState: existing
                 }
@@ -277,13 +283,17 @@ export async function DELETE(request: NextRequest) {
         await prisma.adminAuditLog.create({
             data: {
                 adminId: session.user.id,
+                adminName: session.user.name || 'Unknown Admin',
+                adminEmail: session.user.email || 'unknown@admin.com',
                 action: 'DELETE_FEATURE_FLAG',
                 module: 'Feature Flags',
                 details: `Deleted feature flag: ${existing.name} (${existing.key})`,
                 status: 'SUCCESS',
-                targetId: id,
-                targetType: 'FEATURE_FLAG',
-                metadata: { deletedFlag: existing }
+                metadata: {
+                    targetId: id,
+                    targetType: 'FEATURE_FLAG',
+                    deletedFlag: existing
+                }
             }
         })
 
