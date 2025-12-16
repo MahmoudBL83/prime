@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         // Get courses pending review
         const pendingCourses = await prisma.course.findMany({
             where: {
-                status: status === 'pending' ? 'PENDING_REVIEW' : undefined,
+                status: status === 'pending' ? 'UNDER_REVIEW' : undefined,
                 ...(contentType === 'course' ? {} : contentType ? { id: 'never' } : {})
             },
             select: {
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
         let result: any = null
         let creatorId: string | null = null
         let contentTitle = ''
-        let moderationEventType = `CONTENT_${action.toUpperCase()}`
+        let moderationEventType = 'CONTENT_FLAG'
 
         // Process based on content type
         switch (contentType) {
@@ -215,14 +215,10 @@ export async function POST(request: NextRequest) {
                     select: {
                         id: true,
                         title: true,
-                        section: {
+                        course: {
                             select: {
-                                course: {
-                                    select: {
-                                        creatorId: true,
-                                        creator: { select: { userId: true } }
-                                    }
-                                }
+                                creatorId: true,
+                                creator: { select: { userId: true } }
                             }
                         }
                     }
@@ -233,7 +229,7 @@ export async function POST(request: NextRequest) {
                 }
 
                 contentTitle = lesson.title
-                creatorId = lesson.section.course.creator.userId
+                creatorId = lesson.course.creator.userId
 
                 switch (action) {
                     case 'hide':
@@ -327,7 +323,7 @@ export async function POST(request: NextRequest) {
             await prisma.notification.create({
                 data: {
                     userId: creatorId,
-                    type: action === 'approve' ? 'GENERAL' : 'WARNING',
+                    type: 'SYSTEM',
                     title: notificationTitle,
                     message: notificationMessage,
                     metadata: { contentType, contentId, action, adminAction: true }
@@ -339,13 +335,21 @@ export async function POST(request: NextRequest) {
         await prisma.adminAuditLog.create({
             data: {
                 adminId: session.user.id,
+                adminName: session.user.name || 'Unknown Admin',
+                adminEmail: session.user.email || 'unknown@admin.com',
                 action: `${action.toUpperCase()}_${contentType.toUpperCase()}`,
                 module: 'Content Moderation',
                 details: `${action} ${contentType}: ${contentTitle}. ${reason || ''}`,
                 status: 'SUCCESS',
-                targetId: contentId,
-                targetType: contentType.toUpperCase(),
-                metadata: { contentType, contentId, action, reason, severity }
+                metadata: {
+                    targetId: contentId,
+                    targetType: contentType.toUpperCase(),
+                    contentType,
+                    contentId,
+                    action,
+                    reason,
+                    severity
+                }
             }
         })
 

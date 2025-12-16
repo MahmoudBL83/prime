@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
             // Today's revenue
             prisma.paymentTransaction.aggregate({
                 where: {
-                    status: 'COMPLETED',
+                    status: 'PAID',
                     paidAt: { gte: todayStart }
                 },
                 _sum: { amount: true }
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
             // Pending course reviews
             prisma.course.count({
                 where: {
-                    status: 'PENDING_REVIEW'
+                    status: 'UNDER_REVIEW'
                 }
             }),
 
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
             // Recent purchases (last 10)
             prisma.paymentTransaction.findMany({
                 where: {
-                    status: 'COMPLETED',
+                    status: 'PAID',
                     paidAt: { gte: todayStart }
                 },
                 select: {
