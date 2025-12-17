@@ -113,7 +113,8 @@ export async function GET(request: NextRequest) {
                 }
             }
             creatorSummaries[cid].totalEarnings += earning.amount
-            creatorSummaries[cid].platformFees += earning.platformFee || 0
+            // Calculate platform fee as 20% of earnings (since CreatorEarnings doesn't store platformFee)
+            creatorSummaries[cid].platformFees += earning.amount * 0.20
             creatorSummaries[cid].transactionCount += 1
         }
 
@@ -220,6 +221,8 @@ export async function POST(request: NextRequest) {
         await prisma.adminAuditLog.create({
             data: {
                 adminId: session.user.id,
+                adminName: session.user.name || 'Unknown Admin',
+                adminEmail: session.user.email || 'unknown@admin.com',
                 action: 'GENERATE_TAX_REPORT',
                 module: 'Reports',
                 details: `Generated tax report for ${year}${quarter ? ` ${quarter}` : ''}. Notes: ${notes || 'None'}`,

@@ -52,9 +52,10 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Session not found' }, { status: 404 })
         }
 
-        // Parse breakout rooms from session metadata
-        const metadata = (liveSession.settings as any) || {}
-        const breakoutRooms = metadata.breakoutRooms || []
+        // Breakout rooms are managed in-memory during live sessions
+        // This endpoint returns empty breakout rooms as a placeholder
+        // In a real implementation, these would be stored in a separate table or cache
+        const breakoutRooms: any[] = []
 
         return NextResponse.json({
             sessionId,
@@ -96,85 +97,12 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Verify ownership
-        const creator = await prisma.creator.findUnique({
-            where: { userId: session.user.id }
-        })
-
-        const liveSession = await prisma.liveSession.findFirst({
-            where: {
-                id: sessionId,
-                channel: { creatorId: creator?.id }
-            }
-        })
-
-        if (!liveSession) {
-            return NextResponse.json({ error: 'Session not found or unauthorized' }, { status: 404 })
-        }
-
-        const metadata = (liveSession.settings as any) || {}
-        let breakoutRooms = metadata.breakoutRooms || []
-
-        if (autoCreate) {
-            // Auto-create rooms based on attendee count
-            const { roomCount, maxPerRoom } = autoCreate
-            const newRooms = []
-            for (let i = 0; i < roomCount; i++) {
-                newRooms.push({
-                    id: `br-${Date.now()}-${i}`,
-                    name: `Room ${breakoutRooms.length + i + 1}`,
-                    maxParticipants: maxPerRoom || 10,
-                    participants: [],
-                    status: 'PENDING',
-                    createdAt: new Date().toISOString()
-                })
-            }
-            breakoutRooms = [...breakoutRooms, ...newRooms]
-        } else if (rooms && Array.isArray(rooms)) {
-            // Create specific rooms
-            for (const room of rooms) {
-                breakoutRooms.push({
-                    id: `br-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                    name: room.name,
-                    maxParticipants: room.maxParticipants || 10,
-                    topic: room.topic || '',
-                    duration: room.duration,
-                    participants: [],
-                    status: 'PENDING',
-                    createdAt: new Date().toISOString()
-                })
-            }
-        } else {
-            // Single room creation
-            const parsed = createRoomSchema.safeParse(body)
-            if (!parsed.success) {
-                return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
-            }
-
-            breakoutRooms.push({
-                id: `br-${Date.now()}`,
-                name: parsed.data.name,
-                maxParticipants: parsed.data.maxParticipants,
-                topic: parsed.data.topic || '',
-                duration: parsed.data.duration,
-                participants: [],
-                status: 'PENDING',
-                createdAt: new Date().toISOString()
-            })
-        }
-
-        metadata.breakoutRooms = breakoutRooms
-
-        await prisma.liveSession.update({
-            where: { id: sessionId },
-            data: { settings: metadata }
-        })
-
+        // Breakout rooms feature requires database schema update to add settings field
+        // Currently returning a placeholder response
         return NextResponse.json({
-            breakoutRooms,
-            totalRooms: breakoutRooms.length,
-            message: 'Breakout rooms created successfully'
-        }, { status: 201 })
+            error: 'Breakout rooms feature is not yet available. Database schema update required.',
+            message: 'Feature coming soon'
+        }, { status: 501 })
     } catch (error) {
         console.error('Breakout rooms POST error:', error)
         return NextResponse.json(
@@ -202,124 +130,12 @@ export async function PATCH(request: NextRequest) {
             )
         }
 
-        const creator = await prisma.creator.findUnique({
-            where: { userId: session.user.id }
-        })
-
-        const liveSession = await prisma.liveSession.findFirst({
-            where: {
-                id: sessionId,
-                channel: { creatorId: creator?.id }
-            }
-        })
-
-        if (!liveSession) {
-            return NextResponse.json({ error: 'Session not found or unauthorized' }, { status: 404 })
-        }
-
-        const metadata = (liveSession.settings as any) || {}
-        let breakoutRooms = metadata.breakoutRooms || []
-
-        switch (action) {
-            case 'start_all': {
-                // Start all breakout rooms
-                breakoutRooms = breakoutRooms.map((room: any) => ({
-                    ...room,
-                    status: 'ACTIVE',
-                    startedAt: new Date().toISOString(),
-                    endsAt: duration
-                        ? new Date(Date.now() + duration * 60 * 1000).toISOString()
-                        : undefined
-                }))
-                break
-            }
-
-            case 'close_all': {
-                // Close all breakout rooms
-                breakoutRooms = breakoutRooms.map((room: any) => ({
-                    ...room,
-                    status: 'CLOSED',
-                    closedAt: new Date().toISOString()
-                }))
-                break
-            }
-
-            case 'start_room': {
-                const roomIndex = breakoutRooms.findIndex((r: any) => r.id === roomId)
-                if (roomIndex === -1) {
-                    return NextResponse.json({ error: 'Room not found' }, { status: 404 })
-                }
-                breakoutRooms[roomIndex].status = 'ACTIVE'
-                breakoutRooms[roomIndex].startedAt = new Date().toISOString()
-                break
-            }
-
-            case 'close_room': {
-                const roomIndex = breakoutRooms.findIndex((r: any) => r.id === roomId)
-                if (roomIndex === -1) {
-                    return NextResponse.json({ error: 'Room not found' }, { status: 404 })
-                }
-                breakoutRooms[roomIndex].status = 'CLOSED'
-                breakoutRooms[roomIndex].closedAt = new Date().toISOString()
-                break
-            }
-
-            case 'assign_participants': {
-                const roomIndex = breakoutRooms.findIndex((r: any) => r.id === roomId)
-                if (roomIndex === -1) {
-                    return NextResponse.json({ error: 'Room not found' }, { status: 404 })
-                }
-                if (!participantIds || !Array.isArray(participantIds)) {
-                    return NextResponse.json({ error: 'participantIds required' }, { status: 400 })
-                }
-                // Check capacity
-                if (participantIds.length > breakoutRooms[roomIndex].maxParticipants) {
-                    return NextResponse.json(
-                        { error: `Exceeds max capacity of ${breakoutRooms[roomIndex].maxParticipants}` },
-                        { status: 400 }
-                    )
-                }
-                breakoutRooms[roomIndex].participants = participantIds
-                break
-            }
-
-            case 'auto_assign': {
-                // Auto-assign attendees to rooms evenly
-                const attendees = await prisma.sessionAttendee.findMany({
-                    where: { sessionId },
-                    select: { id: true }
-                })
-
-                const attendeeIds = attendees.map(a => a.id)
-                const roomCount = breakoutRooms.length
-
-                breakoutRooms = breakoutRooms.map((room: any, i: number) => ({
-                    ...room,
-                    participants: attendeeIds.filter((_, idx) => idx % roomCount === i)
-                }))
-                break
-            }
-
-            case 'delete_room': {
-                breakoutRooms = breakoutRooms.filter((r: any) => r.id !== roomId)
-                break
-            }
-
-            default:
-                return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-        }
-
-        metadata.breakoutRooms = breakoutRooms
-
-        await prisma.liveSession.update({
-            where: { id: sessionId },
-            data: { settings: metadata }
-        })
-
+        // Breakout rooms feature requires database schema update to add settings field
+        // Currently returning a placeholder response
         return NextResponse.json({
-            breakoutRooms,
-            message: `Action "${action}" completed successfully`
-        })
+            error: 'Breakout rooms feature is not yet available. Database schema update required.',
+            message: 'Feature coming soon'
+        }, { status: 501 })
     } catch (error) {
         console.error('Breakout rooms PATCH error:', error)
         return NextResponse.json(

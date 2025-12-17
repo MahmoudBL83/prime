@@ -61,7 +61,7 @@ export default function GlobalSearch({ placeholder, className }: GlobalSearchPro
 
     const searchRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
-    const debounceRef = useRef<NodeJS.Timeout>()
+    const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
     // Load recent searches from localStorage
     useEffect(() => {

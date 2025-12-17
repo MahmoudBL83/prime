@@ -34,10 +34,7 @@ export async function GET(
                 titleAr: true,
                 description: true,
                 descriptionAr: true,
-                curriculum: true,
-                curriculumAr: true,
-                shortDescription: true,
-                shortDescriptionAr: true,
+                syllabus: true,
                 lessons: {
                     select: {
                         id: true,
@@ -62,8 +59,7 @@ export async function GET(
                 language: 'en',
                 title: course.title,
                 description: course.description,
-                curriculum: course.curriculum,
-                shortDescription: course.shortDescription,
+                syllabus: course.syllabus,
                 lessons: course.lessons.map(l => ({
                     id: l.id,
                     title: l.title,
@@ -75,8 +71,7 @@ export async function GET(
                 language: 'ar',
                 title: course.titleAr,
                 description: course.descriptionAr,
-                curriculum: course.curriculumAr,
-                shortDescription: course.shortDescriptionAr,
+                syllabus: course.syllabus, // Syllabus is JSON, same for both languages
                 lessons: course.lessons.map(l => ({
                     id: l.id,
                     title: l.titleAr,
@@ -149,7 +144,7 @@ export async function POST(
             )
         }
 
-        const { language, title, description, curriculum, shortDescription } = parsed.data
+        const { language, title, description } = parsed.data
 
         // Update based on language
         let updateData: any = {}
@@ -157,29 +152,26 @@ export async function POST(
         if (language === 'ar') {
             updateData = {
                 titleAr: title,
-                descriptionAr: description,
-                curriculumAr: curriculum,
-                shortDescriptionAr: shortDescription
+                descriptionAr: description
             }
         } else if (language === 'en') {
             updateData = {
                 title,
-                description,
-                curriculum,
-                shortDescription
+                description
             }
         } else {
-            // For other languages, store in metadata
-            const existingMeta = (course?.metadata as any) || {}
-            existingMeta.translations = existingMeta.translations || {}
-            existingMeta.translations[language] = {
-                title,
-                description,
-                curriculum,
-                shortDescription,
-                updatedAt: new Date().toISOString()
+            // For other languages like German, use the De fields
+            if (language === 'de') {
+                updateData = {
+                    titleDe: title,
+                    descriptionDe: description
+                }
+            } else {
+                return NextResponse.json(
+                    { error: 'Unsupported language. Supported: en, ar, de' },
+                    { status: 400 }
+                )
             }
-            updateData = { metadata: existingMeta }
         }
 
         const updatedCourse = await prisma.course.update({

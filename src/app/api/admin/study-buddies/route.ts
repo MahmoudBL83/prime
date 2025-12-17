@@ -221,14 +221,14 @@ export async function POST(request: NextRequest) {
         }
 
         let newStatus = match.status
-        let moderationEventType = ''
+        let moderationEventType: 'ONBOARDING_REVIEW' | 'CHAT_FLAG' | 'CONTENT_FLAG' | 'BEHAVIOR_FLAG' = 'BEHAVIOR_FLAG'
         let notificationTitle = ''
         let notificationMessage = ''
 
         switch (action) {
             case 'block': {
                 newStatus = 'BLOCKED'
-                moderationEventType = 'STUDY_BUDDY_BLOCKED'
+                moderationEventType = 'BEHAVIOR_FLAG'
                 notificationTitle = 'Study Buddy Match Blocked'
                 notificationMessage = `Your study buddy match has been blocked by admin. ${reason ? `Reason: ${reason}` : ''}`
 
@@ -247,14 +247,14 @@ export async function POST(request: NextRequest) {
 
             case 'unmatch': {
                 newStatus = 'UNMATCHED'
-                moderationEventType = 'STUDY_BUDDY_UNMATCHED'
+                moderationEventType = 'BEHAVIOR_FLAG'
                 notificationTitle = 'Study Buddy Unmatched'
                 notificationMessage = `Your study buddy match has been dissolved. ${reason ? `Reason: ${reason}` : ''}`
                 break
             }
 
             case 'warn': {
-                moderationEventType = 'STUDY_BUDDY_WARNING'
+                moderationEventType = 'BEHAVIOR_FLAG'
                 notificationTitle = 'Study Buddy Warning'
                 notificationMessage = `You have received a warning regarding your study buddy interactions. ${reason || 'Please follow community guidelines.'}`
                 // Don't change status, just log and notify
@@ -263,7 +263,7 @@ export async function POST(request: NextRequest) {
 
             case 'resolve': {
                 newStatus = 'ACTIVE'
-                moderationEventType = 'STUDY_BUDDY_RESOLVED'
+                moderationEventType = 'BEHAVIOR_FLAG'
                 notificationTitle = 'Match Issue Resolved'
                 notificationMessage = 'The reported issue with your study buddy match has been resolved.'
                 break
@@ -271,7 +271,7 @@ export async function POST(request: NextRequest) {
 
             case 'reactivate': {
                 newStatus = 'ACTIVE'
-                moderationEventType = 'STUDY_BUDDY_REACTIVATED'
+                moderationEventType = 'BEHAVIOR_FLAG'
                 notificationTitle = 'Match Reactivated'
                 notificationMessage = 'Your study buddy match has been reactivated.'
                 break
@@ -320,17 +320,17 @@ export async function POST(request: NextRequest) {
                 data: [
                     {
                         userId: match.user1Id,
-                        type: 'WARNING',
+                        type: 'SYSTEM',
                         title: notificationTitle,
                         message: notificationMessage,
-                        metadata: { matchId, adminAction: true }
+                        data: { matchId, adminAction: true }
                     },
                     {
                         userId: match.user2Id,
-                        type: 'WARNING',
+                        type: 'SYSTEM',
                         title: notificationTitle,
                         message: notificationMessage,
-                        metadata: { matchId, adminAction: true }
+                        data: { matchId, adminAction: true }
                     }
                 ]
             })
@@ -340,13 +340,13 @@ export async function POST(request: NextRequest) {
         await prisma.adminAuditLog.create({
             data: {
                 adminId: session.user.id,
+                adminName: session.user.name || 'Unknown Admin',
+                adminEmail: session.user.email || 'unknown@admin.com',
                 action: `STUDY_BUDDY_${action.toUpperCase()}`,
                 module: 'Study Buddy Management',
                 details: `${action} match between ${match.user1.name} and ${match.user2.name}. ${reason || ''}`,
                 status: 'SUCCESS',
-                targetId: matchId,
-                targetType: 'STUDY_BUDDY_MATCH',
-                metadata: { matchId, action, reason, user1Id: match.user1Id, user2Id: match.user2Id }
+                metadata: { matchId, action, reason, user1Id: match.user1Id, user2Id: match.user2Id, targetType: 'STUDY_BUDDY_MATCH' }
             }
         })
 
@@ -439,12 +439,13 @@ export async function DELETE(request: NextRequest) {
         await prisma.adminAuditLog.create({
             data: {
                 adminId: session.user.id,
+                adminName: session.user.name || 'Unknown Admin',
+                adminEmail: session.user.email || 'unknown@admin.com',
                 action: 'STUDY_BUDDY_DELETE',
                 module: 'Study Buddy Management',
                 details: `Deleted match between ${match.user1.name} and ${match.user2.name}`,
                 status: 'SUCCESS',
-                targetId: matchId,
-                targetType: 'STUDY_BUDDY_MATCH'
+                metadata: { matchId, targetType: 'STUDY_BUDDY_MATCH' }
             }
         })
 

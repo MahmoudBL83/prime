@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
                 ] = await Promise.all([
                     prisma.user.count(),
                     prisma.user.count({ where: { createdAt: { gte: startDate } } }),
-                    prisma.course.count(creator ? { where: { creatorId: creator.id } } : {}),
+                    creator ? prisma.course.count({ where: { creatorId: creator.id } }) : prisma.course.count(),
                     prisma.enrollment.count({
                         where: {
                             createdAt: { gte: startDate },
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
                     prisma.paymentTransaction.aggregate({
                         where: {
                             paidAt: { gte: startDate },
-                            status: 'COMPLETED'
+                            status: 'PAID'
                         },
                         _sum: { amount: true }
                     }),
@@ -113,31 +113,30 @@ export async function GET(request: NextRequest) {
                     }),
                     prisma.videoAnalytics.aggregate({
                         where: { createdAt: { gte: startDate } },
-                        _avg: { watchTime: true }
+                        _avg: { duration: true }
                     }),
-                    prisma.courseProgress.aggregate({
+                    prisma.enrollment.count({
                         where: {
                             updatedAt: { gte: startDate },
                             progress: 100
-                        },
-                        _count: true
+                        }
                     }),
                     prisma.quizAttempt.count({
                         where: { createdAt: { gte: startDate } }
                     }),
                     prisma.certificate.count({
-                        where: { issuedAt: { gte: startDate } }
+                        where: { issueDate: { gte: startDate } }
                     })
                 ])
 
                 analytics = {
                     videoViews,
-                    avgWatchTimeMinutes: Math.round((avgWatchTime._avg.watchTime || 0) / 60),
-                    coursesCompleted: completionRates._count,
+                    avgWatchTimeMinutes: Math.round((avgWatchTime._avg.duration || 0) / 60),
+                    coursesCompleted: completionRates,
                     quizAttempts,
                     certificatesIssued,
                     engagementScore: Math.round(
-                        (videoViews * 0.3 + completionRates._count * 0.4 + quizAttempts * 0.3) / 100
+                        (videoViews * 0.3 + completionRates * 0.4 + quizAttempts * 0.3) / 100
                     )
                 }
                 break
@@ -149,7 +148,7 @@ export async function GET(request: NextRequest) {
                     by: ['subscriptionType'],
                     where: {
                         paidAt: { gte: startDate },
-                        status: 'COMPLETED'
+                        status: 'PAID'
                     },
                     _sum: { amount: true },
                     _count: true
@@ -158,7 +157,7 @@ export async function GET(request: NextRequest) {
                 const dailyRevenue = await prisma.$queryRaw`
                     SELECT DATE(paid_at) as date, SUM(amount) as revenue, COUNT(*) as transactions
                     FROM payment_transactions
-                    WHERE paid_at >= ${startDate} AND status = 'COMPLETED'
+                    WHERE paid_at >= ${startDate} AND status = 'PAID'
                     GROUP BY DATE(paid_at)
                     ORDER BY date ASC
                 ` as any[]

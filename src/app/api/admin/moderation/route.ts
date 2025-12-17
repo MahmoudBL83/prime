@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
         let result: any = null
         let creatorId: string | null = null
         let contentTitle = ''
-        let moderationEventType = 'CONTENT_FLAG'
+        let moderationEventType: 'ONBOARDING_REVIEW' | 'CHAT_FLAG' | 'CONTENT_FLAG' | 'BEHAVIOR_FLAG' = 'CONTENT_FLAG'
 
         // Process based on content type
         switch (contentType) {
@@ -215,6 +215,7 @@ export async function POST(request: NextRequest) {
                     select: {
                         id: true,
                         title: true,
+                        courseId: true,
                         course: {
                             select: {
                                 creatorId: true,
@@ -233,21 +234,23 @@ export async function POST(request: NextRequest) {
 
                 switch (action) {
                     case 'hide':
-                        result = await prisma.lesson.update({
-                            where: { id: contentId },
-                            data: { isPublished: false }
+                        // Lessons don't have individual publish status - hide parent course instead
+                        result = await prisma.course.update({
+                            where: { id: lesson.courseId },
+                            data: { isHidden: true }
                         })
                         break
                     case 'unhide':
-                        result = await prisma.lesson.update({
-                            where: { id: contentId },
-                            data: { isPublished: true }
+                        // Unhide parent course
+                        result = await prisma.course.update({
+                            where: { id: lesson.courseId },
+                            data: { isHidden: false }
                         })
                         break
                     case 'remove':
-                        result = await prisma.lesson.update({
-                            where: { id: contentId },
-                            data: { isPublished: false }
+                        // Delete the lesson
+                        result = await prisma.lesson.delete({
+                            where: { id: contentId }
                         })
                         break
                 }
@@ -326,7 +329,7 @@ export async function POST(request: NextRequest) {
                     type: 'SYSTEM',
                     title: notificationTitle,
                     message: notificationMessage,
-                    metadata: { contentType, contentId, action, adminAction: true }
+                    data: { contentType, contentId, action, adminAction: true }
                 }
             })
         }

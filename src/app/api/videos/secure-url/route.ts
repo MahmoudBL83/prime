@@ -146,19 +146,8 @@ export async function GET(request: NextRequest) {
             allowDownload: false
         })
 
-        // Log access for analytics
-        await prisma.videoAnalytics.create({
-            data: {
-                lessonId: lesson.id,
-                visitorId: session.user.id,
-                eventType: 'secure_access',
-                metadata: {
-                    ip: request.headers.get('x-forwarded-for') || 'unknown',
-                    userAgent: request.headers.get('user-agent') || 'unknown',
-                    timestamp: new Date().toISOString()
-                }
-            }
-        }).catch(() => { }) // Don't fail if analytics table doesn't exist
+        // Note: VideoAnalytics requires videoAssetId which we don't have for lesson videos
+        // Analytics logging skipped for direct lesson video access
 
         return NextResponse.json({
             url: secureUrl,
@@ -192,14 +181,14 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const { lessonId, violationType, details } = body
 
-        // Log the security violation
+        // Log the security violation - using BEHAVIOR_FLAG as closest match
         await prisma.moderationEvent.create({
             data: {
                 userId: session.user.id,
-                eventType: 'DRM_VIOLATION',
+                eventType: 'BEHAVIOR_FLAG',
                 severity: violationType === 'screenshot' ? 'MEDIUM' : 'LOW',
                 status: 'OPEN',
-                reason: `Video security violation: ${violationType}`,
+                reason: `Video security violation (DRM): ${violationType}`,
                 source: 'VIDEO_PLAYER',
                 metadata: {
                     lessonId,

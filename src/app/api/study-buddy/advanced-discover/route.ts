@@ -70,8 +70,7 @@ export async function GET(request: NextRequest) {
 
         // Build query for potential buddies
         const whereClause: any = {
-            userId: { not: session.user.id },
-            isActive: true
+            userId: { not: session.user.id }
         }
 
         // Get all potential buddies with their preferences
@@ -100,27 +99,26 @@ export async function GET(request: NextRequest) {
             let score = 0
             let matchDetails: string[] = []
 
-            // Interest matching (30 points max)
-            const userInterests = userPrefs?.interests as string[] || filters.interests || []
-            const buddyInterests = buddy.interests as string[] || []
+            // Interest matching (30 points max) - using subjectExpertise as interests
+            const userInterests = (userPrefs?.subjectExpertise as string[]) || filters.interests || []
+            const buddyInterests = (buddy.subjectExpertise as string[]) || []
             const interestMatches = userInterests.filter(i => buddyInterests.includes(i)).length
             if (interestMatches > 0) {
                 score += Math.min(interestMatches * 10, 30)
                 matchDetails.push(`${interestMatches} shared interests`)
             }
 
-            // Learning goals matching (20 points max)
-            const userGoals = userPrefs?.goals as string[] || filters.learningGoals || []
-            const buddyGoals = buddy.goals as string[] || []
-            const goalMatches = userGoals.filter(g => buddyGoals.includes(g)).length
-            if (goalMatches > 0) {
-                score += Math.min(goalMatches * 10, 20)
-                matchDetails.push(`${goalMatches} shared goals`)
+            // Learning goals matching (20 points max) - using studyGoalType
+            const userGoal = userPrefs?.studyGoalType || filters.learningGoals?.[0]
+            const buddyGoal = buddy.studyGoalType
+            if (userGoal && buddyGoal && userGoal === buddyGoal) {
+                score += 20
+                matchDetails.push('Same learning goal')
             }
 
-            // Experience level matching (15 points)
-            const userLevel = userPrefs?.experienceLevel || filters.experienceLevel
-            if (userLevel && buddy.experienceLevel === userLevel) {
+            // Experience level matching (15 points) - using skillLevelPreference
+            const userLevel = userPrefs?.skillLevelPreference || filters.experienceLevel
+            if (userLevel && buddy.skillLevelPreference === userLevel) {
                 score += 15
                 matchDetails.push('Same experience level')
             }
@@ -145,9 +143,9 @@ export async function GET(request: NextRequest) {
                 }
             }
 
-            // Study schedule matching
-            const userSchedule = userPrefs?.preferredTime || filters.studySchedule
-            if (userSchedule && buddy.preferredTime === userSchedule) {
+            // Study schedule matching - using preferredStudyTimes
+            const userSchedule = userPrefs?.preferredStudyTimes || filters.studySchedule
+            if (userSchedule && buddy.preferredStudyTimes === userSchedule) {
                 score += 5
                 matchDetails.push('Same study schedule')
             }
@@ -162,9 +160,9 @@ export async function GET(request: NextRequest) {
                 },
                 preferences: {
                     interests: buddyInterests,
-                    goals: buddyGoals,
-                    experienceLevel: buddy.experienceLevel,
-                    studySchedule: buddy.preferredTime,
+                    goals: buddy.studyGoalType ? [buddy.studyGoalType] : [],
+                    experienceLevel: buddy.skillLevelPreference,
+                    studySchedule: buddy.preferredStudyTimes,
                     timezone: buddy.timezone
                 },
                 compatibility: {
@@ -188,9 +186,9 @@ export async function GET(request: NextRequest) {
             totalFound: filteredBuddies.length,
             filtersApplied: Object.keys(filters).length,
             userPreferences: userPrefs ? {
-                interests: userPrefs.interests,
-                goals: userPrefs.goals,
-                experienceLevel: userPrefs.experienceLevel
+                interests: userPrefs.subjectExpertise,
+                goals: userPrefs.studyGoalType,
+                experienceLevel: userPrefs.skillLevelPreference
             } : null
         })
     } catch (error) {
@@ -223,18 +221,17 @@ export async function POST(request: NextRequest) {
             where: { userId: session.user.id },
             create: {
                 userId: session.user.id,
-                interests: data.interests || [],
-                goals: data.learningGoals || [],
-                experienceLevel: data.experienceLevel || 'beginner',
-                preferredTime: data.studySchedule || 'flexible',
-                timezone: data.timezone,
-                isActive: true
+                subjectExpertise: data.interests || [],
+                studyGoalType: data.learningGoals?.[0] || null,
+                skillLevelPreference: data.experienceLevel || 'beginner',
+                preferredStudyTimes: data.studySchedule || 'flexible',
+                timezone: data.timezone
             },
             update: {
-                interests: data.interests,
-                goals: data.learningGoals,
-                experienceLevel: data.experienceLevel,
-                preferredTime: data.studySchedule,
+                subjectExpertise: data.interests,
+                studyGoalType: data.learningGoals?.[0],
+                skillLevelPreference: data.experienceLevel,
+                preferredStudyTimes: data.studySchedule,
                 timezone: data.timezone
             }
         })

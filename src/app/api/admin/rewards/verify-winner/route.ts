@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
                     }
                 }
             },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { awardedAt: 'desc' }
         })
 
         // Get verification stats
@@ -152,10 +152,10 @@ export async function POST(request: NextRequest) {
         await prisma.notification.create({
             data: {
                 userId: winner.userId,
-                type: 'REWARD',
+                type: 'SYSTEM',
                 title: notificationTitle,
                 message: notificationMessage,
-                metadata: {
+                data: {
                     rewardId: winner.rewardId,
                     winnerId,
                     action,
@@ -168,6 +168,8 @@ export async function POST(request: NextRequest) {
         await prisma.adminAuditLog.create({
             data: {
                 adminId: session.user.id,
+                adminName: session.user.name || 'Unknown Admin',
+                adminEmail: session.user.email || 'unknown@admin.com',
                 action: `WINNER_${action.toUpperCase()}`,
                 module: 'Rewards',
                 details: `${action} winner ${winner.user.name} for reward "${winner.reward.title}". ${verificationNotes || ''}`,
