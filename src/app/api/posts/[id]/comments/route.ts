@@ -79,45 +79,25 @@ export async function POST(
             )
         }
 
-        // Check if user has access to comment (must be subscribed for premium content)
-        if (post.tier !== 'BRONZE') {
-            const subscription = await prisma.subscription.findFirst({
-                where: {
-                    userId: session.user.id,
-                    channelId: post.channelId,
-                    status: 'active',
-                    OR: [
-                        { endDate: null },
-                        { endDate: { gte: new Date() } }
-                    ]
-                }
-            })
-
-            if (!subscription) {
-                return NextResponse.json(
-                    { error: 'Subscription required to comment' },
-                    { status: 403 }
-                )
+        // Check if user has access to comment - single subscription model
+        // All subscribers can comment on all posts
+        const subscription = await prisma.subscription.findFirst({
+            where: {
+                userId: session.user.id,
+                channelId: post.channelId,
+                status: 'active',
+                OR: [
+                    { endDate: null },
+                    { endDate: { gte: new Date() } }
+                ]
             }
+        })
 
-            // Check tier level
-            const tierHierarchy: { [key: string]: number } = {
-                BRONZE: 0,
-                SILVER: 1,
-                GOLD: 2,
-                VIP: 3,
-            }
-
-            const subscriptionTier = subscription.type === 'CATEGORY_C' 
-                ? (subscription.metadata ? JSON.parse(subscription.metadata).tier : 'BRONZE')
-                : 'BRONZE'
-
-            if (tierHierarchy[subscriptionTier] < tierHierarchy[post.tier]) {
-                return NextResponse.json(
-                    { error: 'Upgrade subscription to comment on this post' },
-                    { status: 403 }
-                )
-            }
+        if (!subscription) {
+            return NextResponse.json(
+                { error: 'Subscription required to comment' },
+                { status: 403 }
+            )
         }
 
         // Create comment

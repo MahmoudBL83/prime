@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Sparkles, Crown, Star } from 'lucide-react';
+import { Check, Crown } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface SubscriptionTier {
-  tier: 'BASIC' | 'PREMIUM' | 'VIP';
+  tier?: string; // Optional - single subscription model
   name: string;
   nameAr: string;
   monthlyPrice: number;
@@ -46,32 +46,19 @@ export default function SubscriptionTierCard({
     ? (isArabic ? 'شهرياً' : 'per month')
     : (isArabic ? 'سنوياً' : 'per year');
 
-  // Tier colors and icons
-  const tierConfig = {
-    BASIC: {
-      gradient: 'from-blue-400 to-blue-600',
-      icon: Sparkles,
-      badge: isArabic ? 'للمبتدئين' : 'STARTER',
-    },
-    PREMIUM: {
-      gradient: 'from-purple-400 to-purple-600',
-      icon: Star,
-      badge: isArabic ? 'الأكثر شعبية' : 'POPULAR',
-    },
-    VIP: {
-      gradient: 'from-yellow-400 to-yellow-600',
-      icon: Crown,
-      badge: isArabic ? 'الأفضل قيمة' : 'BEST VALUE',
-    },
+  // Single subscription model - All Access
+  const config = {
+    gradient: 'from-purple-400 to-blue-600',
+    icon: Crown,
+    badge: isArabic ? 'وصول كامل' : 'FULL ACCESS',
   };
 
-  const config = tierConfig[tier.tier];
   const Icon = config.icon;
 
   const handleSubscribe = async () => {
     setIsLoading(true);
     try {
-      await onSubscribe(tier.tier, billingPeriod);
+      await onSubscribe('SUBSCRIBER', billingPeriod);
       
       // Celebrate subscription!
       confetti({
@@ -90,18 +77,14 @@ export default function SubscriptionTierCard({
   return (
     <motion.div
       whileHover={{ scale: 1.02, y: -5 }}
-      className={`relative bg-background dark:bg-card rounded-2xl shadow-lg p-6 ${
-        tier.tier === 'PREMIUM' ? 'ring-2 ring-purple-500' : ''
-      }`}
+      className="relative bg-background dark:bg-card rounded-2xl shadow-lg p-6 ring-2 ring-purple-500"
     >
       {/* Popular Badge */}
-      {tier.tier === 'PREMIUM' && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-          <div className={`bg-gradient-to-r ${config.gradient} text-foreground px-4 py-1 rounded-full text-xs font-bold shadow-lg`}>
-            {config.badge}
-          </div>
+      <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+        <div className={`bg-gradient-to-r ${config.gradient} text-white px-4 py-1 rounded-full text-xs font-bold shadow-lg`}>
+          {config.badge}
         </div>
-      )}
+      </div>
 
       {/* Tier Icon */}
       <div className={`w-16 h-16 bg-gradient-to-br ${config.gradient} rounded-2xl flex items-center justify-center mb-4 mx-auto`}>

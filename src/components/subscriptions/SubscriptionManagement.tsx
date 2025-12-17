@@ -6,7 +6,7 @@ import { Calendar, CreditCard, RefreshCw, XCircle, Edit, AlertCircle } from 'luc
 
 interface Subscription {
   id: string;
-  tier: 'BASIC' | 'PREMIUM' | 'VIP';
+  tier?: string; // Single subscription model - tier is optional
   billingPeriod: 'MONTHLY' | 'YEARLY';
   price: number;
   status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'PAUSED';
@@ -69,11 +69,8 @@ export default function SubscriptionManagement({
     }
   };
 
-  const tierColors = {
-    BASIC: 'from-blue-400 to-blue-600',
-    PREMIUM: 'from-purple-400 to-purple-600',
-    VIP: 'from-yellow-400 to-yellow-600',
-  };
+  // Single subscription model - one color scheme
+  const tierGradient = 'from-purple-400 to-blue-600';
 
   const statusColors = {
     ACTIVE: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
@@ -102,7 +99,7 @@ export default function SubscriptionManagement({
               className="w-16 h-16 rounded-full object-cover"
             />
           ) : (
-            <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${tierColors[subscription.tier]} flex items-center justify-center text-foreground font-bold text-xl`}>
+            <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${tierGradient} flex items-center justify-center text-white font-bold text-xl`}>
               {subscription.creator.user.name[0]}
             </div>
           )}
@@ -113,8 +110,8 @@ export default function SubscriptionManagement({
               {isArabic ? subscription.creator.user.arabicName : subscription.creator.user.name}
             </h3>
             <div className="flex items-center gap-2 mt-1">
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${tierColors[subscription.tier]} text-foreground`}>
-                {subscription.tier}
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${tierGradient} text-white`}>
+                {isArabic ? 'مشترك' : 'Subscribed'}
               </span>
               <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[subscription.status]}`}>
                 {subscription.status}
@@ -205,24 +202,14 @@ export default function SubscriptionManagement({
 
       {/* Action Buttons */}
       <div className="flex gap-3">
-        {subscription.status === 'ACTIVE' && subscription.tier !== 'VIP' && (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onUpgrade(subscription.id)}
-            className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-foreground py-3 rounded-xl font-semibold hover:shadow-lg transition-shadow"
-          >
-            <Edit className="w-5 h-5" />
-            {isArabic ? 'ترقية الخطة' : 'Upgrade Plan'}
-          </motion.button>
-        )}
-
+        {/* Single subscription model - no upgrade option */}
+        
         {subscription.status === 'ACTIVE' && (
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowCancelConfirm(true)}
-            className="flex-1 flex items-center justify-center gap-2 bg-red-500 text-foreground py-3 rounded-xl font-semibold hover:shadow-lg transition-shadow"
+            className="flex-1 flex items-center justify-center gap-2 bg-red-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-shadow"
           >
             <XCircle className="w-5 h-5" />
             {isArabic ? 'إلغاء الاشتراك' : 'Cancel Subscription'}

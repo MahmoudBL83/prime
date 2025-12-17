@@ -203,7 +203,7 @@ export async function POST(req: NextRequest) {
 
         switch (action) {
             case 'create':
-                // Create new scheduled post
+                // Create new scheduled post - single subscription model
                 post = await prisma.channelPost.create({
                     data: {
                         channelId: channelId || (await getDefaultChannel(creator.id)),
@@ -213,7 +213,7 @@ export async function POST(req: NextRequest) {
                         mediaUrl: mediaUrl || null,
                         thumbnailUrl: thumbnailUrl || null,
                         duration: duration || null,
-                        tier: tier || 'BRONZE',
+                        tier: 'SUBSCRIBER', // Single subscription tier
                         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
                         publishedAt: null
                     }

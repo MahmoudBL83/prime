@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { UserRole, KYCStatus } from '@prisma/client'
+import { UserRole, KYCStatus, PostType } from '@prisma/client'
 
 export async function GET(
     request: NextRequest,
@@ -46,6 +46,24 @@ export async function GET(
                         }
                     },
                     orderBy: { createdAt: 'desc' }
+                },
+                credentials: {
+                    orderBy: { sortOrder: 'asc' }
+                },
+                channels: {
+                    include: {
+                        posts: {
+                            orderBy: { createdAt: 'desc' },
+                            include: {
+                                _count: {
+                                    select: {
+                                        likes: true,
+                                        comments: true
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
                 _count: {
                     select: {
@@ -278,6 +296,249 @@ export async function PATCH(
                     }
                 })
                 break
+
+            case 'addCredential':
+                // Add a new credential/certificate to the creator
+                const newCredential = await prisma.creatorCredential.create({
+                    data: {
+                        creatorId: id,
+                        type: updateData.type || 'CERTIFICATION',
+                        title: updateData.title,
+                        titleAr: updateData.titleAr,
+                        institution: updateData.institution,
+                        institutionAr: updateData.institutionAr,
+                        description: updateData.description,
+                        descriptionAr: updateData.descriptionAr,
+                        issueDate: updateData.issueDate ? new Date(updateData.issueDate) : null,
+                        expiryDate: updateData.expiryDate ? new Date(updateData.expiryDate) : null,
+                        credentialId: updateData.credentialId,
+                        credentialUrl: updateData.credentialUrl,
+                        documentUrl: updateData.documentUrl,
+                        isVerified: updateData.isVerified || false,
+                        isPublic: updateData.isPublic !== false,
+                        sortOrder: updateData.sortOrder || 0
+                    }
+                })
+                return NextResponse.json({
+                    credential: newCredential,
+                    message: 'Credential added successfully'
+                })
+
+            case 'updateCredential':
+                // Update an existing credential
+                if (!updateData.credentialId) {
+                    return NextResponse.json(
+                        { error: 'Credential ID is required' },
+                        { status: 400 }
+                    )
+                }
+
+                const updatedCredential = await prisma.creatorCredential.update({
+                    where: { id: updateData.credentialId },
+                    data: {
+                        type: updateData.type,
+                        title: updateData.title,
+                        titleAr: updateData.titleAr,
+                        institution: updateData.institution,
+                        institutionAr: updateData.institutionAr,
+                        description: updateData.description,
+                        descriptionAr: updateData.descriptionAr,
+                        issueDate: updateData.issueDate ? new Date(updateData.issueDate) : undefined,
+                        expiryDate: updateData.expiryDate ? new Date(updateData.expiryDate) : undefined,
+                        credentialUrl: updateData.credentialUrl,
+                        documentUrl: updateData.documentUrl,
+                        isVerified: updateData.isVerified,
+                        verifiedAt: updateData.isVerified ? new Date() : undefined,
+                        verifiedBy: updateData.isVerified ? currentUser.id : undefined,
+                        isPublic: updateData.isPublic,
+                        sortOrder: updateData.sortOrder,
+                        updatedAt: new Date()
+                    }
+                })
+                return NextResponse.json({
+                    credential: updatedCredential,
+                    message: 'Credential updated successfully'
+                })
+
+            case 'deleteCredential':
+                // Delete a credential
+                if (!updateData.credentialId) {
+                    return NextResponse.json(
+                        { error: 'Credential ID is required' },
+                        { status: 400 }
+                    )
+                }
+
+                await prisma.creatorCredential.delete({
+                    where: { id: updateData.credentialId }
+                })
+                return NextResponse.json({
+                    message: 'Credential deleted successfully'
+                })
+
+            case 'verifyCredential':
+                // Verify a credential
+                if (!updateData.credentialId) {
+                    return NextResponse.json(
+                        { error: 'Credential ID is required' },
+                        { status: 400 }
+                    )
+                }
+
+                const verifiedCredential = await prisma.creatorCredential.update({
+                    where: { id: updateData.credentialId },
+                    data: {
+                        isVerified: true,
+                        verifiedAt: new Date(),
+                        verifiedBy: currentUser.id,
+                        updatedAt: new Date()
+                    }
+                })
+                return NextResponse.json({
+                    credential: verifiedCredential,
+                    message: 'Credential verified successfully'
+                })
+
+            case 'addPost':
+                // Add a new post to the creator's channel
+                // First, get or create the creator's channel
+                let channel = await prisma.creatorChannel.findFirst({
+                    where: { creatorId: id }
+                })
+
+                if (!channel) {
+                    // Create a channel for the creator
+                    const creatorForChannel = await prisma.creator.findUnique({
+                        where: { id: id },
+                        include: { user: true }
+                    })
+                    channel = await prisma.creatorChannel.create({
+                        data: {
+                            creatorId: id,
+                            name: `${creatorForChannel?.user.name || 'Creator'}'s Channel`,
+                            description: 'Content channel',
+                            tiers: JSON.stringify(['SUBSCRIBER'])
+                        }
+                    })
+                }
+
+                const newPost = await prisma.channelPost.create({
+                    data: {
+                        channelId: channel.id,
+                        title: updateData.title || null,
+                        titleAr: updateData.titleAr || null,
+                        content: updateData.content,
+                        contentAr: updateData.contentAr || null,
+                        type: (updateData.type as PostType) || 'TEXT',
+                        tier: 'SUBSCRIBER',
+                        mediaUrl: updateData.mediaUrl || null,
+                        thumbnailUrl: updateData.thumbnailUrl || null,
+                        isPinned: updateData.isPinned || false,
+                        publishedAt: updateData.isDraft ? null : new Date(),
+                        scheduledAt: updateData.scheduledAt ? new Date(updateData.scheduledAt) : null
+                    }
+                })
+                return NextResponse.json({
+                    post: newPost,
+                    message: 'Post added successfully'
+                })
+
+            case 'updatePost':
+                // Update an existing post
+                if (!updateData.postId) {
+                    return NextResponse.json(
+                        { error: 'Post ID is required' },
+                        { status: 400 }
+                    )
+                }
+
+                const updatedPost = await prisma.channelPost.update({
+                    where: { id: updateData.postId },
+                    data: {
+                        title: updateData.title,
+                        titleAr: updateData.titleAr,
+                        content: updateData.content,
+                        contentAr: updateData.contentAr,
+                        type: updateData.type as PostType,
+                        mediaUrl: updateData.mediaUrl,
+                        thumbnailUrl: updateData.thumbnailUrl,
+                        isPinned: updateData.isPinned,
+                        publishedAt: updateData.isDraft ? null : updateData.publishedAt ? new Date(updateData.publishedAt) : new Date(),
+                        scheduledAt: updateData.scheduledAt ? new Date(updateData.scheduledAt) : null,
+                        updatedAt: new Date()
+                    }
+                })
+                return NextResponse.json({
+                    post: updatedPost,
+                    message: 'Post updated successfully'
+                })
+
+            case 'deletePost':
+                // Delete a post
+                if (!updateData.postId) {
+                    return NextResponse.json(
+                        { error: 'Post ID is required' },
+                        { status: 400 }
+                    )
+                }
+
+                // First delete related likes and comments
+                await prisma.postLike.deleteMany({
+                    where: { postId: updateData.postId }
+                })
+                await prisma.postComment.deleteMany({
+                    where: { postId: updateData.postId }
+                })
+                
+                await prisma.channelPost.delete({
+                    where: { id: updateData.postId }
+                })
+                return NextResponse.json({
+                    message: 'Post deleted successfully'
+                })
+
+            case 'pinPost':
+                // Pin/unpin a post
+                if (!updateData.postId) {
+                    return NextResponse.json(
+                        { error: 'Post ID is required' },
+                        { status: 400 }
+                    )
+                }
+
+                const pinnedPost = await prisma.channelPost.update({
+                    where: { id: updateData.postId },
+                    data: {
+                        isPinned: updateData.isPinned !== false,
+                        updatedAt: new Date()
+                    }
+                })
+                return NextResponse.json({
+                    post: pinnedPost,
+                    message: updateData.isPinned ? 'Post pinned successfully' : 'Post unpinned successfully'
+                })
+
+            case 'publishPost':
+                // Publish a draft post
+                if (!updateData.postId) {
+                    return NextResponse.json(
+                        { error: 'Post ID is required' },
+                        { status: 400 }
+                    )
+                }
+
+                const publishedPost = await prisma.channelPost.update({
+                    where: { id: updateData.postId },
+                    data: {
+                        publishedAt: new Date(),
+                        scheduledAt: null,
+                        updatedAt: new Date()
+                    }
+                })
+                return NextResponse.json({
+                    post: publishedPost,
+                    message: 'Post published successfully'
+                })
 
             default:
                 return NextResponse.json(

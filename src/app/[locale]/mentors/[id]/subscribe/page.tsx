@@ -185,7 +185,6 @@ export default function MentorSubscribePage() {
                 </h1>
                 {userSubscription?.status === 'ACTIVE' && (
                   <MentorSubscriptionBadge
-                    tier={userSubscription.tier}
                     isSubscribed={true}
                     locale={currentLocale}
                   />

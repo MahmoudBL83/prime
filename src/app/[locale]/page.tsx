@@ -9,8 +9,8 @@ export default function Home() {
     const locale = params?.locale as string || 'en';
 
     useEffect(() => {
-        // Redirect to courses page
-        router.replace(`/${locale}/courses`);
+        // Redirect to mentors page (main page)
+        router.replace(`/${locale}/mentors`);
     }, [router, locale]);
 
     // Show minimal loading state during redirect

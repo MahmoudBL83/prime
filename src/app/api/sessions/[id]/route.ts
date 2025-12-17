@@ -82,19 +82,14 @@ export async function GET(
             }
         });
 
-        // Check access based on tier
+        // Check access - single subscription model - all subscribers have full access
         let hasAccess = liveSession.tier === 'ALL';
         let userTier = null;
 
         if (!hasAccess && liveSession.channel.channelSubscriptions.length > 0) {
-            const subscription = liveSession.channel.channelSubscriptions[0];
-            userTier = subscription.tier.name;
-            
-            const tierHierarchy = { 'BRONZE': 1, 'SILVER': 2, 'GOLD': 3 };
-            const userTierLevel = tierHierarchy[userTier as keyof typeof tierHierarchy] || 0;
-            const sessionTierLevel = tierHierarchy[liveSession.tier as keyof typeof tierHierarchy] || 0;
-            
-            hasAccess = userTierLevel >= sessionTierLevel;
+            // User has a subscription = full access
+            hasAccess = true;
+            userTier = 'SUBSCRIBER';
         }
 
         // Calculate time elapsed since start

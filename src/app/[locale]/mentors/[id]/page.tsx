@@ -103,7 +103,7 @@ interface Post {
     type: 'text' | 'image' | 'video' | 'quote'
     content: string
     media?: string
-    tier: 'FREE' | 'BASIC' | 'PREMIUM' | 'VIP'
+    tier?: string // Single subscription - all posts available to subscribers
     likes: number
     comments: number
     views: number
@@ -124,7 +124,7 @@ export default function OnlyFansMentorProfilePage() {
     const [mentor, setMentor] = useState<MentorData | null>(null)
     const [loading, setLoading] = useState(true)
     const [isFollowing, setIsFollowing] = useState(false)
-    const [currentSubscription, setCurrentSubscription] = useState<string | null>(null) // 'BASIC' | 'PREMIUM' | 'VIP' | null
+    const [currentSubscription, setCurrentSubscription] = useState<string | null>(null) // 'SUBSCRIBER' | null - single subscription model
     const [activeTab, setActiveTab] = useState<'posts' | 'media' | 'about' | 'sessions' | 'community' | 'resources' | 'qa' | 'profile'>('posts')
     const [commentText, setCommentText] = useState('')
     const [isSubscribing, setIsSubscribing] = useState(false)
@@ -173,7 +173,6 @@ export default function OnlyFansMentorProfilePage() {
     const [showNewPostModal, setShowNewPostModal] = useState(false)
     const [showUploadModal, setShowUploadModal] = useState(false)
     const [newPostText, setNewPostText] = useState('')
-    const [newPostTier, setNewPostTier] = useState<'FREE' | 'BASIC' | 'PREMIUM' | 'VIP'>('FREE')
     const [newPostScheduledDate, setNewPostScheduledDate] = useState('')
     const [uploadingPost, setUploadingPost] = useState(false)
     const [uploadFile, setUploadFile] = useState<File | null>(null)
@@ -684,6 +683,7 @@ export default function OnlyFansMentorProfilePage() {
                 setUpcomingSessions(data.sessions || [])
             } else {
                 // If API doesn't exist yet, use demo data
+                // Single subscription model - all sessions available to subscribers
                 const demoSessions = [
                     {
                         id: '1',
@@ -691,7 +691,6 @@ export default function OnlyFansMentorProfilePage() {
                         type: 'GROUP_QA',
                         date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
                         duration: 45,
-                        requiredTier: 'PREMIUM',
                         attendees: 12,
                         maxAttendees: 50,
                         joinLink: currentSubscription ? '/meeting/join/demo1' : null
@@ -702,10 +701,9 @@ export default function OnlyFansMentorProfilePage() {
                         type: 'ONE_ON_ONE',
                         date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days from now
                         duration: 60,
-                        requiredTier: 'VIP',
                         attendees: 1,
                         maxAttendees: 1,
-                        joinLink: currentSubscription === 'VIP' ? '/meeting/join/demo2' : null
+                        joinLink: currentSubscription ? '/meeting/join/demo2' : null
                     },
                     {
                         id: '3',
@@ -713,7 +711,6 @@ export default function OnlyFansMentorProfilePage() {
                         type: 'WORKSHOP',
                         date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
                         duration: 90,
-                        requiredTier: 'BASIC',
                         attendees: 28,
                         maxAttendees: 100,
                         joinLink: currentSubscription ? '/meeting/join/demo3' : null
@@ -846,7 +843,6 @@ export default function OnlyFansMentorProfilePage() {
                         type: 'WORKSHOP',
                         recordedDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
                         duration: 90,
-                        requiredTier: 'PREMIUM',
                         views: 342,
                         thumbnail: null,
                         recordingUrl: '/recordings/demo1.mp4',
@@ -860,7 +856,6 @@ export default function OnlyFansMentorProfilePage() {
                         type: 'GROUP_QA',
                         recordedDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
                         duration: 45,
-                        requiredTier: 'BASIC',
                         views: 567,
                         thumbnail: null,
                         recordingUrl: '/recordings/demo2.mp4',
@@ -874,7 +869,6 @@ export default function OnlyFansMentorProfilePage() {
                         type: 'ONE_ON_ONE',
                         recordedDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
                         duration: 60,
-                        requiredTier: 'VIP',
                         views: 89,
                         thumbnail: null,
                         recordingUrl: '/recordings/demo3.mp4',
@@ -888,7 +882,6 @@ export default function OnlyFansMentorProfilePage() {
                         type: 'WORKSHOP',
                         recordedDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
                         duration: 75,
-                        requiredTier: 'PREMIUM',
                         views: 421,
                         thumbnail: null,
                         recordingUrl: '/recordings/demo4.mp4',
@@ -925,7 +918,6 @@ export default function OnlyFansMentorProfilePage() {
                         size: '2.4 MB',
                         downloads: 1243,
                         uploadedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-                        requiredTier: 'PREMIUM',
                         url: '/resources/demo1.pdf',
                         description: isArabic
                             ? 'دليل شامل لاستراتيجيات التداول المتقدمة مع أمثلة عملية'
@@ -939,7 +931,6 @@ export default function OnlyFansMentorProfilePage() {
                         size: '856 KB',
                         downloads: 892,
                         uploadedDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-                        requiredTier: 'VIP',
                         url: '/resources/demo2.xlsx',
                         description: isArabic
                             ? 'قالب Excel لتحليل المخاطر وإدارة المحفظة'
@@ -953,7 +944,6 @@ export default function OnlyFansMentorProfilePage() {
                         size: '45 MB',
                         downloads: 2156,
                         uploadedDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-                        requiredTier: 'BASIC',
                         url: '/resources/demo3.mp4',
                         description: isArabic
                             ? 'فيديو تعليمي خطوة بخطوة لإعداد منصة التداول'
@@ -967,7 +957,6 @@ export default function OnlyFansMentorProfilePage() {
                         size: '124 KB',
                         downloads: 456,
                         uploadedDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-                        requiredTier: 'VIP',
                         url: '/resources/demo4.zip',
                         description: isArabic
                             ? 'مجموعة من أكواد Python لتحليل السوق والبيانات'
@@ -981,7 +970,6 @@ export default function OnlyFansMentorProfilePage() {
                         size: '1.8 MB',
                         downloads: 1678,
                         uploadedDate: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-                        requiredTier: 'BASIC',
                         url: '/resources/demo5.pdf',
                         description: isArabic
                             ? 'كتاب عمل تفاعلي لتعلم أساسيات إدارة الأموال'
@@ -995,7 +983,6 @@ export default function OnlyFansMentorProfilePage() {
                         size: '340 KB',
                         downloads: 734,
                         uploadedDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-                        requiredTier: 'PREMIUM',
                         url: '/resources/demo6.zip',
                         description: isArabic
                             ? 'قوالب جاهزة للتحليل الفني على منصة Tradingview'
@@ -1011,7 +998,7 @@ export default function OnlyFansMentorProfilePage() {
     }
 
     const fetchFeedbackTokens = async () => {
-        if (!mentor || !session || currentSubscription !== 'VIP') return
+        if (!mentor || !session || !currentSubscription) return // Available to all subscribers
         
         try {
             const response = await fetch(`/api/feedback/tokens?mentorId=${mentor.id}`)
@@ -1021,7 +1008,7 @@ export default function OnlyFansMentorProfilePage() {
                 setFeedbackTokens(data)
                 setFeedbackRequests(data.requests || [])
             } else {
-                // Demo data for VIP members
+                // Demo data for subscribers
                 const demoTokens = {
                     available: 3,
                     total: 5,
@@ -1072,7 +1059,7 @@ export default function OnlyFansMentorProfilePage() {
             if (response.ok) {
                 const data = await response.json()
                 console.log('Sessions data:', data)
-                // Transform API data to match the expected format
+                // Transform API data to match the expected format - single subscription model
                 const transformedSessions = data.sessions?.map((session: any) => ({
                     id: session.id,
                     title: isArabic && session.titleAr ? session.titleAr : session.title,
@@ -1083,7 +1070,6 @@ export default function OnlyFansMentorProfilePage() {
                         minute: '2-digit'
                     }),
                     duration: session.duration,
-                    requiredTier: session.tier,
                     attendees: session.attendees?.length || 0,
                     maxAttendees: session.maxAttendees || 100,
                     description: isArabic && session.descriptionAr ? session.descriptionAr : session.description,
@@ -1107,14 +1093,13 @@ export default function OnlyFansMentorProfilePage() {
             const response = await fetch(`/api/mentors/${mentor.id}/sessions?type=archived`)
             if (response.ok) {
                 const data = await response.json()
-                // Transform API data to match the expected format
+                // Transform API data to match the expected format - single subscription model
                 const transformedSessions = data.sessions?.map((session: any) => ({
                     id: session.id,
                     title: isArabic && session.titleAr ? session.titleAr : session.title,
                     type: 'WORKSHOP', // Default type, can be enhanced later
                     recordedDate: session.scheduledAt,
                     duration: session.duration,
-                    requiredTier: session.tier,
                     views: session.viewCount || 0,
                     thumbnail: null,
                     recordingUrl: session.recordingUrl,
@@ -2194,9 +2179,9 @@ export default function OnlyFansMentorProfilePage() {
             return
         }
 
-        // Only VIP subscribers can download
-        if (currentSubscription !== 'VIP') {
-            toast.error(isArabic ? 'ترقية إلى VIP للتحميل' : 'Upgrade to VIP to download')
+        // All subscribers can download - single subscription model
+        if (!currentSubscription) {
+            toast.error(isArabic ? 'اشترك للتحميل' : 'Subscribe to download')
             return
         }
 
@@ -2336,11 +2321,8 @@ export default function OnlyFansMentorProfilePage() {
     , [isArabic, mentor?.user.arabicName, mentor?.user.name])
 
     const canViewPost = useCallback((post: Post) => {
-        if (post.tier === 'FREE') return true
-        if (!currentSubscription) return false
-        
-        const tierHierarchy: Record<string, number> = { 'BASIC': 1, 'PREMIUM': 2, 'VIP': 3 }
-        return (tierHierarchy[currentSubscription] || 0) >= (tierHierarchy[post.tier] || 0)
+        // Single subscription model - all subscribers can view all posts
+        return !!currentSubscription
     }, [currentSubscription])
 
     // Combine real and demo archived sessions
@@ -2455,53 +2437,94 @@ export default function OnlyFansMentorProfilePage() {
 
         setUploadingPost(true)
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000))
+            // Determine post type based on file
+            const postType = uploadFile 
+                ? (uploadFile.type.startsWith('video/') ? 'VIDEO' : 'IMAGE')
+                : 'TEXT'
             
             // Check if post is scheduled for future
             const isScheduled = newPostScheduledDate && new Date(newPostScheduledDate) > new Date()
             
-            if (editingPost) {
-                // Update existing post
+            if (editingPost && editingPost.id.startsWith('post-')) {
+                // Local-only post edit - update in state
                 setPosts(posts.map(p => {
                     if (p.id === editingPost.id) {
                         return {
                             ...p,
                             content: newPostText,
-                            tier: newPostTier,
+                            tier: 'SUBSCRIBER',
                             scheduledFor: newPostScheduledDate || undefined,
                             timestamp: isScheduled ? undefined : (p.timestamp || 'now'),
                             media: uploadPreview || p.media,
                             type: uploadPreview 
                                 ? (uploadFile?.type.startsWith('video/') ? 'video' : 'image')
                                 : p.type,
-                            isLocked: newPostTier !== 'FREE'
+                            isLocked: false
                         }
                     }
                     return p
                 }))
                 toast.success(isArabic ? '✏️ تم تحديث المنشور بنجاح!' : '✏️ Post updated successfully!')
+            } else if (editingPost) {
+                // API post edit - call PATCH endpoint
+                const response = await fetch(`/api/posts/${editingPost.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: newPostText,
+                        type: postType,
+                        mediaUrl: uploadPreview,
+                        scheduledFor: isScheduled ? newPostScheduledDate : null,
+                        isDraft: false
+                    })
+                })
+                
+                if (!response.ok) {
+                    throw new Error('Failed to update post')
+                }
+                
+                // Refresh posts from API
+                fetchMentorData()
+                toast.success(isArabic ? '✏️ تم تحديث المنشور بنجاح!' : '✏️ Post updated successfully!')
             } else {
-                // Create new post
+                // Create new post via API
+                const response = await fetch('/api/creator/posts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: newPostText,
+                        type: postType,
+                        mediaUrl: uploadPreview,
+                        scheduledFor: isScheduled ? newPostScheduledDate : null,
+                        isDraft: false
+                    })
+                })
+                
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}))
+                    throw new Error(error.error || 'Failed to create post')
+                }
+                
+                const data = await response.json()
+                
+                // Add the new post to local state with proper format
                 const newPost: Post = {
-                    id: `post-${Date.now()}`,
+                    id: data.post?.id || `post-${Date.now()}`,
                     type: uploadFile ? (uploadFile.type.startsWith('video/') ? 'video' : 'image') : 'text',
                     content: newPostText,
-                    tier: newPostTier,
+                    tier: 'SUBSCRIBER',
                     likes: 0,
                     comments: 0,
                     views: 0,
                     timestamp: isScheduled ? undefined : 'now',
                     scheduledFor: newPostScheduledDate || undefined,
-                    isLocked: newPostTier !== 'FREE',
+                    isLocked: false,
                     media: uploadPreview || undefined
                 }
                 
-                // Only add to posts if not scheduled or if scheduled for past/now
                 if (!isScheduled) {
                     setPosts([newPost, ...posts])
                 } else {
-                    // Add scheduled post but it won't appear in main feed until scheduled time
                     setPosts([...posts, newPost])
                 }
                 
@@ -2514,7 +2537,6 @@ export default function OnlyFansMentorProfilePage() {
             
             // Reset form
             setNewPostText('')
-            setNewPostTier('FREE')
             setNewPostScheduledDate('')
             setUploadFile(null)
             setUploadPreview(null)
@@ -2526,7 +2548,7 @@ export default function OnlyFansMentorProfilePage() {
         } finally {
             setUploadingPost(false)
         }
-    }, [newPostText, newPostTier, newPostScheduledDate, uploadFile, uploadPreview, posts, isArabic, editingPost])
+    }, [newPostText, newPostScheduledDate, uploadFile, uploadPreview, posts, isArabic, editingPost, fetchMentorData])
 
     const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -3803,9 +3825,9 @@ export default function OnlyFansMentorProfilePage() {
                                             </div>
                                             <div>
                                                 <p className="text-2xl font-bold text-foreground">
-                                                    {upcomingSessions.filter(s => s.requiredTier === 'VIP').length}
+                                                    {upcomingSessions.reduce((acc, s) => acc + (s.duration || 0), 0)}
                                                 </p>
-                                                <p className="text-xs text-muted-foreground">{isArabic ? 'VIP' : 'VIP Only'}</p>
+                                                <p className="text-xs text-muted-foreground">{isArabic ? 'دقيقة' : 'Total Min'}</p>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -3877,11 +3899,8 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="space-y-4">
                                         {upcomingSessions.map((session) => {
                                             const sessionDate = new Date(session.date)
-                                            // Tier hierarchy: BRONZE < SILVER < GOLD < PLATINUM
-                                            const tierHierarchy: Record<string, number> = { 'BRONZE': 1, 'SILVER': 2, 'GOLD': 3, 'PLATINUM': 4 }
-                                            const userTierLevel = currentSubscription ? (tierHierarchy[currentSubscription] || 0) : 0
-                                            const requiredTierLevel = tierHierarchy[session.requiredTier] || 1
-                                            const canJoin = userTierLevel >= requiredTierLevel
+                                            // Single subscription model - subscribers get full access
+                                            const canJoin = !!currentSubscription
                                             const isLocked = !canJoin
 
                                             return (
@@ -3889,28 +3908,12 @@ export default function OnlyFansMentorProfilePage() {
                                                     key={session.id}
                                                     initial={{ opacity: 0, x: -20 }}
                                                     animate={{ opacity: 1, x: 0 }}
-                                                    className={`relative bg-gradient-to-br ${
-                                                        session.requiredTier === 'VIP' 
-                                                            ? 'from-yellow-900/20 to-orange-900/20 border-yellow-500/30' 
-                                                            : session.requiredTier === 'PREMIUM'
-                                                            ? 'from-purple-900/20 to-pink-900/20 border-purple-500/30'
-                                                            : 'from-blue-900/20 to-cyan-900/20 border-blue-500/30'
-                                                    } border rounded-xl p-5 hover:border-purple-400 transition-all`}
+                                                    className="relative bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-purple-500/30 border rounded-xl p-5 hover:border-purple-400 transition-all"
                                                 >
                                                     {/* Session Header */}
                                                     <div className="flex items-start justify-between mb-4">
                                                         <div className="flex-1">
                                                             <div className="flex items-center gap-2 mb-2">
-                                                                <Badge className={`${
-                                                                    session.requiredTier === 'VIP' 
-                                                                        ? 'bg-yellow-500' 
-                                                                        : session.requiredTier === 'PREMIUM'
-                                                                        ? 'bg-purple-500'
-                                                                        : 'bg-blue-500'
-                                                                } text-white border-0 text-xs`}>
-                                                                    <Crown className="w-3 h-3 mr-1" />
-                                                                    {session.requiredTier}
-                                                                </Badge>
                                                                 <Badge className="bg-card text-foreground border border-border text-xs">
                                                                     {session.type === 'ONE_ON_ONE' 
                                                                         ? (isArabic ? '1:1' : '1-on-1')
@@ -3936,7 +3939,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                             descriptionAr: session.descriptionAr || '',
                                                                             scheduledAt: session.date ? new Date(session.date).toISOString().slice(0, 16) : '',
                                                                             duration: session.duration || 60,
-                                                                            tier: session.requiredTier || 'BRONZE',
+                                                                            tier: 'SUBSCRIBER',
                                                                             maxAttendees: session.maxAttendees || 100,
                                                                             meetingUrl: session.joinLink || '',
                                                                             meetingPassword: session.meetingPassword || ''
@@ -4115,7 +4118,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             className="w-full bg-card hover:bg-card-hover text-foreground border border-border"
                                                         >
                                                             <Lock className="w-4 h-4 mr-2" />
-                                                            {isArabic ? `اشترك في ${session.requiredTier} للانضمام` : `Subscribe to ${session.requiredTier} to Join`}
+                                                            {isArabic ? 'اشترك للانضمام' : 'Subscribe to Join'}
                                                         </Button>
                                                     ) : (
                                                         <div className="space-y-2">
@@ -4319,11 +4322,8 @@ export default function OnlyFansMentorProfilePage() {
                                 {/* Archived Sessions Grid */}
                                 <div className="grid gap-4">
                                     {filteredArchivedSessions.map((session, index) => {
-                                            const canAccess = currentSubscription && (
-                                                session.requiredTier === 'BASIC' ||
-                                                (session.requiredTier === 'PREMIUM' && ['PREMIUM', 'VIP'].includes(currentSubscription)) ||
-                                                (session.requiredTier === 'VIP' && currentSubscription === 'VIP')
-                                            )
+                                            // Single subscription model - subscribers get full access
+                                            const canAccess = !!currentSubscription
                                             const recordedDate = new Date(session.recordedDate)
 
                                             return (
@@ -4359,15 +4359,6 @@ export default function OnlyFansMentorProfilePage() {
                                                             <div className="flex items-start justify-between gap-3 mb-2">
                                                                 <div className="flex-1">
                                                                     <div className="flex items-center gap-2 mb-1">
-                                                                        <Badge className={`${
-                                                                            session.requiredTier === 'VIP' 
-                                                                                ? 'bg-yellow-500' 
-                                                                                : session.requiredTier === 'PREMIUM'
-                                                                                ? 'bg-purple-500'
-                                                                                : 'bg-blue-500'
-                                                                        } text-white border-0 text-xs`}>
-                                                                            {session.requiredTier}
-                                                                        </Badge>
                                                                         <Badge className="bg-card text-foreground border border-border text-xs">
                                                                             {session.type === 'ONE_ON_ONE' 
                                                                                 ? '1:1'
@@ -4410,7 +4401,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     description: session.description || '',
                                                                                     descriptionAr: session.descriptionAr || '',
                                                                                     recordingUrl: session.recordingUrl || '',
-                                                                                    tier: session.requiredTier || 'BRONZE'
+                                                                                    tier: 'SUBSCRIBER'
                                                                                 })
                                                                                 setShowEditArchivedModal(true)
                                                                             }}
@@ -4495,7 +4486,6 @@ export default function OnlyFansMentorProfilePage() {
                                                         type: 'WORKSHOP',
                                                         duration: 60,
                                                         recordedDate: new Date().toISOString(),
-                                                        requiredTier: 'BASIC',
                                                         views: 0,
                                                         likes: 0,
                                                         description: isArabic ? 'وصف التسجيل' : 'Recording description'
@@ -5807,11 +5797,8 @@ export default function OnlyFansMentorProfilePage() {
                                             return true
                                         })
                                         .map((resource, index) => {
-                                            const canAccess = currentSubscription && (
-                                                resource.requiredTier === 'BASIC' ||
-                                                (resource.requiredTier === 'PREMIUM' && ['PREMIUM', 'VIP'].includes(currentSubscription)) ||
-                                                (resource.requiredTier === 'VIP' && currentSubscription === 'VIP')
-                                            )
+                                            // Single subscription model - subscribers get full access
+                                            const canAccess = !!currentSubscription
                                             const uploadedDate = new Date(resource.uploadedDate)
 
                                             return (
@@ -5844,13 +5831,6 @@ export default function OnlyFansMentorProfilePage() {
                                                                         <h4 className="font-bold text-foreground text-sm">
                                                                             {resource.title}
                                                                         </h4>
-                                                                        <Badge className={`${
-                                                                            resource.requiredTier === 'VIP' ? 'bg-yellow-500' :
-                                                                            resource.requiredTier === 'PREMIUM' ? 'bg-purple-500' :
-                                                                            'bg-blue-500'
-                                                                        } text-white border-0 text-xs flex-shrink-0`}>
-                                                                            {resource.requiredTier}
-                                                                        </Badge>
                                                                     </div>
                                                                     <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
                                                                         {resource.description}
@@ -5897,7 +5877,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                         className="bg-card hover:bg-card-hover text-foreground border border-border"
                                                                     >
                                                                         <Lock className="w-3 h-3 mr-1" />
-                                                                        {isArabic ? `اشترك في ${resource.requiredTier}` : `Subscribe to ${resource.requiredTier}`}
+                                                                        {isArabic ? 'اشترك للوصول' : 'Subscribe to Access'}
                                                                     </Button>
                                                                 )}
                                                             </div>
@@ -6493,7 +6473,6 @@ export default function OnlyFansMentorProfilePage() {
                                                                 onClick={() => {
                                                                     setEditingPost(post)
                                                                     setNewPostText(post.content)
-                                                                    setNewPostTier(post.tier as any)
                                                                     setNewPostScheduledDate(post.scheduledFor || '')
                                                                     setUploadPreview(post.media || null)
                                                                     setShowNewPostModal(true)
@@ -6564,7 +6543,6 @@ export default function OnlyFansMentorProfilePage() {
                                                                 onClick={() => {
                                                                     setEditingPost(post)
                                                                     setNewPostText(post.content)
-                                                                    setNewPostTier(post.tier as any)
                                                                     setNewPostScheduledDate(post.scheduledFor || '')
                                                                     setUploadPreview(post.media || null)
                                                                     setShowNewPostModal(true)
@@ -6898,7 +6876,6 @@ export default function OnlyFansMentorProfilePage() {
                                                                                 onClick={() => {
                                                                                     setEditingPost(post)
                                                                                     setNewPostText(post.content)
-                                                                                    setNewPostTier(post.tier)
                                                                                     setNewPostScheduledDate(post.scheduledFor || '')
                                                                                     setUploadPreview(post.media || null)
                                                                                     setShowNewPostModal(true)
@@ -7076,7 +7053,6 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     onClick={() => {
                                                                                         setEditingPost(post)
                                                                                         setNewPostText(post.content)
-                                                                                        setNewPostTier(post.tier)
                                                                                         setNewPostScheduledDate(post.scheduledFor || '')
                                                                                         setUploadPreview(post.media || null)
                                                                                         setShowNewPostModal(true)
@@ -7492,7 +7468,6 @@ export default function OnlyFansMentorProfilePage() {
                                         setShowNewPostModal(false)
                                         setEditingPost(null)
                                         setNewPostText('')
-                                        setNewPostTier('FREE')
                                         setNewPostScheduledDate('')
                                         setUploadPreview(null)
                                         setUploadFile(null)
@@ -7558,58 +7533,7 @@ export default function OnlyFansMentorProfilePage() {
                                 )}
                             </div>
 
-                            {/* Tier Selection */}
-                            <div className="mb-4">
-                                <label className="block text-sm font-semibold text-foreground mb-2">
-                                    {isArabic ? 'من يمكنه رؤية هذا المنشور؟' : 'Who can see this post?'}
-                                </label>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                    <button
-                                        onClick={() => setNewPostTier('FREE')}
-                                        className={`p-3 rounded-xl border-2 transition-all ${
-                                            newPostTier === 'FREE'
-                                                ? 'border-gray-500 bg-gray-500/20'
-                                                : 'border-border hover:border-gray-500/50'
-                                        }`}
-                                    >
-                                        <div className="text-xs font-semibold text-muted-foreground mb-1">Free</div>
-                                        <div className="text-lg">🌍</div>
-                                    </button>
-                                    <button
-                                        onClick={() => setNewPostTier('BASIC')}
-                                        className={`p-3 rounded-xl border-2 transition-all ${
-                                            newPostTier === 'BASIC'
-                                                ? 'border-blue-500 bg-blue-500/20'
-                                                : 'border-border hover:border-blue-500/50'
-                                        }`}
-                                    >
-                                        <div className="text-xs font-semibold text-blue-400 mb-1">Basic</div>
-                                        <div className="text-lg">💙</div>
-                                    </button>
-                                    <button
-                                        onClick={() => setNewPostTier('PREMIUM')}
-                                        className={`p-3 rounded-xl border-2 transition-all ${
-                                            newPostTier === 'PREMIUM'
-                                                ? 'border-purple-500 bg-purple-500/20'
-                                                : 'border-border hover:border-purple-500/50'
-                                        }`}
-                                    >
-                                        <div className="text-xs font-semibold text-purple-400 mb-1">Premium</div>
-                                        <div className="text-lg">💜</div>
-                                    </button>
-                                    <button
-                                        onClick={() => setNewPostTier('VIP')}
-                                        className={`p-3 rounded-xl border-2 transition-all ${
-                                            newPostTier === 'VIP'
-                                                ? 'border-yellow-500 bg-yellow-500/20'
-                                                : 'border-border hover:border-yellow-500/50'
-                                        }`}
-                                    >
-                                        <div className="text-xs font-semibold text-yellow-400 mb-1">VIP</div>
-                                        <div className="text-lg">👑</div>
-                                    </button>
-                                </div>
-                            </div>
+
 
                             {/* Schedule (Optional) */}
                             <div className="mb-6">

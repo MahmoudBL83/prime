@@ -116,78 +116,24 @@ export async function PUT(
     const creatorPricing = await prisma.creator.findUnique({
       where: { id: subscription.creatorId },
       select: {
-        basicMonthlyPrice: true,
+        monthlyPrice: true,  // Single subscription price
+        basicMonthlyPrice: true, // Fallback
         basicYearlyPrice: true,
-        premiumMonthlyPrice: true,
-        premiumYearlyPrice: true,
-        vipMonthlyPrice: true,
-        vipYearlyPrice: true,
       },
     });
 
     // Prepare update data
     const updateData: any = {};
 
-    // If tier is changing, recalculate benefits and price
-    if (tier && tier !== subscription.tier) {
-      const newBillingPeriod = billingPeriod || subscription.billingPeriod;
-      let price = 0;
-      let monthlyMessages = null;
-      let monthlyMeetings = null;
-      let meetingDuration = null;
-      let prioritySupport = false;
-
-      if (tier === 'BASIC') {
-        price = newBillingPeriod === 'MONTHLY'
-          ? creatorPricing?.basicMonthlyPrice || 99
-          : creatorPricing?.basicYearlyPrice || 999;
-        monthlyMessages = 10;
-        monthlyMeetings = 1;
-        meetingDuration = 30;
-      } else if (tier === 'PREMIUM') {
-        price = newBillingPeriod === 'MONTHLY'
-          ? creatorPricing?.premiumMonthlyPrice || 199
-          : creatorPricing?.premiumYearlyPrice || 1999;
-        monthlyMessages = 50;
-        monthlyMeetings = 4;
-        meetingDuration = 60;
-        prioritySupport = true;
-      } else if (tier === 'VIP') {
-        price = newBillingPeriod === 'MONTHLY'
-          ? creatorPricing?.vipMonthlyPrice || 499
-          : creatorPricing?.vipYearlyPrice || 4999;
-        monthlyMessages = null; // Unlimited
-        monthlyMeetings = null; // Unlimited
-        meetingDuration = 90;
-        prioritySupport = true;
-      }
-
-      updateData.tier = tier;
-      updateData.price = price;
-      updateData.monthlyMessages = monthlyMessages;
-      updateData.monthlyMeetings = monthlyMeetings;
-      updateData.meetingDuration = meetingDuration;
-      updateData.prioritySupport = prioritySupport;
-    }
+    // Single subscription model - no tier changes needed
+    // All subscribers get full access with same pricing
 
     // If billing period is changing, recalculate price and end date
     if (billingPeriod && billingPeriod !== subscription.billingPeriod) {
-      const currentTier = tier || subscription.tier;
-      let price = 0;
+      const monthlyPrice = creatorPricing?.monthlyPrice || creatorPricing?.basicMonthlyPrice || 49;
+      const yearlyPrice = (creatorPricing?.basicYearlyPrice) || (monthlyPrice * 10); // 2 months free
 
-      if (currentTier === 'BASIC') {
-        price = billingPeriod === 'MONTHLY'
-          ? creatorPricing?.basicMonthlyPrice || 99
-          : creatorPricing?.basicYearlyPrice || 999;
-      } else if (currentTier === 'PREMIUM') {
-        price = billingPeriod === 'MONTHLY'
-          ? creatorPricing?.premiumMonthlyPrice || 199
-          : creatorPricing?.premiumYearlyPrice || 1999;
-      } else if (currentTier === 'VIP') {
-        price = billingPeriod === 'MONTHLY'
-          ? creatorPricing?.vipMonthlyPrice || 499
-          : creatorPricing?.vipYearlyPrice || 4999;
-      }
+      const price = billingPeriod === 'MONTHLY' ? monthlyPrice : yearlyPrice;
 
       const endDate = new Date();
       if (billingPeriod === 'MONTHLY') {

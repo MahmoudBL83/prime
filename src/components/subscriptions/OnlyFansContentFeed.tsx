@@ -9,7 +9,7 @@ interface ContentPost {
     type: 'VIDEO' | 'IMAGE' | 'TEXT'
     thumbnail?: string
     title: string
-    tier: 'FREE' | 'BASIC' | 'PREMIUM' | 'VIP'
+    tier?: string // Single subscription model - all subscribers get access
     likes: number
     comments: number
     isLocked: boolean
@@ -17,31 +17,28 @@ interface ContentPost {
 
 interface OnlyFansContentFeedProps {
     posts: ContentPost[]
-    userTier?: 'BASIC' | 'PREMIUM' | 'VIP' | null
+    isSubscribed?: boolean // Single subscription model
     onPostClick: (postId: string) => void
     locale?: string
 }
 
 export default function OnlyFansContentFeed({
     posts,
-    userTier,
+    isSubscribed = false,
     onPostClick,
     locale = 'en'
 }: OnlyFansContentFeedProps) {
     const isArabic = locale === 'ar'
 
-    const canAccess = (postTier: string) => {
-        if (postTier === 'FREE') return true
-        if (!userTier) return false
-        
-        const tierLevel = { BASIC: 1, PREMIUM: 2, VIP: 3 }
-        return tierLevel[userTier] >= tierLevel[postTier as keyof typeof tierLevel]
+    // Single subscription model - subscribers can access all posts
+    const canAccess = () => {
+        return isSubscribed
     }
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {posts.map((post, i) => {
-                const locked = !canAccess(post.tier)
+                const locked = !canAccess()
                 
                 return (
                     <motion.div
@@ -69,7 +66,7 @@ export default function OnlyFansContentFeed({
                                             <div className="text-center">
                                                 <Lock className="w-12 h-12 text-purple-400 mx-auto mb-2" />
                                                 <p className="text-foreground font-bold text-sm">
-                                                    {post.tier} {isArabic ? 'فقط' : 'Only'}
+                                                    {isArabic ? 'للمشتركين فقط' : 'Subscribers Only'}
                                                 </p>
                                                 <p className="text-purple-300 text-xs mt-1">
                                                     {isArabic ? 'اشترك للفتح' : 'Subscribe to unlock'}
@@ -103,15 +100,6 @@ export default function OnlyFansContentFeed({
                                     <MessageCircle className="w-4 h-4" />
                                     <span>{post.comments}</span>
                                 </div>
-                                {post.tier !== 'FREE' && (
-                                    <div className={`ml-auto px-2 py-0.5 rounded text-xs font-bold ${
-                                        post.tier === 'VIP' ? 'bg-yellow-500/20 text-yellow-400' :
-                                        post.tier === 'PREMIUM' ? 'bg-purple-500/20 text-purple-400' :
-                                        'bg-blue-500/20 text-blue-400'
-                                    }`}>
-                                        {post.tier}
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </motion.div>

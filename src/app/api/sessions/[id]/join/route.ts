@@ -74,36 +74,19 @@ export async function POST(
             );
         }
 
-        // Check tier access
+        // Check tier access - single subscription model
         if (liveSession.tier !== 'ALL') {
             const hasAccess = liveSession.channel.channelSubscriptions.length > 0;
             
             if (!hasAccess) {
                 return NextResponse.json(
                     { 
-                        error: 'You need an active subscription to join this session',
-                        requiredTier: liveSession.tier 
+                        error: 'You need an active subscription to join this session'
                     },
                     { status: 403 }
                 );
             }
-
-            // Check if user's tier matches session tier (using tier name for comparison)
-            const userSubscription = liveSession.channel.channelSubscriptions[0];
-            const tierHierarchy = { 'BRONZE': 1, 'SILVER': 2, 'GOLD': 3 };
-            const userTierLevel = tierHierarchy[userSubscription.tier.name as keyof typeof tierHierarchy] || 0;
-            const sessionTierLevel = tierHierarchy[liveSession.tier as keyof typeof tierHierarchy] || 0;
-
-            if (userTierLevel < sessionTierLevel) {
-                return NextResponse.json(
-                    { 
-                        error: `This session requires ${liveSession.tier} tier or higher`,
-                        userTier: userSubscription.tier.name,
-                        requiredTier: liveSession.tier
-                    },
-                    { status: 403 }
-                );
-            }
+            // Single subscription model - all subscribers have full access to all sessions
         }
 
         // Check max attendees limit

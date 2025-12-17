@@ -54,6 +54,7 @@ export default function CoursesPage() {
     const [hoveredCard, setHoveredCard] = useState<string | null>(null);
     const [showMenu, setShowMenu] = useState<string | null>(null);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [showLaunchingModal, setShowLaunchingModal] = useState(false);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
     const [mouseStart, setMouseStart] = useState<number | null>(null);
@@ -203,10 +204,16 @@ export default function CoursesPage() {
     const heroCourse = courses[heroIndex] || courseList[0];
 
     const handleCourseClick = (courseId: string) => {
-        router.push(`/${locale}/courses/${courseId}`);
+        // Show launching soon modal instead of navigating to course detail
+        setShowLaunchingModal(true);
     };
 
     const { openAuthModal } = useAuthModal();
+
+    const handleLaunchingModalRegister = () => {
+        setShowLaunchingModal(false);
+        openAuthModal('signup');
+    };
 
     const handleAcceptOffer = () => {
         if (session) {
@@ -943,6 +950,78 @@ export default function CoursesPage() {
                 courseTitle={heroCourse.title}
                 price="€28.99/Mo For 12 Months"
             />
+
+            {/* Launching Soon Modal */}
+            {showLaunchingModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                    <div className="relative bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl p-8 max-w-md w-full mx-4 border border-white/10 shadow-2xl">
+                        {/* Close button */}
+                        <button
+                            onClick={() => setShowLaunchingModal(false)}
+                            className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        {/* Rocket Icon */}
+                        <div className="flex justify-center mb-6">
+                            <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                                <span className="text-4xl">🚀</span>
+                            </div>
+                        </div>
+
+                        {/* Title */}
+                        <h2 className="text-2xl font-bold text-white text-center mb-3">
+                            {getLocalizedText(
+                                'Launching Soon!',
+                                'قريباً!',
+                                'Bald verfügbar!'
+                            )}
+                        </h2>
+
+                        {/* Description */}
+                        <p className="text-white/80 text-center mb-6">
+                            {getLocalizedText(
+                                'Sign up now to get 50% off when we launch!',
+                                'سجل الآن واحصل على خصم 50% عند الإطلاق!',
+                                'Melden Sie sich jetzt an und erhalten Sie 50% Rabatt beim Start!'
+                            )}
+                        </p>
+
+                        {/* Offer Badge */}
+                        <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold text-lg py-3 px-6 rounded-full text-center mb-6">
+                            {getLocalizedText(
+                                '🎉 50% OFF Early Bird Offer!',
+                                '🎉 عرض الحجز المبكر - خصم 50%!',
+                                '🎉 50% Frühbucher-Rabatt!'
+                            )}
+                        </div>
+
+                        {/* CTA Button */}
+                        <button
+                            onClick={handleLaunchingModalRegister}
+                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02] shadow-lg"
+                        >
+                            {getLocalizedText(
+                                'Sign Up Now',
+                                'سجل الآن',
+                                'Jetzt anmelden'
+                            )}
+                        </button>
+
+                        {/* Secondary text */}
+                        <p className="text-white/50 text-sm text-center mt-4">
+                            {getLocalizedText(
+                                'Be the first to know when courses go live!',
+                                'كن أول من يعلم عند إطلاق الدورات!',
+                                'Seien Sie der Erste, der erfährt, wenn Kurse starten!'
+                            )}
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Footer */}
             <Footer />

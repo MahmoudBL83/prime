@@ -8,7 +8,6 @@ const createPostSchema = z.object({
     title: z.string().min(1, 'Title is required').max(200).optional(),
     content: z.string().min(1, 'Content is required'),
     type: z.enum(['TEXT', 'VIDEO', 'IMAGE', 'DOCUMENT', 'POLL', 'ANNOUNCEMENT']),
-    tier: z.enum(['BRONZE', 'SILVER', 'GOLD', 'ALL']),
     channelId: z.string().optional(),
     scheduledFor: z.string().datetime().optional(),
     isDraft: z.boolean().default(false),
@@ -127,7 +126,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { title, content, type, tier, channelId, scheduledFor, isDraft, mediaUrl, thumbnailUrl } = validation.data;
+        const { title, content, type, channelId, scheduledFor, isDraft, mediaUrl, thumbnailUrl } = validation.data;
 
         const creator = await prisma.creator.findUnique({
             where: { userId: session.user.id },
@@ -152,7 +151,7 @@ export async function POST(request: NextRequest) {
                         name: `${session.user.name}'s Channel`,
                         description: 'Your exclusive content channel',
                         creatorId: creator.id,
-                        tiers: { bronze: true, silver: true, gold: true } // Default tier access
+                        tiers: JSON.stringify(['SUBSCRIBER'])
                     }
                 });
                 targetChannelId = newChannel.id;
@@ -180,7 +179,7 @@ export async function POST(request: NextRequest) {
                 title,
                 content,
                 type,
-                tier,
+                tier: 'SUBSCRIBER',
                 channelId: targetChannelId,
                 mediaUrl,
                 thumbnailUrl,
