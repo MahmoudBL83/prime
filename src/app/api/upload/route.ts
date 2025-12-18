@@ -1,10 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
+import { writeFile, mkdir } from 'fs/promises'
+import path from 'path'
+import { existsSync } from 'fs'
 
 // Use nodejs runtime for this API
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+// Helper to get upload directory
+const getUploadDir = () => {
+    // For production (Hostinger), use public/uploads directory
+    // For development, same location
+    return path.join(process.cwd(), 'public', 'uploads')
+}
+
+// Ensure upload directory exists
+const ensureUploadDir = async (subDir: string = '') => {
+    const uploadDir = path.join(getUploadDir(), subDir)
+    if (!existsSync(uploadDir)) {
+        await mkdir(uploadDir, { recursive: true })
+    }
+    return uploadDir
+}
 
 export async function POST(req: NextRequest) {
     try {
@@ -31,21 +50,34 @@ export async function POST(req: NextRequest) {
         // Validate file type based on upload type
         let validTypes: string[] = []
         let maxSize: number
+        let subDir: string = 'misc'
 
         if (type === 'video') {
             validTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo']
             maxSize = 500 * 1024 * 1024 // 500MB for videos
+            subDir = 'videos'
         } else if (type === 'comment' || type === 'post') {
             validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
             maxSize = 10 * 1024 * 1024 // 10MB for comments/posts
+            subDir = 'posts'
         } else if (type === 'national-id' || type === 'selfie' || type === 'address-proof') {
             // KYC documents
             validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf']
             maxSize = 10 * 1024 * 1024 // 10MB for documents
-        } else {
-            // Default to images (profile, cover, etc.)
+            subDir = 'kyc'
+        } else if (type === 'profile' || type === 'avatar') {
             validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
             maxSize = 5 * 1024 * 1024 // 5MB for images
+            subDir = 'avatars'
+        } else if (type === 'cover') {
+            validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+            maxSize = 10 * 1024 * 1024 // 10MB for cover images
+            subDir = 'covers'
+        } else {
+            // Default to images
+            validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+            maxSize = 5 * 1024 * 1024 // 5MB for images
+            subDir = 'misc'
         }
 
         if (!validTypes.includes(file.type)) {
@@ -64,27 +96,50 @@ export async function POST(req: NextRequest) {
             )
         }
 
-        // Convert file to base64 data URL
-        // This works in both development and production (serverless) without filesystem access
+        // Generate unique filename
+        const timestamp = Date.now()
+        const randomString = Math.random().toString(36).substring(2, 15)
+        const ext = file.name.split('.').pop() || 'bin'
+        const filename = `${type}_${session.user.id}_${timestamp}_${randomString}.${ext}`
+
+        // Check if we should use file storage or base64
+        const useFileStorage = process.env.USE_FILE_STORAGE === 'true' || process.env.NODE_ENV === 'production'
+
+        if (useFileStorage) {
+            // Save to filesystem (for Hostinger and production)
+            try {
+                const uploadDir = await ensureUploadDir(subDir)
+                const filePath = path.join(uploadDir, filename)
+                
+                const bytes = await file.arrayBuffer()
+                const buffer = Buffer.from(bytes)
+                
+                await writeFile(filePath, buffer)
+                
+                // Return public URL path
+                const publicUrl = `/uploads/${subDir}/${filename}`
+                
+                return NextResponse.json({
+                    success: true,
+                    url: publicUrl,
+                    filename,
+                    size: file.size,
+                    type: file.type
+                })
+            } catch (fsError) {
+                console.error('File system write error:', fsError)
+                // Fallback to base64 if filesystem fails
+            }
+        }
+
+        // Fallback: Convert file to base64 data URL
+        // This works in both development and serverless environments
         const bytes = await file.arrayBuffer()
         const buffer = Buffer.from(bytes)
         const base64 = buffer.toString('base64')
         const mimeType = file.type
         const dataUrl = `data:${mimeType};base64,${base64}`
 
-        // Generate a unique identifier for tracking
-        const timestamp = Date.now()
-        const randomString = Math.random().toString(36).substring(2, 15)
-        const ext = file.name.split('.').pop()
-        const filename = `${type}_${session.user.id}_${timestamp}_${randomString}.${ext}`
-
-        // For production, you should use cloud storage like:
-        // - Cloudinary
-        // - AWS S3
-        // - Vercel Blob
-        // - Uploadthing
-        
-        // For now, return the base64 data URL which works everywhere
         return NextResponse.json({
             success: true,
             url: dataUrl,

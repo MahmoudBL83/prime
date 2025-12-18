@@ -89,6 +89,11 @@ interface MentorData {
         instagram?: string
         website?: string
     } | null
+    courses?: Array<{
+        id: string
+        title: string
+        titleAr?: string | null
+    }>
     stats: {
         totalFollowers: number
         totalCourses: number
@@ -2882,10 +2887,12 @@ export default function OnlyFansMentorProfilePage() {
                                                         onClick={(e) => {
                                                             e.stopPropagation()
                                                             if (!session) {
-                                                                router.push(`/${locale}/login`)
+                                                                openAuthModal('signin', {
+                                                                    onSuccess: () => setShowMentorPaymentModal(true),
+                                                                })
                                                                 return
                                                             }
-                                                            handleSubscribe()
+                                                            setShowMentorPaymentModal(true)
                                                         }}
                                                         disabled={isSubscribing}
                                                         className="w-full max-w-xs h-12 font-semibold rounded-full bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white transition-all disabled:opacity-50"
@@ -3282,11 +3289,12 @@ export default function OnlyFansMentorProfilePage() {
                                                         onClick={(e) => {
                                                             e.stopPropagation()
                                                             if (!session) {
-                                                                toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
-                                                                router.push(`/${locale}/login`)
+                                                                openAuthModal('signin', {
+                                                                    onSuccess: () => setShowMentorPaymentModal(true),
+                                                                })
                                                                 return
                                                             }
-                                                            handleSubscribe()
+                                                            setShowMentorPaymentModal(true)
                                                         }}
                                                         className="absolute inset-0 flex flex-col items-center justify-center p-4 hover:bg-background/95 transition-colors cursor-pointer"
                                                     >
@@ -7075,6 +7083,7 @@ export default function OnlyFansMentorProfilePage() {
                     mentorId={mentor.id}
                     mentorName={getMentorName()}
                     isArabic={isArabic}
+                    courses={mentor.courses || []}
                     onReviewSubmitted={() => {
                         // Refresh mentor data to update rating
                         window.location.reload()

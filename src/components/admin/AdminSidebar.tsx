@@ -19,7 +19,10 @@ import {
     Search,
     Trophy,
     MessageSquare,
-    AlertTriangle
+    AlertTriangle,
+    Wallet,
+    History,
+    Gavel
 } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
@@ -52,9 +55,21 @@ const navigation: NavigationItem[] = [
         badge: null
     },
     {
+        name: 'Courses',
+        href: '/admin/courses',
+        icon: BookOpen,
+        badge: null
+    },
+    {
         name: 'Content Review',
         href: '/admin/content/reviews',
         icon: BookOpen,
+        badge: null
+    },
+    {
+        name: 'Moderation',
+        href: '/admin/moderation',
+        icon: Shield,
         badge: null
     },
     {
@@ -67,6 +82,12 @@ const navigation: NavigationItem[] = [
         name: 'Rewards',
         href: '/admin/rewards',
         icon: Trophy,
+        badge: null
+    },
+    {
+        name: 'Strikes',
+        href: '/admin/strikes',
+        icon: Gavel,
         badge: null
     },
     {
@@ -126,6 +147,18 @@ const navigation: NavigationItem[] = [
         href: '/admin/financial/payouts',
         icon: DollarSign,
         badge: 1
+    },
+    {
+        name: 'Withdrawals',
+        href: '/admin/withdrawals',
+        icon: Wallet,
+        badge: null
+    },
+    {
+        name: 'Audit Log',
+        href: '/admin/audit-log',
+        icon: History,
+        badge: null
     },
     {
         name: 'Permissions',

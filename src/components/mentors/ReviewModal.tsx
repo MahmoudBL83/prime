@@ -1,11 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Star, Send, CheckCircle } from 'lucide-react'
+import { X, Star, Send, CheckCircle, ChevronDown, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import toast from 'react-hot-toast'
+
+interface Course {
+    id: string
+    title: string
+    titleAr?: string | null
+}
 
 interface ReviewModalProps {
     isOpen: boolean
@@ -14,7 +20,8 @@ interface ReviewModalProps {
     mentorName: string
     isArabic: boolean
     onReviewSubmitted?: () => void
-    courseId?: string  // Required: specific course to review
+    courseId?: string  // Optional: specific course to review
+    courses?: Course[] // Optional: list of courses to choose from
 }
 
 export default function ReviewModal({
@@ -24,7 +31,8 @@ export default function ReviewModal({
     mentorName,
     isArabic,
     onReviewSubmitted,
-    courseId
+    courseId: initialCourseId,
+    courses: propCourses
 }: ReviewModalProps) {
     const [rating, setRating] = useState(0)
     const [hoveredRating, setHoveredRating] = useState(0)
@@ -32,19 +40,47 @@ export default function ReviewModal({
     const [reviewText, setReviewText] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
+    const [selectedCourseId, setSelectedCourseId] = useState(initialCourseId || '')
+    const [courses, setCourses] = useState<Course[]>(propCourses || [])
+    const [loadingCourses, setLoadingCourses] = useState(false)
+    const [showCourseDropdown, setShowCourseDropdown] = useState(false)
+
+    // Fetch mentor's courses if not provided and no specific courseId
+    useEffect(() => {
+        if (isOpen && !initialCourseId && propCourses?.length === 0) {
+            fetchMentorCourses()
+        }
+    }, [isOpen, initialCourseId, propCourses, mentorId])
+
+    const fetchMentorCourses = async () => {
+        setLoadingCourses(true)
+        try {
+            const response = await fetch(`/api/creators/${mentorId}/courses`)
+            if (response.ok) {
+                const data = await response.json()
+                setCourses(data.courses || data || [])
+            }
+        } catch (error) {
+            console.error('Failed to fetch courses:', error)
+        } finally {
+            setLoadingCourses(false)
+        }
+    }
 
     const handleSubmit = async () => {
+        const courseToReview = selectedCourseId || initialCourseId
+
         if (rating === 0) {
             toast.error(isArabic ? 'الرجاء اختيار تقييم' : 'Please select a rating')
             return
         }
 
         if (reviewText.trim().length < 10) {
-            toast.error(isArabic ? 'الرجاء كتابة تعليق أطول' : 'Please write a longer review')
+            toast.error(isArabic ? 'الرجاء كتابة تعليق أطول (10 أحرف على الأقل)' : 'Please write a longer review (at least 10 characters)')
             return
         }
 
-        if (!courseId) {
+        if (!courseToReview) {
             toast.error(isArabic ? 'الرجاء اختيار دورة للتقييم' : 'Please select a course to review')
             return
         }
@@ -58,7 +94,7 @@ export default function ReviewModal({
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    courseId,
+                    courseId: courseToReview,
                     rating,
                     title: title.trim() || undefined,
                     comment: reviewText.trim()
@@ -89,10 +125,15 @@ export default function ReviewModal({
     const handleClose = () => {
         setRating(0)
         setHoveredRating(0)
+        setTitle('')
         setReviewText('')
         setIsSubmitted(false)
+        setSelectedCourseId(initialCourseId || '')
+        setShowCourseDropdown(false)
         onClose()
     }
+
+    const selectedCourse = courses.find(c => c.id === (selectedCourseId || initialCourseId))
 
     if (!isOpen) return null
 
@@ -123,6 +164,64 @@ export default function ReviewModal({
 
                     {!isSubmitted ? (
                         <div className="p-6">
+                            {/* Course Selector - Show if no courseId was provided and there are courses */}
+                            {!initialCourseId && (
+                                <div className="mb-6">
+                                    <label className="block text-sm font-semibold text-foreground mb-2">
+                                        {isArabic ? 'اختر الدورة للتقييم' : 'Select Course to Review'} *
+                                    </label>
+                                    {loadingCourses ? (
+                                        <div className="flex items-center justify-center py-4">
+                                            <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                                        </div>
+                                    ) : courses.length > 0 ? (
+                                        <div className="relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowCourseDropdown(!showCourseDropdown)}
+                                                className="w-full px-4 py-3 bg-background border border-border rounded-lg flex items-center justify-between hover:border-purple-500/50 transition-colors"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <BookOpen className="w-4 h-4 text-muted-foreground" />
+                                                    <span className={selectedCourse ? 'text-foreground' : 'text-muted-foreground'}>
+                                                        {selectedCourse 
+                                                            ? (isArabic ? selectedCourse.titleAr || selectedCourse.title : selectedCourse.title)
+                                                            : (isArabic ? 'اختر دورة...' : 'Select a course...')
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${showCourseDropdown ? 'rotate-180' : ''}`} />
+                                            </button>
+                                            
+                                            {showCourseDropdown && (
+                                                <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-xl z-10 max-h-48 overflow-y-auto">
+                                                    {courses.map((course) => (
+                                                        <button
+                                                            key={course.id}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setSelectedCourseId(course.id)
+                                                                setShowCourseDropdown(false)
+                                                            }}
+                                                            className={`w-full px-4 py-3 text-left hover:bg-purple-500/10 transition-colors flex items-center gap-2 ${
+                                                                selectedCourseId === course.id ? 'bg-purple-500/10 text-purple-400' : 'text-foreground'
+                                                            }`}
+                                                        >
+                                                            <BookOpen className="w-4 h-4" />
+                                                            {isArabic ? course.titleAr || course.title : course.title}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-4 text-muted-foreground text-sm">
+                                            {isArabic ? 'لا توجد دورات متاحة للتقييم' : 'No courses available to review'}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Star Rating */}
                             <div className="mb-6">
                                 <label className="block text-sm font-semibold text-foreground mb-3">

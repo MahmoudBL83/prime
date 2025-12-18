@@ -218,6 +218,12 @@ export async function GET(
                 totalFollowers: mentor.totalSubscribers || 0,
                 totalCourses: mentor.courses.length
             },
+            // Include courses list for reviews
+            courses: mentor.courses.map(course => ({
+                id: course.id,
+                title: (course as any).title || 'Untitled Course',
+                titleAr: (course as any).titleAr || null
+            })),
             channel: channel ? {
                 id: channel.id,
                 name: channel.name,
