@@ -68,166 +68,11 @@ interface Promotion {
     minPurchase?: number
 }
 
-const MOCK_PRODUCTS: Product[] = [
-    {
-        id: '1',
-        name: 'All-Access Library',
-        nameAr: 'مكتبة الوصول الكامل',
-        type: 'subscription',
-        category: 'A',
-        basePrice: 199,
-        currency: 'EGP',
-        billingCycle: 'monthly',
-        enabled: true,
-        subscribers: 1234,
-        revenue: 245466
-    },
-    {
-        id: '2',
-        name: 'All-Access Library Annual',
-        nameAr: 'مكتبة الوصول الكامل سنوي',
-        type: 'subscription',
-        category: 'A',
-        basePrice: 1999,
-        currency: 'EGP',
-        billingCycle: 'annual',
-        enabled: true,
-        subscribers: 456,
-        revenue: 911544
-    },
-    {
-        id: '3',
-        name: 'Signature Course Bundle',
-        nameAr: 'حزمة الدورات المميزة',
-        type: 'course',
-        category: 'B',
-        basePrice: 299,
-        currency: 'EGP',
-        enabled: true,
-        subscribers: 234,
-        revenue: 69966
-    },
-    {
-        id: '4',
-        name: 'Premium Creator Channel',
-        nameAr: 'قناة المحتوى المميزة',
-        type: 'channel',
-        category: 'C',
-        basePrice: 99,
-        currency: 'EGP',
-        billingCycle: 'monthly',
-        enabled: true,
-        subscribers: 567,
-        revenue: 56133
-    }
-]
-
-const MOCK_LOCALIZED_PRICES: LocalizedPrice[] = [
-    {
-        id: '1',
-        productId: '1',
-        productName: 'All-Access Library',
-        country: 'Egypt',
-        currency: 'EGP',
-        price: 199,
-        originalPrice: 199,
-        discount: 0,
-        enabled: true,
-        lastUpdated: '2024-10-01T00:00:00Z'
-    },
-    {
-        id: '2',
-        productId: '1',
-        productName: 'All-Access Library',
-        country: 'Saudi Arabia',
-        currency: 'SAR',
-        price: 75,
-        originalPrice: 75,
-        discount: 0,
-        enabled: true,
-        lastUpdated: '2024-10-01T00:00:00Z'
-    },
-    {
-        id: '3',
-        productId: '1',
-        productName: 'All-Access Library',
-        country: 'UAE',
-        currency: 'AED',
-        price: 75,
-        originalPrice: 75,
-        discount: 0,
-        enabled: true,
-        lastUpdated: '2024-10-01T00:00:00Z'
-    },
-    {
-        id: '4',
-        productId: '2',
-        productName: 'All-Access Library Annual',
-        country: 'Egypt',
-        currency: 'EGP',
-        price: 1699,
-        originalPrice: 1999,
-        discount: 15,
-        enabled: true,
-        lastUpdated: '2024-10-01T00:00:00Z'
-    }
-]
-
-const MOCK_PROMOTIONS: Promotion[] = [
-    {
-        id: '1',
-        code: 'WELCOME2024',
-        name: 'New User Welcome',
-        type: 'percentage',
-        value: 20,
-        applicableTo: 'all',
-        startDate: '2024-10-01T00:00:00Z',
-        endDate: '2024-12-31T23:59:59Z',
-        usageLimit: 1000,
-        usageCount: 456,
-        enabled: true,
-        minPurchase: 100
-    },
-    {
-        id: '2',
-        code: 'ANNUAL25',
-        name: 'Annual Plan Discount',
-        type: 'percentage',
-        value: 25,
-        applicableTo: 'subscription',
-        startDate: '2024-10-01T00:00:00Z',
-        endDate: '2024-11-30T23:59:59Z',
-        usageLimit: 500,
-        usageCount: 234,
-        enabled: true
-    },
-    {
-        id: '3',
-        code: 'FREETRIAL7',
-        name: '7-Day Free Trial',
-        type: 'trial',
-        value: 7,
-        applicableTo: 'subscription',
-        startDate: '2024-10-01T00:00:00Z',
-        endDate: '2025-12-31T23:59:59Z',
-        usageCount: 789,
-        enabled: true
-    },
-    {
-        id: '4',
-        code: 'RAMADAN50',
-        name: 'Ramadan Special',
-        type: 'fixed',
-        value: 50,
-        applicableTo: 'all',
-        startDate: '2024-03-01T00:00:00Z',
-        endDate: '2024-04-15T23:59:59Z',
-        usageLimit: 2000,
-        usageCount: 1876,
-        enabled: false,
-        minPurchase: 150
-    }
-]
+// Pricing catalog data - Will be populated from API when available
+// TODO: Fetch products, localized prices, and promotions from /api/admin/pricing
+const EMPTY_PRODUCTS: Product[] = []
+const EMPTY_LOCALIZED_PRICES: LocalizedPrice[] = []
+const EMPTY_PROMOTIONS: Promotion[] = []
 
 const categoryColors = {
     A: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -249,9 +94,10 @@ const promotionTypeColors = {
 
 export default function PricingCatalogManager() {
     const [activeTab, setActiveTab] = useState('products')
-    const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS)
-    const [localizedPrices, setLocalizedPrices] = useState<LocalizedPrice[]>(MOCK_LOCALIZED_PRICES)
-    const [promotions, setPromotions] = useState<Promotion[]>(MOCK_PROMOTIONS)
+    // Use empty arrays until API integration is complete
+    const [products, setProducts] = useState<Product[]>(EMPTY_PRODUCTS)
+    const [localizedPrices, setLocalizedPrices] = useState<LocalizedPrice[]>(EMPTY_LOCALIZED_PRICES)
+    const [promotions, setPromotions] = useState<Promotion[]>(EMPTY_PROMOTIONS)
 
     const stats = {
         totalProducts: products.length,

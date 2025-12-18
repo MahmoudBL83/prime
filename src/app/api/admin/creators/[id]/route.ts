@@ -65,6 +65,14 @@ export async function GET(
                         }
                     }
                 },
+                payouts: {
+                    orderBy: { createdAt: 'desc' },
+                    take: 10
+                },
+                creatorPayouts: {
+                    orderBy: { requestedAt: 'desc' },
+                    take: 10
+                },
                 _count: {
                     select: {
                         courses: true,
@@ -263,6 +271,34 @@ export async function PATCH(
                 })
                 break
 
+            case 'update_profile':
+                // Update the profile image for the creator's user
+                const creatorForImage = await prisma.creator.findUnique({
+                    where: { id: id },
+                    select: { userId: true }
+                })
+
+                if (!creatorForImage) {
+                    return NextResponse.json({ error: 'Creator not found' }, { status: 404 })
+                }
+
+                await prisma.user.update({
+                    where: { id: creatorForImage.userId },
+                    data: {
+                        profileImage: updateData.image,
+                        updatedAt: new Date()
+                    }
+                })
+
+                updatedCreator = await prisma.creator.findUnique({
+                    where: { id: id },
+                    include: { user: true }
+                })
+                return NextResponse.json({ 
+                    creator: updatedCreator, 
+                    message: 'Profile image updated successfully' 
+                })
+
             case 'updateEarnings':
                 if (typeof updateData.totalEarnings !== 'number') {
                     return NextResponse.json(
@@ -302,7 +338,7 @@ export async function PATCH(
                 const newCredential = await prisma.creatorCredential.create({
                     data: {
                         creatorId: id,
-                        type: updateData.type || 'CERTIFICATION',
+                        type: updateData.type || 'CERTIFICATE',
                         title: updateData.title,
                         titleAr: updateData.titleAr,
                         institution: updateData.institution,

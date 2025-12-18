@@ -68,7 +68,7 @@ const credentialTypeInfo: Record<CredentialType, { icon: React.ElementType; labe
 }
 
 interface CredentialsSectionProps {
-    creatorId: string
+    creatorId?: string // Optional - if not provided, uses logged-in creator's credentials API
     credentials: Credential[]
     onCredentialsChange: (credentials: Credential[]) => void
     isArabic?: boolean
@@ -86,17 +86,35 @@ export function CredentialsSection({
     const [editingCredential, setEditingCredential] = useState<Credential | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
+    // Determine API endpoint based on whether creatorId is provided
+    const getApiEndpoint = (method: 'GET' | 'POST' | 'PUT' | 'DELETE', credentialId?: string) => {
+        if (creatorId) {
+            // Admin editing a specific creator
+            if (method === 'DELETE' && credentialId) {
+                return `/api/creators/${creatorId}/credentials?credentialId=${credentialId}`
+            }
+            return `/api/creators/${creatorId}/credentials`
+        } else {
+            // Creator editing their own credentials
+            if (method === 'DELETE' && credentialId) {
+                return `/api/creator/credentials?id=${credentialId}`
+            }
+            return '/api/creator/credentials'
+        }
+    }
+
     const handleAddCredential = async (credential: Partial<Credential>) => {
         setIsSubmitting(true)
         try {
-            const response = await fetch(`/api/creators/${creatorId}/credentials`, {
+            const response = await fetch(getApiEndpoint('POST'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(credential)
             })
 
             if (response.ok) {
-                const { credential: newCredential } = await response.json()
+                const data = await response.json()
+                const newCredential = data.credential
                 onCredentialsChange([...credentials, newCredential])
                 setIsAddModalOpen(false)
                 toast.success(isArabic ? 'تمت إضافة الشهادة بنجاح' : 'Credential added successfully')
@@ -115,14 +133,16 @@ export function CredentialsSection({
     const handleUpdateCredential = async (credential: Credential) => {
         setIsSubmitting(true)
         try {
-            const response = await fetch(`/api/creators/${creatorId}/credentials`, {
+            const { id, ...credentialData } = credential
+            const response = await fetch(getApiEndpoint('PUT'), {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ credentialId: credential.id, ...credential })
+                body: JSON.stringify({ credentialId: id, ...credentialData })
             })
 
             if (response.ok) {
-                const { credential: updated } = await response.json()
+                const data = await response.json()
+                const updated = data.credential
                 onCredentialsChange(credentials.map(c => c.id === updated.id ? updated : c))
                 setEditingCredential(null)
                 toast.success(isArabic ? 'تم تحديث الشهادة بنجاح' : 'Credential updated successfully')
@@ -144,7 +164,7 @@ export function CredentialsSection({
         }
 
         try {
-            const response = await fetch(`/api/creators/${creatorId}/credentials?credentialId=${credentialId}`, {
+            const response = await fetch(getApiEndpoint('DELETE', credentialId), {
                 method: 'DELETE'
             })
 
@@ -390,7 +410,7 @@ function CredentialModal({
     credential: Credential | null
     isArabic: boolean
     isSubmitting: boolean
-    creatorId: string
+    creatorId?: string
 }) {
     const [formData, setFormData] = useState({
         type: credential?.type || 'CERTIFICATE',

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     CheckCircle,
     XCircle,
@@ -19,8 +19,10 @@ import {
     Filter,
     Search,
     ChevronRight,
-    AlertCircle
+    AlertCircle,
+    Loader2
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -97,113 +99,6 @@ interface ReviewChecklist {
     }
 }
 
-const MOCK_SUBMISSIONS: ContentSubmission[] = [
-    {
-        id: '1',
-        courseTitle: 'Introduction to Data Science with Python',
-        creator: {
-            id: 'CRT-1001',
-            name: 'Dr. Ahmed Hassan',
-            email: 'ahmed@example.com',
-            isFirstTime: true,
-            previousApprovals: 0
-        },
-        submittedDate: '2024-10-14T10:30:00Z',
-        status: 'pending_first_review',
-        daysInQueue: 2,
-        slaStatus: 'on_time',
-        totalLessons: 24,
-        totalDuration: 480,
-        category: 'Category A - All-Access Library',
-        thumbnail: '/placeholder-course.jpg',
-        autoCheckResults: {
-            videoQuality: 'excellent',
-            audioQuality: 'good',
-            captionsAvailable: true,
-            policyFlags: 0,
-            plagiarismScore: 5
-        }
-    },
-    {
-        id: '2',
-        courseTitle: 'Web Development Bootcamp 2024',
-        creator: {
-            id: 'CRT-1002',
-            name: 'Fatma Mohamed',
-            email: 'fatma@example.com',
-            isFirstTime: true,
-            previousApprovals: 0
-        },
-        submittedDate: '2024-10-10T14:20:00Z',
-        status: 'under_review',
-        daysInQueue: 6,
-        slaStatus: 'on_time',
-        totalLessons: 36,
-        totalDuration: 720,
-        category: 'Category A - All-Access Library',
-        thumbnail: '/placeholder-course.jpg',
-        autoCheckResults: {
-            videoQuality: 'good',
-            audioQuality: 'excellent',
-            captionsAvailable: true,
-            policyFlags: 0,
-            plagiarismScore: 8
-        }
-    },
-    {
-        id: '3',
-        courseTitle: 'Arabic Grammar Fundamentals',
-        creator: {
-            id: 'CRT-1003',
-            name: 'Dr. Omar Khaled',
-            email: 'omar@example.com',
-            isFirstTime: true,
-            previousApprovals: 0
-        },
-        submittedDate: '2024-10-05T09:15:00Z',
-        status: 'revisions_requested',
-        daysInQueue: 11,
-        slaStatus: 'breached',
-        totalLessons: 18,
-        totalDuration: 360,
-        category: 'Category A - All-Access Library',
-        thumbnail: '/placeholder-course.jpg',
-        autoCheckResults: {
-            videoQuality: 'acceptable',
-            audioQuality: 'acceptable',
-            captionsAvailable: false,
-            policyFlags: 0,
-            plagiarismScore: 12
-        }
-    },
-    {
-        id: '4',
-        courseTitle: 'Advanced Mathematics for Engineers',
-        creator: {
-            id: 'CRT-1004',
-            name: 'Prof. Sara Ali',
-            email: 'sara@example.com',
-            isFirstTime: false,
-            previousApprovals: 5
-        },
-        submittedDate: '2024-10-15T11:45:00Z',
-        status: 'pending_first_review',
-        daysInQueue: 1,
-        slaStatus: 'on_time',
-        totalLessons: 30,
-        totalDuration: 600,
-        category: 'Category A - All-Access Library',
-        thumbnail: '/placeholder-course.jpg',
-        autoCheckResults: {
-            videoQuality: 'excellent',
-            audioQuality: 'excellent',
-            captionsAvailable: true,
-            policyFlags: 0,
-            plagiarismScore: 3
-        }
-    }
-]
-
 const statusColors = {
     pending_first_review: 'bg-purple-100 text-purple-800 border-purple-200',
     under_review: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -227,7 +122,9 @@ const qualityColors = {
 
 export default function EnhancedContentReviewQueue() {
     const [activeTab, setActiveTab] = useState('first_time')
-    const [submissions] = useState<ContentSubmission[]>(MOCK_SUBMISSIONS)
+    const [submissions, setSubmissions] = useState<ContentSubmission[]>([])
+    const [loading, setLoading] = useState(true)
+    const [actionLoading, setActionLoading] = useState(false)
     const [selectedSubmission, setSelectedSubmission] = useState<ContentSubmission | null>(null)
     const [showReviewModal, setShowReviewModal] = useState(false)
     const [reviewAction, setReviewAction] = useState<'approve' | 'request_revisions' | 'reject'>('approve')
@@ -239,6 +136,56 @@ export default function EnhancedContentReviewQueue() {
         accessibility: { captionsAvailable: false, transcriptQuality: false, visualContrast: false },
         technical: { videosPlayable: false, downloadsWork: false, linksValid: false, quizzesFunctional: false }
     })
+
+    useEffect(() => {
+        fetchSubmissions()
+    }, [])
+
+    const fetchSubmissions = async () => {
+        try {
+            setLoading(true)
+            const response = await fetch('/api/admin/content-review')
+            if (!response.ok) throw new Error('Failed to fetch submissions')
+            const data = await response.json()
+            setSubmissions(data.submissions || [])
+        } catch (error) {
+            toast.error('Failed to load content reviews')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleReviewAction = async (action: 'approve' | 'request_revisions' | 'reject') => {
+        if (!selectedSubmission) return
+        
+        try {
+            setActionLoading(true)
+            const response = await fetch('/api/admin/content-review', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    courseId: selectedSubmission.id,
+                    action,
+                    notes: reviewNotes
+                })
+            })
+
+            if (!response.ok) throw new Error('Failed to update review')
+
+            const actionLabels = {
+                approve: 'approved',
+                request_revisions: 'sent back for revisions',
+                reject: 'rejected'
+            }
+            toast.success(`Course ${actionLabels[action]}`)
+            setShowReviewModal(false)
+            fetchSubmissions()
+        } catch (error) {
+            toast.error('Failed to submit review')
+        } finally {
+            setActionLoading(false)
+        }
+    }
 
     const firstTimeSubmissions = submissions.filter(s => s.creator.isFirstTime)
     const ongoingSubmissions = submissions.filter(s => !s.creator.isFirstTime)
@@ -286,6 +233,17 @@ export default function EnhancedContentReviewQueue() {
         ]
         const completed = allItems.filter(Boolean).length
         return Math.round((completed / allItems.length) * 100)
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-6 flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-purple-400 mx-auto mb-4" />
+                    <p className="text-muted-foreground">Loading content reviews...</p>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -871,36 +829,30 @@ export default function EnhancedContentReviewQueue() {
                                 {reviewAction === 'approve' && (
                                     <Button
                                         className="flex-1 bg-green-600 hover:bg-green-700 text-foreground"
-                                        onClick={() => {
-                                            console.log('Approved:', selectedSubmission.id)
-                                            setShowReviewModal(false)
-                                        }}
+                                        disabled={actionLoading}
+                                        onClick={() => handleReviewAction('approve')}
                                     >
-                                        <CheckCircle className="w-4 h-4 mr-2" />
+                                        {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
                                         Approve & Publish
                                     </Button>
                                 )}
                                 {reviewAction === 'request_revisions' && (
                                     <Button
                                         className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-foreground"
-                                        onClick={() => {
-                                            console.log('Revisions requested:', selectedSubmission.id)
-                                            setShowReviewModal(false)
-                                        }}
+                                        disabled={actionLoading}
+                                        onClick={() => handleReviewAction('request_revisions')}
                                     >
-                                        <RefreshCw className="w-4 h-4 mr-2" />
+                                        {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
                                         Request Revisions
                                     </Button>
                                 )}
                                 {reviewAction === 'reject' && (
                                     <Button
                                         className="flex-1 bg-red-600 hover:bg-red-700 text-foreground"
-                                        onClick={() => {
-                                            console.log('Rejected:', selectedSubmission.id)
-                                            setShowReviewModal(false)
-                                        }}
+                                        disabled={actionLoading}
+                                        onClick={() => handleReviewAction('reject')}
                                     >
-                                        <XCircle className="w-4 h-4 mr-2" />
+                                        {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <XCircle className="w-4 h-4 mr-2" />}
                                         Reject Course
                                     </Button>
                                 )}
@@ -908,11 +860,7 @@ export default function EnhancedContentReviewQueue() {
                                     variant="outline"
                                     className="flex-1 bg-white/5 border-border text-muted-foreground hover:bg-white/10"
                                     onClick={() => setShowReviewModal(false)}
-                                >
-                                    Cancel
-                                </Button>
-                            </div>
-                        </div>
+                                    disabled={actionLoading}
                     )}
                 </DialogContent>
             </Dialog>

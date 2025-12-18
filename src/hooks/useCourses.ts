@@ -183,7 +183,7 @@ export function courseToContentItem(course: Course) {
         type: 'course' as const,
         thumbnail: getBackgroundImage(course.id, course.category),
         duration: formatDurationFromMinutes(course.duration || 0),
-        rating: course.rating || 4.5,
+        rating: course.rating || 0,
         category: course.category,
         isNew: false, // This could be based on creation date
         description: getDescription(),

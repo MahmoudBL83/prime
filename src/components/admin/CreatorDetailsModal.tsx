@@ -31,7 +31,10 @@ import {
     MessageSquare,
     Pin,
     Send,
-    Plus
+    Plus,
+    Upload,
+    Loader2,
+    Camera
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -70,6 +73,20 @@ interface CreatorChannel {
     posts: ChannelPost[]
 }
 
+interface CreatorPayout {
+    id: string
+    amount: number
+    currency: string
+    status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'CANCELLED'
+    method: string
+    netAmount?: number
+    processingFee?: number
+    requestedAt: string
+    processedAt?: string
+    transactionId?: string
+    notes?: string
+}
+
 interface CreatorDetails {
     id: string
     userId: string
@@ -100,6 +117,7 @@ interface CreatorDetails {
         phone?: string
         arabicName?: string
         bio?: string
+        profileImage?: string
         emailVerified?: string
         onboardingCompleted: boolean
         createdAt: string
@@ -134,6 +152,7 @@ interface CreatorDetails {
         sortOrder: number
     }>
     channels?: CreatorChannel[]
+    payouts?: CreatorPayout[]
     _count: {
         courses: number
     }
@@ -171,7 +190,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
     const [showCredentialModal, setShowCredentialModal] = useState(false)
     const [editingCredential, setEditingCredential] = useState<any>(null)
     const [credentialForm, setCredentialForm] = useState({
-        type: 'CERTIFICATION',
+        type: 'CERTIFICATE',
         title: '',
         titleAr: '',
         institution: '',
@@ -203,6 +222,9 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
         isDraft: false,
         scheduledAt: ''
     })
+    const [uploadingMedia, setUploadingMedia] = useState(false)
+    const [uploadingThumbnail, setUploadingThumbnail] = useState(false)
+    const [uploadingProfileImage, setUploadingProfileImage] = useState(false)
     
     // Comprehensive edit form for creator
     const [editForm, setEditForm] = useState({
@@ -262,6 +284,93 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
             })
         }
     }, [creator])
+
+    // File upload handler
+    const handleFileUpload = async (
+        file: File, 
+        type: 'media' | 'thumbnail' | 'profile'
+    ): Promise<string | null> => {
+        const setUploading = type === 'media' 
+            ? setUploadingMedia 
+            : type === 'thumbnail' 
+                ? setUploadingThumbnail 
+                : setUploadingProfileImage
+
+        setUploading(true)
+        try {
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('type', file.type.startsWith('video/') ? 'video' : 'image')
+
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            })
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.error || 'Upload failed')
+            }
+
+            const data = await response.json()
+            return data.url
+        } catch (error) {
+            console.error('Upload error:', error)
+            toast.error(error instanceof Error ? error.message : 'Failed to upload file')
+            return null
+        } finally {
+            setUploading(false)
+        }
+    }
+
+    const handleMediaFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        const url = await handleFileUpload(file, 'media')
+        if (url) {
+            setPostForm(prev => ({ ...prev, mediaUrl: url }))
+            toast.success('Media uploaded successfully')
+        }
+    }
+
+    const handleThumbnailFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        const url = await handleFileUpload(file, 'thumbnail')
+        if (url) {
+            setPostForm(prev => ({ ...prev, thumbnailUrl: url }))
+            toast.success('Thumbnail uploaded successfully')
+        }
+    }
+
+    const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        const url = await handleFileUpload(file, 'profile')
+        if (url) {
+            // Update profile image via API
+            try {
+                const response = await fetch(`/api/admin/creators/${creatorId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'update_profile',
+                        image: url
+                    })
+                })
+                
+                if (!response.ok) throw new Error('Failed to update profile image')
+                
+                toast.success('Profile image updated successfully')
+                fetchCreatorDetails()
+            } catch (error) {
+                toast.error('Failed to update profile image')
+            }
+        }
+    }
 
     const fetchCreatorDetails = async () => {
         setLoading(true)
@@ -577,6 +686,44 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                             <User className="w-5 h-5" />
                                             User Profile
                                         </h3>
+                                        
+                                        {/* Profile Image Upload */}
+                                        <div className="mb-6 flex items-center gap-4">
+                                            <div className="relative">
+                                                <div className="w-24 h-24 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
+                                                    {creator.user.profileImage ? (
+                                                        <img 
+                                                            src={creator.user.profileImage} 
+                                                            alt={creator.user.name} 
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <span className="text-3xl font-bold text-white">
+                                                            {creator.user.name?.charAt(0)?.toUpperCase() || '?'}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <label className="absolute bottom-0 right-0 p-2 bg-purple-600 rounded-full cursor-pointer hover:bg-purple-700 transition-colors">
+                                                    {uploadingProfileImage ? (
+                                                        <Loader2 className="w-4 h-4 text-white animate-spin" />
+                                                    ) : (
+                                                        <Camera className="w-4 h-4 text-white" />
+                                                    )}
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleProfileImageChange}
+                                                        className="hidden"
+                                                        disabled={uploadingProfileImage}
+                                                    />
+                                                </label>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-foreground font-medium">Profile Photo</p>
+                                                <p className="text-xs text-muted-foreground">Click the camera icon to upload a new photo</p>
+                                            </div>
+                                        </div>
+
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-foreground mb-1">Name *</label>
@@ -1064,19 +1211,101 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                     <h4 className="text-lg font-medium text-foreground">
                                         Payout Status
                                     </h4>
-                                    <p className="text-lg font-medium text-yellow-600">
-                                        Pending
-                                    </p>
+                                    {(() => {
+                                        const latestPayout = creator.payouts?.[0]
+                                        if (!latestPayout) {
+                                            return <p className="text-lg font-medium text-muted-foreground">No payouts yet</p>
+                                        }
+                                        const statusColors: Record<string, string> = {
+                                            PENDING: 'text-yellow-600',
+                                            PROCESSING: 'text-blue-600',
+                                            COMPLETED: 'text-green-600',
+                                            FAILED: 'text-red-600',
+                                            CANCELLED: 'text-gray-600'
+                                        }
+                                        return (
+                                            <p className={`text-lg font-medium ${statusColors[latestPayout.status] || 'text-muted-foreground'}`}>
+                                                {latestPayout.status.charAt(0) + latestPayout.status.slice(1).toLowerCase()}
+                                            </p>
+                                        )
+                                    })()}
                                 </div>
                             </div>
 
                             <div className="bg-card rounded-lg p-4 border border-border">
                                 <h4 className="text-lg font-medium text-foreground mb-4">
-                                    Recent Transactions
+                                    Recent Payouts
                                 </h4>
-                                <p className="text-muted-foreground">
-                                    Transaction history will be displayed here
-                                </p>
+                                {creator.payouts && creator.payouts.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {creator.payouts.map((payout) => {
+                                            const statusColors: Record<string, string> = {
+                                                PENDING: 'bg-yellow-100 text-yellow-800',
+                                                PROCESSING: 'bg-blue-100 text-blue-800',
+                                                COMPLETED: 'bg-green-100 text-green-800',
+                                                FAILED: 'bg-red-100 text-red-800',
+                                                CANCELLED: 'bg-gray-100 text-gray-800'
+                                            }
+                                            return (
+                                                <div key={payout.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center">
+                                                            <DollarSign className="w-5 h-5 text-white" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-foreground">
+                                                                {formatCurrency(payout.amount)} {payout.currency}
+                                                            </p>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {new Date(payout.requestedAt).toLocaleDateString('en-US', {
+                                                                    month: 'short',
+                                                                    day: 'numeric',
+                                                                    year: 'numeric'
+                                                                })}
+                                                                {payout.method && ` • ${payout.method}`}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        {payout.netAmount && payout.netAmount !== payout.amount && (
+                                                            <span className="text-sm text-muted-foreground">
+                                                                Net: {formatCurrency(payout.netAmount)}
+                                                            </span>
+                                                        )}
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[payout.status] || 'bg-gray-100 text-gray-800'}`}>
+                                                            {payout.status}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <DollarSign className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                                        <p className="text-muted-foreground">No payout history yet</p>
+                                        <p className="text-sm text-muted-foreground mt-1">
+                                            Payouts will appear here when the creator requests withdrawals
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Bank Details */}
+                            <div className="bg-card rounded-lg p-4 border border-border">
+                                <h4 className="text-lg font-medium text-foreground mb-4">
+                                    Bank Details
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm text-muted-foreground">Bank Name</label>
+                                        <p className="font-medium text-foreground">{creator.bankName || 'Not provided'}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-sm text-muted-foreground">IBAN</label>
+                                        <p className="font-medium text-foreground font-mono">{creator.bankAccountIBAN || 'Not provided'}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -1467,9 +1696,11 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                         onChange={(e) => setCredentialForm({ ...credentialForm, type: e.target.value })}
                                         className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground"
                                     >
-                                        <option value="CERTIFICATION">Certification</option>
+                                        <option value="CERTIFICATE">Certificate</option>
                                         <option value="DEGREE">Degree</option>
+                                        <option value="DIPLOMA">Diploma</option>
                                         <option value="LICENSE">License</option>
+                                        <option value="COURSE">Course</option>
                                         <option value="AWARD">Award</option>
                                         <option value="PUBLICATION">Publication</option>
                                         <option value="OTHER">Other</option>
@@ -1729,26 +1960,88 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                 />
                             </div>
                             {(postForm.type === 'VIDEO' || postForm.type === 'IMAGE' || postForm.type === 'DOCUMENT') && (
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-foreground mb-1">Media URL</label>
-                                        <input
-                                            type="url"
-                                            value={postForm.mediaUrl}
-                                            onChange={(e) => setPostForm({ ...postForm, mediaUrl: e.target.value })}
-                                            className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground"
-                                            placeholder="https://..."
-                                        />
+                                        <label className="block text-sm font-medium text-foreground mb-1">
+                                            {postForm.type === 'VIDEO' ? 'Video File' : postForm.type === 'IMAGE' ? 'Image File' : 'Document File'}
+                                        </label>
+                                        <div className="flex items-center gap-3">
+                                            <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-card border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-purple-500 transition-colors">
+                                                {uploadingMedia ? (
+                                                    <>
+                                                        <Loader2 className="w-5 h-5 animate-spin text-purple-500" />
+                                                        <span className="text-sm text-muted-foreground">Uploading...</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Upload className="w-5 h-5 text-muted-foreground" />
+                                                        <span className="text-sm text-muted-foreground">
+                                                            {postForm.mediaUrl ? 'Change file' : 'Click to upload'}
+                                                        </span>
+                                                    </>
+                                                )}
+                                                <input
+                                                    type="file"
+                                                    accept={postForm.type === 'VIDEO' ? 'video/*' : postForm.type === 'IMAGE' ? 'image/*' : '.pdf,.doc,.docx'}
+                                                    onChange={handleMediaFileChange}
+                                                    className="hidden"
+                                                    disabled={uploadingMedia}
+                                                />
+                                            </label>
+                                        </div>
+                                        {postForm.mediaUrl && (
+                                            <div className="mt-2 p-2 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-2">
+                                                <CheckCircle className="w-4 h-4 text-green-500" />
+                                                <span className="text-sm text-green-400 truncate flex-1">Media uploaded</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPostForm({ ...postForm, mediaUrl: '' })}
+                                                    className="p-1 hover:bg-red-500/20 rounded text-red-400"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-foreground mb-1">Thumbnail URL</label>
-                                        <input
-                                            type="url"
-                                            value={postForm.thumbnailUrl}
-                                            onChange={(e) => setPostForm({ ...postForm, thumbnailUrl: e.target.value })}
-                                            className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground"
-                                            placeholder="https://..."
-                                        />
+                                        <label className="block text-sm font-medium text-foreground mb-1">Thumbnail Image (Optional)</label>
+                                        <div className="flex items-center gap-3">
+                                            <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-card border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-purple-500 transition-colors">
+                                                {uploadingThumbnail ? (
+                                                    <>
+                                                        <Loader2 className="w-5 h-5 animate-spin text-purple-500" />
+                                                        <span className="text-sm text-muted-foreground">Uploading...</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Image className="w-5 h-5 text-muted-foreground" />
+                                                        <span className="text-sm text-muted-foreground">
+                                                            {postForm.thumbnailUrl ? 'Change thumbnail' : 'Upload thumbnail'}
+                                                        </span>
+                                                    </>
+                                                )}
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleThumbnailFileChange}
+                                                    className="hidden"
+                                                    disabled={uploadingThumbnail}
+                                                />
+                                            </label>
+                                        </div>
+                                        {postForm.thumbnailUrl && (
+                                            <div className="mt-2 p-2 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-2">
+                                                <CheckCircle className="w-4 h-4 text-green-500" />
+                                                <span className="text-sm text-green-400 truncate flex-1">Thumbnail uploaded</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPostForm({ ...postForm, thumbnailUrl: '' })}
+                                                    className="p-1 hover:bg-red-500/20 rounded text-red-400"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}

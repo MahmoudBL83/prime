@@ -88,7 +88,6 @@ export default function RealTimeMetrics({
 
                 socketRef.current.onopen = () => {
                     setIsConnected(true)
-                    console.log('Real-time metrics connected')
                 }
 
                 socketRef.current.onmessage = (event) => {

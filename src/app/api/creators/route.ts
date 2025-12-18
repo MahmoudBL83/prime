@@ -191,7 +191,7 @@ export async function GET(req: NextRequest) {
                     },
                     channels: creator.channels,
                     expertise: creator.expertise || '',
-                    monthlyPrice: (creator as any).monthlyPrice || creator.basicMonthlyPrice || 29, // Single tier in EUR
+                    monthlyPrice: (creator as any).monthlyPrice || creator.basicMonthlyPrice || 0, // No fake fallbacks - real price from DB
                     currency: 'EUR',
                     totalSubscribers: creator.totalSubscribers || 0,
                     stats: {

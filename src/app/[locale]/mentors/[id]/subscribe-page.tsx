@@ -82,15 +82,15 @@ export default function MentorSubscribePage() {
             profileImage: data.user.profileImage,
           },
           expertise: data.expertise || '',
-          monthlyPrice: data.monthlyPrice || 29, // EUR
+          monthlyPrice: data.monthlyPrice || 0, // EUR - no fake fallbacks
           totalSubscribers: data.totalSubscribers || 0,
-          languages: data.languages || 'English, Arabic',
+          languages: data.languages || '',
           stats: data.stats || {
             totalFollowers: data.stats?.totalFollowers || 0,
             totalCourses: data.stats?.totalCourses || 0,
             totalStudents: data.stats?.totalStudents || 0,
-            averageRating: data.stats?.averageRating || 5.0,
-            yearsOfExperience: data.stats?.yearsOfExperience || 5,
+            averageRating: data.stats?.averageRating || 0,
+            yearsOfExperience: data.stats?.yearsOfExperience || 0,
           },
         });
       }

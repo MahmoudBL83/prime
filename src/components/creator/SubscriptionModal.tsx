@@ -22,8 +22,8 @@ export default function SubscriptionModal({ creator, isOpen, onClose, onSubscrib
       name: 'Basic',
       icon: Heart,
       color: 'blue',
-      monthlyPrice: creator?.basicMonthlyPrice || 9.99,
-      yearlyPrice: (creator?.basicMonthlyPrice || 9.99) * 10,
+      monthlyPrice: creator?.basicMonthlyPrice || 0,
+      yearlyPrice: (creator?.basicMonthlyPrice || 0) * 10,
       benefits: [
         'Access to all standard posts',
         'Basic content library',
@@ -36,8 +36,8 @@ export default function SubscriptionModal({ creator, isOpen, onClose, onSubscrib
       name: 'Premium',
       icon: Sparkles,
       color: 'pink',
-      monthlyPrice: creator?.premiumMonthlyPrice || 19.99,
-      yearlyPrice: (creator?.premiumMonthlyPrice || 19.99) * 10,
+      monthlyPrice: creator?.premiumMonthlyPrice || 0,
+      yearlyPrice: (creator?.premiumMonthlyPrice || 0) * 10,
       popular: true,
       benefits: [
         'All Basic benefits',
@@ -53,8 +53,8 @@ export default function SubscriptionModal({ creator, isOpen, onClose, onSubscrib
       name: 'VIP',
       icon: Crown,
       color: 'purple',
-      monthlyPrice: creator?.vipMonthlyPrice || 49.99,
-      yearlyPrice: (creator?.vipMonthlyPrice || 49.99) * 10,
+      monthlyPrice: creator?.vipMonthlyPrice || 0,
+      yearlyPrice: (creator?.vipMonthlyPrice || 0) * 10,
       benefits: [
         'All Premium benefits',
         'Unlimited 1-on-1 messaging',

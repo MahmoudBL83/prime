@@ -66,29 +66,25 @@ interface AnalyticsData {
     }
 }
 
-// Generate sample chart data based on period
+// Generate chart data based on period - uses real totals without fake daily distribution
 function generateChartData(days: number, totalEnrollments: number, totalRevenue: number) {
     const enrollments: Array<{ date: string; value: number }> = []
     const revenue: Array<{ date: string; value: number }> = []
     
     const today = new Date()
-    const avgEnrollPerDay = totalEnrollments / days || 0
-    const avgRevenuePerDay = totalRevenue / days || 0
     
-    for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(today)
-        date.setDate(date.getDate() - i)
-        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-        
-        // Add some variance for realistic looking data
-        const variance = 0.5 + Math.random()
+    // Show real data as a single point or empty if no historical data available
+    // For production, this should be replaced with actual historical data from the API
+    if (totalEnrollments > 0 || totalRevenue > 0) {
+        // Show only today's total as we don't have historical breakdown
+        const dateStr = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
         enrollments.push({
             date: dateStr,
-            value: Math.round(avgEnrollPerDay * variance)
+            value: totalEnrollments
         })
         revenue.push({
             date: dateStr,
-            value: Math.round(avgRevenuePerDay * variance)
+            value: totalRevenue
         })
     }
     

@@ -145,7 +145,7 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
     }
 
     const handleUpload = async () => {
-        if (mediaFiles.length === 0) {
+        if (mediaFiles.length === 0 && !existingPost) {
             toast.error(isArabic ? 'يرجى اختيار ملفات للرفع' : 'Please select files to upload')
             return
         }
@@ -154,27 +154,57 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
         setUploadProgress(0)
 
         try {
-            // Simulate upload progress
-            const interval = setInterval(() => {
-                setUploadProgress(prev => {
-                    if (prev >= 95) {
-                        clearInterval(interval)
-                        return prev
-                    }
-                    return prev + 5
-                })
-            }, 200)
+            let uploadedMediaUrl = existingPost?.mediaUrl || ''
+            let uploadedThumbnailUrl = existingPost?.thumbnailUrl || ''
 
-            // Create FormData for upload
-            const formData = new FormData()
-            mediaFiles.forEach((media, index) => {
-                formData.append(`media_${index}`, media.file)
-            })
-            formData.append('caption', caption)
-            formData.append('tierAccess', tierAccess)
-            formData.append('ppvPrice', tierAccess === 'ppv' ? ppvPrice : '0')
-            formData.append('tags', JSON.stringify(tags))
-            formData.append('location', location)
+            // Upload media files first
+            if (mediaFiles.length > 0) {
+                setUploadProgress(10)
+                
+                // Upload the first media file
+                const mediaFile = mediaFiles[0]
+                const mediaFormData = new FormData()
+                mediaFormData.append('file', mediaFile.file)
+                mediaFormData.append('type', mediaFile.type === 'video' ? 'video' : 'image')
+
+                const mediaUploadResponse = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: mediaFormData
+                })
+
+                if (!mediaUploadResponse.ok) {
+                    const error = await mediaUploadResponse.json()
+                    throw new Error(error.error || 'Failed to upload media')
+                }
+
+                const mediaUploadData = await mediaUploadResponse.json()
+                uploadedMediaUrl = mediaUploadData.url
+                setUploadProgress(50)
+
+                // For videos, generate/upload thumbnail from first frame if we have a preview
+                if (mediaFile.type === 'video' && mediaFile.preview) {
+                    uploadedThumbnailUrl = uploadedMediaUrl // Use video URL as thumbnail for now
+                }
+
+                // If there's a second image file, use it as thumbnail
+                if (mediaFiles.length > 1 && mediaFiles[1].type === 'image') {
+                    const thumbnailFormData = new FormData()
+                    thumbnailFormData.append('file', mediaFiles[1].file)
+                    thumbnailFormData.append('type', 'image')
+
+                    const thumbnailUploadResponse = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: thumbnailFormData
+                    })
+
+                    if (thumbnailUploadResponse.ok) {
+                        const thumbnailData = await thumbnailUploadResponse.json()
+                        uploadedThumbnailUrl = thumbnailData.url
+                    }
+                }
+            }
+
+            setUploadProgress(70)
             
             // Prepare post data
             const postData: any = {
@@ -184,23 +214,13 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
                 title: caption,
                 type: mediaFiles[0]?.type === 'video' ? 'VIDEO' : mediaFiles[0]?.type === 'image' ? 'IMAGE' : existingPost?.type || 'TEXT',
                 tier: tierAccess.toUpperCase(),
-                scheduledAt: isScheduled && scheduleDate && scheduleTime ? `${scheduleDate}T${scheduleTime}:00.000Z` : null
+                scheduledAt: isScheduled && scheduleDate && scheduleTime ? `${scheduleDate}T${scheduleTime}:00.000Z` : null,
+                mediaUrl: uploadedMediaUrl || null,
+                thumbnailUrl: uploadedThumbnailUrl || null,
+                duration: mediaFiles[0]?.duration || existingPost?.duration || 0
             }
 
-            // Handle media files (upload to storage first if needed)
-            // For now, we'll use the preview URLs or existing media
-            if (mediaFiles.length > 0) {
-                postData.mediaUrl = mediaFiles[0].preview // In production, upload to cloud storage first
-                if (mediaFiles[0].type === 'video') {
-                    postData.thumbnailUrl = mediaFiles[0].preview
-                    postData.duration = mediaFiles[0].duration || 0
-                }
-            } else if (existingPost) {
-                // Keep existing media if no new media uploaded
-                postData.mediaUrl = existingPost.mediaUrl
-                postData.thumbnailUrl = existingPost.thumbnailUrl
-                postData.duration = existingPost.duration
-            }
+            setUploadProgress(80)
 
             // Call the actual API
             const response = await fetch('/api/scheduled-posts', {
@@ -211,7 +231,6 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
                 body: JSON.stringify(postData)
             })
 
-            clearInterval(interval)
             setUploadProgress(100)
 
             if (!response.ok) {

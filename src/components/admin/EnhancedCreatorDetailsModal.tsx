@@ -100,120 +100,11 @@ interface Contract {
     version: string
 }
 
-// Mock data
-const MOCK_STRIKES: Record<string, ContentStrike[]> = {
-    default: [
-        {
-            id: 'st1',
-            courseId: 'c123',
-            courseTitle: 'Arabic Literature Fundamentals',
-            reason: 'Quality Standards Violation',
-            severity: 'minor',
-            status: 'resolved',
-            issuedAt: '2023-11-15T10:00:00Z',
-            expiresAt: '2024-02-15T10:00:00Z',
-            description: 'Audio quality below platform standards in lessons 3-5'
-        },
-        {
-            id: 'st2',
-            courseId: 'c456',
-            courseTitle: 'Egyptian History Overview',
-            reason: 'Incomplete Content',
-            severity: 'major',
-            status: 'active',
-            issuedAt: '2023-12-20T14:30:00Z',
-            expiresAt: '2024-06-20T14:30:00Z',
-            description: 'Course published with only 3 out of promised 12 lessons'
-        }
-    ]
-}
-
-const MOCK_PAYOUTS: Record<string, Payout[]> = {
-    default: [
-        {
-            id: 'p1',
-            amount: 3450,
-            status: 'completed',
-            period: 'December 2023',
-            scheduledDate: '2024-01-10T00:00:00Z',
-            processedDate: '2024-01-11T08:30:00Z',
-            method: 'bank_transfer',
-            earnings: {
-                subscriptions: 2800,
-                courseSales: 600,
-                tips: 50
-            },
-            fees: {
-                platform: 520,
-                transaction: 30
-            }
-        },
-        {
-            id: 'p2',
-            amount: 4120,
-            status: 'processing',
-            period: 'January 2024',
-            scheduledDate: '2024-02-10T00:00:00Z',
-            method: 'bank_transfer',
-            earnings: {
-                subscriptions: 3200,
-                courseSales: 850,
-                tips: 70
-            },
-            fees: {
-                platform: 620,
-                transaction: 35
-            }
-        },
-        {
-            id: 'p3',
-            amount: 2890,
-            status: 'on_hold',
-            period: 'November 2023',
-            scheduledDate: '2023-12-10T00:00:00Z',
-            method: 'bank_transfer',
-            earnings: {
-                subscriptions: 2400,
-                courseSales: 450,
-                tips: 40
-            },
-            fees: {
-                platform: 435,
-                transaction: 25
-            },
-            notes: 'On hold due to KYC verification pending'
-        }
-    ]
-}
-
-const MOCK_CONTRACTS: Record<string, Contract[]> = {
-    default: [
-        {
-            id: 'con1',
-            type: 'creator_agreement',
-            status: 'signed',
-            signedAt: '2023-10-15T12:00:00Z',
-            documentUrl: '/contracts/creator-agreement-2023.pdf',
-            version: '2.1'
-        },
-        {
-            id: 'con2',
-            type: 'content_license',
-            status: 'signed',
-            signedAt: '2023-10-15T12:05:00Z',
-            documentUrl: '/contracts/content-license-2023.pdf',
-            version: '1.5'
-        },
-        {
-            id: 'con3',
-            type: 'nda',
-            status: 'signed',
-            signedAt: '2023-10-15T12:10:00Z',
-            documentUrl: '/contracts/nda-2023.pdf',
-            version: '1.0'
-        }
-    ]
-}
+// Creator details data - Will be populated from API when available
+// TODO: Fetch strikes, payouts, and contracts from /api/admin/creators/[id]/details
+const EMPTY_STRIKES: ContentStrike[] = []
+const EMPTY_PAYOUTS: Payout[] = []
+const EMPTY_CONTRACTS: Contract[] = []
 
 const kycStatusColors = {
     NOT_STARTED: 'bg-muted text-gray-800 border-border',
@@ -253,9 +144,10 @@ const contractStatusColors = {
 export default function EnhancedCreatorDetailsModal({ creator, onClose }: EnhancedCreatorDetailsModalProps) {
     const [activeTab, setActiveTab] = useState('overview')
 
-    const strikes = MOCK_STRIKES.default || []
-    const payouts = MOCK_PAYOUTS.default || []
-    const contracts = MOCK_CONTRACTS.default || []
+    // Use empty arrays until API integration is complete
+    const strikes = EMPTY_STRIKES
+    const payouts = EMPTY_PAYOUTS
+    const contracts = EMPTY_CONTRACTS
 
     const activeStrikes = strikes.filter(s => s.status === 'active').length
     const totalPayouts = payouts.reduce((sum, p) => sum + p.amount, 0)

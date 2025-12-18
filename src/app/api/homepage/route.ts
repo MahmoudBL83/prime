@@ -211,7 +211,7 @@ export async function GET() {
         type: 'course' as const,
         thumbnail: course.thumbnail || categoryThumbnails[course.category] || categoryThumbnails['programming'],
         duration: `${course.duration}h`,
-        rating: Number(course.rating) || 4.5,
+        rating: Number(course.rating) || 0,
         category: course.category,
         categoryAr: course.categoryAr,
         isNew: course.publishedAt && course.publishedAt > thirtyDaysAgo,

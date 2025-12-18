@@ -102,114 +102,12 @@ interface GeographicData {
     percentage: number
 }
 
-const MOCK_LIVE_METRICS: LiveMetrics = {
-    concurrentUsers: 1247,
-    activeSessions: 1589,
-    apiResponseTime: 245,
-    errorRate: 0.8,
-    databaseLatency: 12,
-    cpuUsage: 45,
-    memoryUsage: 62,
-    diskUsage: 38
-}
-
-const MOCK_REVENUE: RevenueMetrics = {
-    todayRevenue: 125000,
-    yesterdayRevenue: 118000,
-    subscriptionsToday: 45,
-    courseSalesToday: 89,
-    conversionRate: 3.2,
-    avgOrderValue: 1250
-}
-
-const MOCK_PLATFORM_KPIS: PlatformKPIs = {
-    mau: 45000,
-    dau: 12500,
-    retentionRate7Day: 68,
-    retentionRate30Day: 42,
-    churnRate: 4.5,
-    nps: 72
-}
-
-const MOCK_CREATOR_KPIS: CreatorKPIs = {
-    activeCreators: 850,
-    coursesPublishedThisWeek: 23,
-    avgCreatorEarnings: 4500,
-    topCreatorRevenue: 45000
-}
-
-const MOCK_LEARNER_KPIS: LearnerKPIs = {
-    courseCompletionsToday: 156,
-    avgEngagementScore: 78,
-    activeLearners: 8500,
-    newSignupsToday: 234
-}
-
-const MOCK_ALERTS: SystemAlert[] = [
-    {
-        id: 'ALR-001',
-        severity: 'warning',
-        title: 'High API Response Time',
-        message: 'API response time increased to 450ms. Normal range: 200-300ms.',
-        timestamp: '2024-10-17T14:30:00Z',
-        status: 'active',
-        affectedService: 'API Gateway'
-    },
-    {
-        id: 'ALR-002',
-        severity: 'info',
-        title: 'Traffic Spike Detected',
-        message: 'Unusual traffic increase (+35%) detected from Cairo region.',
-        timestamp: '2024-10-17T13:15:00Z',
-        status: 'active',
-        affectedService: 'Load Balancer'
-    },
-    {
-        id: 'ALR-003',
-        severity: 'error',
-        title: 'Payment Gateway Timeout',
-        message: '5 payment transactions failed due to gateway timeout.',
-        timestamp: '2024-10-17T12:45:00Z',
-        status: 'resolved',
-        affectedService: 'Payment Service'
-    }
-]
-
-const MOCK_GEOGRAPHIC: GeographicData[] = [
-    { location: 'Cairo', users: 456, percentage: 36.5 },
-    { location: 'Alexandria', users: 298, percentage: 23.9 },
-    { location: 'Giza', users: 187, percentage: 15.0 },
-    { location: 'Shubra El-Kheima', users: 145, percentage: 11.6 },
-    { location: 'Port Said', users: 98, percentage: 7.8 },
-    { location: 'Others', users: 63, percentage: 5.2 }
-]
-
-const MOCK_HOURLY_ACTIVITY = [
-    { hour: '00:00', users: 234, revenue: 12000 },
-    { hour: '01:00', users: 189, revenue: 9500 },
-    { hour: '02:00', users: 156, revenue: 7800 },
-    { hour: '03:00', users: 145, revenue: 7200 },
-    { hour: '04:00', users: 167, revenue: 8400 },
-    { hour: '05:00', users: 198, revenue: 9900 },
-    { hour: '06:00', users: 276, revenue: 13800 },
-    { hour: '07:00', users: 345, revenue: 17250 },
-    { hour: '08:00', users: 456, revenue: 22800 },
-    { hour: '09:00', users: 589, revenue: 29450 },
-    { hour: '10:00', users: 687, revenue: 34350 },
-    { hour: '11:00', users: 745, revenue: 37250 },
-    { hour: '12:00', users: 823, revenue: 41150 },
-    { hour: '13:00', users: 891, revenue: 44550 },
-    { hour: '14:00', users: 934, revenue: 46700 },
-    { hour: '15:00', users: 978, revenue: 48900 },
-    { hour: '16:00', users: 1045, revenue: 52250 },
-    { hour: '17:00', users: 1123, revenue: 56150 },
-    { hour: '18:00', users: 1247, revenue: 62350 },
-    { hour: '19:00', users: 1189, revenue: 59450 },
-    { hour: '20:00', users: 1098, revenue: 54900 },
-    { hour: '21:00', users: 967, revenue: 48350 },
-    { hour: '22:00', users: 745, revenue: 37250 },
-    { hour: '23:00', users: 534, revenue: 26700 }
-]
+// Generate hourly time slots with zero defaults
+const HOURLY_SLOTS = Array.from({ length: 24 }, (_, i) => ({
+    hour: `${i.toString().padStart(2, '0')}:00`,
+    users: 0,
+    revenue: 0
+}))
 
 const alertColors = {
     info: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -234,7 +132,7 @@ export default function ObservabilityDashboard() {
     const [learnerKPIs, setLearnerKPIs] = useState<LearnerKPIs | null>(null)
     const [alerts, setAlerts] = useState<SystemAlert[]>([])
     const [geographic, setGeographic] = useState<GeographicData[]>([])
-    const [hourlyData] = useState(MOCK_HOURLY_ACTIVITY) // Keep hourly for charts
+    const [hourlyData] = useState(HOURLY_SLOTS) // Hourly slots for charts
     const [lastUpdate, setLastUpdate] = useState(new Date())
     const [isRefreshing, setIsRefreshing] = useState(false)
     const [loading, setLoading] = useState(true)
@@ -350,11 +248,44 @@ export default function ObservabilityDashboard() {
     }
 
     // Use default values if data is null
-    const metrics = liveMetrics || MOCK_LIVE_METRICS
-    const rev = revenue || MOCK_REVENUE
-    const platform = platformKPIs || MOCK_PLATFORM_KPIS
-    const creator = creatorKPIs || MOCK_CREATOR_KPIS
-    const learner = learnerKPIs || MOCK_LEARNER_KPIS
+    const metrics = liveMetrics || {
+        concurrentUsers: 0,
+        activeSessions: 0,
+        apiResponseTime: 0,
+        errorRate: 0,
+        databaseLatency: 0,
+        cpuUsage: 0,
+        memoryUsage: 0,
+        diskUsage: 0
+    }
+    const rev = revenue || {
+        todayRevenue: 0,
+        yesterdayRevenue: 0,
+        subscriptionsToday: 0,
+        courseSalesToday: 0,
+        conversionRate: 0,
+        avgOrderValue: 0
+    }
+    const platform = platformKPIs || {
+        mau: 0,
+        dau: 0,
+        retentionRate7Day: 0,
+        retentionRate30Day: 0,
+        churnRate: 0,
+        nps: 0
+    }
+    const creator = creatorKPIs || {
+        activeCreators: 0,
+        coursesPublishedThisWeek: 0,
+        avgCreatorEarnings: 0,
+        topCreatorRevenue: 0
+    }
+    const learner = learnerKPIs || {
+        courseCompletionsToday: 0,
+        avgEngagementScore: 0,
+        activeLearners: 0,
+        newSignupsToday: 0
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-900 to-gray-900 p-6">

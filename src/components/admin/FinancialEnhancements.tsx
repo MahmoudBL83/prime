@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     DollarSign,
     Download,
@@ -16,8 +16,10 @@ import {
     BarChart3,
     Filter,
     Building,
-    CreditCard
+    CreditCard,
+    Loader2
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -59,182 +61,6 @@ interface TaxReport {
     filedDate?: string
 }
 
-const MOCK_AR_ACCOUNTS: ARAccount[] = [
-    {
-        id: '1',
-        customer: 'Ahmed Hassan',
-        customerId: 'USR-1001',
-        invoiceNumber: 'INV-2024-1234',
-        amount: 199,
-        dueDate: '2024-10-20T00:00:00Z',
-        daysOverdue: 0,
-        status: 'current',
-        category: 'subscription'
-    },
-    {
-        id: '2',
-        customer: 'Fatma Mohamed',
-        customerId: 'USR-1002',
-        invoiceNumber: 'INV-2024-1235',
-        amount: 299,
-        dueDate: '2024-09-15T00:00:00Z',
-        daysOverdue: 31,
-        status: 'overdue_30',
-        category: 'course'
-    },
-    {
-        id: '3',
-        customer: 'Dr. Khaled Ibrahim',
-        customerId: 'USR-1003',
-        invoiceNumber: 'INV-2024-1236',
-        amount: 99,
-        dueDate: '2024-08-10T00:00:00Z',
-        daysOverdue: 67,
-        status: 'overdue_60',
-        category: 'channel'
-    },
-    {
-        id: '4',
-        customer: 'Sara Ali',
-        customerId: 'USR-1004',
-        invoiceNumber: 'INV-2024-1237',
-        amount: 1999,
-        dueDate: '2024-07-01T00:00:00Z',
-        daysOverdue: 107,
-        status: 'overdue_90+',
-        category: 'subscription'
-    },
-    {
-        id: '5',
-        customer: 'Omar Mahmoud',
-        customerId: 'USR-1005',
-        invoiceNumber: 'INV-2024-1238',
-        amount: 199,
-        dueDate: '2024-10-25T00:00:00Z',
-        daysOverdue: 0,
-        status: 'current',
-        category: 'subscription'
-    }
-]
-
-const MOCK_LEDGER: LedgerEntry[] = [
-    {
-        id: '1',
-        date: '2024-10-15T10:30:00Z',
-        category: 'Revenue',
-        description: 'All-Access Subscription - Ahmed Hassan',
-        debit: 0,
-        credit: 199,
-        balance: 245466,
-        reference: 'INV-2024-1234',
-        account: '4000 - Subscription Revenue'
-    },
-    {
-        id: '2',
-        date: '2024-10-15T09:15:00Z',
-        category: 'Creator Payout',
-        description: 'Monthly payout - Dr. Khaled Ibrahim',
-        debit: 3450,
-        credit: 0,
-        balance: 245267,
-        reference: 'PAY-2024-567',
-        account: '6100 - Creator Payouts'
-    },
-    {
-        id: '3',
-        date: '2024-10-14T16:20:00Z',
-        category: 'Revenue',
-        description: 'Course Purchase - Data Science Fundamentals',
-        debit: 0,
-        credit: 299,
-        balance: 248717,
-        reference: 'INV-2024-1235',
-        account: '4100 - Course Revenue'
-    },
-    {
-        id: '4',
-        date: '2024-10-14T14:05:00Z',
-        category: 'Platform Fees',
-        description: 'Payment processing fees',
-        debit: 125,
-        credit: 0,
-        balance: 248418,
-        reference: 'FEE-2024-089',
-        account: '7200 - Processing Fees'
-    },
-    {
-        id: '5',
-        date: '2024-10-14T11:30:00Z',
-        category: 'Refund',
-        description: 'Refund - Subscription cancellation',
-        debit: 199,
-        credit: 0,
-        balance: 248543,
-        reference: 'REF-2024-123',
-        account: '4000 - Subscription Revenue'
-    },
-    {
-        id: '6',
-        date: '2024-10-13T15:45:00Z',
-        category: 'Revenue',
-        description: 'Channel Subscription - Premium Creator',
-        debit: 0,
-        credit: 99,
-        balance: 248742,
-        reference: 'INV-2024-1236',
-        account: '4200 - Channel Revenue'
-    }
-]
-
-const MOCK_TAX_REPORTS: TaxReport[] = [
-    {
-        id: '1',
-        period: 'Q3 2024',
-        type: 'vat',
-        grossRevenue: 1245000,
-        taxableIncome: 1245000,
-        taxAmount: 186750,
-        taxRate: 15,
-        status: 'paid',
-        dueDate: '2024-10-31T00:00:00Z',
-        filedDate: '2024-10-25T00:00:00Z'
-    },
-    {
-        id: '2',
-        period: 'Q4 2024',
-        type: 'vat',
-        grossRevenue: 1567000,
-        taxableIncome: 1567000,
-        taxAmount: 235050,
-        taxRate: 15,
-        status: 'draft',
-        dueDate: '2025-01-31T00:00:00Z'
-    },
-    {
-        id: '3',
-        period: 'September 2024',
-        type: 'withholding',
-        grossRevenue: 450000,
-        taxableIncome: 450000,
-        taxAmount: 22500,
-        taxRate: 5,
-        status: 'filed',
-        dueDate: '2024-10-15T00:00:00Z',
-        filedDate: '2024-10-12T00:00:00Z'
-    },
-    {
-        id: '4',
-        period: 'October 2024',
-        type: 'withholding',
-        grossRevenue: 520000,
-        taxableIncome: 520000,
-        taxAmount: 26000,
-        taxRate: 5,
-        status: 'draft',
-        dueDate: '2024-11-15T00:00:00Z'
-    }
-]
-
 const arStatusColors = {
     current: 'bg-green-100 text-green-800 border-green-200',
     overdue_30: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -256,10 +82,31 @@ const categoryColors = {
 
 export default function FinancialEnhancements() {
     const [activeTab, setActiveTab] = useState('ar')
-    const [arAccounts] = useState<ARAccount[]>(MOCK_AR_ACCOUNTS)
-    const [ledgerEntries] = useState<LedgerEntry[]>(MOCK_LEDGER)
-    const [taxReports] = useState<TaxReport[]>(MOCK_TAX_REPORTS)
+    const [arAccounts, setArAccounts] = useState<ARAccount[]>([])
+    const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([])
+    const [taxReports, setTaxReports] = useState<TaxReport[]>([])
+    const [loading, setLoading] = useState(true)
     const [selectedPeriod, setSelectedPeriod] = useState('current_month')
+
+    useEffect(() => {
+        fetchFinancialData()
+    }, [selectedPeriod])
+
+    const fetchFinancialData = async () => {
+        try {
+            setLoading(true)
+            const response = await fetch(`/api/admin/financial/enhancements?period=${selectedPeriod}`)
+            if (!response.ok) throw new Error('Failed to fetch financial data')
+            const data = await response.json()
+            setArAccounts(data.arAccounts || [])
+            setLedgerEntries(data.ledgerEntries || [])
+            setTaxReports(data.taxReports || [])
+        } catch (error) {
+            toast.error('Failed to load financial data')
+        } finally {
+            setLoading(false)
+        }
+    }
 
     const arStats = {
         total: arAccounts.reduce((sum, acc) => sum + acc.amount, 0),
@@ -293,8 +140,19 @@ export default function FinancialEnhancements() {
     }
 
     const handleExportLedger = (format: 'csv' | 'excel' | 'pdf') => {
-        console.log(`Exporting ledger as ${format}`)
+        // TODO: Implement actual export functionality
         // In real implementation, this would trigger download
+    }
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-400 mx-auto mb-4" />
+                    <p className="text-muted-foreground">Loading financial data...</p>
+                </div>
+            </div>
+        )
     }
 
     return (

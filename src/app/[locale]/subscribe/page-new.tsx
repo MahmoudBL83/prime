@@ -20,6 +20,7 @@ import {
     Sparkles
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { PLATFORM_PRICING, getPlanPrice, getBundleSavings, type PlanType } from '@/lib/pricing'
 
 type SubscriptionPlan = 'CATEGORY_A' | 'CATEGORY_B' | 'CATEGORY_C' | 'BUNDLE_AB' | 'BUNDLE_ABC'
 
@@ -107,28 +108,12 @@ export default function SubscribePage() {
         setOpenFAQ(openFAQ === index ? null : index)
     }
 
-    const getPlanPrice = (planType: string) => {
-        const monthlyPrices: Record<string, number> = {
-            'CATEGORY_A': 199,
-            'CATEGORY_B': 149,
-            'CATEGORY_C': 79,
-            'BUNDLE_AB': 299,
-            'BUNDLE_ABC': 399
-        }
-        const basePrice = monthlyPrices[planType] || 199
-        return billingCycle === 'monthly' ? basePrice : Math.round(basePrice * 12 * 0.8)
+    const getPrice = (planType: string) => {
+        return getPlanPrice(planType as PlanType, billingCycle)
     }
 
     const getSavingsAmount = (planType: string) => {
-        if (planType === 'BUNDLE_AB') {
-            const saved = 199 + 149 - 299
-            return billingCycle === 'monthly' ? saved : Math.round(saved * 12)
-        }
-        if (planType === 'BUNDLE_ABC') {
-            const saved = 199 + 149 + 79 - 399
-            return billingCycle === 'monthly' ? saved : Math.round(saved * 12)
-        }
-        return 0
+        return getBundleSavings(planType as PlanType, billingCycle)
     }
 
     const faqItems = [
@@ -239,7 +224,7 @@ export default function SubscribePage() {
                         title={isArabic ? 'المكتبة الشاملة' : 'All-Access Library'}
                         subtitle={isArabic ? 'فئة أ' : 'Category A'}
                         description={isArabic ? `وصول غير محدود لـ ${courseCounts.categoryA}+ دورة` : `Unlimited access to ${courseCounts.categoryA}+ courses`}
-                        price={getPlanPrice('CATEGORY_A')}
+                        price={getPrice('CATEGORY_A')}
                         billingCycle={billingCycle}
                         icon={<BookOpen className="w-10 h-10 text-white" />}
                         gradient="from-purple-500 to-blue-600"
@@ -262,7 +247,7 @@ export default function SubscribePage() {
                         title={isArabic ? 'الدورات المميزة' : 'Signature Courses'}
                         subtitle={isArabic ? 'فئة ب' : 'Category B'}
                         description={isArabic ? `${courseCounts.categoryB} دورة منسقة ومميزة` : `${courseCounts.categoryB} curated premium courses`}
-                        price={getPlanPrice('CATEGORY_B')}
+                        price={getPrice('CATEGORY_B')}
                         billingCycle={billingCycle}
                         icon={<Award className="w-10 h-10 text-white" />}
                         gradient="from-amber-500 to-orange-600"
@@ -284,7 +269,7 @@ export default function SubscribePage() {
                         title={isArabic ? 'قنوات المنشئين' : 'Creator Channels'}
                         subtitle={isArabic ? 'فئة ج' : 'Category C'}
                         description={isArabic ? 'محتوى حصري من منشئين محددين' : 'Exclusive content from specific creators'}
-                        price={getPlanPrice('CATEGORY_C')}
+                        price={getPrice('CATEGORY_C')}
                         billingCycle={billingCycle}
                         icon={<Users className="w-10 h-10 text-white" />}
                         gradient="from-green-500 to-emerald-600"
@@ -313,7 +298,7 @@ export default function SubscribePage() {
                             title={isArabic ? 'باقة المكتبة + المميزة' : 'All-Access + Signature Bundle'}
                             subtitle="A + B"
                             description={isArabic ? 'احصل على كل شيء من الفئتين أ و ب' : 'Get everything from Category A & B'}
-                            price={getPlanPrice('BUNDLE_AB')}
+                            price={getPrice('BUNDLE_AB')}
                             savings={getSavingsAmount('BUNDLE_AB')}
                             billingCycle={billingCycle}
                             gradient="from-purple-600 via-pink-600 to-orange-600"
@@ -335,7 +320,7 @@ export default function SubscribePage() {
                             title={isArabic ? 'الباقة الشاملة الكاملة' : 'Ultimate Everything Bundle'}
                             subtitle="A + B + C"
                             description={isArabic ? 'الوصول الكامل لكل شيء في المنصة!' : 'Complete access to EVERYTHING on the platform!'}
-                            price={getPlanPrice('BUNDLE_ABC')}
+                            price={getPrice('BUNDLE_ABC')}
                             savings={getSavingsAmount('BUNDLE_ABC')}
                             billingCycle={billingCycle}
                             gradient="from-indigo-600 via-purple-600 to-pink-600"

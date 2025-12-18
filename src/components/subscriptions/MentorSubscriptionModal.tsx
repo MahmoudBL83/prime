@@ -33,7 +33,7 @@ export default function MentorSubscriptionModal({
   const [loading, setLoading] = useState(false);
   const isArabic = locale === 'ar';
   const isSubscribed = !!currentSubscription;
-  const price = mentor.monthlyPrice || 29; // Default €29
+  const price = mentor.monthlyPrice || 0; // No fake fallbacks - use real price from DB
 
   const benefits = isArabic
     ? [

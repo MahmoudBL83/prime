@@ -24,10 +24,10 @@ export default function ProfileSettings({ creatorData, onUpdate }: ProfileSettin
     location: '',
     website: '',
     
-    // Subscription Pricing
-    basicPrice: creatorData?.basicMonthlyPrice || 9.99,
-    premiumPrice: creatorData?.premiumMonthlyPrice || 19.99,
-    vipPrice: creatorData?.vipMonthlyPrice || 49.99,
+    // Subscription Pricing - no fake fallbacks, use real data
+    basicPrice: creatorData?.basicMonthlyPrice || 0,
+    premiumPrice: creatorData?.premiumMonthlyPrice || 0,
+    vipPrice: creatorData?.vipMonthlyPrice || 0,
     
     // Content Settings
     allowComments: true,

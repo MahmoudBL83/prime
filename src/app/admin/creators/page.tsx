@@ -21,9 +21,12 @@ import {
     Clock,
     AlertTriangle,
     FileText,
-    Loader2
+    Loader2,
+    X,
+    Copy
 } from 'lucide-react'
 import CreatorDetailsModal from '@/components/admin/CreatorDetailsModal'
+import toast from 'react-hot-toast'
 
 interface Creator {
     id: string
@@ -105,6 +108,21 @@ export default function CreatorsPage() {
     const [stats, setStats] = useState<CreatorStatistics | null>(null)
     const [refreshKey, setRefreshKey] = useState(0)
 
+    // Create new creator modal states
+    const [showCreateModal, setShowCreateModal] = useState(false)
+    const [creating, setCreating] = useState(false)
+    const [newCreatorForm, setNewCreatorForm] = useState({
+        name: '',
+        email: '',
+        password: '',
+        phone: '',
+        arabicName: '',
+        expertise: '',
+        teachingGoals: '',
+        kycStatus: 'NOT_STARTED',
+        contractSigned: false
+    })
+    const [createdCredentials, setCreatedCredentials] = useState<{ name: string; email: string; password: string } | null>(null)
     // Modal states
     const [selectedCreatorId, setSelectedCreatorId] = useState<string | null>(null)
     const [showDetailsModal, setShowDetailsModal] = useState(false)
@@ -241,6 +259,64 @@ export default function CreatorsPage() {
         triggerRefresh()
     }
 
+    const generatePassword = () => {
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*'
+        let password = ''
+        for (let i = 0; i < 12; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length))
+        }
+        return password
+    }
+
+    const handleCreateCreator = async () => {
+        if (!newCreatorForm.name || !newCreatorForm.email) {
+            toast.error('Name and email are required')
+            return
+        }
+
+        const password = newCreatorForm.password || generatePassword()
+        
+        setCreating(true)
+        try {
+            const response = await fetch('/api/admin/creators', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...newCreatorForm,
+                    password
+                })
+            })
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.error || 'Failed to create creator')
+            }
+
+            setCreatedCredentials({ name: newCreatorForm.name, email: newCreatorForm.email, password })
+            toast.success('Creator account created successfully!')
+            triggerRefresh()
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Failed to create creator')
+        } finally {
+            setCreating(false)
+        }
+    }
+
+    const resetCreateForm = () => {
+        setNewCreatorForm({
+            name: '',
+            email: '',
+            password: '',
+            phone: '',
+            arabicName: '',
+            expertise: '',
+            teachingGoals: '',
+            kycStatus: 'NOT_STARTED',
+            contractSigned: false
+        })
+        setCreatedCredentials(null)
+    }
+
     const handleExport = async () => {
         try {
             setExporting(true)
@@ -313,6 +389,16 @@ export default function CreatorsPage() {
                     <p className="text-gray-400 mt-1">Manage creator applications, KYC verification, and performance</p>
                 </div>
                 <div className="flex gap-2">
+                    <button 
+                        onClick={() => {
+                            resetCreateForm()
+                            setShowCreateModal(true)
+                        }}
+                        className="flex items-center gap-2 bg-green-600 text-white rounded-lg px-4 py-2 hover:bg-green-700 transition-colors"
+                    >
+                        <UserPlus className="w-4 h-4" />
+                        Add Creator
+                    </button>
                     <button 
                         onClick={handleExport}
                         disabled={exporting}
@@ -588,6 +674,264 @@ export default function CreatorsPage() {
                     }}
                     onCreatorUpdated={handleCreatorUpdated}
                 />
+            )}
+
+            {/* Create Creator Modal */}
+            {showCreateModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-[#1a1a2e] rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between p-6 border-b border-white/10">
+                            <h2 className="text-xl font-bold text-white">
+                                {createdCredentials ? 'Creator Created Successfully' : 'Add New Creator'}
+                            </h2>
+                            <button
+                                onClick={resetCreateForm}
+                                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                            >
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            {createdCredentials ? (
+                                // Show credentials after creation
+                                <div className="space-y-6">
+                                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                                        <p className="text-green-400 font-medium mb-2">
+                                            Creator account has been created successfully!
+                                        </p>
+                                        <p className="text-gray-400 text-sm">
+                                            Please save these credentials and share them with the creator.
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm text-gray-400 mb-1">Name</label>
+                                            <p className="text-white font-medium">{createdCredentials.name}</p>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm text-gray-400 mb-1">Email</label>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-white font-medium flex-1 bg-[#0a0a14] px-3 py-2 rounded-lg">
+                                                    {createdCredentials.email}
+                                                </p>
+                                                <button
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(createdCredentials.email)
+                                                        toast.success('Email copied!')
+                                                    }}
+                                                    className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                                                    title="Copy email"
+                                                >
+                                                    <Copy className="w-4 h-4 text-gray-400" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm text-gray-400 mb-1">Password</label>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-white font-medium flex-1 bg-[#0a0a14] px-3 py-2 rounded-lg font-mono">
+                                                    {createdCredentials.password}
+                                                </p>
+                                                <button
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(createdCredentials.password)
+                                                        toast.success('Password copied!')
+                                                    }}
+                                                    className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                                                    title="Copy password"
+                                                >
+                                                    <Copy className="w-4 h-4 text-gray-400" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-2 pt-4">
+                                            <button
+                                                onClick={() => {
+                                                    const text = `Email: ${createdCredentials.email}\nPassword: ${createdCredentials.password}`
+                                                    navigator.clipboard.writeText(text)
+                                                    toast.success('Credentials copied!')
+                                                }}
+                                                className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                                            >
+                                                Copy All Credentials
+                                            </button>
+                                            <button
+                                                onClick={resetCreateForm}
+                                                className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
+                                            >
+                                                Close
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                // Show form
+                                <form onSubmit={handleCreateCreator} className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm text-gray-400 mb-1">
+                                                Name <span className="text-red-400">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={newCreatorForm.name}
+                                                onChange={(e) => setNewCreatorForm(prev => ({ ...prev, name: e.target.value }))}
+                                                className="w-full px-3 py-2 bg-[#0a0a14] border border-white/10 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                                                required
+                                                placeholder="John Doe"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm text-gray-400 mb-1">
+                                                Arabic Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={newCreatorForm.arabicName}
+                                                onChange={(e) => setNewCreatorForm(prev => ({ ...prev, arabicName: e.target.value }))}
+                                                className="w-full px-3 py-2 bg-[#0a0a14] border border-white/10 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                                                placeholder="الاسم بالعربية"
+                                                dir="rtl"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-1">
+                                            Email <span className="text-red-400">*</span>
+                                        </label>
+                                        <input
+                                            type="email"
+                                            value={newCreatorForm.email}
+                                            onChange={(e) => setNewCreatorForm(prev => ({ ...prev, email: e.target.value }))}
+                                            className="w-full px-3 py-2 bg-[#0a0a14] border border-white/10 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                                            required
+                                            placeholder="creator@example.com"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-1">
+                                            Password <span className="text-red-400">*</span>
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={newCreatorForm.password}
+                                                onChange={(e) => setNewCreatorForm(prev => ({ ...prev, password: e.target.value }))}
+                                                className="flex-1 px-3 py-2 bg-[#0a0a14] border border-white/10 rounded-lg text-white font-mono focus:border-purple-500 focus:outline-none"
+                                                required
+                                                minLength={8}
+                                                placeholder="Min 8 characters"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setNewCreatorForm(prev => ({ ...prev, password: generatePassword() }))}
+                                                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors whitespace-nowrap"
+                                            >
+                                                Generate
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-1">Phone</label>
+                                        <input
+                                            type="tel"
+                                            value={newCreatorForm.phone}
+                                            onChange={(e) => setNewCreatorForm(prev => ({ ...prev, phone: e.target.value }))}
+                                            className="w-full px-3 py-2 bg-[#0a0a14] border border-white/10 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                                            placeholder="+1234567890"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-1">Expertise</label>
+                                        <input
+                                            type="text"
+                                            value={newCreatorForm.expertise}
+                                            onChange={(e) => setNewCreatorForm(prev => ({ ...prev, expertise: e.target.value }))}
+                                            className="w-full px-3 py-2 bg-[#0a0a14] border border-white/10 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                                            placeholder="e.g., Web Development, Data Science"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-1">Teaching Goals</label>
+                                        <textarea
+                                            value={newCreatorForm.teachingGoals}
+                                            onChange={(e) => setNewCreatorForm(prev => ({ ...prev, teachingGoals: e.target.value }))}
+                                            className="w-full px-3 py-2 bg-[#0a0a14] border border-white/10 rounded-lg text-white focus:border-purple-500 focus:outline-none resize-none"
+                                            rows={3}
+                                            placeholder="What does this creator aim to teach?"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm text-gray-400 mb-1">KYC Status</label>
+                                            <select
+                                                value={newCreatorForm.kycStatus}
+                                                onChange={(e) => setNewCreatorForm(prev => ({ ...prev, kycStatus: e.target.value }))}
+                                                className="w-full px-3 py-2 bg-[#0a0a14] border border-white/10 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                                            >
+                                                <option value="pending">Pending</option>
+                                                <option value="verified">Verified</option>
+                                                <option value="rejected">Rejected</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="flex items-center">
+                                            <label className="flex items-center gap-2 cursor-pointer mt-6">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={newCreatorForm.contractSigned}
+                                                    onChange={(e) => setNewCreatorForm(prev => ({ ...prev, contractSigned: e.target.checked }))}
+                                                    className="w-4 h-4 rounded border-white/10 bg-[#0a0a14] text-purple-600 focus:ring-purple-500"
+                                                />
+                                                <span className="text-white">Contract Signed</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-3 pt-4">
+                                        <button
+                                            type="submit"
+                                            disabled={creating}
+                                            className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-600/50 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            {creating ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                    Creating...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <UserPlus className="w-4 h-4" />
+                                                    Create Creator
+                                                </>
+                                            )}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={resetCreateForm}
+                                            disabled={creating}
+                                            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     )

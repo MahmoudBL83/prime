@@ -115,12 +115,11 @@ export default function MessagingPage() {
             if (response.ok) {
                 const data = await response.json();
                 setConversations(data);
-                // Calculate unread counts
+                // Calculate unread counts from conversation data
                 const unreadCounts: {[key: string]: number} = {};
                 data.forEach((conv: Conversation) => {
-                    // For demo purposes, set some random unread counts
-                    // In a real app, this would come from the API
-                    unreadCounts[conv.id] = Math.floor(Math.random() * 5);
+                    // Use actual unread count from API or 0
+                    unreadCounts[conv.id] = conv.unreadCount || 0;
                 });
                 setUnreadMessages(unreadCounts);
             }

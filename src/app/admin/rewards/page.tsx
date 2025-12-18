@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
     Trophy,
@@ -21,112 +21,82 @@ import {
     Medal,
     Star,
     Shield,
-    Download
+    Download,
+    Loader2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/utils'
+import { toast } from 'react-hot-toast'
 
 type RewardStatus = 'active' | 'upcoming' | 'completed' | 'cancelled'
-type RewardType = 'course' | 'exam' | 'project' | 'platform'
+type RewardType = 'SCHOLARSHIP' | 'COMPLETION_BONUS' | 'REFERRAL_BONUS' | 'ACHIEVEMENT' | 'OTHER' | 'course' | 'exam' | 'project' | 'platform'
 
 interface Reward {
     id: string
-    name: string
+    title: string
+    description: string
     type: RewardType
-    status: RewardStatus
-    prizePool: number
-    participants: number
-    winners: number
-    startDate: string
-    endDate: string
-    eligibility: string[]
-    createdBy: 'platform' | 'creator'
+    value: number | null
+    currency: string
+    maxWinners: number | null
+    startDate: string | null
+    endDate: string | null
+    isActive: boolean
+    currentWinners: number
+    courseId: string | null
+    courseTitle: string | null
 }
 
 export default function RewardsManagementPage() {
     const [activeTab, setActiveTab] = useState<'all' | 'active' | 'upcoming' | 'completed'>('all')
     const [showCreateModal, setShowCreateModal] = useState(false)
+    const [rewards, setRewards] = useState<Reward[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
 
-    const rewards: Reward[] = [
-        {
-            id: '1',
-            name: 'Math Excellence Award 2024',
-            type: 'exam',
-            status: 'active',
-            prizePool: 5000,
-            participants: 1234,
-            winners: 10,
-            startDate: '2024-10-01',
-            endDate: '2024-12-31',
-            eligibility: ['Enrolled in Math courses', 'Completed at least 3 quizzes', 'Age 16+'],
-            createdBy: 'platform'
-        },
-        {
-            id: '2',
-            name: 'Web Development Project Challenge',
-            type: 'project',
-            status: 'active',
-            prizePool: 3000,
-            participants: 567,
-            winners: 5,
-            startDate: '2024-09-15',
-            endDate: '2024-11-30',
-            eligibility: ['Submitted project', 'Passed peer review', 'Original work'],
-            createdBy: 'creator'
-        },
-        {
-            id: '3',
-            name: 'Complete 100 Hours Learning',
-            type: 'platform',
-            status: 'active',
-            prizePool: 10000,
-            participants: 3456,
-            winners: 50,
-            startDate: '2024-10-01',
-            endDate: '2024-12-31',
-            eligibility: ['100+ learning hours', 'Active account', 'Verified email'],
-            createdBy: 'platform'
-        },
-        {
-            id: '4',
-            name: 'Python Mastery Scholarship',
-            type: 'course',
-            status: 'upcoming',
-            prizePool: 2500,
-            participants: 0,
-            winners: 15,
-            startDate: '2024-11-01',
-            endDate: '2025-01-31',
-            eligibility: ['Complete Python course', '90%+ quiz scores', 'Final project'],
-            createdBy: 'platform'
-        },
-        {
-            id: '5',
-            name: 'Summer Learning Champions',
-            type: 'platform',
-            status: 'completed',
-            prizePool: 8000,
-            participants: 2345,
-            winners: 25,
-            startDate: '2024-06-01',
-            endDate: '2024-08-31',
-            eligibility: ['50+ learning hours', 'Active during summer', 'Course completion'],
-            createdBy: 'platform'
+    useEffect(() => {
+        fetchRewards()
+    }, [])
+
+    const fetchRewards = async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            const response = await fetch('/api/admin/rewards')
+            if (!response.ok) {
+                throw new Error('Failed to fetch rewards')
+            }
+            const data = await response.json()
+            setRewards(data.rewards || [])
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to fetch rewards')
+            toast.error('Failed to load rewards')
+        } finally {
+            setLoading(false)
         }
-    ]
+    }
+
+    // Derive status from dates
+    const getRewardStatus = (reward: Reward): RewardStatus => {
+        if (!reward.isActive) return 'completed'
+        const now = new Date()
+        if (reward.startDate && new Date(reward.startDate) > now) return 'upcoming'
+        if (reward.endDate && new Date(reward.endDate) < now) return 'completed'
+        return 'active'
+    }
 
     const stats = {
         totalRewards: rewards.length,
-        activeRewards: rewards.filter(r => r.status === 'active').length,
-        totalPrizePool: rewards.reduce((sum, r) => sum + r.prizePool, 0),
-        totalParticipants: rewards.reduce((sum, r) => sum + r.participants, 0),
-        totalWinners: rewards.filter(r => r.status === 'completed').reduce((sum, r) => sum + r.winners, 0)
+        activeRewards: rewards.filter(r => getRewardStatus(r) === 'active').length,
+        totalPrizePool: rewards.reduce((sum, r) => sum + (r.value || 0), 0),
+        totalParticipants: 0, // Not tracked in current schema
+        totalWinners: rewards.reduce((sum, r) => sum + r.currentWinners, 0)
     }
 
     const filteredRewards = activeTab === 'all' 
         ? rewards 
-        : rewards.filter(r => r.status === activeTab)
+        : rewards.filter(r => getRewardStatus(r) === activeTab)
 
     const getStatusColor = (status: RewardStatus) => {
         switch (status) {
@@ -139,11 +109,45 @@ export default function RewardsManagementPage() {
 
     const getTypeIcon = (type: RewardType) => {
         switch (type) {
-            case 'course': return Award
-            case 'exam': return Target
-            case 'project': return Trophy
-            case 'platform': return Medal
+            case 'course': 
+            case 'COMPLETION_BONUS':
+                return Award
+            case 'exam':
+            case 'ACHIEVEMENT':
+                return Target
+            case 'project': 
+            case 'SCHOLARSHIP':
+                return Trophy
+            case 'platform':
+            case 'REFERRAL_BONUS':
+                return Medal
+            default:
+                return Gift
         }
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="flex items-center gap-3 text-muted-foreground">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span>Loading rewards...</span>
+                </div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                    <h2 className="text-xl font-bold text-foreground mb-2">Failed to load rewards</h2>
+                    <p className="text-muted-foreground mb-4">{error}</p>
+                    <Button onClick={fetchRewards}>Try Again</Button>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -290,9 +294,32 @@ export default function RewardsManagementPage() {
 
             {/* Rewards List */}
             <div className="space-y-4">
-                {filteredRewards.map((reward, index) => {
-                    const TypeIcon = getTypeIcon(reward.type)
-                    return (
+                {filteredRewards.length === 0 ? (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                        className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-12 text-center"
+                    >
+                        <Trophy className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-xl font-bold text-foreground mb-2">No Rewards Found</h3>
+                        <p className="text-muted-foreground mb-6">
+                            {activeTab === 'all' 
+                                ? 'Start by creating your first reward or scholarship.'
+                                : `No ${activeTab} rewards at the moment.`}
+                        </p>
+                        <Button 
+                            onClick={() => setShowCreateModal(true)}
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create Reward
+                        </Button>
+                    </motion.div>
+                ) : (
+                    filteredRewards.map((reward, index) => {
+                        const TypeIcon = getTypeIcon(reward.type)
+                        return (
                         <motion.div
                             key={reward.id}
                             initial={{ opacity: 0, y: 20 }}
@@ -303,63 +330,57 @@ export default function RewardsManagementPage() {
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-start gap-4 flex-1">
                                     <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${
-                                        reward.status === 'active' ? 'bg-gradient-to-br from-green-600 to-emerald-600' :
-                                        reward.status === 'upcoming' ? 'bg-gradient-to-br from-blue-600 to-cyan-600' :
-                                        reward.status === 'completed' ? 'bg-gradient-to-br from-gray-600 to-gray-700' :
+                                        getRewardStatus(reward) === 'active' ? 'bg-gradient-to-br from-green-600 to-emerald-600' :
+                                        getRewardStatus(reward) === 'upcoming' ? 'bg-gradient-to-br from-blue-600 to-cyan-600' :
+                                        getRewardStatus(reward) === 'completed' ? 'bg-gradient-to-br from-gray-600 to-gray-700' :
                                         'bg-gradient-to-br from-red-600 to-pink-600'
                                     }`}>
                                         <TypeIcon className="w-8 h-8 text-foreground" />
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3 mb-2">
-                                            <h3 className="text-lg font-bold text-foreground">{reward.name}</h3>
-                                            <Badge className={getStatusColor(reward.status) + ' capitalize'}>
-                                                {reward.status}
+                                            <h3 className="text-lg font-bold text-foreground">{reward.title}</h3>
+                                            <Badge className={getStatusColor(getRewardStatus(reward)) + ' capitalize'}>
+                                                {getRewardStatus(reward)}
                                             </Badge>
-                                            <Badge className={`${
-                                                reward.createdBy === 'platform' 
-                                                    ? 'bg-purple-600/20 text-purple-400 border-purple-600/30'
-                                                    : 'bg-orange-600/20 text-orange-400 border-orange-600/30'
-                                            } capitalize`}>
-                                                {reward.createdBy}
-                                            </Badge>
+                                            {reward.courseTitle && (
+                                                <Badge className="bg-purple-600/20 text-purple-400 border-purple-600/30">
+                                                    {reward.courseTitle}
+                                                </Badge>
+                                            )}
                                         </div>
+                                        <p className="text-sm text-muted-foreground mb-3">{reward.description}</p>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                                             <div>
-                                                <p className="text-xs text-muted-foreground mb-1">Prize Pool</p>
+                                                <p className="text-xs text-muted-foreground mb-1">Prize Value</p>
                                                 <p className="text-sm font-semibold text-green-400">
-                                                    {formatPrice(reward.prizePool)}
+                                                    {reward.value ? formatPrice(reward.value) : 'N/A'}
                                                 </p>
                                             </div>
                                             <div>
-                                                <p className="text-xs text-muted-foreground mb-1">Participants</p>
+                                                <p className="text-xs text-muted-foreground mb-1">Max Winners</p>
                                                 <p className="text-sm font-semibold text-blue-400">
-                                                    {reward.participants.toLocaleString()}
+                                                    {reward.maxWinners?.toLocaleString() || 'Unlimited'}
                                                 </p>
                                             </div>
                                             <div>
-                                                <p className="text-xs text-muted-foreground mb-1">Winners</p>
+                                                <p className="text-xs text-muted-foreground mb-1">Current Winners</p>
                                                 <p className="text-sm font-semibold text-yellow-400">
-                                                    {reward.winners}
+                                                    {reward.currentWinners}
                                                 </p>
                                             </div>
                                             <div>
                                                 <p className="text-xs text-muted-foreground mb-1">Duration</p>
                                                 <p className="text-sm font-semibold text-foreground">
-                                                    {new Date(reward.startDate).toLocaleDateString()} - {new Date(reward.endDate).toLocaleDateString()}
+                                                    {reward.startDate ? new Date(reward.startDate).toLocaleDateString() : 'N/A'} - {reward.endDate ? new Date(reward.endDate).toLocaleDateString() : 'Ongoing'}
                                                 </p>
                                             </div>
                                         </div>
                                         <div>
-                                            <p className="text-xs text-muted-foreground mb-2">Eligibility Requirements:</p>
-                                            <div className="flex flex-wrap gap-2">
-                                                {reward.eligibility.map((req, i) => (
-                                                    <Badge key={i} className="bg-white/5 text-muted-foreground border-border text-xs">
-                                                        <CheckCircle className="w-3 h-3 mr-1" />
-                                                        {req}
-                                                    </Badge>
-                                                ))}
-                                            </div>
+                                            <p className="text-xs text-muted-foreground mb-2">Type:</p>
+                                            <Badge className="bg-white/5 text-muted-foreground border-border text-xs capitalize">
+                                                {reward.type.toLowerCase().replace('_', ' ')}
+                                            </Badge>
                                         </div>
                                     </div>
                                 </div>
@@ -373,8 +394,9 @@ export default function RewardsManagementPage() {
                                 </div>
                             </div>
                         </motion.div>
-                    )
-                })}
+                        )
+                    })
+                )}
             </div>
 
             {/* Fraud Detection Alert */}

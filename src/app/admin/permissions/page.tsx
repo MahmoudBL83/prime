@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { toast } from 'react-hot-toast'
 import {
     Dialog,
     DialogContent,
@@ -147,11 +148,12 @@ export default function AdminPermissionsPage() {
             
             if (result.success) {
                 await fetchData()
+                toast.success('Default roles seeded successfully')
             } else {
                 throw new Error(result.error)
             }
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to seed roles')
+            toast.error(err instanceof Error ? err.message : 'Failed to seed roles')
         } finally {
             setSaving(false)
         }
@@ -159,7 +161,7 @@ export default function AdminPermissionsPage() {
 
     const handleCreateRole = async () => {
         if (!newRoleName.trim()) {
-            alert('Please enter a role name')
+            toast.error('Please enter a role name')
             return
         }
 
@@ -188,8 +190,9 @@ export default function AdminPermissionsPage() {
             setNewRoleType('CUSTOM')
             setNewRolePermissions([])
             await fetchData()
+            toast.success('Role created successfully')
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to create role')
+            toast.error(err instanceof Error ? err.message : 'Failed to create role')
         } finally {
             setSaving(false)
         }
@@ -218,8 +221,9 @@ export default function AdminPermissionsPage() {
             await fetchData()
             // Update selected role with new permissions
             setSelectedRole(prev => prev ? { ...prev, permissions: editedPermissions } : null)
+            toast.success('Permissions updated successfully')
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to update role')
+            toast.error(err instanceof Error ? err.message : 'Failed to update role')
         } finally {
             setSaving(false)
         }
@@ -240,14 +244,15 @@ export default function AdminPermissionsPage() {
             }
 
             await fetchData()
+            toast.success('Role deleted successfully')
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to delete role')
+            toast.error(err instanceof Error ? err.message : 'Failed to delete role')
         }
     }
 
     const handleAssignUser = async () => {
         if (!selectedRole || !assignEmail.trim()) {
-            alert('Please enter a user email')
+            toast.error('Please enter a user email')
             return
         }
 
@@ -285,8 +290,9 @@ export default function AdminPermissionsPage() {
             setShowAssignModal(false)
             setAssignEmail('')
             await fetchData()
+            toast.success('User assigned successfully')
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to assign user')
+            toast.error(err instanceof Error ? err.message : 'Failed to assign user')
         } finally {
             setSaving(false)
         }
@@ -312,8 +318,9 @@ export default function AdminPermissionsPage() {
             }
 
             await fetchData()
+            toast.success('User removed from role')
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to unassign user')
+            toast.error(err instanceof Error ? err.message : 'Failed to unassign user')
         }
     }
 

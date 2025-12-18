@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     Shield,
     Search,
@@ -20,8 +20,10 @@ import {
     Clock,
     Users,
     Lock,
-    Unlock
+    Unlock,
+    Loader2
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -71,146 +73,6 @@ interface AgeControl {
     enforcementLevel: 'soft' | 'hard' | 'verified_only'
 }
 
-const MOCK_KEYWORDS: KeywordRule[] = [
-    {
-        id: '1',
-        keyword: 'spam',
-        action: 'auto_moderate',
-        category: 'spam',
-        severity: 'medium',
-        caseSensitive: false,
-        wholeWordOnly: true,
-        enabled: true,
-        matchCount: 156,
-        lastMatched: '2024-10-15T14:30:00Z',
-        createdAt: '2024-01-01T00:00:00Z'
-    },
-    {
-        id: '2',
-        keyword: 'harassment',
-        action: 'flag',
-        category: 'harassment',
-        severity: 'high',
-        caseSensitive: false,
-        wholeWordOnly: false,
-        enabled: true,
-        matchCount: 43,
-        lastMatched: '2024-10-15T11:20:00Z',
-        createdAt: '2024-01-01T00:00:00Z'
-    },
-    {
-        id: '3',
-        keyword: 'inappropriate content',
-        action: 'block',
-        category: 'adult',
-        severity: 'critical',
-        caseSensitive: false,
-        wholeWordOnly: false,
-        enabled: true,
-        matchCount: 89,
-        lastMatched: '2024-10-15T09:45:00Z',
-        createdAt: '2024-01-01T00:00:00Z'
-    },
-    {
-        id: '4',
-        keyword: 'violence',
-        action: 'flag',
-        category: 'violence',
-        severity: 'high',
-        caseSensitive: false,
-        wholeWordOnly: true,
-        enabled: true,
-        matchCount: 27,
-        lastMatched: '2024-10-14T16:10:00Z',
-        createdAt: '2024-01-01T00:00:00Z'
-    }
-]
-
-const MOCK_FILTERS: MessageFilter[] = [
-    {
-        id: '1',
-        name: 'Excessive Links Filter',
-        description: 'Blocks messages with more than 3 links',
-        enabled: true,
-        filterType: 'link',
-        action: 'block',
-        threshold: 3,
-        matchCount: 234
-    },
-    {
-        id: '2',
-        name: 'Spam Detection',
-        description: 'AI-powered spam message detection',
-        enabled: true,
-        filterType: 'spam',
-        action: 'flag_for_review',
-        matchCount: 567
-    },
-    {
-        id: '3',
-        name: 'Repeated Messages',
-        description: 'Prevents sending the same message multiple times',
-        enabled: true,
-        filterType: 'repeated',
-        action: 'warn',
-        threshold: 2,
-        matchCount: 189
-    },
-    {
-        id: '4',
-        name: 'Profanity Filter',
-        description: 'Blocks common profanity and offensive language',
-        enabled: true,
-        filterType: 'keyword',
-        action: 'block',
-        matchCount: 1234
-    }
-]
-
-const MOCK_AGE_CONTROLS: AgeControl[] = [
-    {
-        id: '1',
-        feature: 'Study Buddy Matching',
-        minAge: 16,
-        maxAge: 25,
-        enabled: true,
-        description: 'Restricts study buddy matching to users within age range',
-        enforcementLevel: 'hard'
-    },
-    {
-        id: '2',
-        feature: 'Private Messaging',
-        minAge: 18,
-        enabled: true,
-        description: 'Requires users to be 18+ to send private messages',
-        enforcementLevel: 'verified_only'
-    },
-    {
-        id: '3',
-        feature: 'Group Discussions',
-        minAge: 13,
-        enabled: true,
-        description: 'Minimum age requirement for participating in group discussions',
-        enforcementLevel: 'soft'
-    },
-    {
-        id: '4',
-        feature: 'Creator Applications',
-        minAge: 18,
-        enabled: true,
-        description: 'Must be 18+ to apply as a content creator',
-        enforcementLevel: 'verified_only'
-    },
-    {
-        id: '5',
-        feature: 'Course Reviews',
-        minAge: 13,
-        enabled: true,
-        description: 'Minimum age to post course reviews',
-        enforcementLevel: 'soft'
-    }
-]
-
 const actionColors = {
     flag: 'bg-yellow-100 text-yellow-800 border-yellow-200',
     auto_moderate: 'bg-orange-100 text-orange-800 border-orange-200',
@@ -244,11 +106,46 @@ const enforcementColors = {
 
 export default function SafetyEnhancementsPage() {
     const [activeTab, setActiveTab] = useState('keywords')
-    const [keywords, setKeywords] = useState<KeywordRule[]>(MOCK_KEYWORDS)
-    const [filters, setFilters] = useState<MessageFilter[]>(MOCK_FILTERS)
-    const [ageControls, setAgeControls] = useState<AgeControl[]>(MOCK_AGE_CONTROLS)
+    const [keywords, setKeywords] = useState<KeywordRule[]>([])
+    const [filters, setFilters] = useState<MessageFilter[]>([])
+    const [ageControls, setAgeControls] = useState<AgeControl[]>([])
+    const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
     const [showAddModal, setShowAddModal] = useState(false)
+
+    useEffect(() => {
+        fetchSafetySettings()
+    }, [])
+
+    const fetchSafetySettings = async () => {
+        try {
+            setLoading(true)
+            const response = await fetch('/api/admin/safety')
+            if (!response.ok) throw new Error('Failed to fetch safety settings')
+            const data = await response.json()
+            setKeywords(data.keywords || [])
+            setFilters(data.filters || [])
+            setAgeControls(data.ageControls || [])
+        } catch (error) {
+            toast.error('Failed to load safety settings')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const saveSettings = async (type: 'keywords' | 'filters' | 'age-controls', data: any) => {
+        try {
+            const response = await fetch('/api/admin/safety', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type, data })
+            })
+            if (!response.ok) throw new Error('Failed to save settings')
+            toast.success('Settings saved')
+        } catch (error) {
+            toast.error('Failed to save settings')
+        }
+    }
 
     const stats = {
         totalKeywords: keywords.length,
@@ -262,22 +159,28 @@ export default function SafetyEnhancementsPage() {
         k.keyword.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-    const toggleKeyword = (id: string) => {
-        setKeywords(keywords.map(k =>
+    const toggleKeyword = async (id: string) => {
+        const updated = keywords.map(k =>
             k.id === id ? { ...k, enabled: !k.enabled } : k
-        ))
+        )
+        setKeywords(updated)
+        await saveSettings('keywords', updated)
     }
 
-    const toggleFilter = (id: string) => {
-        setFilters(filters.map(f =>
+    const toggleFilter = async (id: string) => {
+        const updated = filters.map(f =>
             f.id === id ? { ...f, enabled: !f.enabled } : f
-        ))
+        )
+        setFilters(updated)
+        await saveSettings('filters', updated)
     }
 
-    const toggleAgeControl = (id: string) => {
-        setAgeControls(ageControls.map(c =>
+    const toggleAgeControl = async (id: string) => {
+        const updated = ageControls.map(c =>
             c.id === id ? { ...c, enabled: !c.enabled } : c
-        ))
+        )
+        setAgeControls(updated)
+        await saveSettings('age-controls', updated)
     }
 
     const formatDate = (dateString: string) => {
@@ -287,6 +190,17 @@ export default function SafetyEnhancementsPage() {
             hour: '2-digit',
             minute: '2-digit'
         })
+    }
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-purple-400 mx-auto mb-4" />
+                    <p className="text-muted-foreground">Loading safety settings...</p>
+                </div>
+            </div>
+        )
     }
 
     return (

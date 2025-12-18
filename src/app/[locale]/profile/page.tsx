@@ -4,12 +4,10 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams } from 'next/navigation';
-import { useTheme } from 'next-themes';
 import { 
   User, 
   Mail, 
   Phone, 
-  Calendar, 
   Edit3, 
   Save, 
   X, 
@@ -31,26 +29,15 @@ import {
   Globe,
   MessageCircle,
   Video,
-  Headphones,
   Download,
-  Share2,
   DollarSign,
   Eye,
   EyeOff,
   Lock,
-  Unlock,
   FileText,
-  Sun,
-  Moon,
   Upload,
-  Grid,
-  List,
-  Image as ImageIcon,
-  Film,
-  Heart,
-  Trash2,
-  Edit,
-  Play,
+  Headphones,
+  Share2,
   Sparkles
 } from 'lucide-react';
 
@@ -86,9 +73,9 @@ export default function ProfilePage() {
   const params = useParams();
   const locale = params.locale as string;
   
-  // Theme
-  const { theme, setTheme } = useTheme();
+  // Always use dark mode
   const [mounted, setMounted] = useState(false);
+  const isDark = true;
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -130,6 +117,8 @@ export default function ProfilePage() {
     studyBuddyEnabled: true
   });
 
+  const [meetingAvailability, setMeetingAvailability] = useState(true);
+
   const [notificationModal, setNotificationModal] = useState(false);
   const [notificationSettings, setNotificationSettings] = useState({
     emailNotifications: true,
@@ -153,12 +142,6 @@ export default function ProfilePage() {
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const isDark = mounted ? theme === 'dark' : true;
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
 
   const tabs = [
     { id: 'overview', label: isRTL ? 'نظرة عامة' : 'Overview', icon: User },
@@ -300,13 +283,13 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-gradient-to-br from-gray-900 via-purple-900/30 to-violet-900/30' : 'bg-gradient-to-br from-gray-50 via-purple-50 to-violet-50'}`}>
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-[#1f1f1f]' : 'bg-gradient-to-br from-gray-50 to-blue-50'}`}>
         <div className="text-center">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             className={`w-16 h-16 border-4 rounded-full mx-auto mb-4 ${
-              isDark ? 'border-purple-400/30 border-t-purple-400' : 'border-purple-600/30 border-t-purple-600'
+              isDark ? 'border-[#0a84ff]/30 border-t-[#0a84ff]' : 'border-[#0a84ff]/30 border-t-[#0a84ff]'
             }`}
           />
           <p className={`text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -319,7 +302,7 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-gradient-to-br from-gray-900 via-purple-900/30 to-violet-900/30' : 'bg-gradient-to-br from-gray-50 via-purple-50 to-violet-50'}`}>
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-[#1f1f1f]' : 'bg-gradient-to-br from-gray-50 to-blue-50'}`}>
         <div className="text-center">
           <User className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
           <p className={`text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -331,29 +314,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className={`min-h-screen pt-20 pb-10 ${isDark ? 'bg-gradient-to-br from-gray-900 via-purple-900/30 to-violet-900/30' : 'bg-gradient-to-br from-gray-50 via-purple-50 to-violet-50'}`}>
+    <div className="min-h-screen pt-20 pb-10 bg-[#1f1f1f]">
       <div className="max-w-6xl mx-auto px-4">
-        {/* Theme Toggle Button - Fixed Position */}
-        {mounted && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            onClick={toggleTheme}
-            className={`fixed top-24 right-6 z-50 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${
-              isDark 
-                ? 'bg-white/10 hover:bg-white/20 backdrop-blur-sm' 
-                : 'bg-white hover:bg-gray-100 border border-gray-200 shadow-md'
-            }`}
-            title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          >
-            {isDark ? (
-              <Sun className="w-5 h-5 text-yellow-400 transition-transform duration-300 hover:rotate-180" />
-            ) : (
-              <Moon className="w-5 h-5 text-purple-600 transition-transform duration-300 hover:-rotate-12" />
-            )}
-          </motion.button>
-        )}
-
         {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -370,8 +332,8 @@ export default function ProfilePage() {
                 whileHover={{ scale: 1.05, rotate: 5 }}
                 className={`w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl ${
                   isDark 
-                    ? 'bg-gradient-to-br from-purple-500 via-blue-500 to-indigo-500' 
-                    : 'bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-600'
+                    ? 'bg-[#0a84ff]' 
+                    : 'bg-[#0a84ff]'
                 }`}
               >
                 <span className="text-white font-bold text-3xl">
@@ -416,8 +378,8 @@ export default function ProfilePage() {
               onClick={() => setEditMode(true)}
               className={`flex items-center space-x-2 px-6 py-3 text-white rounded-xl transition-all duration-200 shadow-lg ${
                 isDark 
-                  ? 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 hover:shadow-purple-500/25' 
-                  : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'
+                  ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90 hover:shadow-[#0a84ff]/25' 
+                  : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
               }`}
             >
               <Edit3 className="w-5 h-5" />
@@ -443,8 +405,8 @@ export default function ProfilePage() {
                     className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-xl transition-all duration-200 whitespace-nowrap ${
                       activeTab === tab.id
                         ? isDark 
-                          ? 'bg-gradient-to-r from-purple-500/30 to-blue-500/30 text-white border border-purple-400/50 shadow-lg'
-                          : 'bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 border border-purple-300 shadow-md'
+                          ? 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 shadow-lg'
+                          : 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 shadow-md'
                         : isDark
                           ? 'text-gray-400 hover:text-white hover:bg-white/5'
                           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -477,7 +439,7 @@ export default function ProfilePage() {
                     : 'bg-white/80 border-gray-200'
                 }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    <User className={`w-6 h-6 mr-2 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                    <User className={`w-6 h-6 mr-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                     {isRTL ? 'المعلومات الشخصية' : 'Personal Information'}
                   </h3>
                   
@@ -556,8 +518,8 @@ export default function ProfilePage() {
                             key={index}
                             className={`px-3 py-1 border rounded-full text-sm ${
                               isDark 
-                                ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' 
-                                : 'bg-purple-100 text-purple-700 border-purple-300'
+                                ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30' 
+                                : 'bg-[#0a84ff]/10 text-[#0a84ff] border-[#0a84ff]/30'
                             }`}
                           >
                             {interest}
@@ -632,8 +594,8 @@ export default function ProfilePage() {
                             transition={{ duration: 1, delay: index * 0.1 }}
                             className={`h-2 rounded-full ${
                               isDark 
-                                ? 'bg-gradient-to-r from-purple-500 to-blue-500' 
-                                : 'bg-gradient-to-r from-purple-600 to-blue-600'
+                                ? 'bg-[#0a84ff]' 
+                                : 'bg-[#0a84ff]'
                             }`}
                           />
                         </div>
@@ -675,7 +637,7 @@ export default function ProfilePage() {
                   : 'bg-white/80 border-gray-200'
               }`}>
                 <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  <Users className={`w-6 h-6 mr-2 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                  <Users className={`w-6 h-6 mr-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                   {isRTL ? 'تفضيلات شريك الدراسة' : 'Study Buddy Preferences'}
                 </h3>
 
@@ -687,7 +649,7 @@ export default function ProfilePage() {
                 }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <Users className={`w-5 h-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                      <Users className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                       <div>
                         <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                           {isRTL ? 'تفعيل مطابقة شريك الدراسة' : 'Enable Study Buddy Matching'}
@@ -701,7 +663,7 @@ export default function ProfilePage() {
                       onClick={() => setStudyBuddyPrefs({...studyBuddyPrefs, enabled: !studyBuddyPrefs.enabled})}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         studyBuddyPrefs.enabled 
-                          ? isDark ? 'bg-purple-600' : 'bg-purple-600' 
+                          ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]' 
                           : isDark ? 'bg-gray-600' : 'bg-gray-400'
                       }`}
                     >
@@ -727,8 +689,8 @@ export default function ProfilePage() {
                             key={index}
                             className={`inline-flex items-center px-3 py-1 border rounded-full text-sm ${
                               isDark 
-                                ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' 
-                                : 'bg-purple-100 text-purple-700 border-purple-300'
+                                ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30' 
+                                : 'bg-[#0a84ff]/10 text-[#0a84ff] border-[#0a84ff]/30'
                             }`}
                           >
                             {subject}
@@ -777,8 +739,8 @@ export default function ProfilePage() {
                             className={`px-4 py-2 rounded-lg border transition-colors ${
                               studyBuddyPrefs.sessionLength === length
                                 ? isDark 
-                                  ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' 
-                                  : 'bg-purple-100 text-purple-700 border-purple-300'
+                                  ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30' 
+                                  : 'bg-[#0a84ff]/10 text-[#0a84ff] border-[#0a84ff]/30'
                                 : isDark 
                                   ? 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10' 
                                   : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
@@ -887,10 +849,12 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Save Button */}
-                    <button className={`w-full px-6 py-3 text-white rounded-xl transition-all duration-200 ${
+                    <button 
+                      onClick={() => alert(isRTL ? 'تم حفظ تفضيلات شريك الدراسة بنجاح!' : 'Study buddy preferences saved successfully!')}
+                      className={`w-full px-6 py-3 text-white rounded-xl transition-all duration-200 ${
                       isDark 
-                        ? 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600' 
-                        : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'
+                        ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90' 
+                        : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
                     }`}>
                       {isRTL ? 'حفظ التفضيلات' : 'Save Preferences'}
                     </button>
@@ -934,15 +898,32 @@ export default function ProfilePage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className={`font-bold text-2xl ${isDark ? 'text-white' : 'text-gray-900'}`}>$9.99</p>
-                          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{isRTL ? 'شهريًا' : 'per month'}</p>
+                          {profile.subscriptionStatus === 'ACTIVE' ? (
+                            <>
+                              <p className={`font-bold text-lg ${isDark ? 'text-green-400' : 'text-green-600'}`}>
+                                {isRTL ? 'نشط' : 'Active'}
+                              </p>
+                              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{isRTL ? 'شهري' : 'Monthly'}</p>
+                            </>
+                          ) : (
+                            <button 
+                              onClick={() => window.location.href = `/${locale}/pricing`}
+                              className="px-4 py-2 bg-[#0a84ff] text-white rounded-lg hover:bg-[#0a84ff]/90 transition-all duration-200 text-sm">
+                              {isRTL ? 'عرض الأسعار' : 'View Pricing'}
+                            </button>
+                          )}
                         </div>
                       </div>
                       <div className={`flex items-center justify-between pt-3 border-t ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
                         <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                          {isRTL ? 'تاريخ التجديد: 15 نوفمبر 2025' : 'Renewal: Nov 15, 2025'}
+                          {profile.subscriptionStatus === 'ACTIVE' 
+                            ? (isRTL ? 'الاشتراك نشط' : 'Subscription active')
+                            : (isRTL ? 'لا يوجد اشتراك نشط' : 'No active subscription')
+                          }
                         </p>
-                        <button className={`px-4 py-2 border rounded-lg transition-colors text-sm ${
+                        <button 
+                          onClick={() => alert(isRTL ? 'ستتوفر هذه الميزة قريباً' : 'Subscription management coming soon')}
+                          className={`px-4 py-2 border rounded-lg transition-colors text-sm ${
                           isDark 
                             ? 'bg-white/10 text-white border-white/20 hover:bg-white/20' 
                             : 'bg-gray-100 text-gray-900 border-gray-300 hover:bg-gray-200'
@@ -960,7 +941,7 @@ export default function ProfilePage() {
                     }`}>
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                          <div className="w-12 h-12 bg-[#0a84ff] rounded-xl flex items-center justify-center">
                             <Award className="w-6 h-6 text-white" />
                           </div>
                           <div>
@@ -972,7 +953,7 @@ export default function ProfilePage() {
                             </p>
                           </div>
                         </div>
-                        <button className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 text-sm">
+                        <button className="px-4 py-2 bg-[#0a84ff] text-white rounded-lg hover:bg-[#0a84ff]/90 transition-all duration-200 text-sm">
                           {isRTL ? 'ترقية' : 'Upgrade'}
                         </button>
                       </div>
@@ -1020,10 +1001,12 @@ export default function ProfilePage() {
                     <p className={`mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                       {isRTL ? 'لا توجد طرق دفع محفوظة' : 'No saved payment methods'}
                     </p>
-                    <button className={`px-6 py-2 text-white rounded-lg transition-all duration-200 ${
+                    <button 
+                      onClick={() => alert(isRTL ? 'سيتم إضافة طرق الدفع قريباً' : 'Payment methods coming soon')}
+                      className={`px-6 py-2 text-white rounded-lg transition-all duration-200 ${
                       isDark 
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600' 
-                        : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                        ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90' 
+                        : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
                     }`}>
                       {isRTL ? 'إضافة طريقة دفع' : 'Add Payment Method'}
                     </button>
@@ -1040,33 +1023,18 @@ export default function ProfilePage() {
                     <FileText className={`w-6 h-6 mr-2 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
                     {isRTL ? 'سجل الفواتير' : 'Invoice History'}
                   </h3>
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((invoice) => (
-                      <div key={invoice} className={`flex items-center justify-between p-4 border rounded-lg ${
-                        isDark 
-                          ? 'bg-white/5 border-white/10' 
-                          : 'bg-gray-50 border-gray-200'
-                      }`}>
-                        <div>
-                          <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                            {isRTL ? 'فاتورة #' : 'Invoice #'}{1000 + invoice}
-                          </p>
-                          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                            Oct {invoice * 5}, 2025
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>$9.99</span>
-                          <button className={`p-2 border rounded-lg transition-colors ${
-                            isDark 
-                              ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30' 
-                              : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
-                          }`}>
-                            <Download className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                  <div className={`p-4 border rounded-xl text-center ${
+                    isDark 
+                      ? 'bg-white/5 border-white/10' 
+                      : 'bg-gray-50 border-gray-200'
+                  }`}>
+                    <FileText className={`w-12 h-12 mx-auto mb-3 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                    <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {isRTL ? 'لا توجد فواتير حتى الآن' : 'No invoices yet'}
+                    </p>
+                    <p className={`text-sm mt-1 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                      {isRTL ? 'ستظهر الفواتير هنا بعد الاشتراك' : 'Invoices will appear here after subscription'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1164,8 +1132,8 @@ export default function ProfilePage() {
                           className={`p-4 rounded-xl border text-center ${
                             achievement.unlocked
                               ? isDark 
-                                ? 'bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-purple-500/30' 
-                                : 'bg-gradient-to-br from-purple-100 to-blue-100 border-purple-300'
+                                ? 'bg-[#0a84ff]/10 border-[#0a84ff]/30' 
+                                : 'bg-[#0a84ff]/10 border-[#0a84ff]/30'
                               : isDark 
                                 ? 'bg-white/5 border-white/10 opacity-50' 
                                 : 'bg-gray-50 border-gray-200 opacity-50'
@@ -1173,7 +1141,7 @@ export default function ProfilePage() {
                         >
                           <Icon className={`w-8 h-8 mx-auto mb-2 ${
                             achievement.unlocked 
-                              ? isDark ? 'text-purple-400' : 'text-purple-600' 
+                              ? isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]' 
                               : 'text-gray-500'
                           }`} />
                           <p className={`text-sm font-medium ${
@@ -1200,7 +1168,7 @@ export default function ProfilePage() {
                     : 'bg-white/80 border-gray-200'
                 }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    <Briefcase className={`w-6 h-6 mr-2 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                    <Briefcase className={`w-6 h-6 mr-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                     {isRTL ? 'نظرة عامة على المدرب' : 'Creator Overview'}
                   </h3>
 
@@ -1233,12 +1201,12 @@ export default function ProfilePage() {
 
                     <div className={`p-4 border rounded-xl ${
                       isDark 
-                        ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-500/30' 
-                        : 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300'
+                        ? 'bg-[#0a84ff]/10 border-[#0a84ff]/30' 
+                        : 'bg-[#0a84ff]/10 border-[#0a84ff]/30'
                     }`}>
                       <div className="flex items-center justify-between mb-2">
-                        <BookOpen className={`w-8 h-8 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
-                        <TrendingUp className={`w-5 h-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                        <BookOpen className={`w-8 h-8 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
+                        <TrendingUp className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                       </div>
                       <p className={`text-2xl font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>0</p>
                       <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{isRTL ? 'الدورات' : 'Courses'}</p>
@@ -1300,7 +1268,9 @@ export default function ProfilePage() {
                           </p>
                         </div>
                       </div>
-                      <button className={`px-4 py-2 border rounded-lg transition-colors ${
+                      <button 
+                        onClick={() => window.location.href = `/${locale}/mentors/${profile.id}`}
+                        className={`px-4 py-2 border rounded-lg transition-colors ${
                         isDark 
                           ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30' 
                           : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
@@ -1325,7 +1295,9 @@ export default function ProfilePage() {
                           </p>
                         </div>
                       </div>
-                      <button className={`px-4 py-2 border rounded-lg transition-colors ${
+                      <button 
+                        onClick={() => alert(isRTL ? 'ستتوفر هذه الميزة قريباً' : 'This feature will be available soon')}
+                        className={`px-4 py-2 border rounded-lg transition-colors ${
                         isDark 
                           ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30' 
                           : 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200'
@@ -1340,7 +1312,7 @@ export default function ProfilePage() {
                         : 'bg-gray-50 border-gray-200'
                     }`}>
                       <div className="flex items-center space-x-3">
-                        <Video className={`w-5 h-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                        <Video className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                         <div>
                           <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                             {isRTL ? 'متاح للقاءات' : 'Available for Meetings'}
@@ -1350,10 +1322,12 @@ export default function ProfilePage() {
                           </p>
                         </div>
                       </div>
-                      <button className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-                        isDark ? 'bg-green-600' : 'bg-green-500'
+                      <button 
+                        onClick={() => setMeetingAvailability(!meetingAvailability)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        meetingAvailability ? 'bg-green-600' : 'bg-gray-600'
                       }`}>
-                        <span className="inline-block h-4 w-4 transform translate-x-6 rounded-full bg-white transition-transform" />
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${meetingAvailability ? 'translate-x-6' : 'translate-x-1'}`} />
                       </button>
                     </div>
                   </div>
@@ -1376,7 +1350,7 @@ export default function ProfilePage() {
                   {/* Privacy Settings */}
                   <div>
                     <h4 className={`text-lg font-semibold mb-4 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      <Lock className={`w-5 h-5 mr-2 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                      <Lock className={`w-5 h-5 mr-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                       {isRTL ? 'إعدادات الخصوصية' : 'Privacy Settings'}
                     </h4>
                     <div className="space-y-3">
@@ -1591,7 +1565,9 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     {!profile.emailVerified && (
-                      <button className={`px-4 py-2 border rounded-lg transition-colors ${
+                      <button 
+                        onClick={() => alert(isRTL ? 'سيتم إرسال رابط التحقق إلى بريدك الإلكتروني' : 'Verification link will be sent to your email')}
+                        className={`px-4 py-2 border rounded-lg transition-colors ${
                         isDark 
                           ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/30' 
                           : 'bg-yellow-100 text-yellow-700 border-yellow-300 hover:bg-yellow-200'
@@ -1617,7 +1593,9 @@ export default function ProfilePage() {
                         </p>
                       </div>
                     </div>
-                    <button className={`px-4 py-2 border rounded-lg transition-colors ${
+                    <button 
+                      onClick={() => alert(isRTL ? 'سيتم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني' : 'Password reset link will be sent to your email')}
+                      className={`px-4 py-2 border rounded-lg transition-colors ${
                       isDark 
                         ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30' 
                         : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
@@ -1638,7 +1616,7 @@ export default function ProfilePage() {
               }`}>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className={`text-xl font-bold flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    <Briefcase className={`w-6 h-6 mr-2 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                    <Briefcase className={`w-6 h-6 mr-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                     {isRTL ? 'لوحة تحكم المنشئ' : 'Creator Dashboard'}
                   </h3>
                   <motion.button
@@ -1647,8 +1625,8 @@ export default function ProfilePage() {
                     onClick={() => window.location.href = `/${locale}/mentors`}
                     className={`px-4 py-2 rounded-lg transition-all ${
                       isDark 
-                        ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30 hover:bg-purple-500/30' 
-                          : 'bg-purple-100 text-purple-700 border border-purple-300 hover:bg-purple-200'
+                        ? 'bg-[#0a84ff]/20 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/30' 
+                          : 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/20'
                     }`}
                   >
                     <Upload className="w-4 h-4 inline mr-2" />
@@ -1658,8 +1636,8 @@ export default function ProfilePage() {
                 
                 <div className={`p-6 border rounded-xl mb-6 ${
                   isDark 
-                    ? 'bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/30' 
-                    : 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200'
+                    ? 'bg-[#0a84ff]/5 border-[#0a84ff]/30' 
+                    : 'bg-[#0a84ff]/5 border-[#0a84ff]/20'
                 }`}>
                   <div className="flex items-center justify-between mb-4">
                     <div>
@@ -1676,8 +1654,8 @@ export default function ProfilePage() {
                       onClick={() => window.location.href = `/${locale}/mentors`}
                       className={`px-4 py-2 rounded-lg transition-all ${
                         isDark 
-                          ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30 hover:bg-purple-500/30' 
-                          : 'bg-purple-100 text-purple-700 border border-purple-300 hover:bg-purple-200'
+                          ? 'bg-[#0a84ff]/20 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/30' 
+                          : 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/20'
                       }`}
                     >
                       <Upload className="w-4 h-4 inline mr-2" />
@@ -1690,7 +1668,7 @@ export default function ProfilePage() {
                       isDark ? 'bg-black/20' : 'bg-white/50'
                     }`}>
                       <div className="flex items-center gap-2 mb-2">
-                        <FileText className={`w-5 h-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                        <FileText className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                         <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                           {isRTL ? 'المنشورات' : 'Posts'}
                         </span>
@@ -1752,11 +1730,11 @@ export default function ProfilePage() {
                     onClick={() => window.location.href = `/${locale}/mentors`}
                     className={`p-4 rounded-xl border transition-all ${
                       isDark 
-                        ? 'bg-white/5 border-white/10 hover:border-purple-500/50' 
-                        : 'bg-gray-50 border-gray-200 hover:border-purple-300'
+                        ? 'bg-white/5 border-white/10 hover:border-[#0a84ff]/50' 
+                        : 'bg-gray-50 border-gray-200 hover:border-[#0a84ff]/30'
                     }`}
                   >
-                    <Upload className={`w-6 h-6 mb-2 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                    <Upload className={`w-6 h-6 mb-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                     <div className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {isRTL ? 'تحميل محتوى' : 'Upload Content'}
                     </div>
@@ -1859,7 +1837,7 @@ export default function ProfilePage() {
                 className="bg-gradient-to-br from-gray-800/90 via-gray-900/90 to-black/90 backdrop-blur-xl rounded-2xl p-6 w-full max-w-2xl border border-white/20 shadow-2xl max-h-[90vh] overflow-y-auto"
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+                  <h3 className="text-2xl font-bold text-white">
                     {isRTL ? 'تعديل الملف الشخصي' : 'Edit Profile'}
                   </h3>
                   <motion.button
@@ -1882,7 +1860,7 @@ export default function ProfilePage() {
                         type="text"
                         value={editForm.name}
                         onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400/50"
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0a84ff]/50 focus:border-[#0a84ff]/50"
                       />
                     </div>
                     
@@ -1894,7 +1872,7 @@ export default function ProfilePage() {
                         type="text"
                         value={editForm.arabicName}
                         onChange={(e) => setEditForm({...editForm, arabicName: e.target.value})}
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400/50"
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0a84ff]/50 focus:border-[#0a84ff]/50"
                       />
                     </div>
                   </div>
@@ -1907,7 +1885,7 @@ export default function ProfilePage() {
                       type="tel"
                       value={editForm.phone}
                       onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400/50"
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0a84ff]/50 focus:border-[#0a84ff]/50"
                     />
                   </div>
 
@@ -1919,7 +1897,7 @@ export default function ProfilePage() {
                       <select
                         value={editForm.skillLevel}
                         onChange={(e) => setEditForm({...editForm, skillLevel: e.target.value})}
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400/50"
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#0a84ff]/50 focus:border-[#0a84ff]/50"
                       >
                         {skillLevels.map(level => (
                           <option key={level.value} value={level.value} className="bg-gray-800">
@@ -1936,7 +1914,7 @@ export default function ProfilePage() {
                       <select
                         value={editForm.learningMode}
                         onChange={(e) => setEditForm({...editForm, learningMode: e.target.value})}
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400/50"
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#0a84ff]/50 focus:border-[#0a84ff]/50"
                       >
                         {learningModes.map(mode => (
                           <option key={mode.value} value={mode.value} className="bg-gray-800">
@@ -2078,7 +2056,7 @@ export default function ProfilePage() {
                       whileTap={{ scale: 0.95 }}
                       onClick={handleSave}
                       disabled={saving}
-                      className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl hover:from-purple-600 hover:to-blue-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-[#0a84ff] text-white rounded-xl hover:bg-[#0a84ff]/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {saving ? (
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -2177,7 +2155,7 @@ export default function ProfilePage() {
                       : 'bg-gray-50 border-gray-200'
                   }`}>
                     <div className="flex items-center space-x-3">
-                      <Bell className={`w-5 h-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                      <Bell className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                       <div>
                         <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                           {isRTL ? 'الإشعارات الفورية' : 'Push Notifications'}
@@ -2191,7 +2169,7 @@ export default function ProfilePage() {
                       onClick={() => setNotificationSettings({...notificationSettings, pushNotifications: !notificationSettings.pushNotifications})}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         notificationSettings.pushNotifications 
-                          ? isDark ? 'bg-purple-600' : 'bg-purple-500' 
+                          ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]' 
                           : isDark ? 'bg-gray-600' : 'bg-gray-400'
                       }`}
                     >
@@ -2276,7 +2254,7 @@ export default function ProfilePage() {
                       : 'bg-gray-50 border-gray-200'
                   }`}>
                     <div className="flex items-center space-x-3">
-                      <Users className={`w-5 h-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                      <Users className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                       <div>
                         <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                           {isRTL ? 'طلبات شريك الدراسة' : 'Study Buddy Requests'}
@@ -2290,7 +2268,7 @@ export default function ProfilePage() {
                       onClick={() => setNotificationSettings({...notificationSettings, studyBuddyRequests: !notificationSettings.studyBuddyRequests})}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         notificationSettings.studyBuddyRequests 
-                          ? isDark ? 'bg-purple-600' : 'bg-purple-500' 
+                          ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]' 
                           : isDark ? 'bg-gray-600' : 'bg-gray-400'
                       }`}
                     >
@@ -2376,8 +2354,8 @@ export default function ProfilePage() {
                     onClick={saveNotificationSettings}
                     className={`flex-1 px-6 py-3 rounded-xl transition-all duration-200 text-white ${
                       isDark 
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600' 
-                        : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                        ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90' 
+                        : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
                     }`}
                   >
                     {isRTL ? 'حفظ الإعدادات' : 'Save Settings'}

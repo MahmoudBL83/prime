@@ -46,7 +46,8 @@ import {
     Activity,
     RefreshCw,
     Copy,
-    Globe
+    Globe,
+    Award
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -58,7 +59,8 @@ import ReviewModal from '@/components/mentors/ReviewModal'
 import { AvatarPlaceholder } from '@/components/ui/avatar-placeholder'
 import { MentorPaymentModal } from '@/components/modals/MentorPaymentModal'
 import { useAuthModal } from '@/contexts/AuthModalContext'
-import { CredentialsDisplay, Credential } from '@/components/credentials/CredentialsSection'
+import { CredentialsDisplay, CredentialsSection, Credential } from '@/components/credentials/CredentialsSection'
+import UploadMediaModal from '@/components/modals/UploadMediaModal'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'edge'
@@ -188,7 +190,7 @@ export default function OnlyFansMentorProfilePage() {
         expertise: '',
         location: '',
         hourlyRate: 0,
-        monthlyPrice: 29 // Single tier in EUR
+        monthlyPrice: 0 // Will be loaded from mentor data
     })
     const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | null>(null)
     const [coverPhotoPreview, setCoverPhotoPreview] = useState<string | null>(null)
@@ -529,49 +531,41 @@ export default function OnlyFansMentorProfilePage() {
                 const data = await response.json()
                 setCreatorStats(data)
             } else {
-                // Demo creator stats
-                const demoStats = {
+                // Use actual mentor data with empty arrays for unavailable data
+                const realStats = {
                     earnings: {
-                        thisMonth: 12450,
-                        lastMonth: 9800,
-                        total: 156000,
-                        pending: 2340
+                        thisMonth: 0,
+                        lastMonth: 0,
+                        total: 0,
+                        pending: 0,
+                        currency: 'EGP'
                     },
                     subscribers: {
-                        total: mentor.totalSubscribers || 1240,
-                        basic: 680,
-                        premium: 420,
-                        vip: 140,
-                        newThisMonth: 87,
-                        churnRate: 3.2
+                        total: mentor.totalSubscribers || 0,
+                        basic: 0,
+                        premium: 0,
+                        vip: 0,
+                        newThisMonth: 0,
+                        churnRate: 0
                     },
                     engagement: {
-                        totalPosts: mentor.stats.totalPosts || 156,
-                        avgLikes: 342,
-                        avgComments: 67,
-                        avgViews: 2840,
-                        engagementRate: 12.8
+                        totalPosts: mentor.stats.totalPosts || 0,
+                        avgLikes: 0,
+                        avgComments: 0,
+                        avgViews: 0,
+                        engagementRate: 0
                     },
                     content: {
-                        posts: mentor.stats.totalPosts || 156,
-                        liveSessionsCompleted: 24,
+                        posts: mentor.stats.totalPosts || 0,
+                        liveSessionsCompleted: 0,
                         upcomingSessions: upcomingSessions.length,
-                        totalViews: 45600,
-                        totalDownloads: 2340
+                        totalViews: 0,
+                        totalDownloads: 0
                     },
-                    topSubscribers: [
-                        { name: 'Ahmed Hassan', tier: 'VIP', since: '3 months', spent: 1800 },
-                        { name: 'Sara Mohamed', tier: 'VIP', since: '6 months', spent: 3200 },
-                        { name: 'Omar Ali', tier: 'PREMIUM', since: '4 months', spent: 1200 }
-                    ],
-                    recentActivity: [
-                        { type: 'subscription', user: 'Fatima Ahmed', tier: 'PREMIUM', timestamp: '2h ago' },
-                        { type: 'post_like', user: 'Mohamed Ali', post: 'Trading Strategy Tips', timestamp: '4h ago' },
-                        { type: 'session_booked', user: 'Layla Hassan', session: '1-on-1 Coaching', timestamp: '6h ago' },
-                        { type: 'subscription_upgraded', user: 'Karim Youssef', from: 'BASIC', to: 'VIP', timestamp: '8h ago' }
-                    ]
+                    topSubscribers: [], // Empty - no demo data
+                    recentActivity: [] // Empty - no demo data
                 }
-                setCreatorStats(demoStats)
+                setCreatorStats(realStats)
             }
         } catch (error) {
             console.error('Error fetching creator stats:', error)
@@ -682,45 +676,12 @@ export default function OnlyFansMentorProfilePage() {
                 const data = await response.json()
                 setUpcomingSessions(data.sessions || [])
             } else {
-                // If API doesn't exist yet, use demo data
-                // Single subscription model - all sessions available to subscribers
-                const demoSessions = [
-                    {
-                        id: '1',
-                        title: isArabic ? 'جلسة أسئلة وأجوبة جماعية' : 'Group Q&A Session',
-                        type: 'GROUP_QA',
-                        date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
-                        duration: 45,
-                        attendees: 12,
-                        maxAttendees: 50,
-                        joinLink: currentSubscription ? '/meeting/join/demo1' : null
-                    },
-                    {
-                        id: '2',
-                        title: isArabic ? 'ساعات المكتب - استشارات فردية' : 'Office Hours - 1-on-1 Consultation',
-                        type: 'ONE_ON_ONE',
-                        date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days from now
-                        duration: 60,
-                        attendees: 1,
-                        maxAttendees: 1,
-                        joinLink: currentSubscription ? '/meeting/join/demo2' : null
-                    },
-                    {
-                        id: '3',
-                        title: isArabic ? 'ورشة عمل مباشرة: استراتيجيات متقدمة' : 'Live Workshop: Advanced Strategies',
-                        type: 'WORKSHOP',
-                        date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
-                        duration: 90,
-                        attendees: 28,
-                        maxAttendees: 100,
-                        joinLink: currentSubscription ? '/meeting/join/demo3' : null
-                    }
-                ]
-                setUpcomingSessions(demoSessions)
+                // No upcoming sessions available - show empty state
+                setUpcomingSessions([])
             }
         } catch (error) {
             console.error('Error fetching sessions:', error)
-            // Fallback to demo data on error
+            // Show empty state on error
             setUpcomingSessions([])
         } finally {
             setSessionsLoading(false)
@@ -740,81 +701,9 @@ export default function OnlyFansMentorProfilePage() {
                 setCommunityPosts(data.posts || [])
                 setPinnedResources(data.resources || [])
             } else {
-                // If API doesn't exist yet, use demo data
-                const demoPosts = [
-                    {
-                        id: '1',
-                        author: {
-                            name: 'Sarah Ahmed',
-                            arabicName: 'سارة أحمد',
-                            profileImage: null,
-                            tier: 'PREMIUM'
-                        },
-                        content: isArabic 
-                            ? 'شكراً على الجلسة الرائعة اليوم! تعلمت الكثير عن استراتيجيات التداول المتقدمة 🚀'
-                            : 'Thanks for the amazing session today! Learned so much about advanced trading strategies 🚀',
-                        timestamp: '2h',
-                        likes: 24,
-                        replies: 5
-                    },
-                    {
-                        id: '2',
-                        author: {
-                            name: 'Mohamed Ali',
-                            arabicName: 'محمد علي',
-                            profileImage: null,
-                            tier: 'VIP'
-                        },
-                        content: isArabic
-                            ? 'هل يمكن لأحد أن يشاركني ملاحظات من ورشة العمل الأخيرة؟ فاتتني للأسف'
-                            : 'Can someone share notes from the last workshop? Unfortunately missed it',
-                        timestamp: '5h',
-                        likes: 12,
-                        replies: 8
-                    },
-                    {
-                        id: '3',
-                        author: {
-                            name: 'Fatima Hassan',
-                            arabicName: 'فاطمة حسن',
-                            profileImage: null,
-                            tier: 'BASIC'
-                        },
-                        content: isArabic
-                            ? 'متحمسة جداً للانضمام إلى هذا المجتمع! 🎉'
-                            : 'So excited to join this community! 🎉',
-                        timestamp: '1d',
-                        likes: 45,
-                        replies: 12
-                    }
-                ]
-                
-                const demoResources = [
-                    {
-                        id: '1',
-                        title: isArabic ? 'دليل المبتدئين الكامل' : 'Complete Beginners Guide',
-                        type: 'PDF',
-                        size: '2.5 MB',
-                        downloads: 234
-                    },
-                    {
-                        id: '2',
-                        title: isArabic ? 'قالب استراتيجية التداول' : 'Trading Strategy Template',
-                        type: 'Excel',
-                        size: '1.2 MB',
-                        downloads: 189
-                    },
-                    {
-                        id: '3',
-                        title: isArabic ? 'تسجيل ورشة العمل الأخيرة' : 'Last Workshop Recording',
-                        type: 'Video',
-                        size: '450 MB',
-                        downloads: 156
-                    }
-                ]
-                
-                setCommunityPosts(demoPosts)
-                setPinnedResources(demoResources)
+                // No community data available - show empty state
+                setCommunityPosts([])
+                setPinnedResources([])
             }
         } catch (error) {
             console.error('Error fetching community data:', error)
@@ -835,62 +724,8 @@ export default function OnlyFansMentorProfilePage() {
                 const data = await response.json()
                 setArchivedSessions(data.sessions || [])
             } else {
-                // Demo archived sessions data
-                const demoArchived = [
-                    {
-                        id: 'arch1',
-                        title: isArabic ? 'ورشة عمل: استراتيجيات التداول المتقدمة' : 'Workshop: Advanced Trading Strategies',
-                        type: 'WORKSHOP',
-                        recordedDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-                        duration: 90,
-                        views: 342,
-                        thumbnail: null,
-                        recordingUrl: '/recordings/demo1.mp4',
-                        description: isArabic 
-                            ? 'تعلم استراتيجيات التداول المتقدمة مع أمثلة عملية'
-                            : 'Learn advanced trading strategies with practical examples'
-                    },
-                    {
-                        id: 'arch2',
-                        title: isArabic ? 'جلسة أسئلة وأجوبة: إدارة المخاطر' : 'Q&A Session: Risk Management',
-                        type: 'GROUP_QA',
-                        recordedDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-                        duration: 45,
-                        views: 567,
-                        thumbnail: null,
-                        recordingUrl: '/recordings/demo2.mp4',
-                        description: isArabic
-                            ? 'جلسة أسئلة وأجوبة حول إدارة المخاطر في التداول'
-                            : 'Q&A session about risk management in trading'
-                    },
-                    {
-                        id: 'arch3',
-                        title: isArabic ? 'استشارة فردية مسجلة (نموذج)' : 'Recorded 1-on-1 Consultation (Sample)',
-                        type: 'ONE_ON_ONE',
-                        recordedDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-                        duration: 60,
-                        views: 89,
-                        thumbnail: null,
-                        recordingUrl: '/recordings/demo3.mp4',
-                        description: isArabic
-                            ? 'عينة من جلسة استشارية فردية مع تحليل محفظة'
-                            : 'Sample 1-on-1 consultation with portfolio review'
-                    },
-                    {
-                        id: 'arch4',
-                        title: isArabic ? 'ورشة عمل: تحليل السوق الأسبوعي' : 'Workshop: Weekly Market Analysis',
-                        type: 'WORKSHOP',
-                        recordedDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-                        duration: 75,
-                        views: 421,
-                        thumbnail: null,
-                        recordingUrl: '/recordings/demo4.mp4',
-                        description: isArabic
-                            ? 'تحليل شامل للسوق مع توقعات الأسبوع القادم'
-                            : 'Comprehensive market analysis with next week predictions'
-                    }
-                ]
-                setArchivedSessions(demoArchived)
+                // No archived sessions available - show empty state
+                setArchivedSessions([])
             }
         } catch (error) {
             console.error('Error fetching archived sessions:', error)
@@ -908,88 +743,8 @@ export default function OnlyFansMentorProfilePage() {
                 const data = await response.json()
                 setResources(data.resources || [])
             } else {
-                // Demo resources data
-                const demoResources = [
-                    {
-                        id: 'res1',
-                        title: isArabic ? 'دليل استراتيجيات التداول المتقدمة' : 'Advanced Trading Strategies Guide',
-                        type: 'PDF',
-                        category: 'pdf',
-                        size: '2.4 MB',
-                        downloads: 1243,
-                        uploadedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-                        url: '/resources/demo1.pdf',
-                        description: isArabic
-                            ? 'دليل شامل لاستراتيجيات التداول المتقدمة مع أمثلة عملية'
-                            : 'Comprehensive guide to advanced trading strategies with practical examples'
-                    },
-                    {
-                        id: 'res2',
-                        title: isArabic ? 'قالب تحليل المخاطر Excel' : 'Risk Analysis Excel Template',
-                        type: 'Excel',
-                        category: 'template',
-                        size: '856 KB',
-                        downloads: 892,
-                        uploadedDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-                        url: '/resources/demo2.xlsx',
-                        description: isArabic
-                            ? 'قالب Excel لتحليل المخاطر وإدارة المحفظة'
-                            : 'Excel template for risk analysis and portfolio management'
-                    },
-                    {
-                        id: 'res3',
-                        title: isArabic ? 'فيديو تعليمي: إعداد منصة التداول' : 'Tutorial Video: Trading Platform Setup',
-                        type: 'Video',
-                        category: 'video',
-                        size: '45 MB',
-                        downloads: 2156,
-                        uploadedDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-                        url: '/resources/demo3.mp4',
-                        description: isArabic
-                            ? 'فيديو تعليمي خطوة بخطوة لإعداد منصة التداول'
-                            : 'Step-by-step tutorial for setting up your trading platform'
-                    },
-                    {
-                        id: 'res4',
-                        title: isArabic ? 'مكتبة أكواد Python للتحليل' : 'Python Code Library for Analysis',
-                        type: 'Code',
-                        category: 'code',
-                        size: '124 KB',
-                        downloads: 456,
-                        uploadedDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-                        url: '/resources/demo4.zip',
-                        description: isArabic
-                            ? 'مجموعة من أكواد Python لتحليل السوق والبيانات'
-                            : 'Collection of Python scripts for market and data analysis'
-                    },
-                    {
-                        id: 'res5',
-                        title: isArabic ? 'كتاب العمل: أساسيات إدارة الأموال' : 'Workbook: Money Management Fundamentals',
-                        type: 'PDF',
-                        category: 'pdf',
-                        size: '1.8 MB',
-                        downloads: 1678,
-                        uploadedDate: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-                        url: '/resources/demo5.pdf',
-                        description: isArabic
-                            ? 'كتاب عمل تفاعلي لتعلم أساسيات إدارة الأموال'
-                            : 'Interactive workbook for learning money management basics'
-                    },
-                    {
-                        id: 'res6',
-                        title: isArabic ? 'قوالب تحليل التقني Tradingview' : 'Tradingview Technical Analysis Templates',
-                        type: 'Template',
-                        category: 'template',
-                        size: '340 KB',
-                        downloads: 734,
-                        uploadedDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-                        url: '/resources/demo6.zip',
-                        description: isArabic
-                            ? 'قوالب جاهزة للتحليل الفني على منصة Tradingview'
-                            : 'Ready-to-use technical analysis templates for Tradingview'
-                    }
-                ]
-                setResources(demoResources)
+                // No resources available - show empty state
+                setResources([])
             }
         } catch (error) {
             console.error('Error fetching resources:', error)
@@ -1008,40 +763,9 @@ export default function OnlyFansMentorProfilePage() {
                 setFeedbackTokens(data)
                 setFeedbackRequests(data.requests || [])
             } else {
-                // Demo data for subscribers
-                const demoTokens = {
-                    available: 3,
-                    total: 5,
-                    renewalDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString()
-                }
-                
-                const demoRequests = [
-                    {
-                        id: 'fb1',
-                        content: isArabic 
-                            ? 'هل يمكنك مراجعة استراتيجية التداول الخاصة بي؟ أريد معرفة ما إذا كنت أدير المخاطر بشكل صحيح.'
-                            : 'Could you review my trading strategy? I want to know if I\'m managing risk properly.',
-                        submittedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-                        status: 'ANSWERED',
-                        response: isArabic
-                            ? 'استراتيجيتك جيدة ولكن أقترح تقليل حجم المركز بنسبة 20٪ لتحسين إدارة المخاطر.'
-                            : 'Your strategy is good but I suggest reducing position size by 20% for better risk management.',
-                        respondedDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-                    },
-                    {
-                        id: 'fb2',
-                        content: isArabic
-                            ? 'قمت بتحليل هذه الصفقة، هل يمكنك إعطائي رأيك؟'
-                            : 'I analyzed this trade, could you give me your opinion?',
-                        submittedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-                        status: 'IN_PROGRESS',
-                        response: null,
-                        respondedDate: null
-                    }
-                ]
-                
-                setFeedbackTokens(demoTokens)
-                setFeedbackRequests(demoRequests)
+                // No feedback tokens available
+                setFeedbackTokens({available: 0, total: 0, renewalDate: ''})
+                setFeedbackRequests([])
             }
         } catch (error) {
             console.error('Error fetching feedback tokens:', error)
@@ -1219,22 +943,14 @@ export default function OnlyFansMentorProfilePage() {
                 const data = await response.json()
                 setCommunityAnalytics(data)
             } else {
-                // Demo analytics data
+                // Real analytics data from mentor - no fake values
                 setCommunityAnalytics({
                     totalPosts: displayCommunityPosts.length,
-                    totalMembers: mentor.totalSubscribers || 1240,
-                    activeToday: Math.floor((mentor.totalSubscribers || 1240) * 0.1),
-                    avgEngagement: 12.8,
-                    topMembers: [
-                        { name: 'Ahmed Hassan', posts: 45, likes: 234, tier: 'VIP' },
-                        { name: 'Sara Ali', posts: 23, likes: 156, tier: 'PREMIUM' },
-                        { name: 'Omar Farouk', posts: 12, likes: 67, tier: 'BASIC' }
-                    ],
-                    recentActivity: [
-                        { type: 'post', user: 'Ahmed Hassan', action: 'created a new post', time: '2h ago' },
-                        { type: 'comment', user: 'Sara Ali', action: 'replied to a discussion', time: '3h ago' },
-                        { type: 'like', user: 'Omar Farouk', action: 'liked a post', time: '4h ago' }
-                    ]
+                    totalMembers: mentor.totalSubscribers || 0,
+                    activeToday: 0, // Real value from API or 0
+                    avgEngagement: 0,
+                    topMembers: [],
+                    recentActivity: []
                 })
             }
         } catch (error) {
@@ -1902,8 +1618,8 @@ export default function OnlyFansMentorProfilePage() {
         setIsSubscribing(true)
         
         try {
-            // Use single tier price in EUR
-            const price = mentor?.monthlyPrice || 29
+            // Use single tier price in EUR - no fake fallbacks
+            const price = mentor?.monthlyPrice || 0
 
             const response = await fetch('/api/subscriptions/subscribe', {
                 method: 'POST',
@@ -2637,7 +2353,7 @@ export default function OnlyFansMentorProfilePage() {
     }
 
     return (
-        <div className="min-h-screen bg-background text-foreground transition-colors">
+        <div className="min-h-screen bg-[#1f1f1f] text-foreground transition-colors">
             {/* Twitter-Style Three-Column Layout */}
             <div className="container mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
@@ -2648,7 +2364,7 @@ export default function OnlyFansMentorProfilePage() {
                                 {/* Back Button */}
                                 <button
                                     onClick={handleBackToMentors}
-                                    className="w-full flex items-center gap-4 px-4 py-3 rounded-full hover:bg-card-hover text-muted-foreground hover:text-foreground transition-all"
+                                    className="w-full flex items-center gap-4 px-4 py-3 rounded-full hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all"
                                 >
                                     <ArrowLeft className="w-6 h-6" />
                                     <span className="text-lg font-bold">{isArabic ? 'رجوع' : 'Back to Feed'}</span>
@@ -2659,8 +2375,8 @@ export default function OnlyFansMentorProfilePage() {
                                     onClick={handleSetPostsTab}
                                     className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
                                         activeTab === 'posts'
-                                            ? 'bg-purple-500/20 text-foreground'
-                                            : 'hover:bg-card-hover text-muted-foreground'
+                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
                                     <MessageCircle className="w-6 h-6" />
@@ -2672,8 +2388,8 @@ export default function OnlyFansMentorProfilePage() {
                                     onClick={handleSetMediaTab}
                                     className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
                                         activeTab === 'media'
-                                            ? 'bg-purple-500/20 text-foreground'
-                                            : 'hover:bg-card-hover text-muted-foreground'
+                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
                                     <ImageIcon className="w-6 h-6" />
@@ -2685,8 +2401,8 @@ export default function OnlyFansMentorProfilePage() {
                                     onClick={handleSetSessionsTab}
                                     className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
                                         activeTab === 'sessions'
-                                            ? 'bg-purple-500/20 text-foreground'
-                                            : 'hover:bg-card-hover text-muted-foreground'
+                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
                                     <Calendar className="w-6 h-6" />
@@ -2704,8 +2420,8 @@ export default function OnlyFansMentorProfilePage() {
                                         onClick={() => setActiveTab('community')}
                                         className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
                                             activeTab === 'community'
-                                                ? 'bg-purple-500/20 text-foreground'
-                                                : 'hover:bg-card-hover text-muted-foreground'
+                                                ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                                : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                         }`}
                                     >
                                         <Users className="w-6 h-6" />
@@ -2723,8 +2439,8 @@ export default function OnlyFansMentorProfilePage() {
                                     onClick={() => setActiveTab('about')}
                                     className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
                                         activeTab === 'about'
-                                            ? 'bg-purple-500/20 text-foreground'
-                                            : 'hover:bg-card-hover text-muted-foreground'
+                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
                                     <Users className="w-6 h-6" />
@@ -2738,7 +2454,7 @@ export default function OnlyFansMentorProfilePage() {
                                         className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
                                             activeTab === 'profile'
                                                 ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-foreground border-2 border-yellow-500/50'
-                                                : 'hover:bg-card-hover text-muted-foreground border-2 border-transparent'
+                                                : 'hover:bg-white/5 text-muted-foreground border-2 border-transparent'
                                         }`}
                                     >
                                         <Crown className="w-6 h-6 text-yellow-500" />
@@ -2813,7 +2529,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             expertise: mentor.expertise || '',
                                                             location: (mentor.user as any).location || '',
                                                             hourlyRate: (mentor as any).hourlyRate || 0,
-                                                            monthlyPrice: mentor.monthlyPrice || 29 // Single tier EUR
+                                                            monthlyPrice: mentor.monthlyPrice || 0 // No fake fallbacks
                                                         })
                                                     }
                                                     console.log('Opening modal...')
@@ -3206,7 +2922,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     {/* Price Tag */}
                                                     <div className="flex items-center gap-2 mb-6">
                                                         <span className="text-4xl font-black text-white">
-                                                            €{mentor.monthlyPrice || 29}
+                                                            €{mentor.monthlyPrice || 0}
                                                         </span>
                                                         <span className="text-white/60">
                                                             /{isArabic ? 'شهر' : 'month'}
@@ -7082,6 +6798,35 @@ export default function OnlyFansMentorProfilePage() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+
+                {/* Credentials Management Section - Only visible to profile owner */}
+                {isCreatorView && (
+                    <div className="bg-card border border-border rounded-2xl p-4 mt-6">
+                        <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                            <Award className="w-5 h-5 text-[#0a84ff]" />
+                            {isArabic ? 'إدارة الشهادات والمؤهلات' : 'Manage Credentials & Qualifications'}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            {isArabic ? 'أضف وعدّل شهاداتك ومؤهلاتك لإبراز خبراتك' : 'Add and edit your credentials to showcase your expertise'}
+                        </p>
+                        <CredentialsSection 
+                            credentials={creatorCredentials}
+                            onCredentialsChange={async () => {
+                                // Refresh credentials after changes
+                                try {
+                                    const res = await fetch('/api/creator/credentials')
+                                    if (res.ok) {
+                                        const data = await res.json()
+                                        setCreatorCredentials(data.credentials || [])
+                                    }
+                                } catch (error) {
+                                    console.error('Error refreshing credentials:', error)
+                                }
+                            }}
+                            isArabic={isArabic}
+                        />
+                    </div>
+                )}
             </div>
                     </div>
                     {/* End Main Content Column */}
@@ -9533,7 +9278,7 @@ export default function OnlyFansMentorProfilePage() {
                         arabicName: mentor.user.arabicName,
                         profileImage: mentor.user.profileImage,
                         expertise: mentor.expertise,
-                        price: mentor.monthlyPrice || 29, // EUR
+                        price: mentor.monthlyPrice || 0, // No fake fallbacks
                     }}
                     isArabic={isArabic}
                     onSuccess={() => {

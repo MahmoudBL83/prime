@@ -34,7 +34,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
         arabicName: currentProfile.arabicName || '',
         bio: currentProfile.bio || '',
         expertise: currentProfile.expertise || '',
-        monthlyPrice: currentProfile.monthlyPrice || 29, // Single tier in EUR
+        monthlyPrice: currentProfile.monthlyPrice || 0, // No fake fallbacks
         socialLinks: currentProfile.socialLinks || {
             twitter: '',
             instagram: '',
@@ -69,7 +69,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
             arabicName: currentProfile.arabicName || '',
             bio: currentProfile.bio || '',
             expertise: currentProfile.expertise || '',
-            monthlyPrice: currentProfile.monthlyPrice || 29, // Single tier in EUR
+            monthlyPrice: currentProfile.monthlyPrice || 0, // No fake fallbacks
             socialLinks: currentProfile.socialLinks || {
                 twitter: '',
                 instagram: '',

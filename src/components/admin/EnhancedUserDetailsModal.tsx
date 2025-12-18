@@ -85,99 +85,12 @@ interface ActivityLog {
     ipAddress?: string
 }
 
-// Mock data - In real app, this would come from API
-const MOCK_SUBSCRIPTIONS: Record<string, Subscription[]> = {
-    default: [
-        {
-            id: 's1',
-            plan: 'all-access',
-            status: 'active',
-            startDate: '2024-01-01T00:00:00Z',
-            renewalDate: '2024-02-01T00:00:00Z',
-            price: 199,
-            autoRenew: true
-        },
-        {
-            id: 's2',
-            plan: 'signature',
-            status: 'cancelled',
-            startDate: '2023-11-01T00:00:00Z',
-            renewalDate: '2023-12-01T00:00:00Z',
-            price: 299,
-            autoRenew: false
-        }
-    ]
-}
-
-const MOCK_TICKETS: Record<string, Ticket[]> = {
-    default: [
-        {
-            id: 't1',
-            ticketNumber: 'TKT-2024-0001',
-            subject: 'Unable to access purchased course',
-            status: 'resolved',
-            priority: 'high',
-            createdAt: '2024-01-10T10:30:00Z'
-        },
-        {
-            id: 't2',
-            ticketNumber: 'TKT-2024-0045',
-            subject: 'Payment issue',
-            status: 'in_progress',
-            priority: 'urgent',
-            createdAt: '2024-01-14T15:20:00Z'
-        }
-    ]
-}
-
-const MOCK_RISK_FLAGS: Record<string, RiskFlag[]> = {
-    default: [
-        {
-            id: 'r1',
-            type: 'payment_dispute',
-            severity: 'medium',
-            description: 'Chargeback initiated for December subscription',
-            createdAt: '2023-12-20T08:00:00Z',
-            status: 'resolved'
-        }
-    ]
-}
-
-const MOCK_ACTIVITY: Record<string, ActivityLog[]> = {
-    default: [
-        {
-            id: 'a1',
-            action: 'Login',
-            details: 'Successful login from mobile device',
-            timestamp: '2024-01-15T14:30:00Z',
-            ipAddress: '41.234.56.78'
-        },
-        {
-            id: 'a2',
-            action: 'Course Enrollment',
-            details: 'Enrolled in "Advanced Arabic Grammar"',
-            timestamp: '2024-01-15T14:35:00Z'
-        },
-        {
-            id: 'a3',
-            action: 'Subscription Renewed',
-            details: 'All-Access monthly subscription',
-            timestamp: '2024-01-01T00:00:00Z'
-        },
-        {
-            id: 'a4',
-            action: 'Profile Updated',
-            details: 'Changed phone number',
-            timestamp: '2023-12-28T10:15:00Z',
-            ipAddress: '41.234.56.78'
-        },
-        {
-            id: 'a5',
-            action: 'Password Changed',
-            details: 'Security password update',
-            timestamp: '2023-12-15T16:45:00Z',
-            ipAddress: '41.234.56.78'
-        }
+// User details data - Will be populated from API when available
+// TODO: Fetch subscriptions, tickets, risk flags, and activity from /api/admin/users/[id]/details
+const EMPTY_SUBSCRIPTIONS: Subscription[] = []
+const EMPTY_TICKETS: Ticket[] = []
+const EMPTY_RISK_FLAGS: RiskFlag[] = []
+const EMPTY_ACTIVITY: ActivityLog[] = []
     ]
 }
 
@@ -211,10 +124,11 @@ const priorityColors = {
 export default function EnhancedUserDetailsModal({ user, onClose }: UserDetailsModalProps) {
     const [activeTab, setActiveTab] = useState('overview')
 
-    const subscriptions = MOCK_SUBSCRIPTIONS.default || []
-    const tickets = MOCK_TICKETS.default || []
-    const riskFlags = MOCK_RISK_FLAGS.default || []
-    const activityLogs = MOCK_ACTIVITY.default || []
+    // Use empty arrays until API integration is complete
+    const subscriptions = EMPTY_SUBSCRIPTIONS
+    const tickets = EMPTY_TICKETS
+    const riskFlags = EMPTY_RISK_FLAGS
+    const activityLogs = EMPTY_ACTIVITY
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-GB', {

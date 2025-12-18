@@ -453,7 +453,7 @@ function DashboardContent() {
                                 </div>
                                 <div className="text-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300">
                                     <div className="text-3xl lg:text-4xl font-semibold text-white mb-2">
-                                        {learningStats?.averageRating || 4.8}
+                                        {learningStats?.averageRating || 0}
                                     </div>
                                     <div className="text-white/60 text-sm uppercase tracking-wider">
                                         {isArabic ? 'التقييم' : 'Rating'}

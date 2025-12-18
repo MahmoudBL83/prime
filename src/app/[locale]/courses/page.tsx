@@ -954,11 +954,11 @@ export default function CoursesPage() {
             {/* Launching Soon Modal */}
             {showLaunchingModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-                    <div className="relative bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl p-8 max-w-md w-full mx-4 border border-white/10 shadow-2xl">
+                    <div className="relative bg-[#1f1f1f] rounded-2xl p-8 max-w-md w-full mx-4 border border-white/10 shadow-2xl">
                         {/* Close button */}
                         <button
                             onClick={() => setShowLaunchingModal(false)}
-                            className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors"
+                            className="absolute top-4 right-4 text-white/60 hover:text-white hover:bg-white/5 transition-colors w-8 h-8 flex items-center justify-center rounded-lg"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -967,7 +967,7 @@ export default function CoursesPage() {
 
                         {/* Rocket Icon */}
                         <div className="flex justify-center mb-6">
-                            <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                            <div className="w-20 h-20 bg-[#0a84ff]/10 rounded-full flex items-center justify-center border border-[#0a84ff]/30">
                                 <span className="text-4xl">🚀</span>
                             </div>
                         </div>
@@ -982,7 +982,7 @@ export default function CoursesPage() {
                         </h2>
 
                         {/* Description */}
-                        <p className="text-white/80 text-center mb-6">
+                        <p className="text-white/70 text-center mb-6">
                             {getLocalizedText(
                                 'Sign up now to get 50% off when we launch!',
                                 'سجل الآن واحصل على خصم 50% عند الإطلاق!',
@@ -991,18 +991,18 @@ export default function CoursesPage() {
                         </p>
 
                         {/* Offer Badge */}
-                        <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold text-lg py-3 px-6 rounded-full text-center mb-6">
+                        <div className="bg-[#0a84ff]/15 border border-[#0a84ff]/30 text-[#0a84ff] font-semibold text-sm py-3 px-6 rounded-lg text-center mb-6">
                             {getLocalizedText(
-                                '🎉 50% OFF Early Bird Offer!',
-                                '🎉 عرض الحجز المبكر - خصم 50%!',
-                                '🎉 50% Frühbucher-Rabatt!'
+                                '🎉 50% OFF Early Bird Offer',
+                                '🎉 عرض الحجز المبكر - خصم 50%',
+                                '🎉 50% Frühbucher-Rabatt'
                             )}
                         </div>
 
                         {/* CTA Button */}
                         <button
                             onClick={handleLaunchingModalRegister}
-                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02] shadow-lg"
+                            className="w-full bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white font-semibold py-3 px-6 rounded-lg transition-all"
                         >
                             {getLocalizedText(
                                 'Sign Up Now',

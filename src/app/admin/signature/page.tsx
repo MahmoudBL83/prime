@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { toast } from 'react-hot-toast'
 
 interface SignatureCourse {
     id: string
@@ -164,8 +165,9 @@ export default function AdminSignatureCoursesPage() {
             const refresh = await fetch('/api/admin/signature')
             const data = await refresh.json()
             setCourses(data.courses || [])
+            toast.success('Invitation sent successfully')
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to send invitation')
+            toast.error(err instanceof Error ? err.message : 'Failed to send invitation')
         } finally {
             setActionLoading(null)
         }
@@ -189,8 +191,9 @@ export default function AdminSignatureCoursesPage() {
             const refresh = await fetch('/api/admin/signature')
             const data = await refresh.json()
             setCourses(data.courses || [])
+            toast.success('Action completed successfully')
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Action failed')
+            toast.error(err instanceof Error ? err.message : 'Action failed')
         } finally {
             setActionLoading(null)
         }
