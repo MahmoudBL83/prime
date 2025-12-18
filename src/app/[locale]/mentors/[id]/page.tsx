@@ -282,6 +282,13 @@ export default function OnlyFansMentorProfilePage() {
     // Community Management States
     const [showCreatePostModal, setShowCreatePostModal] = useState(false)
     const [showMemberManagementModal, setShowMemberManagementModal] = useState(false)
+    const [showBroadcastModal, setShowBroadcastModal] = useState(false)
+    const [showWithdrawalModal, setShowWithdrawalModal] = useState(false)
+    const [broadcastData, setBroadcastData] = useState({ subject: '', content: '', contentAr: '' })
+    const [sendingBroadcast, setSendingBroadcast] = useState(false)
+    const [withdrawalData, setWithdrawalData] = useState({ amount: '', method: 'bank_transfer', accountDetails: '' })
+    const [submittingWithdrawal, setSubmittingWithdrawal] = useState(false)
+    const [withdrawalInfo, setWithdrawalInfo] = useState<any>(null)
     const [communityManagementTab, setCommunityManagementTab] = useState<'posts' | 'members' | 'analytics'>('posts')
     const [newCommunityPost, setNewCommunityPost] = useState({
         title: '',
@@ -347,7 +354,6 @@ export default function OnlyFansMentorProfilePage() {
             const response = await fetch(`/api/mentors/${params.id}`)
             if (response.ok) {
                 const data = await response.json()
-                console.log('Mentor API response:', data)
                 
                 // Handle different possible response structures
                 const mentorData = data.mentor || data
@@ -394,7 +400,6 @@ export default function OnlyFansMentorProfilePage() {
                 }))
                 setPosts(transformedPosts)
                 setPostsLoading(false)
-                console.log('Loaded', transformedPosts.length, 'posts from database')
             } else {
                 console.error('API Error:', response.status, response.statusText)
                 const errorData = await response.json().catch(() => ({}))
@@ -578,7 +583,6 @@ export default function OnlyFansMentorProfilePage() {
             // since the channels API may not be fully implemented yet
             // This allows the subscription system to work
             setChannelId(creatorId)
-            console.log('Using instructor ID as channel ID:', creatorId)
             
             /* Future implementation when /api/channels is available:
             const response = await fetch(`/api/channels?creatorId=${creatorId}`)
@@ -630,13 +634,6 @@ export default function OnlyFansMentorProfilePage() {
                     
                     // Single tier - always ALL_ACCESS
                     setCurrentSubscription('ALL_ACCESS')
-                    
-                    console.log('Found subscription for creator:', {
-                        subscriptionId: channelSubscription.id,
-                        channelId,
-                        tier: 'ALL_ACCESS',
-                        price: channelSubscription.pricePerMonth
-                    })
                 } else {
                     // Clear subscription state if not found
                     setActiveSubscriptionId(null)
@@ -775,14 +772,11 @@ export default function OnlyFansMentorProfilePage() {
     // Fetch upcoming sessions from API
     const fetchUpcomingSessionsFromAPI = async () => {
         if (!mentor) return
-        console.log('Fetching upcoming sessions for mentor:', mentor.id)
         setSessionsLoading(true)
         try {
             const response = await fetch(`/api/mentors/${mentor.id}/sessions?type=upcoming`)
-            console.log('Sessions API response status:', response.status)
             if (response.ok) {
                 const data = await response.json()
-                console.log('Sessions data:', data)
                 // Transform API data to match the expected format - single subscription model
                 const transformedSessions = data.sessions?.map((session: any) => ({
                     id: session.id,
@@ -2362,6 +2356,26 @@ export default function OnlyFansMentorProfilePage() {
                                     </button>
                                 )}
 
+                                {/* Resources Tab - For subscribers */}
+                                {currentSubscription && (
+                                    <button
+                                        onClick={() => setActiveTab('resources')}
+                                        className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
+                                            activeTab === 'resources'
+                                                ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                                : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    >
+                                        <Paperclip className="w-6 h-6" />
+                                        <span className="text-lg font-bold">{isArabic ? 'الموارد' : 'Resources'}</span>
+                                        {resources.length > 0 && (
+                                            <Badge className="ml-auto bg-green-500 text-white border-0">
+                                                {resources.length}
+                                            </Badge>
+                                        )}
+                                    </button>
+                                )}
+
                                 {/* About Tab */}
                                 <button
                                     onClick={() => setActiveTab('about')}
@@ -2371,7 +2385,7 @@ export default function OnlyFansMentorProfilePage() {
                                             : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
-                                    <Users className="w-6 h-6" />
+                                    <Globe className="w-6 h-6" />
                                     <span className="text-lg font-bold">{isArabic ? 'حول' : 'About'}</span>
                                 </button>
 
@@ -2447,7 +2461,6 @@ export default function OnlyFansMentorProfilePage() {
                                             onClick={(e) => {
                                                 e.preventDefault()
                                                 e.stopPropagation()
-                                                console.log('Edit Profile clicked', { showEditProfileModal, mentor })
                                                 try {
                                                     if (mentor) {
                                                         setEditProfileData({
@@ -2460,7 +2473,6 @@ export default function OnlyFansMentorProfilePage() {
                                                             monthlyPrice: mentor.monthlyPrice || 0 // No fake fallbacks
                                                         })
                                                     }
-                                                    console.log('Opening modal...')
                                                     setShowEditProfileModal(true)
                                                 } catch (error) {
                                                     console.error('Error opening edit profile:', error)
@@ -2623,11 +2635,19 @@ export default function OnlyFansMentorProfilePage() {
                                 <span className="text-muted-foreground text-sm ml-1">{isArabic ? 'منشورات' : 'posts'}</span>
                             </div>
                             <div>
-                                <span className="font-bold text-foreground text-lg">{(mentor.totalSubscribers / 1000).toFixed(1)}K</span>
+                                <span className="font-bold text-foreground text-lg">
+                                    {mentor.totalSubscribers >= 1000 
+                                        ? `${(mentor.totalSubscribers / 1000).toFixed(1)}K`
+                                        : mentor.totalSubscribers || 0}
+                                </span>
                                 <span className="text-muted-foreground text-sm ml-1">{isArabic ? 'مشتركين' : 'subscribers'}</span>
                             </div>
                             <div>
-                                <span className="font-bold text-foreground text-lg">{(mentor.stats.totalFollowers / 1000).toFixed(1)}K</span>
+                                <span className="font-bold text-foreground text-lg">
+                                    {mentor.stats.totalFollowers >= 1000 
+                                        ? `${(mentor.stats.totalFollowers / 1000).toFixed(1)}K`
+                                        : mentor.stats.totalFollowers || 0}
+                                </span>
                                 <span className="text-muted-foreground text-sm ml-1">{isArabic ? 'متابعين' : 'followers'}</span>
                             </div>
                             <div className="flex items-center gap-1">
@@ -4073,8 +4093,11 @@ export default function OnlyFansMentorProfilePage() {
                                                                     <Button
                                                                         size="sm"
                                                                         onClick={() => {
-                                                                            toast.success(isArabic ? 'جاري تشغيل التسجيل...' : 'Playing recording...')
-                                                                            // In production: router.push(`/session/${session.id}/recording`)
+                                                                            if (session.recordingUrl) {
+                                                                                window.open(session.recordingUrl, '_blank')
+                                                                            } else {
+                                                                                toast.error(isArabic ? 'لا يوجد تسجيل متاح' : 'No recording available')
+                                                                            }
                                                                         }}
                                                                         className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                                                                     >
@@ -4565,7 +4588,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             {isArabic ? 'إجمالي الأعضاء' : 'Total Members'}
                                                         </span>
                                                     </div>
-                                                    <p className="text-2xl font-bold text-foreground">247</p>
+                                                    <p className="text-2xl font-bold text-foreground">{communityMembers.length}</p>
                                                 </div>
                                                 <div className="bg-background rounded-lg p-4">
                                                     <div className="flex items-center gap-2 mb-1">
@@ -4574,25 +4597,25 @@ export default function OnlyFansMentorProfilePage() {
                                                             {isArabic ? 'أعضاء VIP' : 'VIP Members'}
                                                         </span>
                                                     </div>
-                                                    <p className="text-2xl font-bold text-foreground">23</p>
+                                                    <p className="text-2xl font-bold text-foreground">{communityMembers.filter(m => m.tier?.toLowerCase() === 'vip').length}</p>
                                                 </div>
                                                 <div className="bg-background rounded-lg p-4">
                                                     <div className="flex items-center gap-2 mb-1">
                                                         <TrendingUp className="w-4 h-4 text-green-400" />
                                                         <span className="text-xs text-muted-foreground">
-                                                            {isArabic ? 'نشط هذا الشهر' : 'Active This Month'}
+                                                            {isArabic ? 'Premium' : 'Premium'}
                                                         </span>
                                                     </div>
-                                                    <p className="text-2xl font-bold text-foreground">189</p>
+                                                    <p className="text-2xl font-bold text-foreground">{communityMembers.filter(m => m.tier?.toLowerCase() === 'premium').length}</p>
                                                 </div>
                                                 <div className="bg-background rounded-lg p-4">
                                                     <div className="flex items-center gap-2 mb-1">
                                                         <Clock className="w-4 h-4 text-orange-400" />
                                                         <span className="text-xs text-muted-foreground">
-                                                            {isArabic ? 'جدد هذا الأسبوع' : 'New This Week'}
+                                                            {isArabic ? 'Basic' : 'Basic'}
                                                         </span>
                                                     </div>
-                                                    <p className="text-2xl font-bold text-foreground">12</p>
+                                                    <p className="text-2xl font-bold text-foreground">{communityMembers.filter(m => m.tier?.toLowerCase() === 'basic').length}</p>
                                                 </div>
                                             </div>
 
@@ -4700,7 +4723,8 @@ export default function OnlyFansMentorProfilePage() {
                                                             <div className="flex items-center gap-2">
                                                                 <button
                                                                     onClick={() => {
-                                                                        toast.success(isArabic ? 'تم إرسال رسالة' : 'Message sent')
+                                                                        // Navigate to messaging with this user
+                                                                        router.push(`/${locale}/messaging?userId=${member.id}`)
                                                                     }}
                                                                     className="p-2 hover:bg-blue-500/10 text-blue-500 rounded-lg transition-colors"
                                                                     title={isArabic ? 'إرسال رسالة' : 'Send message'}
@@ -4708,11 +4732,28 @@ export default function OnlyFansMentorProfilePage() {
                                                                     <MessageSquare className="w-4 h-4" />
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => {
-                                                                        const action = member.status === 'warned' ? 'removed warning' : 'warned'
-                                                                        toast.success(isArabic ? 
-                                                                            (action === 'warned' ? 'تم تحذير العضو' : 'تم إزالة التحذير') : 
-                                                                            `Member ${action}`)
+                                                                    onClick={async () => {
+                                                                        try {
+                                                                            const response = await fetch(`/api/mentors/${mentor.id}/members`, {
+                                                                                method: 'POST',
+                                                                                headers: { 'Content-Type': 'application/json' },
+                                                                                body: JSON.stringify({ 
+                                                                                    memberId: member.id, 
+                                                                                    action: 'warn' 
+                                                                                })
+                                                                            })
+                                                                            const data = await response.json()
+                                                                            if (response.ok) {
+                                                                                toast.success(isArabic ? 
+                                                                                    (data.newStatus === 'warned' ? 'تم تحذير العضو' : 'تم إزالة التحذير') : 
+                                                                                    data.message)
+                                                                                fetchCommunityMembers()
+                                                                            } else {
+                                                                                toast.error(data.error || 'Failed')
+                                                                            }
+                                                                        } catch {
+                                                                            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+                                                                        }
                                                                     }}
                                                                     className={`p-2 rounded-lg transition-colors ${
                                                                         member.status === 'warned' 
@@ -4726,23 +4767,67 @@ export default function OnlyFansMentorProfilePage() {
                                                                     <AlertTriangle className="w-4 h-4" />
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => {
-                                                                        toast.success(isArabic ? 'تم كتم العضو لمدة 24 ساعة' : 'Member muted for 24 hours')
+                                                                    onClick={async () => {
+                                                                        try {
+                                                                            const response = await fetch(`/api/mentors/${mentor.id}/members`, {
+                                                                                method: 'POST',
+                                                                                headers: { 'Content-Type': 'application/json' },
+                                                                                body: JSON.stringify({ 
+                                                                                    memberId: member.id, 
+                                                                                    action: 'mute',
+                                                                                    duration: 24 // hours
+                                                                                })
+                                                                            })
+                                                                            const data = await response.json()
+                                                                            if (response.ok) {
+                                                                                toast.success(isArabic ? 
+                                                                                    (data.newStatus === 'muted' ? 'تم كتم العضو لمدة 24 ساعة' : 'تم إلغاء الكتم') : 
+                                                                                    data.message)
+                                                                                fetchCommunityMembers()
+                                                                            } else {
+                                                                                toast.error(data.error || 'Failed')
+                                                                            }
+                                                                        } catch {
+                                                                            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+                                                                        }
                                                                     }}
-                                                                    className="p-2 hover:bg-purple-500/10 text-purple-500 rounded-lg transition-colors"
-                                                                    title={isArabic ? 'كتم العضو' : 'Mute member'}
+                                                                    className={`p-2 rounded-lg transition-colors ${
+                                                                        member.status === 'muted'
+                                                                            ? 'hover:bg-green-500/10 text-green-500'
+                                                                            : 'hover:bg-purple-500/10 text-purple-500'
+                                                                    }`}
+                                                                    title={member.status === 'muted' ?
+                                                                        (isArabic ? 'إلغاء الكتم' : 'Unmute') :
+                                                                        (isArabic ? 'كتم العضو' : 'Mute member')}
                                                                 >
                                                                     <VolumeX className="w-4 h-4" />
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => {
+                                                                    onClick={async () => {
                                                                         const confirmed = window.confirm(
                                                                             isArabic ? 
-                                                                                `هل أنت متأكد من إزالة "${isArabic ? member.arabicName : member.name}" من المجتمع؟` :
+                                                                                `هل أنت متأكد من إزالة "${member.name || member.arabicName}" من المجتمع؟` :
                                                                                 `Are you sure you want to remove "${member.name}" from the community?`
                                                                         )
-                                                                        if (confirmed) {
-                                                                            toast.success(isArabic ? 'تم إزالة العضو' : 'Member removed')
+                                                                        if (!confirmed) return
+                                                                        try {
+                                                                            const response = await fetch(`/api/mentors/${mentor.id}/members`, {
+                                                                                method: 'POST',
+                                                                                headers: { 'Content-Type': 'application/json' },
+                                                                                body: JSON.stringify({ 
+                                                                                    memberId: member.id, 
+                                                                                    action: 'remove' 
+                                                                                })
+                                                                            })
+                                                                            const data = await response.json()
+                                                                            if (response.ok) {
+                                                                                toast.success(isArabic ? 'تم إزالة العضو' : 'Member removed')
+                                                                                fetchCommunityMembers()
+                                                                            } else {
+                                                                                toast.error(data.error || 'Failed')
+                                                                            }
+                                                                        } catch {
+                                                                            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
                                                                         }
                                                                     }}
                                                                     className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
@@ -4773,7 +4858,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => toast.success(isArabic ? 'تم إرسال رسالة لجميع الأعضاء' : 'Message sent to all members')}
+                                                        onClick={() => setShowBroadcastModal(true)}
                                                     >
                                                         <MessageSquare className="w-4 h-4 mr-2" />
                                                         {isArabic ? 'رسالة للجميع' : 'Message All'}
@@ -4781,7 +4866,32 @@ export default function OnlyFansMentorProfilePage() {
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => toast.success(isArabic ? 'تم تصدير قائمة الأعضاء' : 'Members list exported')}
+                                                        onClick={() => {
+                                                            // Export members list to CSV
+                                                            if (communityMembers.length === 0) {
+                                                                toast.error(isArabic ? 'لا يوجد أعضاء للتصدير' : 'No members to export')
+                                                                return
+                                                            }
+                                                            const headers = ['Name', 'Email', 'Tier', 'Joined Date', 'Status']
+                                                            const csvContent = [
+                                                                headers.join(','),
+                                                                ...communityMembers.map(m => [
+                                                                    m.name || '',
+                                                                    m.email || '',
+                                                                    m.tier || '',
+                                                                    m.joinedAt || '',
+                                                                    m.status || 'active'
+                                                                ].join(','))
+                                                            ].join('\n')
+                                                            const blob = new Blob([csvContent], { type: 'text/csv' })
+                                                            const url = window.URL.createObjectURL(blob)
+                                                            const a = document.createElement('a')
+                                                            a.href = url
+                                                            a.download = `members-${mentor?.user?.name || 'community'}.csv`
+                                                            a.click()
+                                                            window.URL.revokeObjectURL(url)
+                                                            toast.success(isArabic ? 'تم تصدير قائمة الأعضاء' : 'Members list exported')
+                                                        }}
                                                     >
                                                         <Download className="w-4 h-4 mr-2" />
                                                         {isArabic ? 'تصدير القائمة' : 'Export List'}
@@ -4789,7 +4899,10 @@ export default function OnlyFansMentorProfilePage() {
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => toast.success(isArabic ? 'تم تحديث الإحصائيات' : 'Statistics updated')}
+                                                        onClick={() => {
+                                                            fetchCommunityMembers()
+                                                            toast.success(isArabic ? 'تم تحديث القائمة' : 'List refreshed')
+                                                        }}
                                                     >
                                                         <RefreshCw className="w-4 h-4 mr-2" />
                                                         {isArabic ? 'تحديث' : 'Refresh'}
@@ -5060,11 +5173,28 @@ export default function OnlyFansMentorProfilePage() {
                                                     {isCreatorView ? (
                                                         <div className="flex items-center gap-1">
                                                             <button 
-                                                                onClick={() => toast.success(isArabic ? 'تم التثبيت' : 'Pinned')}
+                                                                onClick={async () => {
+                                                                    if (!mentor) return
+                                                                    try {
+                                                                        const response = await fetch(`/api/mentors/${mentor.id}/discussions`, {
+                                                                            method: 'PATCH',
+                                                                            headers: { 'Content-Type': 'application/json' },
+                                                                            body: JSON.stringify({ commentId: post.id, isPinned: !post.isPinned })
+                                                                        })
+                                                                        if (response.ok) {
+                                                                            toast.success(isArabic ? (post.isPinned ? 'تم إلغاء التثبيت' : 'تم التثبيت') : (post.isPinned ? 'Unpinned' : 'Pinned'))
+                                                                            fetchCommunityPostsFromAPI()
+                                                                        } else {
+                                                                            toast.error(isArabic ? 'فشلت العملية' : 'Operation failed')
+                                                                        }
+                                                                    } catch (error) {
+                                                                        toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+                                                                    }
+                                                                }}
                                                                 className="p-1 hover:bg-card-hover rounded-lg transition-colors"
                                                                 title={isArabic ? 'تثبيت المنشور' : 'Pin post'}
                                                             >
-                                                                <Paperclip className="w-4 h-4 text-muted-foreground" />
+                                                                <Paperclip className={`w-4 h-4 ${post.isPinned ? 'text-purple-500' : 'text-muted-foreground'}`} />
                                                             </button>
                                                             <button 
                                                                 onClick={async () => {
@@ -5304,8 +5434,12 @@ export default function OnlyFansMentorProfilePage() {
                                                                     <Button
                                                                         size="sm"
                                                                         onClick={() => {
-                                                                            toast.success(isArabic ? 'جاري التحميل...' : 'Downloading...')
-                                                                            // In production: trigger actual file download
+                                                                            if (resource.url) {
+                                                                                window.open(resource.url, '_blank')
+                                                                                toast.success(isArabic ? 'جاري التحميل...' : 'Downloading...')
+                                                                            } else {
+                                                                                toast.error(isArabic ? 'الملف غير متاح' : 'File not available')
+                                                                            }
                                                                         }}
                                                                         className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
                                                                     >
@@ -5526,7 +5660,23 @@ export default function OnlyFansMentorProfilePage() {
                                             {isArabic ? 'الأرباح' : 'Earnings'}
                                         </h3>
                                     </div>
-                                    <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white">
+                                    <Button 
+                                        size="sm" 
+                                        className="bg-green-500 hover:bg-green-600 text-white"
+                                        onClick={async () => {
+                                            // Fetch withdrawal info first
+                                            try {
+                                                const response = await fetch('/api/creator/withdrawals')
+                                                if (response.ok) {
+                                                    const data = await response.json()
+                                                    setWithdrawalInfo(data)
+                                                }
+                                            } catch (error) {
+                                                console.error('Error fetching withdrawal info:', error)
+                                            }
+                                            setShowWithdrawalModal(true)
+                                        }}
+                                    >
                                         {isArabic ? 'سحب' : 'Withdraw'}
                                     </Button>
                                 </div>
@@ -5780,7 +5930,10 @@ export default function OnlyFansMentorProfilePage() {
                                         <MessageCircle className="w-4 h-4 mr-2" />
                                         {isArabic ? 'منشور جديد' : 'New Post'}
                                     </Button>
-                                    <Button className="bg-blue-500 hover:bg-blue-600 text-white">
+                                    <Button 
+                                        onClick={() => setShowNewSessionModal(true)}
+                                        className="bg-blue-500 hover:bg-blue-600 text-white"
+                                    >
                                         <Calendar className="w-4 h-4 mr-2" />
                                         {isArabic ? 'جدولة جلسة' : 'Schedule Session'}
                                     </Button>
@@ -5798,11 +5951,23 @@ export default function OnlyFansMentorProfilePage() {
                                         <MessageSquare className="w-4 h-4 mr-2" />
                                         {isArabic ? 'الرسائل' : 'Messages'}
                                     </Button>
-                                    <Button className="bg-pink-500 hover:bg-pink-600 text-white">
+                                    <Button 
+                                        onClick={() => {
+                                            setActiveTab('community')
+                                            setCommunityManagementTab('members')
+                                        }}
+                                        className="bg-pink-500 hover:bg-pink-600 text-white"
+                                    >
                                         <Users className="w-4 h-4 mr-2" />
                                         {isArabic ? 'المشتركون' : 'Subscribers'}
                                     </Button>
-                                    <Button className="bg-orange-500 hover:bg-orange-600 text-white">
+                                    <Button 
+                                        onClick={() => {
+                                            setActiveTab('community')
+                                            setCommunityManagementTab('analytics')
+                                        }}
+                                        className="bg-orange-500 hover:bg-orange-600 text-white"
+                                    >
                                         <TrendingUp className="w-4 h-4 mr-2" />
                                         {isArabic ? 'التحليلات' : 'Analytics'}
                                     </Button>
@@ -9020,6 +9185,317 @@ export default function OnlyFansMentorProfilePage() {
                     }}
                 />
             )}
+
+            {/* Broadcast Message Modal */}
+            <AnimatePresence>
+                {showBroadcastModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-card border border-border rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+                        >
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                                        <MessageSquare className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-foreground">
+                                            {isArabic ? 'رسالة جماعية' : 'Broadcast Message'}
+                                        </h2>
+                                        <p className="text-sm text-muted-foreground">
+                                            {isArabic ? `إرسال رسالة لـ ${communityMembers.length} عضو` : `Send to ${communityMembers.length} members`}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowBroadcastModal(false)}
+                                    className="p-2 hover:bg-card-hover rounded-full transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-muted-foreground" />
+                                </button>
+                            </div>
+
+                            <form onSubmit={async (e) => {
+                                e.preventDefault()
+                                if (!broadcastData.subject || !broadcastData.content) {
+                                    toast.error(isArabic ? 'يرجى ملء جميع الحقول' : 'Please fill all fields')
+                                    return
+                                }
+                                setSendingBroadcast(true)
+                                try {
+                                    const response = await fetch(`/api/mentors/${mentor?.id}/broadcast`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(broadcastData)
+                                    })
+                                    const data = await response.json()
+                                    if (response.ok) {
+                                        toast.success(isArabic ? `تم إرسال الرسالة إلى ${data.recipientCount} عضو` : data.message)
+                                        setShowBroadcastModal(false)
+                                        setBroadcastData({ subject: '', content: '', contentAr: '' })
+                                    } else {
+                                        toast.error(data.error || 'Failed to send')
+                                    }
+                                } catch {
+                                    toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+                                } finally {
+                                    setSendingBroadcast(false)
+                                }
+                            }} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-foreground mb-2">
+                                        {isArabic ? 'العنوان' : 'Subject'}
+                                    </label>
+                                    <Input
+                                        value={broadcastData.subject}
+                                        onChange={(e) => setBroadcastData({ ...broadcastData, subject: e.target.value })}
+                                        placeholder={isArabic ? 'عنوان الرسالة' : 'Message subject'}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-foreground mb-2">
+                                        {isArabic ? 'المحتوى' : 'Content'}
+                                    </label>
+                                    <textarea
+                                        value={broadcastData.content}
+                                        onChange={(e) => setBroadcastData({ ...broadcastData, content: e.target.value })}
+                                        placeholder={isArabic ? 'اكتب رسالتك هنا...' : 'Write your message here...'}
+                                        className="w-full min-h-[150px] bg-background border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-foreground mb-2">
+                                        {isArabic ? 'المحتوى بالعربية (اختياري)' : 'Arabic Content (optional)'}
+                                    </label>
+                                    <textarea
+                                        value={broadcastData.contentAr}
+                                        onChange={(e) => setBroadcastData({ ...broadcastData, contentAr: e.target.value })}
+                                        placeholder={isArabic ? 'اكتب رسالتك بالعربية...' : 'Write Arabic version...'}
+                                        className="w-full min-h-[100px] bg-background border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                        dir="rtl"
+                                    />
+                                </div>
+                                <div className="flex gap-3 pt-4">
+                                    <Button
+                                        type="submit"
+                                        disabled={sendingBroadcast}
+                                        className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+                                    >
+                                        {sendingBroadcast ? (
+                                            <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />{isArabic ? 'جاري الإرسال...' : 'Sending...'}</>
+                                        ) : (
+                                            <><Send className="w-4 h-4 mr-2" />{isArabic ? 'إرسال للجميع' : 'Send to All'}</>
+                                        )}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        onClick={() => setShowBroadcastModal(false)}
+                                        disabled={sendingBroadcast}
+                                        className="flex-1 bg-card hover:bg-card-hover text-foreground border border-border"
+                                    >
+                                        {isArabic ? 'إلغاء' : 'Cancel'}
+                                    </Button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Withdrawal Modal */}
+            <AnimatePresence>
+                {showWithdrawalModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-card border border-border rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+                        >
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-foreground">
+                                            {isArabic ? 'طلب سحب' : 'Request Withdrawal'}
+                                        </h2>
+                                        <p className="text-sm text-muted-foreground">
+                                            {isArabic ? `الرصيد المتاح: €${withdrawalInfo?.balance?.available?.toFixed(2) || '0.00'}` : `Available: €${withdrawalInfo?.balance?.available?.toFixed(2) || '0.00'}`}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowWithdrawalModal(false)}
+                                    className="p-2 hover:bg-card-hover rounded-full transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-muted-foreground" />
+                                </button>
+                            </div>
+
+                            {/* Balance Overview */}
+                            {withdrawalInfo && (
+                                <div className="grid grid-cols-2 gap-3 mb-6">
+                                    <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3">
+                                        <div className="text-xs text-muted-foreground">{isArabic ? 'متاح للسحب' : 'Available'}</div>
+                                        <div className="text-xl font-bold text-green-400">€{withdrawalInfo.balance?.available?.toFixed(2) || '0.00'}</div>
+                                    </div>
+                                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3">
+                                        <div className="text-xs text-muted-foreground">{isArabic ? 'قيد المعالجة' : 'Pending'}</div>
+                                        <div className="text-xl font-bold text-yellow-400">€{withdrawalInfo.balance?.pending?.toFixed(2) || '0.00'}</div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <form onSubmit={async (e) => {
+                                e.preventDefault()
+                                if (!withdrawalData.amount || !withdrawalData.method || !withdrawalData.accountDetails) {
+                                    toast.error(isArabic ? 'يرجى ملء جميع الحقول' : 'Please fill all fields')
+                                    return
+                                }
+                                const amount = parseFloat(withdrawalData.amount)
+                                if (amount < 50) {
+                                    toast.error(isArabic ? 'الحد الأدنى للسحب €50' : 'Minimum withdrawal is €50')
+                                    return
+                                }
+                                if (amount > (withdrawalInfo?.balance?.available || 0)) {
+                                    toast.error(isArabic ? 'رصيد غير كافٍ' : 'Insufficient balance')
+                                    return
+                                }
+                                setSubmittingWithdrawal(true)
+                                try {
+                                    const response = await fetch('/api/creator/withdrawals', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            amount,
+                                            method: withdrawalData.method,
+                                            accountDetails: withdrawalData.accountDetails
+                                        })
+                                    })
+                                    const data = await response.json()
+                                    if (response.ok) {
+                                        toast.success(isArabic ? 'تم تقديم طلب السحب بنجاح' : data.message)
+                                        setShowWithdrawalModal(false)
+                                        setWithdrawalData({ amount: '', method: 'bank_transfer', accountDetails: '' })
+                                    } else {
+                                        toast.error(data.error || 'Failed')
+                                    }
+                                } catch {
+                                    toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+                                } finally {
+                                    setSubmittingWithdrawal(false)
+                                }
+                            }} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-foreground mb-2">
+                                        {isArabic ? 'المبلغ (€)' : 'Amount (€)'}
+                                    </label>
+                                    <Input
+                                        type="number"
+                                        value={withdrawalData.amount}
+                                        onChange={(e) => setWithdrawalData({ ...withdrawalData, amount: e.target.value })}
+                                        placeholder={isArabic ? 'أدخل المبلغ' : 'Enter amount'}
+                                        min={50}
+                                        max={withdrawalInfo?.balance?.available || 0}
+                                        required
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-1">{isArabic ? 'الحد الأدنى €50' : 'Minimum €50'}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-foreground mb-2">
+                                        {isArabic ? 'طريقة السحب' : 'Withdrawal Method'}
+                                    </label>
+                                    <select
+                                        value={withdrawalData.method}
+                                        onChange={(e) => setWithdrawalData({ ...withdrawalData, method: e.target.value })}
+                                        className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-foreground"
+                                    >
+                                        <option value="bank_transfer">{isArabic ? 'تحويل بنكي' : 'Bank Transfer'}</option>
+                                        <option value="paypal">PayPal</option>
+                                        <option value="vodafone_cash">Vodafone Cash</option>
+                                        <option value="instapay">InstaPay</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-foreground mb-2">
+                                        {isArabic ? 'تفاصيل الحساب' : 'Account Details'}
+                                    </label>
+                                    <textarea
+                                        value={withdrawalData.accountDetails}
+                                        onChange={(e) => setWithdrawalData({ ...withdrawalData, accountDetails: e.target.value })}
+                                        placeholder={isArabic ? 'أدخل رقم الحساب / IBAN / رقم الهاتف' : 'Enter account number / IBAN / phone number'}
+                                        className="w-full min-h-[80px] bg-background border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Recent Withdrawals */}
+                                {withdrawalInfo?.withdrawals && withdrawalInfo.withdrawals.length > 0 && (
+                                    <div className="border-t border-border pt-4">
+                                        <h4 className="text-sm font-semibold text-foreground mb-3">{isArabic ? 'آخر الطلبات' : 'Recent Requests'}</h4>
+                                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                                            {withdrawalInfo.withdrawals.slice(0, 3).map((w: any) => (
+                                                <div key={w.id} className="flex items-center justify-between text-sm p-2 bg-card-hover rounded-lg">
+                                                    <span className="text-foreground">€{w.amount}</span>
+                                                    <span className={`px-2 py-0.5 rounded-full text-xs ${
+                                                        w.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
+                                                        w.status === 'PENDING' ? 'bg-yellow-500/20 text-yellow-400' :
+                                                        w.status === 'PROCESSING' ? 'bg-blue-500/20 text-blue-400' :
+                                                        'bg-red-500/20 text-red-400'
+                                                    }`}>
+                                                        {w.status}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="flex gap-3 pt-4">
+                                    <Button
+                                        type="submit"
+                                        disabled={submittingWithdrawal}
+                                        className="flex-1 bg-green-500 hover:bg-green-600 text-white"
+                                    >
+                                        {submittingWithdrawal ? (
+                                            <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />{isArabic ? 'جاري التقديم...' : 'Submitting...'}</>
+                                        ) : (
+                                            <>{isArabic ? 'تقديم طلب السحب' : 'Submit Request'}</>
+                                        )}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        onClick={() => setShowWithdrawalModal(false)}
+                                        disabled={submittingWithdrawal}
+                                        className="flex-1 bg-card hover:bg-card-hover text-foreground border border-border"
+                                    >
+                                        {isArabic ? 'إلغاء' : 'Cancel'}
+                                    </Button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     )
 }

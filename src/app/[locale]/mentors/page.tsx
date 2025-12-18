@@ -358,6 +358,22 @@ export default function OnlyFansStyleMentorsPage() {
         }
     }, [filterType, session])
 
+    // Filter creators based on search query
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setFilteredCreators(creators)
+        } else {
+            const query = searchQuery.toLowerCase().trim()
+            const filtered = creators.filter(creator => {
+                const name = (creator.user?.name || '').toLowerCase()
+                const arabicName = (creator.user?.arabicName || '').toLowerCase()
+                const expertise = (creator.expertise || '').toLowerCase()
+                return name.includes(query) || arabicName.includes(query) || expertise.includes(query)
+            })
+            setFilteredCreators(filtered)
+        }
+    }, [searchQuery, creators])
+
     // Fetch user's bookmarks from API
     const fetchUserBookmarks = useCallback(async () => {
         if (!session?.user?.id) return
@@ -472,16 +488,9 @@ export default function OnlyFansStyleMentorsPage() {
         if (activeView === 'profile' && session && isCreatorAccount && !selectedCreator && creators.length > 0) {
             // This should only run when user clicks "Profile" from main navigation
             // NOT when they click on a creator card (which sets selectedCreator first)
-            console.log('Auto-setting own creator profile. Session userId:', session.user?.id)
-            const userCreator = creators.find(c => {
-                console.log('Comparing:', c.userId, '===', session.user?.id, '?', c.userId === session.user?.id)
-                return c.userId === session.user?.id
-            })
+            const userCreator = creators.find(c => c.userId === session.user?.id)
             if (userCreator) {
-                console.log('Setting own creator profile:', userCreator)
                 setSelectedCreator(userCreator)
-            } else {
-                console.log('User creator not found. UserId:', session.user?.id, 'Creators:', creators.length)
             }
         }
         
@@ -489,7 +498,6 @@ export default function OnlyFansStyleMentorsPage() {
         if (activeView === 'profile' && selectedCreator && creators.length > 0) {
             const creatorExists = creators.find(c => c.id === selectedCreator.id)
             if (!creatorExists) {
-                console.log('Selected creator no longer exists, clearing selection:', selectedCreator.id)
                 setSelectedCreator(null)
             }
         }
@@ -597,8 +605,6 @@ export default function OnlyFansStyleMentorsPage() {
             const response = await fetch('/api/channel-posts/feed')
             if (response.ok) {
                 const data = await response.json()
-                console.log('Feed posts loaded:', data.posts?.length || 0)
-                console.log('Post types:', data.posts?.map((p: any) => ({ id: p.id, type: p.type, hasMedia: !!(p.thumbnailUrl || p.mediaUrl) })))
                 const postsData = data.posts || []
                 setPosts(postsData)
                 // Cache the response
@@ -650,7 +656,6 @@ export default function OnlyFansStyleMentorsPage() {
             const response = await fetch(`/api/scheduled-posts?creatorId=${creatorId}`)
             if (response.ok) {
                 const data = await response.json()
-                console.log('Loaded creator posts:', data.posts?.length || 0)
                 setCreatorPosts(data.posts || [])
             } else {
                 const error = await response.json()
@@ -717,7 +722,6 @@ export default function OnlyFansStyleMentorsPage() {
     // Memoize creator click handler
     const handleCreatorClick = useCallback((creatorId: string) => {
         // Navigate to individual creator page
-        console.log('handleCreatorClick called with creatorId:', creatorId)
         setIsNavigating(true)
         router.push(`/${locale}/mentors/${creatorId}`)
     }, [locale, router])
@@ -1168,16 +1172,25 @@ export default function OnlyFansStyleMentorsPage() {
                                     </button>
                                 )}
 
-                                {/* Reposts - Only show for signed in users */}
+                                {/* Messages - Only show for signed in users */}
                                 {session && (
                                     <button
-                                        onClick={() => toast.success(isArabic ? 'قريباً' : 'Coming soon!')}
+                                        onClick={() => router.push(`/${locale}/messaging`)}
                                         className="w-full flex items-center gap-4 px-4 py-3 rounded-full hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all"
                                     >
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                        </svg>
-                                        <span className="text-lg font-bold">{isArabic ? 'إعادة النشر' : 'Reposts'}</span>
+                                        <DynamicIcon name="MessageSquare" className="w-6 h-6" />
+                                        <span className="text-lg font-bold">{isArabic ? 'الرسائل' : 'Messages'}</span>
+                                    </button>
+                                )}
+
+                                {/* Notifications - Only show for signed in users */}
+                                {session && (
+                                    <button
+                                        onClick={() => router.push(`/${locale}/notifications`)}
+                                        className="w-full flex items-center gap-4 px-4 py-3 rounded-full hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all"
+                                    >
+                                        <DynamicIcon name="Bell" className="w-6 h-6" />
+                                        <span className="text-lg font-bold">{isArabic ? 'الإشعارات' : 'Notifications'}</span>
                                     </button>
                                 )}
 
@@ -1364,15 +1377,13 @@ export default function OnlyFansStyleMentorsPage() {
                                                             alt="Post media"
                                                             className="w-full object-cover max-h-[500px]"
                                                             onError={(e) => {
-                                                                console.log('Image failed to load:', post.thumbnailUrl || post.mediaUrl)
                                                                 e.currentTarget.style.display = 'none'
                                                             }}
                                                         />
                                                     </div>
                                                 )}
 
-                                                {/* VIDEO Post - Debug */}
-                                                {console.log('Checking VIDEO for post:', post.id, 'Type:', post.type, 'Is VIDEO?:', post.type === 'VIDEO')}
+                                                {/* VIDEO Post */}
                                                 {post.type === 'VIDEO' && (
                                                     <div className="relative rounded-2xl overflow-hidden border border-border mt-3 bg-gradient-to-br from-purple-900/30 to-pink-900/30">
                                                         
@@ -1811,7 +1822,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                 {creator.totalSubscribers >= 1000 ? `${(creator.totalSubscribers / 1000).toFixed(1)}K` : creator.totalSubscribers} {isArabic ? 'مشترك' : 'subscribers'}
                                                             </span>
                                                             <span className="text-sm font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                                                €{creator.monthlyPrice}/{isArabic ? 'شهر' : 'mo'}
+                                                                €{creator.monthlyPrice || 0}/{isArabic ? 'شهر' : 'mo'}
                                                             </span>
                                                         </div>
                                                     </motion.div>
@@ -2092,10 +2103,12 @@ export default function OnlyFansStyleMentorsPage() {
                                                         <div className="flex items-center justify-between text-xs text-white/80">
                                                             <span className="flex items-center gap-1">
                                                                 <DynamicIcon name="Users" className="w-3.5 h-3.5" />
-                                                                {(creator.totalSubscribers / 1000).toFixed(1)}K
+                                                                {creator.totalSubscribers >= 1000 
+                                                                    ? `${(creator.totalSubscribers / 1000).toFixed(1)}K` 
+                                                                    : creator.totalSubscribers} {isArabic ? 'مشترك' : 'subs'}
                                                             </span>
                                                             <span className="font-bold text-white">
-                                                                €{creator.monthlyPrice}/mo
+                                                                €{creator.monthlyPrice || 0}/mo
                                                             </span>
                                                         </div>
                                                     </div>
@@ -2580,14 +2593,12 @@ export default function OnlyFansStyleMentorsPage() {
                                                         {profileTab === 'calendar' && (
                                                             selectedCreator?.id ? (
                                                                 <>
-                                                                    {console.log('Rendering ContentCalendar with creatorId:', selectedCreator.id)}
                                                                     <ContentCalendar
                                                                         isArabic={isArabic}
                                                                         creatorId={selectedCreator.id}
                                                                         onCreateNew={() => setUploadModalOpen(true)}
                                                                         onEditPost={(post) => {
-                                                                            // TODO: Open edit modal with post data
-                                                                            console.log('Edit post:', post)
+                                                                            // Open edit modal with post data
                                                                             setUploadModalOpen(true)
                                                                         }}
                                                                     />
@@ -3157,7 +3168,12 @@ export default function OnlyFansStyleMentorsPage() {
                                                         <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'منشور' : 'Post'}</span>
                                                     </Button>
                                                     <Button 
-                                                        onClick={() => toast.success(isArabic ? 'جدولة جلسة' : 'Schedule Session')} 
+                                                        onClick={() => {
+                                                            // Navigate to own mentor page sessions tab
+                                                            if (selectedCreator?.id) {
+                                                                router.push(`/${locale}/mentors/${selectedCreator.id}?tab=sessions`)
+                                                            }
+                                                        }} 
                                                         variant="outline"
                                                         className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-blue-500/10 hover:border-blue-500/50 transition-all"
                                                     >
@@ -3167,7 +3183,12 @@ export default function OnlyFansStyleMentorsPage() {
                                                         <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'جدولة' : 'Schedule'}</span>
                                                     </Button>
                                                     <Button 
-                                                        onClick={() => toast.success(isArabic ? 'تحميل مورد' : 'Upload Resource')} 
+                                                        onClick={() => {
+                                                            // Navigate to own mentor page resources tab
+                                                            if (selectedCreator?.id) {
+                                                                router.push(`/${locale}/mentors/${selectedCreator.id}?tab=resources`)
+                                                            }
+                                                        }} 
                                                         variant="outline"
                                                         className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-green-500/10 hover:border-green-500/50 transition-all"
                                                     >
@@ -3193,7 +3214,12 @@ export default function OnlyFansStyleMentorsPage() {
                                                         <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'رسائل' : 'DMs'}</span>
                                                     </Button>
                                                     <Button 
-                                                        onClick={() => toast.success(isArabic ? 'إدارة المشتركين' : 'Manage Subscribers')} 
+                                                        onClick={() => {
+                                                            // Navigate to own mentor page community tab
+                                                            if (selectedCreator?.id) {
+                                                                router.push(`/${locale}/mentors/${selectedCreator.id}?tab=community`)
+                                                            }
+                                                        }} 
                                                         variant="outline"
                                                         className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-yellow-500/10 hover:border-yellow-500/50 transition-all"
                                                     >
@@ -3582,7 +3608,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                 </div>
                                             </div>
 
-                                            {/* Rewards & Achievements */}
+                                            {/* Rewards & Achievements - Coming Soon */}
                                             <div className="mb-6">
                                                 <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
                                                     <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3590,95 +3616,18 @@ export default function OnlyFansStyleMentorsPage() {
                                                     </svg>
                                                     {isArabic ? 'المكافآت والإنجازات' : 'Rewards & Achievements'}
                                                 </h3>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {/* Active Contests */}
-                                                    <div className="bg-card border border-border rounded-2xl p-5">
-                                                        <div className="flex items-center justify-between mb-4">
-                                                            <h4 className="font-bold text-foreground flex items-center gap-2">
-                                                                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                                                                </svg>
-                                                                {isArabic ? 'المسابقات النشطة' : 'Active Contests'}
-                                                            </h4>
-                                                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                                                                {isArabic ? '2 نشط' : '2 Active'}
-                                                            </Badge>
-                                                        </div>
-                                                        <div className="space-y-3">
-                                                            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-3">
-                                                                <div className="flex items-center justify-between mb-2">
-                                                                    <span className="font-semibold text-foreground text-sm">{isArabic ? 'تحدي الإبداع' : 'Creative Challenge'}</span>
-                                                                    <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full">
-                                                                        {isArabic ? '15 يوم متبقي' : '15d left'}
-                                                                    </span>
-                                                                </div>
-                                                                <p className="text-xs text-muted-foreground mb-2">{isArabic ? 'أفضل مشروع يفوز بـ €5,000' : 'Best project wins €5,000'}</p>
-                                                                <div className="flex items-center gap-2 text-xs">
-                                                                    <DynamicIcon name="Users" className="w-3 h-3" />
-                                                                    <span className="text-muted-foreground">{isArabic ? '24 مشارك' : '24 participants'}</span>
-                                                                </div>
-                                                            </div>
-                                                            <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-xl p-3">
-                                                                <div className="flex items-center justify-between mb-2">
-                                                                    <span className="font-semibold text-foreground text-sm">{isArabic ? 'مسابقة الاختبار' : 'Quiz Marathon'}</span>
-                                                                    <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full">
-                                                                        {isArabic ? '7 أيام متبقية' : '7d left'}
-                                                                    </span>
-                                                                </div>
-                                                                <p className="text-xs text-muted-foreground mb-2">{isArabic ? 'أعلى درجة تفوز بـ €3,000' : 'Highest score wins €3,000'}</p>
-                                                                <div className="flex items-center gap-2 text-xs">
-                                                                    <DynamicIcon name="Users" className="w-3 h-3" />
-                                                                    <span className="text-muted-foreground">{isArabic ? '38 مشارك' : '38 participants'}</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                <div className="bg-card border border-border rounded-2xl p-8 text-center">
+                                                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                                                        <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                                        </svg>
                                                     </div>
-
-                                                    {/* Member Achievements */}
-                                                    <div className="bg-card border border-border rounded-2xl p-5">
-                                                        <div className="flex items-center justify-between mb-4">
-                                                            <h4 className="font-bold text-foreground flex items-center gap-2">
-                                                                <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                                                                </svg>
-                                                                {isArabic ? 'إنجازات الأعضاء' : 'Member Achievements'}
-                                                            </h4>
-                                                        </div>
-                                                        <div className="space-y-3">
-                                                            <div className="flex items-center gap-3 p-2 rounded-lg bg-card-hover">
-                                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center flex-shrink-0">
-                                                                    <DynamicIcon name="Crown" className="w-5 h-5 text-white" />
-                                                                </div>
-                                                                <div className="flex-1">
-                                                                    <div className="font-semibold text-foreground text-sm">{isArabic ? 'الأعضاء المميزون' : 'Top Contributors'}</div>
-                                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'أكمل 10 دورات' : 'Completed 10 courses'}</div>
-                                                                </div>
-                                                                <div className="text-2xl">🏆</div>
-                                                            </div>
-                                                            <div className="flex items-center gap-3 p-2 rounded-lg bg-card-hover">
-                                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                                                                    <DynamicIcon name="Sparkles" className="w-5 h-5 text-white" />
-                                                                </div>
-                                                                <div className="flex-1">
-                                                                    <div className="font-semibold text-foreground text-sm">{isArabic ? 'قوة التعلم' : 'Learning Powerhouse'}</div>
-                                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'سلسلة 30 يوماً' : '30-day streak'}</div>
-                                                                </div>
-                                                                <div className="text-2xl">⚡</div>
-                                                            </div>
-                                                            <div className="flex items-center gap-3 p-2 rounded-lg bg-card-hover">
-                                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
-                                                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                                                    </svg>
-                                                                </div>
-                                                                <div className="flex-1">
-                                                                    <div className="font-semibold text-foreground text-sm">{isArabic ? 'مساعد المجتمع' : 'Community Helper'}</div>
-                                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'ساعد 50 عضواً' : 'Helped 50 members'}</div>
-                                                                </div>
-                                                                <div className="text-2xl">🤝</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                    <h4 className="text-lg font-bold text-foreground mb-2">
+                                                        {isArabic ? 'قريباً' : 'Coming Soon'}
+                                                    </h4>
+                                                    <p className="text-muted-foreground text-sm">
+                                                        {isArabic ? 'مسابقات وإنجازات ومكافآت للأعضاء النشطين' : 'Contests, achievements and rewards for active members'}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -3722,8 +3671,12 @@ export default function OnlyFansStyleMentorsPage() {
                                                 <CreatorCardSkeleton key={i} />
                                             ))}
                                         </>
+                                    ) : filteredCreators.length === 0 ? (
+                                        <div className="text-center py-8 text-muted-foreground">
+                                            {searchQuery ? (isArabic ? 'لا توجد نتائج' : 'No results found') : (isArabic ? 'لا يوجد منشئون' : 'No creators yet')}
+                                        </div>
                                     ) : (
-                                        creators.slice(0, 5).map((creator, idx) => (
+                                        filteredCreators.slice(0, 5).map((creator, idx) => (
                                         <div
                                             key={creator.id}
                                             className="group cursor-pointer animate-fade-in border border-white/[.16] rounded-[10px] overflow-hidden relative"
@@ -3763,9 +3716,14 @@ export default function OnlyFansStyleMentorsPage() {
                                                 </div>
 
                                                 <div className="flex items-center justify-between text-[10px] text-white/50">
-                                                    <span>{(creator.totalSubscribers / 1000).toFixed(1)}K {isArabic ? 'مشترك' : 'subs'}</span>
+                                                    <span>
+                                                        {creator.totalSubscribers >= 1000 
+                                                            ? `${(creator.totalSubscribers / 1000).toFixed(1)}K` 
+                                                            : creator.totalSubscribers
+                                                        } {isArabic ? 'مشترك' : 'subs'}
+                                                    </span>
                                                     <span className="font-semibold text-white/80">
-                                                        €{creator.monthlyPrice}
+                                                        €{creator.monthlyPrice || 0}
                                                     </span>
                                                 </div>
                                             </div>
@@ -3774,7 +3732,7 @@ export default function OnlyFansStyleMentorsPage() {
                                 </div>
                                 <button 
                                     className="w-full p-3 text-[#0a84ff] hover:text-white hover:bg-white/5 text-sm font-semibold transition-all text-center border-t border-white/10"
-                                    onClick={() => setActiveView('feed')}
+                                    onClick={() => setActiveView('creators')}
                                 >
                                     {isArabic ? 'عرض المزيد' : 'Show more'}
                                 </button>
@@ -3905,7 +3863,6 @@ export default function OnlyFansStyleMentorsPage() {
                 isArabic={isArabic}
                 existingPost={editPostModalOpen ? selectedPost : undefined}
                 onUploadSuccess={(post) => {
-                    console.log('Post saved:', post)
                     toast.success(isArabic ? 'تم حفظ المنشور بنجاح!' : 'Post saved successfully!')
                     setUploadModalOpen(false)
                     setEditPostModalOpen(false)
