@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     X,
     User,
@@ -18,7 +18,8 @@ import {
     RefreshCcw,
     DollarSign,
     FileText,
-    Activity
+    Activity,
+    Loader2
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -85,15 +86,6 @@ interface ActivityLog {
     ipAddress?: string
 }
 
-// User details data - Will be populated from API when available
-// TODO: Fetch subscriptions, tickets, risk flags, and activity from /api/admin/users/[id]/details
-const EMPTY_SUBSCRIPTIONS: Subscription[] = []
-const EMPTY_TICKETS: Ticket[] = []
-const EMPTY_RISK_FLAGS: RiskFlag[] = []
-const EMPTY_ACTIVITY: ActivityLog[] = []
-    ]
-}
-
 const statusColors = {
     active: 'bg-green-100 text-green-800 border-green-200',
     cancelled: 'bg-muted text-gray-800 border-border',
@@ -123,12 +115,33 @@ const priorityColors = {
 
 export default function EnhancedUserDetailsModal({ user, onClose }: UserDetailsModalProps) {
     const [activeTab, setActiveTab] = useState('overview')
+    const [loading, setLoading] = useState(true)
+    const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
+    const [tickets, setTickets] = useState<Ticket[]>([])
+    const [riskFlags, setRiskFlags] = useState<RiskFlag[]>([])
+    const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([])
 
-    // Use empty arrays until API integration is complete
-    const subscriptions = EMPTY_SUBSCRIPTIONS
-    const tickets = EMPTY_TICKETS
-    const riskFlags = EMPTY_RISK_FLAGS
-    const activityLogs = EMPTY_ACTIVITY
+    useEffect(() => {
+        const fetchUserDetails = async () => {
+            try {
+                setLoading(true)
+                const response = await fetch(`/api/admin/users/${user.id}/details`)
+                if (response.ok) {
+                    const data = await response.json()
+                    setSubscriptions(data.subscriptions || [])
+                    setTickets(data.tickets || [])
+                    setRiskFlags(data.riskFlags || [])
+                    setActivityLogs(data.activityLogs || [])
+                }
+            } catch (error) {
+                console.error('Failed to fetch user details:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchUserDetails()
+    }, [user.id])
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-GB', {

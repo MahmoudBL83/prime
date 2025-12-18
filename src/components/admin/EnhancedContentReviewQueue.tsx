@@ -861,6 +861,11 @@ export default function EnhancedContentReviewQueue() {
                                     className="flex-1 bg-white/5 border-border text-muted-foreground hover:bg-white/10"
                                     onClick={() => setShowReviewModal(false)}
                                     disabled={actionLoading}
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                        </div>
                     )}
                 </DialogContent>
             </Dialog>
