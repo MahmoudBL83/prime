@@ -450,7 +450,7 @@ export default function MentorsPage() {
                                             </div>
 
                                             <p className="text-sm font-medium mb-3 text-[var(--primary)]">
-                                                {mentor.expertise || (lang === 'ar' ? 'متخصص' : 'Specialist')}
+                                                {mentor.expertise || ''}
                                             </p>
 
                                             {/* Bio */}

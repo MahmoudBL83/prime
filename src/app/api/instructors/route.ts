@@ -121,11 +121,11 @@ export async function GET() {
                     id: instructor.user.id,
                     name: instructor.user.name,
                     arabicName: instructor.user.arabicName || instructor.user.name,
-                    bio: instructor.user.bio || 'Experienced professional educator',
+                    bio: instructor.user.bio || '', // No fake bio
                     profileImage: instructor.user.profileImage
                 },
                 kycStatus: instructor.kycStatus,
-                expertise: instructor.expertise || 'Professional Education',
+                expertise: instructor.expertise || '', // No fake expertise
                 hourlyRate: instructor.hourlyRate || 0,
                 basicMonthlyPrice: instructor.basicMonthlyPrice,
                 basicYearlyPrice: instructor.basicYearlyPrice,
@@ -135,7 +135,7 @@ export async function GET() {
                 vipYearlyPrice: instructor.vipYearlyPrice,
                 totalSubscribers: instructor.totalSubscribers || 0,
                 availableForMeetings: instructor.availableForMeetings,
-                languages: instructor.languages || 'English, Arabic',
+                languages: instructor.languages || '', // No fake languages
                 stats: {
                     totalCourses: stats.courseCount,
                     totalStudents: stats.totalEnrollments,

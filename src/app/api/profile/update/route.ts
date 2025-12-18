@@ -90,7 +90,7 @@ export async function PATCH(req: NextRequest) {
                         description: bio || null,
                         coverImage: coverImage || null,
                         tiers: {
-                            allAccess: { price: monthlyPrice || 29, benefits: ['All content', 'Live sessions', 'Priority messaging'] }
+                            allAccess: { price: monthlyPrice || 0, benefits: ['All content', 'Live sessions', 'Priority messaging'] }
                         }
                     }
                 })

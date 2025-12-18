@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Single tier pricing in EUR
-    const monthlyPrice = creatorPricing.monthlyPrice || creatorPricing.basicMonthlyPrice || 29;
+    const monthlyPrice = creatorPricing.monthlyPrice || creatorPricing.basicMonthlyPrice || 0;
 
     // Calculate price based on billing period (single tier only)
     let price = billingPeriod === 'MONTHLY' ? monthlyPrice : monthlyPrice * 10; // 10 months for yearly

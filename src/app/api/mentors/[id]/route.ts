@@ -78,7 +78,7 @@ export async function GET(
 
         const averageRating = reviews.length > 0
             ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
-            : 5.0
+            : 0 // No fake rating - show 0 if no reviews
 
         const totalStudents = mentor.courses.reduce(
             (sum, course) => sum + course.enrollments.length,
@@ -198,12 +198,12 @@ export async function GET(
             user: {
                 ...mentor.user,
                 arabicName: mentor.user.arabicName || mentor.user.name, // Fallback to name if no Arabic name
-                bio: mentor.user.bio || 'Experienced professional educator' // Fallback bio
+                bio: mentor.user.bio || '' // Empty string if no bio - no fake text
             },
-            expertise: mentor.expertise || 'Professional Education',
-            languages: mentor.languages || 'English',
-            timezone: mentor.timezone || 'UTC',
-            monthlyPrice: (mentor as any).monthlyPrice || mentor.basicMonthlyPrice || 29, // Single tier price in EUR
+            expertise: mentor.expertise || '',
+            languages: mentor.languages || '',
+            timezone: mentor.timezone || '',
+            monthlyPrice: (mentor as any).monthlyPrice || mentor.basicMonthlyPrice || 0, // No fake price - 0 if not set
             currency: 'EUR',
             hourlyRate: mentor.hourlyRate || null,
             availableForMeetings: mentor.availableForMeetings ?? true,

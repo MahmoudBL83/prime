@@ -888,45 +888,8 @@ export default function OnlyFansMentorProfilePage() {
                 const data = await response.json()
                 setCommunityMembers(data.members || [])
             } else {
-                // Demo data for now
-                setCommunityMembers([
-                    {
-                        id: '1',
-                        name: 'Ahmed Hassan',
-                        arabicName: 'أحمد حسن',
-                        profileImage: null,
-                        tier: 'VIP',
-                        joinDate: '2024-01-15',
-                        lastActive: '2 hours ago',
-                        totalPosts: 45,
-                        totalLikes: 234,
-                        status: 'active'
-                    },
-                    {
-                        id: '2', 
-                        name: 'Sara Ali',
-                        arabicName: 'سارة علي',
-                        profileImage: null,
-                        tier: 'PREMIUM',
-                        joinDate: '2024-01-10',
-                        lastActive: '1 day ago',
-                        totalPosts: 23,
-                        totalLikes: 156,
-                        status: 'active'
-                    },
-                    {
-                        id: '3',
-                        name: 'Omar Farouk',
-                        arabicName: 'عمر فاروق',
-                        profileImage: null,
-                        tier: 'BASIC',
-                        joinDate: '2024-01-08',
-                        lastActive: '3 days ago',
-                        totalPosts: 12,
-                        totalLikes: 67,
-                        status: 'inactive'
-                    }
-                ])
+                // No demo data - show empty state if API fails
+                setCommunityMembers([])
             }
         } catch (error) {
             console.error('Error fetching community members:', error)
@@ -1632,8 +1595,8 @@ export default function OnlyFansMentorProfilePage() {
                     creatorId: channelId, // Pass instructor ID for reference
                     tier: 'ALL_ACCESS',
                     price: price,
-                    billingCycle: 'monthly',
-                    paymentMethodId: 'demo_payment_method' // In production, use Stripe
+                    billingCycle: 'monthly'
+                    // paymentMethodId will be set by payment processor (Stripe/Paymob)
                 })
             })
 
@@ -1777,43 +1740,8 @@ export default function OnlyFansMentorProfilePage() {
                 const data = await response.json()
                 setPostComments(prev => ({ ...prev, [postId]: data.comments || [] }))
             } else {
-                // Demo comments if API doesn't exist
-                const demoComments = [
-                    {
-                        id: '1',
-                        author: {
-                            name: 'Ahmed Hassan',
-                            arabicName: 'أحمد حسن',
-                            profileImage: null
-                        },
-                        content: isArabic ? 'شكراً على المحتوى الرائع!' : 'Thanks for the amazing content!',
-                        timestamp: '5m',
-                        likes: 12
-                    },
-                    {
-                        id: '2',
-                        author: {
-                            name: 'Layla Mohamed',
-                            arabicName: 'ليلى محمد',
-                            profileImage: null
-                        },
-                        content: isArabic ? 'هل يمكنك شرح المزيد عن هذا الموضوع؟' : 'Can you explain more about this topic?',
-                        timestamp: '15m',
-                        likes: 8
-                    },
-                    {
-                        id: '3',
-                        author: {
-                            name: 'Omar Ali',
-                            arabicName: 'عمر علي',
-                            profileImage: null
-                        },
-                        content: isArabic ? 'محتوى مفيد جداً! 🔥' : 'Very helpful content! 🔥',
-                        timestamp: '1h',
-                        likes: 15
-                    }
-                ]
-                setPostComments(prev => ({ ...prev, [postId]: demoComments }))
+                // No demo data - show empty state if API fails
+                setPostComments(prev => ({ ...prev, [postId]: [] }))
             }
         } catch (error) {
             console.error('Error fetching comments:', error)
@@ -1954,14 +1882,14 @@ export default function OnlyFansMentorProfilePage() {
             if (savedPosts) {
                 try {
                     const parsedPosts = JSON.parse(savedPosts)
-                    // Merge saved posts with demo posts (saved posts at the top)
+                    // Merge saved posts with API posts (saved posts at the top)
                     setPosts(prev => {
-                        // Get only demo posts (ones that don't start with 'post-')
-                        const demoPosts = prev.filter(p => !p.id.startsWith('post-'))
+                        // Get only API posts (ones that don't start with 'post-')
+                        const apiPosts = prev.filter(p => !p.id.startsWith('post-'))
                         // Get only saved posts
                         const savedPostsList = parsedPosts.filter((p: Post) => p.id.startsWith('post-'))
-                        // Combine: saved posts first, then demo posts
-                        return [...savedPostsList, ...demoPosts]
+                        // Combine: saved posts first, then API posts
+                        return [...savedPostsList, ...apiPosts]
                     })
                 } catch (error) {
                     console.error('Error loading saved posts:', error)
@@ -2041,12 +1969,12 @@ export default function OnlyFansMentorProfilePage() {
         return !!currentSubscription
     }, [currentSubscription])
 
-    // Combine real and demo archived sessions
+    // Use real archived sessions from API (fallback to empty state if no data)
     const displayArchivedSessions = useMemo(() => {
         return realArchivedSessions.length > 0 ? realArchivedSessions : archivedSessions
     }, [realArchivedSessions, archivedSessions])
 
-    // Combine real and demo community posts
+    // Use real community posts from API (fallback to empty state if no data)
     const displayCommunityPosts = useMemo(() => {
         return realCommunityPosts.length > 0 ? realCommunityPosts : communityPosts
     }, [realCommunityPosts, communityPosts])
@@ -4715,80 +4643,15 @@ export default function OnlyFansMentorProfilePage() {
 
                                             {/* Members List */}
                                             <div className="space-y-3">
-                                                {[
-                                                    {
-                                                        id: '1',
-                                                        name: 'Ahmed Hassan',
-                                                        arabicName: 'أحمد حسن',
-                                                        email: 'ahmed@example.com',
-                                                        tier: 'VIP',
-                                                        joinDate: '2024-01-15',
-                                                        lastActive: '2 hours ago',
-                                                        totalPosts: 45,
-                                                        totalLikes: 234,
-                                                        avatar: null,
-                                                        status: 'active'
-                                                    },
-                                                    {
-                                                        id: '2',
-                                                        name: 'Sara Ali',
-                                                        arabicName: 'سارة علي',
-                                                        email: 'sara@example.com',
-                                                        tier: 'PREMIUM',
-                                                        joinDate: '2024-02-20',
-                                                        lastActive: '1 day ago',
-                                                        totalPosts: 23,
-                                                        totalLikes: 156,
-                                                        avatar: null,
-                                                        status: 'active'
-                                                    },
-                                                    {
-                                                        id: '3',
-                                                        name: 'Omar Farouk',
-                                                        arabicName: 'عمر فاروق',
-                                                        email: 'omar@example.com',
-                                                        tier: 'BASIC',
-                                                        joinDate: '2024-03-10',
-                                                        lastActive: '3 days ago',
-                                                        totalPosts: 12,
-                                                        totalLikes: 67,
-                                                        avatar: null,
-                                                        status: 'active'
-                                                    },
-                                                    {
-                                                        id: '4',
-                                                        name: 'Layla Mohamed',
-                                                        arabicName: 'ليلى محمد',
-                                                        email: 'layla@example.com',
-                                                        tier: 'VIP',
-                                                        joinDate: '2024-01-08',
-                                                        lastActive: '5 minutes ago',
-                                                        totalPosts: 78,
-                                                        totalLikes: 445,
-                                                        avatar: null,
-                                                        status: 'active'
-                                                    },
-                                                    {
-                                                        id: '5',
-                                                        name: 'Khaled Nasser',
-                                                        arabicName: 'خالد ناصر',
-                                                        email: 'khaled@example.com',
-                                                        tier: 'PREMIUM',
-                                                        joinDate: '2024-02-14',
-                                                        lastActive: '1 week ago',
-                                                        totalPosts: 8,
-                                                        totalLikes: 34,
-                                                        avatar: null,
-                                                        status: 'warned'
-                                                    }
-                                                ]
+                                                {communityMembers.length > 0 ? (
+                                                    communityMembers
                                                     .filter(member => {
-                                                        if (memberFilter !== 'all' && member.tier.toLowerCase() !== memberFilter) return false
+                                                        if (memberFilter !== 'all' && member.tier?.toLowerCase() !== memberFilter) return false
                                                         if (memberSearchQuery) {
                                                             const query = memberSearchQuery.toLowerCase()
-                                                            return member.name.toLowerCase().includes(query) ||
-                                                                   member.arabicName.includes(memberSearchQuery) ||
-                                                                   member.email.toLowerCase().includes(query)
+                                                            return member.name?.toLowerCase().includes(query) ||
+                                                                   member.arabicName?.includes(memberSearchQuery) ||
+                                                                   member.email?.toLowerCase().includes(query)
                                                         }
                                                         return true
                                                     })
@@ -4890,7 +4753,15 @@ export default function OnlyFansMentorProfilePage() {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                ))}
+                                                ))
+                                                ) : (
+                                                    <div className="text-center py-8">
+                                                        <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                                                        <p className="text-muted-foreground">
+                                                            {isArabic ? 'لا يوجد أعضاء حتى الآن' : 'No members yet'}
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {/* Bulk Actions */}
@@ -4931,267 +4802,129 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Analytics Management */}
                                     {communityManagementTab === 'analytics' && (
                                         <div className="space-y-6">
-                                            {/* Overview Stats */}
+                                            {/* Overview Stats - Real data from communityAnalytics */}
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                 <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                                                     <div className="flex items-center gap-2 mb-2">
-                                                        <TrendingUp className="w-5 h-5 text-[#0a84ff]" />
+                                                        <Users className="w-5 h-5 text-[#0a84ff]" />
                                                         <span className="text-sm font-medium text-foreground">
-                                                            {isArabic ? 'نمو المجتمع' : 'Community Growth'}
+                                                            {isArabic ? 'إجمالي الأعضاء' : 'Total Members'}
                                                         </span>
                                                     </div>
-                                                    <p className="text-2xl font-bold text-foreground">+15.2%</p>
+                                                    <p className="text-2xl font-bold text-foreground">{communityAnalytics.totalMembers}</p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {isArabic ? 'هذا الشهر' : 'This month'}
+                                                        {isArabic ? 'مشتركين' : 'subscribers'}
                                                     </p>
                                                 </div>
                                                 <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                                                     <div className="flex items-center gap-2 mb-2">
-                                                        <Eye className="w-5 h-5 text-[#0a84ff]" />
+                                                        <FileText className="w-5 h-5 text-[#0a84ff]" />
                                                         <span className="text-sm font-medium text-foreground">
-                                                            {isArabic ? 'المشاهدات' : 'Total Views'}
+                                                            {isArabic ? 'إجمالي المنشورات' : 'Total Posts'}
                                                         </span>
                                                     </div>
-                                                    <p className="text-2xl font-bold text-foreground">12.4K</p>
+                                                    <p className="text-2xl font-bold text-foreground">{communityAnalytics.totalPosts}</p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {isArabic ? '+8.1% من الأسبوع الماضي' : '+8.1% from last week'}
+                                                        {isArabic ? 'منشور' : 'posts'}
+                                                    </p>
+                                                </div>
+                                                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <Activity className="w-5 h-5 text-[#0a84ff]" />
+                                                        <span className="text-sm font-medium text-foreground">
+                                                            {isArabic ? 'نشطون اليوم' : 'Active Today'}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-2xl font-bold text-foreground">{communityAnalytics.activeToday}</p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {isArabic ? 'أعضاء' : 'members'}
                                                     </p>
                                                 </div>
                                                 <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                                                     <div className="flex items-center gap-2 mb-2">
                                                         <MessageSquare className="w-5 h-5 text-[#0a84ff]" />
                                                         <span className="text-sm font-medium text-foreground">
-                                                            {isArabic ? 'معدل التفاعل' : 'Engagement Rate'}
+                                                            {isArabic ? 'معدل التفاعل' : 'Avg Engagement'}
                                                         </span>
                                                     </div>
-                                                    <p className="text-2xl font-bold text-foreground">78.3%</p>
+                                                    <p className="text-2xl font-bold text-foreground">{communityAnalytics.avgEngagement}%</p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {isArabic ? '+5.2% تحسن' : '+5.2% improvement'}
-                                                    </p>
-                                                </div>
-                                                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <Clock className="w-5 h-5 text-[#0a84ff]" />
-                                                        <span className="text-sm font-medium text-foreground">
-                                                            {isArabic ? 'متوسط وقت القراءة' : 'Avg. Read Time'}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-2xl font-bold text-foreground">3.2m</p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {isArabic ? '+0.4 دقيقة' : '+0.4 min increase'}
+                                                        {isArabic ? 'تفاعل' : 'engagement'}
                                                     </p>
                                                 </div>
                                             </div>
 
-                                            {/* Top Performing Content */}
+                                            {/* Top Members - Real data */}
                                             <div className="bg-background border border-border rounded-xl p-6">
                                                 <h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                                                     <Trophy className="w-5 h-5 text-[#0a84ff]" />
-                                                    {isArabic ? 'أفضل المحتوى أداءً' : 'Top Performing Content'}
+                                                    {isArabic ? 'أفضل الأعضاء' : 'Top Members'}
                                                 </h4>
-                                                <div className="space-y-3">
-                                                    {[
-                                                        {
-                                                            title: isArabic ? 'نصائح لتحسين الإنتاجية' : 'Tips for Better Productivity',
-                                                            author: isArabic ? 'أحمد حسن' : 'Ahmed Hassan',
-                                                            views: 1247,
-                                                            likes: 89,
-                                                            comments: 23,
-                                                            type: 'post'
-                                                        },
-                                                        {
-                                                            title: isArabic ? 'كيفية بناء عادات إيجابية' : 'Building Positive Habits',
-                                                            author: isArabic ? 'سارة علي' : 'Sara Ali',
-                                                            views: 956,
-                                                            likes: 67,
-                                                            comments: 18,
-                                                            type: 'post'
-                                                        },
-                                                        {
-                                                            title: isArabic ? 'التوازن بين العمل والحياة' : 'Work-Life Balance Guide',
-                                                            author: isArabic ? 'ليلى محمد' : 'Layla Mohamed',
-                                                            views: 823,
-                                                            likes: 54,
-                                                            comments: 12,
-                                                            type: 'post'
-                                                        }
-                                                    ].map((content, index) => (
-                                                        <div key={index} className="flex items-center justify-between p-3 bg-card rounded-lg">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                                                    index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
-                                                                    index === 1 ? 'bg-gray-400/20 text-gray-400' :
-                                                                    'bg-orange-500/20 text-orange-500'
-                                                                }`}>
-                                                                    <span className="text-sm font-bold">#{index + 1}</span>
+                                                {communityAnalytics.topMembers.length > 0 ? (
+                                                    <div className="space-y-3">
+                                                        {communityAnalytics.topMembers.map((member, index) => (
+                                                            <div key={index} className="flex items-center justify-between p-3 bg-card rounded-lg">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                                                        index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
+                                                                        index === 1 ? 'bg-gray-400/20 text-gray-400' :
+                                                                        'bg-orange-500/20 text-orange-500'
+                                                                    }`}>
+                                                                        <span className="text-sm font-bold">#{index + 1}</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <h5 className="font-medium text-foreground text-sm">{member.name}</h5>
+                                                                        <p className="text-xs text-muted-foreground">{member.tier}</p>
+                                                                    </div>
                                                                 </div>
-                                                                <div>
-                                                                    <h5 className="font-medium text-foreground text-sm">{content.title}</h5>
-                                                                    <p className="text-xs text-muted-foreground">
-                                                                        {isArabic ? 'بواسطة' : 'by'} {content.author}
-                                                                    </p>
+                                                                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                                                    <span>{member.posts} {isArabic ? 'منشور' : 'posts'}</span>
+                                                                    <span>{member.likes} {isArabic ? 'إعجاب' : 'likes'}</span>
                                                                 </div>
                                                             </div>
-                                                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                                                <span className="flex items-center gap-1">
-                                                                    <Eye className="w-3 h-3" />
-                                                                    {content.views}
-                                                                </span>
-                                                                <span className="flex items-center gap-1">
-                                                                    <Heart className="w-3 h-3" />
-                                                                    {content.likes}
-                                                                </span>
-                                                                <span className="flex items-center gap-1">
-                                                                    <MessageCircle className="w-3 h-3" />
-                                                                    {content.comments}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center py-8">
+                                                        <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                                                        <p className="text-muted-foreground">
+                                                            {isArabic ? 'لا توجد بيانات متاحة بعد' : 'No data available yet'}
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            {/* Member Activity Timeline */}
+                                            {/* Recent Activity - Real data */}
                                             <div className="bg-background border border-border rounded-xl p-6">
                                                 <h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                                                     <Activity className="w-5 h-5 text-blue-500" />
-                                                    {isArabic ? 'نشاط الأعضاء' : 'Member Activity'}
+                                                    {isArabic ? 'نشاط الأعضاء' : 'Recent Activity'}
                                                 </h4>
-                                                <div className="space-y-4">
-                                                    {[
-                                                        {
-                                                            time: '2 hours ago',
-                                                            timeAr: 'منذ ساعتين',
-                                                            action: 'New member joined',
-                                                            actionAr: 'انضم عضو جديد',
-                                                            user: 'Omar Farouk',
-                                                            userAr: 'عمر فاروق',
-                                                            type: 'join',
-                                                            icon: UserPlus
-                                                        },
-                                                        {
-                                                            time: '4 hours ago',
-                                                            timeAr: 'منذ 4 ساعات',
-                                                            action: 'Posted a new discussion',
-                                                            actionAr: 'نشر نقاش جديد',
-                                                            user: 'Ahmed Hassan',
-                                                            userAr: 'أحمد حسن',
-                                                            type: 'post',
-                                                            icon: MessageSquare
-                                                        },
-                                                        {
-                                                            time: '6 hours ago',
-                                                            timeAr: 'منذ 6 ساعات',
-                                                            action: 'Upgraded to VIP',
-                                                            actionAr: 'ترقى إلى VIP',
-                                                            user: 'Sara Ali',
-                                                            userAr: 'سارة علي',
-                                                            type: 'upgrade',
-                                                            icon: Crown
-                                                        },
-                                                        {
-                                                            time: '1 day ago',
-                                                            timeAr: 'منذ يوم',
-                                                            action: 'Downloaded a resource',
-                                                            actionAr: 'حمل مورداً',
-                                                            user: 'Layla Mohamed',
-                                                            userAr: 'ليلى محمد',
-                                                            type: 'download',
-                                                            icon: Download
-                                                        },
-                                                        {
-                                                            time: '2 days ago',
-                                                            timeAr: 'منذ يومين',
-                                                            action: 'Started a live session',
-                                                            actionAr: 'بدأ جلسة مباشرة',
-                                                            user: 'Khaled Nasser',
-                                                            userAr: 'خالد ناصر',
-                                                            type: 'session',
-                                                            icon: Video
-                                                        }
-                                                    ].map((activity, index) => {
-                                                        const IconComponent = activity.icon
-                                                        return (
-                                                            <div key={index} className="flex items-center gap-3 p-3 bg-card rounded-lg">
-                                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                                                    activity.type === 'join' ? 'bg-green-500/20 text-green-500' :
-                                                                    activity.type === 'post' ? 'bg-blue-500/20 text-blue-500' :
-                                                                    activity.type === 'upgrade' ? 'bg-yellow-500/20 text-yellow-500' :
-                                                                    activity.type === 'download' ? 'bg-purple-500/20 text-purple-500' :
-                                                                    'bg-orange-500/20 text-orange-500'
-                                                                }`}>
-                                                                    <IconComponent className="w-4 h-4" />
+                                                {communityAnalytics.recentActivity.length > 0 ? (
+                                                    <div className="space-y-4">
+                                                        {communityAnalytics.recentActivity.map((activity, index) => (
+                                                            <div key={index} className="flex items-start gap-3">
+                                                                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                                                                    <Activity className="w-4 h-4 text-blue-500" />
                                                                 </div>
                                                                 <div className="flex-1">
                                                                     <p className="text-sm text-foreground">
-                                                                        <span className="font-medium">
-                                                                            {isArabic ? activity.userAr : activity.user}
-                                                                        </span>{' '}
-                                                                        {isArabic ? activity.actionAr : activity.action}
+                                                                        <span className="font-medium">{activity.user}</span>
+                                                                        {' '}{activity.action}
                                                                     </p>
-                                                                    <p className="text-xs text-muted-foreground">
-                                                                        {isArabic ? activity.timeAr : activity.time}
-                                                                    </p>
+                                                                    <p className="text-xs text-muted-foreground">{activity.time}</p>
                                                                 </div>
                                                             </div>
-                                                        )
-                                                    })}
-                                                </div>
-                                            </div>
-
-                                            {/* Export & Reports */}
-                                            <div className="bg-background border border-border rounded-xl p-6">
-                                                <h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                                                    <FileText className="w-5 h-5 text-green-500" />
-                                                    {isArabic ? 'التقارير والتصدير' : 'Reports & Export'}
-                                                </h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                    <Button
-                                                        variant="outline"
-                                                        className="h-auto p-4 flex flex-col items-center gap-2"
-                                                        onClick={() => toast.success(isArabic ? 'تم تصدير تقرير الأعضاء' : 'Members report exported')}
-                                                    >
-                                                        <Users className="w-6 h-6 text-blue-500" />
-                                                        <div className="text-center">
-                                                            <p className="font-medium text-sm">
-                                                                {isArabic ? 'تقرير الأعضاء' : 'Members Report'}
-                                                            </p>
-                                                            <p className="text-xs text-muted-foreground">
-                                                                {isArabic ? 'إحصائيات وبيانات الأعضاء' : 'Member stats & data'}
-                                                            </p>
-                                                        </div>
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        className="h-auto p-4 flex flex-col items-center gap-2"
-                                                        onClick={() => toast.success(isArabic ? 'تم تصدير تقرير المشاركات' : 'Posts report exported')}
-                                                    >
-                                                        <MessageSquare className="w-6 h-6 text-purple-500" />
-                                                        <div className="text-center">
-                                                            <p className="font-medium text-sm">
-                                                                {isArabic ? 'تقرير المشاركات' : 'Posts Report'}
-                                                            </p>
-                                                            <p className="text-xs text-muted-foreground">
-                                                                {isArabic ? 'تحليل أداء المنشورات' : 'Post performance analysis'}
-                                                            </p>
-                                                        </div>
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        className="h-auto p-4 flex flex-col items-center gap-2"
-                                                        onClick={() => toast.success(isArabic ? 'تم تصدير تقرير التفاعل' : 'Engagement report exported')}
-                                                    >
-                                                        <TrendingUp className="w-6 h-6 text-green-500" />
-                                                        <div className="text-center">
-                                                            <p className="font-medium text-sm">
-                                                                {isArabic ? 'تقرير التفاعل' : 'Engagement Report'}
-                                                            </p>
-                                                            <p className="text-xs text-muted-foreground">
-                                                                {isArabic ? 'معدلات التفاعل والنمو' : 'Interaction & growth rates'}
-                                                            </p>
-                                                        </div>
-                                                    </Button>
-                                                </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center py-8">
+                                                        <Activity className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                                                        <p className="text-muted-foreground">
+                                                            {isArabic ? 'لا يوجد نشاط حديث' : 'No recent activity'}
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -6978,7 +6711,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             )}
                                                         </div>
                                                         <p className="text-xs text-white/60 truncate">
-                                                            {creator.expertise || (isArabic ? 'خبير تعليمي' : 'Education Expert')}
+                                                            {creator.expertise || ''}
                                                         </p>
                                                         <div className="flex items-center gap-2 mt-1">
                                                             <div className="flex items-center gap-1">
@@ -6992,7 +6725,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             <div className="flex items-center gap-1">
                                                                 <Star className="w-3 h-3 text-[#ffd60a] fill-[#ffd60a]" />
                                                                 <span className="text-xs text-white/50">
-                                                                    {creator.averageRating?.toFixed(1) || '5.0'}
+                                                                    {creator.averageRating?.toFixed(1) || '0.0'}
                                                                 </span>
                                                             </div>
                                                         </div>
