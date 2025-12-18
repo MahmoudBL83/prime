@@ -2072,12 +2072,26 @@ export default function OnlyFansStyleMentorsPage() {
                                                     className="absolute inset-0 pointer-events-none bg-[rgba(51,51,51,.3)] rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-100 z-10"
                                                 />
                                                 
-                                {/* Card Image */}
+                                {/* Card Image with Profile Photo */}
                                 <div className="relative aspect-[16/10] overflow-hidden" style={{ borderRadius: 'inherit' }}>
-                                    <div className="w-full h-full bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 flex items-center justify-center">
-                                        <svg className="w-24 h-24 text-white/90" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-                                        </svg>
+                                    <div className="w-full h-full bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600">
+                                        {creator.user?.profileImage ? (
+                                            <Image
+                                                src={creator.user.profileImage}
+                                                alt={creator.user?.name || 'Creator'}
+                                                fill
+                                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                                unoptimized
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <AvatarPlaceholder 
+                                                    name={creator.user?.name || 'Creator'} 
+                                                    size={96}
+                                                    className="shadow-lg"
+                                                />
+                                            </div>
+                                        )}
                                     </div>                                                    {/* Gradient Overlay */}
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                                                     
@@ -3690,11 +3704,25 @@ export default function OnlyFansStyleMentorsPage() {
                                                 className="absolute inset-0 bg-[rgba(51,51,51,.3)] opacity-0 group-hover:opacity-100 transition-opacity duration-100 pointer-events-none z-10"
                                             />
 
-                                            {/* Image Container */}
-                                            <div className="relative w-full h-24 overflow-hidden bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 flex items-center justify-center">
-                                                <svg className="w-12 h-12 text-white/90" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-                                                </svg>
+                                            {/* Image Container with Profile Photo */}
+                                            <div className="relative w-full h-28 overflow-hidden bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600">
+                                                {creator.user?.profileImage ? (
+                                                    <Image
+                                                        src={creator.user.profileImage}
+                                                        alt={creator.user?.name || 'Creator'}
+                                                        fill
+                                                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                                        unoptimized
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center">
+                                                        <AvatarPlaceholder 
+                                                            name={creator.user?.name || 'Creator'} 
+                                                            size={56}
+                                                            className="shadow-lg"
+                                                        />
+                                                    </div>
+                                                )}
 
                                                 {/* Online Status - Top Right */}
                                                 {creator.isOnline && (

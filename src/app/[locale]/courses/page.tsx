@@ -331,75 +331,71 @@ export default function CoursesPage() {
                         priority
                         key={heroCourse.id}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
+                    {/* Gradient overlays */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent md:hidden" />
+                    <div className={`absolute inset-0 ${isArabic ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-black/60 via-transparent to-transparent hidden md:block`} />
                 </div>
 
-                {/* Hero Content */}
-                <div className={`relative h-full max-w-screen-2xl mx-auto px-8 flex flex-col justify-end pb-16 ${isArabic ? 'items-end' : ''}`}>
-                    <div className={`max-w-xl space-y-3 ${isArabic ? 'text-right' : 'text-left'}`}>
-                        {/* Title */}
-                        <h1 className="text-5xl font-bold text-white tracking-tight leading-tight">
+                {/* Hero Content - Mobile First (Apple TV+ Style) */}
+                <div className={`relative h-full max-w-screen-2xl mx-auto px-5 md:px-8 flex flex-col justify-end pb-24 md:pb-16 ${isArabic ? 'items-end' : 'items-center md:items-start'}`}>
+                    <div className={`w-full max-w-xl space-y-3 ${isArabic ? 'text-right' : 'text-center md:text-left'}`}>
+                        {/* Title - Large and prominent */}
+                        <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight">
                             {getCourseTitle(heroCourse)}
                         </h1>
                         
-                        {/* Metadata - Movies • Thriller • Drama • 18+ */}
-                        <div className={`flex items-center text-sm text-white/90 gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                            <div className={`flex items-center gap-1 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        {/* Metadata - Category • Thriller • Drama • 18+ */}
+                        <div className={`flex items-center text-sm text-white/90 gap-2 flex-wrap ${isArabic ? 'flex-row-reverse justify-end' : 'justify-center md:justify-start'}`}>
+                            <div className={`flex items-center gap-1.5 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                <svg className="w-4 h-4 opacity-80" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
                                 </svg>
                                 <span className="font-medium">{getCategoryLabel(heroCourse.category)}</span>
                             </div>
-                            <span>•</span>
+                            <span className="text-white/60">·</span>
                             <span>Thriller</span>
-                            <span>•</span>
-                            <span>Drama</span>
-                            <span>•</span>
-                            <span className="px-1.5 py-0.5 border border-white/40 rounded text-xs">18+</span>
+                            <span className="text-white/60">·</span>
+                            <span>Mystery</span>
+                            <span className="px-1.5 py-0.5 border border-white/40 rounded text-xs ml-1">18+</span>
                         </div>
 
                         {/* Description */}
-                        <p className="text-base text-white/90 leading-relaxed max-w-md">
+                        <p className="text-sm md:text-base text-white/80 leading-relaxed max-w-md mx-auto md:mx-0">
                             {getCourseDescription(heroCourse)}
                         </p>
 
-                        {/* Buttons */}
-                        <div className={`flex items-center gap-3 pt-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                        {/* Buttons - Mobile: centered, full width pill */}
+                        <div className={`flex items-center gap-3 pt-3 ${isArabic ? 'flex-row-reverse justify-end' : 'justify-center md:justify-start'}`}>
                             <button 
                                 onClick={handleAcceptOffer}
-                                className="apple-tv-button relative flex items-center justify-center gap-2 px-8 py-3 font-semibold text-base text-black rounded-full min-w-[100px] max-w-[340px] w-auto transition-transform duration-100 ease-in hover:scale-[1.02] active:scale-[0.98] z-10"
-                                style={{
-                                    height: '48px',
-                                    borderRadius: '48px'
-                                }}
+                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-3.5 font-semibold text-base text-black bg-white rounded-full min-w-[180px] max-w-[280px] md:max-w-[340px] transition-transform duration-100 ease-in hover:scale-[1.02] active:scale-[0.98]"
                             >
-                                <span className="absolute inset-0 bg-white rounded-full -z-10"></span>
-                                Accept Offer
+                                Accept Free Trial
                             </button>
                             <button 
                                 onClick={handleAcceptOffer}
-                                className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all backdrop-blur-sm"
+                                className="w-12 h-12 md:w-10 md:h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all backdrop-blur-sm flex-shrink-0"
                             >
-                                <span className="text-white text-xl font-light leading-none">+</span>
+                                <span className="text-white text-2xl md:text-xl font-light leading-none">+</span>
                             </button>
                         </div>
 
                         {/* Offer Text */}
-                        <p className="text-xs text-white/70 pt-1 leading-relaxed">
-                            €28.99/Mo For 12 Months
+                        <p className={`text-xs text-white/60 pt-1 leading-relaxed ${isArabic ? 'text-right' : 'text-center md:text-left'}`}>
+                            7 days free, then €28.99/month
                         </p>
                     </div>
                 </div>
 
-                {/* Pagination Dots */}
-                <div className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                {/* Pagination Dots - Centered at bottom */}
+                <div className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
                     {courses.slice(0, 5).map((_, index) => (
                         <button
                             key={index}
                             onClick={() => setHeroIndex(index)}
                             className={`w-2 h-2 rounded-full transition-all ${
-                                index === heroIndex ? 'bg-white w-8' : 'bg-white/40'
+                                index === heroIndex ? 'bg-white w-6' : 'bg-white/40'
                             }`}
                         />
                     ))}
