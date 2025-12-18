@@ -50,6 +50,7 @@ interface Conversation {
     type: 'DIRECT' | 'GROUP';
     title?: string;
     description?: string;
+    unreadCount?: number;
     participants: Array<{
         id: string;
         userId: string;
