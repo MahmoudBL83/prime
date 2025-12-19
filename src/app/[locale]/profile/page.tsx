@@ -169,6 +169,7 @@ export default function ProfilePage() {
   useEffect(() => {
     loadProfile();
     loadNotificationSettings();
+    loadStudyPreferences();
   }, [session]);
 
   const loadProfile = async () => {
@@ -203,6 +204,20 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error('Error loading notification settings:', error);
+    }
+  };
+
+  const loadStudyPreferences = async () => {
+    try {
+      const response = await fetch('/api/user/study-preferences');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.preferences) {
+          setStudyBuddyPrefs(data.preferences);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading study preferences:', error);
     }
   };
 
@@ -320,8 +335,8 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className={`backdrop-blur-xl border rounded-3xl p-8 mb-8 shadow-2xl ${isDark
-              ? 'bg-gradient-to-r from-black/30 via-black/20 to-black/30 border-white/10'
-              : 'bg-white/80 border-gray-200'
+            ? 'bg-gradient-to-r from-black/30 via-black/20 to-black/30 border-white/10'
+            : 'bg-white/80 border-gray-200'
             }`}
         >
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
@@ -329,8 +344,8 @@ export default function ProfilePage() {
               <motion.div
                 whileHover={{ scale: 1.05, rotate: 5 }}
                 className={`w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl ${isDark
-                    ? 'bg-[#0a84ff]'
-                    : 'bg-[#0a84ff]'
+                  ? 'bg-[#0a84ff]'
+                  : 'bg-[#0a84ff]'
                   }`}
               >
                 <span className="text-white font-bold text-3xl">
@@ -374,8 +389,8 @@ export default function ProfilePage() {
               whileTap={{ scale: 0.95 }}
               onClick={() => setEditMode(true)}
               className={`flex items-center space-x-2 px-6 py-3 text-white rounded-xl transition-all duration-200 shadow-lg ${isDark
-                  ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90 hover:shadow-[#0a84ff]/25'
-                  : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
+                ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90 hover:shadow-[#0a84ff]/25'
+                : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
                 }`}
             >
               <Edit3 className="w-5 h-5" />
@@ -388,8 +403,8 @@ export default function ProfilePage() {
         <div className="mb-8">
           <div className="overflow-x-auto overflow-y-hidden scrollbar-hide">
             <div className={`flex space-x-1 p-1 backdrop-blur-xl rounded-2xl border min-w-max ${isDark
-                ? 'bg-black/20 border-white/10'
-                : 'bg-white/80 border-gray-200'
+              ? 'bg-black/20 border-white/10'
+              : 'bg-white/80 border-gray-200'
               }`}>
               {tabs.map((tab) => {
                 const Icon = tab.icon;
@@ -398,12 +413,12 @@ export default function ProfilePage() {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-xl transition-all duration-200 whitespace-nowrap ${activeTab === tab.id
-                        ? isDark
-                          ? 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 shadow-lg'
-                          : 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 shadow-md'
-                        : isDark
-                          ? 'text-gray-400 hover:text-white hover:bg-white/5'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      ? isDark
+                        ? 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 shadow-lg'
+                        : 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 shadow-md'
+                      : isDark
+                        ? 'text-gray-400 hover:text-white hover:bg-white/5'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                       }`}
                   >
                     <Icon className="w-5 h-5 flex-shrink-0" />
@@ -428,8 +443,8 @@ export default function ProfilePage() {
               <div>
                 {/* Personal Information */}
                 <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
-                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
-                    : 'bg-white/80 border-gray-200'
+                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
+                  : 'bg-white/80 border-gray-200'
                   }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     <User className={`w-6 h-6 mr-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
@@ -442,8 +457,8 @@ export default function ProfilePage() {
                         {isRTL ? 'الاسم' : 'Name'}
                       </label>
                       <div className={`flex items-center space-x-3 p-3 border rounded-lg ${isDark
-                          ? 'bg-white/5 border-white/10'
-                          : 'bg-gray-50 border-gray-200'
+                        ? 'bg-white/5 border-white/10'
+                        : 'bg-gray-50 border-gray-200'
                         }`}>
                         <User className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
                         <span className={isDark ? 'text-white' : 'text-gray-900'}>{profile.name}</span>
@@ -455,8 +470,8 @@ export default function ProfilePage() {
                         {isRTL ? 'البريد الإلكتروني' : 'Email'}
                       </label>
                       <div className={`flex items-center space-x-3 p-3 border rounded-lg ${isDark
-                          ? 'bg-white/5 border-white/10'
-                          : 'bg-gray-50 border-gray-200'
+                        ? 'bg-white/5 border-white/10'
+                        : 'bg-gray-50 border-gray-200'
                         }`}>
                         <Mail className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
                         <span className={isDark ? 'text-white' : 'text-gray-900'}>{profile.email}</span>
@@ -469,8 +484,8 @@ export default function ProfilePage() {
                           {isRTL ? 'رقم الهاتف' : 'Phone'}
                         </label>
                         <div className={`flex items-center space-x-3 p-3 border rounded-lg ${isDark
-                            ? 'bg-white/5 border-white/10'
-                            : 'bg-gray-50 border-gray-200'
+                          ? 'bg-white/5 border-white/10'
+                          : 'bg-gray-50 border-gray-200'
                           }`}>
                           <Phone className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
                           <span className={isDark ? 'text-white' : 'text-gray-900'}>{profile.phone}</span>
@@ -483,8 +498,8 @@ export default function ProfilePage() {
                         {isRTL ? 'المستوى' : 'Skill Level'}
                       </label>
                       <div className={`flex items-center space-x-3 p-3 border rounded-lg ${isDark
-                          ? 'bg-white/5 border-white/10'
-                          : 'bg-gray-50 border-gray-200'
+                        ? 'bg-white/5 border-white/10'
+                        : 'bg-gray-50 border-gray-200'
                         }`}>
                         <Award className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
                         <span className={isDark ? 'text-white' : 'text-gray-900'}>
@@ -506,8 +521,8 @@ export default function ProfilePage() {
                           <span
                             key={index}
                             className={`px-3 py-1 border rounded-full text-sm ${isDark
-                                ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30'
-                                : 'bg-[#0a84ff]/10 text-[#0a84ff] border-[#0a84ff]/30'
+                              ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30'
+                              : 'bg-[#0a84ff]/10 text-[#0a84ff] border-[#0a84ff]/30'
                               }`}
                           >
                             {interest}
@@ -526,8 +541,8 @@ export default function ProfilePage() {
                           <span
                             key={index}
                             className={`px-3 py-1 border rounded-full text-sm ${isDark
-                                ? 'bg-green-500/20 text-green-300 border-green-500/30'
-                                : 'bg-green-100 text-green-700 border-green-300'
+                              ? 'bg-green-500/20 text-green-300 border-green-500/30'
+                              : 'bg-green-100 text-green-700 border-green-300'
                               }`}
                           >
                             {goal}
@@ -542,8 +557,8 @@ export default function ProfilePage() {
 
             {activeTab === 'learning' && (
               <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
-                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
-                  : 'bg-white/80 border-gray-200'
+                ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
+                : 'bg-white/80 border-gray-200'
                 }`}>
                 <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   <BookOpen className={`w-6 h-6 mr-2 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
@@ -559,8 +574,8 @@ export default function ProfilePage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
                         className={`border rounded-xl p-4 ${isDark
-                            ? 'bg-white/5 border-white/10'
-                            : 'bg-gray-50 border-gray-200'
+                          ? 'bg-white/5 border-white/10'
+                          : 'bg-gray-50 border-gray-200'
                           }`}
                       >
                         <div className="flex items-center justify-between mb-3">
@@ -578,8 +593,8 @@ export default function ProfilePage() {
                             animate={{ width: `${enrollment.progress}%` }}
                             transition={{ duration: 1, delay: index * 0.1 }}
                             className={`h-2 rounded-full ${isDark
-                                ? 'bg-[#0a84ff]'
-                                : 'bg-[#0a84ff]'
+                              ? 'bg-[#0a84ff]'
+                              : 'bg-[#0a84ff]'
                               }`}
                           />
                         </div>
@@ -616,8 +631,8 @@ export default function ProfilePage() {
 
             {activeTab === 'study-buddy' && (
               <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
-                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
-                  : 'bg-white/80 border-gray-200'
+                ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
+                : 'bg-white/80 border-gray-200'
                 }`}>
                 <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   <Users className={`w-6 h-6 mr-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
@@ -626,8 +641,8 @@ export default function ProfilePage() {
 
                 {/* Enable/Disable Toggle */}
                 <div className={`mb-8 p-4 border rounded-xl ${isDark
-                    ? 'bg-white/5 border-white/10'
-                    : 'bg-gray-50 border-gray-200'
+                  ? 'bg-white/5 border-white/10'
+                  : 'bg-gray-50 border-gray-200'
                   }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -644,8 +659,8 @@ export default function ProfilePage() {
                     <button
                       onClick={() => setStudyBuddyPrefs({ ...studyBuddyPrefs, enabled: !studyBuddyPrefs.enabled })}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${studyBuddyPrefs.enabled
-                          ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]'
-                          : isDark ? 'bg-gray-600' : 'bg-gray-400'
+                        ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]'
+                        : isDark ? 'bg-gray-600' : 'bg-gray-400'
                         }`}
                     >
                       <span
@@ -668,8 +683,8 @@ export default function ProfilePage() {
                           <span
                             key={index}
                             className={`inline-flex items-center px-3 py-1 border rounded-full text-sm ${isDark
-                                ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30'
-                                : 'bg-[#0a84ff]/10 text-[#0a84ff] border-[#0a84ff]/30'
+                              ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30'
+                              : 'bg-[#0a84ff]/10 text-[#0a84ff] border-[#0a84ff]/30'
                               }`}
                           >
                             {subject}
@@ -689,8 +704,8 @@ export default function ProfilePage() {
                         type="text"
                         placeholder={isRTL ? 'أضف موضوع دراسة...' : 'Add study subject...'}
                         className={`w-full px-4 py-2 border rounded-lg ${isDark
-                            ? 'bg-white/10 border-white/20 text-white placeholder-gray-400'
-                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                          ? 'bg-white/10 border-white/20 text-white placeholder-gray-400'
+                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
                           }`}
                         onKeyPress={(e) => {
                           if (e.key === 'Enter') {
@@ -715,12 +730,12 @@ export default function ProfilePage() {
                             key={length}
                             onClick={() => setStudyBuddyPrefs({ ...studyBuddyPrefs, sessionLength: length })}
                             className={`px-4 py-2 rounded-lg border transition-colors ${studyBuddyPrefs.sessionLength === length
-                                ? isDark
-                                  ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30'
-                                  : 'bg-[#0a84ff]/10 text-[#0a84ff] border-[#0a84ff]/30'
-                                : isDark
-                                  ? 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'
-                                  : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
+                              ? isDark
+                                ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30'
+                                : 'bg-[#0a84ff]/10 text-[#0a84ff] border-[#0a84ff]/30'
+                              : isDark
+                                ? 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'
+                                : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
                               }`}
                           >
                             {length}
@@ -753,12 +768,12 @@ export default function ProfilePage() {
                                 setStudyBuddyPrefs({ ...studyBuddyPrefs, collaborationPrefs: newPrefs });
                               }}
                               className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border transition-colors ${isSelected
-                                  ? isDark
-                                    ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                                    : 'bg-blue-100 text-blue-700 border-blue-300'
-                                  : isDark
-                                    ? 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'
-                                    : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
+                                ? isDark
+                                  ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                                  : 'bg-blue-100 text-blue-700 border-blue-300'
+                                : isDark
+                                  ? 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'
+                                  : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
                                 }`}
                             >
                               <Icon className="w-4 h-4" />
@@ -771,8 +786,8 @@ export default function ProfilePage() {
 
                     {/* Headset Availability */}
                     <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                        ? 'bg-white/5 border-white/10'
-                        : 'bg-gray-50 border-gray-200'
+                      ? 'bg-white/5 border-white/10'
+                      : 'bg-gray-50 border-gray-200'
                       }`}>
                       <div className="flex items-center space-x-3">
                         <Headphones className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
@@ -788,8 +803,8 @@ export default function ProfilePage() {
                       <button
                         onClick={() => setStudyBuddyPrefs({ ...studyBuddyPrefs, headsetAvailable: !studyBuddyPrefs.headsetAvailable })}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${studyBuddyPrefs.headsetAvailable
-                            ? isDark ? 'bg-green-600' : 'bg-green-600'
-                            : isDark ? 'bg-gray-600' : 'bg-gray-400'
+                          ? isDark ? 'bg-green-600' : 'bg-green-600'
+                          : isDark ? 'bg-gray-600' : 'bg-gray-400'
                           }`}
                       >
                         <span
@@ -808,8 +823,8 @@ export default function ProfilePage() {
                         value={studyBuddyPrefs.timezone}
                         onChange={(e) => setStudyBuddyPrefs({ ...studyBuddyPrefs, timezone: e.target.value })}
                         className={`w-full px-4 py-3 border rounded-lg ${isDark
-                            ? 'bg-white/10 border-white/20 text-white'
-                            : 'bg-white border-gray-300 text-gray-900'
+                          ? 'bg-white/10 border-white/20 text-white'
+                          : 'bg-white border-gray-300 text-gray-900'
                           }`}
                       >
                         <option value="UTC+2" className={isDark ? 'bg-gray-800' : 'bg-white'}>UTC+2 (Cairo)</option>
@@ -822,12 +837,31 @@ export default function ProfilePage() {
 
                     {/* Save Button */}
                     <button
-                      onClick={() => alert(isRTL ? 'تم حفظ تفضيلات شريك الدراسة بنجاح!' : 'Study buddy preferences saved successfully!')}
+                      disabled={saving}
+                      onClick={async () => {
+                        setSaving(true);
+                        try {
+                          const response = await fetch('/api/user/study-preferences', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(studyBuddyPrefs)
+                          });
+                          if (response.ok) {
+                            alert(isRTL ? 'تم حفظ تفضيلات شريك الدراسة بنجاح!' : 'Study buddy preferences saved successfully!');
+                          } else {
+                            alert(isRTL ? 'فشل حفظ التفضيلات' : 'Failed to save preferences');
+                          }
+                        } catch (error) {
+                          alert(isRTL ? 'حدث خطأ' : 'An error occurred');
+                        } finally {
+                          setSaving(false);
+                        }
+                      }}
                       className={`w-full px-6 py-3 text-white rounded-xl transition-all duration-200 ${isDark
-                          ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
-                          : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
+                        ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90 disabled:opacity-50'
+                        : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90 disabled:opacity-50'
                         }`}>
-                      {isRTL ? 'حفظ التفضيلات' : 'Save Preferences'}
+                      {saving ? (isRTL ? 'جاري الحفظ...' : 'Saving...') : (isRTL ? 'حفظ التفضيلات' : 'Save Preferences')}
                     </button>
                   </div>
                 )}
@@ -838,8 +872,8 @@ export default function ProfilePage() {
               <div className="space-y-6">
                 {/* Active Subscriptions */}
                 <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
-                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
-                    : 'bg-white/80 border-gray-200'
+                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
+                  : 'bg-white/80 border-gray-200'
                   }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     <CreditCard className={`w-6 h-6 mr-2 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
@@ -849,8 +883,8 @@ export default function ProfilePage() {
                   <div className="space-y-4">
                     {/* Platform Subscription (Category A) */}
                     <div className={`p-4 border rounded-xl ${isDark
-                        ? 'bg-gradient-to-r from-green-500/20 to-blue-500/20 border-green-500/30'
-                        : 'bg-gradient-to-r from-green-50 to-blue-50 border-green-300'
+                      ? 'bg-gradient-to-r from-green-500/20 to-blue-500/20 border-green-500/30'
+                      : 'bg-gradient-to-r from-green-50 to-blue-50 border-green-300'
                       }`}>
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center space-x-3">
@@ -911,8 +945,8 @@ export default function ProfilePage() {
                             }
                           }}
                           className={`px-4 py-2 border rounded-lg transition-colors text-sm ${isDark
-                              ? 'bg-white/10 text-white border-white/20 hover:bg-white/20'
-                              : 'bg-gray-100 text-gray-900 border-gray-300 hover:bg-gray-200'
+                            ? 'bg-white/10 text-white border-white/20 hover:bg-white/20'
+                            : 'bg-gray-100 text-gray-900 border-gray-300 hover:bg-gray-200'
                             }`}>
                           {isRTL ? 'إدارة' : 'Manage'}
                         </button>
@@ -921,8 +955,8 @@ export default function ProfilePage() {
 
                     {/* Premium Subscription (Category B) - Placeholder */}
                     <div className={`p-4 border rounded-xl opacity-60 ${isDark
-                        ? 'bg-white/5 border-white/10'
-                        : 'bg-gray-50 border-gray-200'
+                      ? 'bg-white/5 border-white/10'
+                      : 'bg-gray-50 border-gray-200'
                       }`}>
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center space-x-3">
@@ -946,8 +980,8 @@ export default function ProfilePage() {
 
                     {/* Creator Subscriptions (Category C) */}
                     <div className={`p-4 border rounded-xl ${isDark
-                        ? 'bg-white/5 border-white/10'
-                        : 'bg-gray-50 border-gray-200'
+                      ? 'bg-white/5 border-white/10'
+                      : 'bg-gray-50 border-gray-200'
                       }`}>
                       <h4 className={`text-lg font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                         {isRTL ? 'قنوات المدربين (الفئة C)' : 'Creator Channels (Category C)'}
@@ -956,8 +990,8 @@ export default function ProfilePage() {
                         {isRTL ? 'لم تشترك في أي قناة بعد' : 'No creator channel subscriptions yet'}
                       </p>
                       <button className={`w-full px-4 py-2 border rounded-lg transition-colors ${isDark
-                          ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
-                          : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
+                        ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
+                        : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
                         }`}>
                         {isRTL ? 'تصفح المدربين' : 'Browse Creators'}
                       </button>
@@ -967,16 +1001,16 @@ export default function ProfilePage() {
 
                 {/* Payment Methods */}
                 <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
-                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
-                    : 'bg-white/80 border-gray-200'
+                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
+                  : 'bg-white/80 border-gray-200'
                   }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     <CreditCard className={`w-6 h-6 mr-2 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                     {isRTL ? 'طرق الدفع' : 'Payment Methods'}
                   </h3>
                   <div className={`p-4 border rounded-xl text-center ${isDark
-                      ? 'bg-white/5 border-white/10'
-                      : 'bg-gray-50 border-gray-200'
+                    ? 'bg-white/5 border-white/10'
+                    : 'bg-gray-50 border-gray-200'
                     }`}>
                     <CreditCard className={`w-12 h-12 mx-auto mb-3 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
                     <p className={`mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -1005,8 +1039,8 @@ export default function ProfilePage() {
                         }
                       }}
                       className={`px-6 py-2 text-white rounded-lg transition-all duration-200 ${isDark
-                          ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
-                          : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
+                        ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
+                        : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
                         }`}>
                       {isRTL ? 'إضافة طريقة دفع' : 'Add Payment Method'}
                     </button>
@@ -1015,16 +1049,16 @@ export default function ProfilePage() {
 
                 {/* Invoice History */}
                 <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
-                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
-                    : 'bg-white/80 border-gray-200'
+                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
+                  : 'bg-white/80 border-gray-200'
                   }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     <FileText className={`w-6 h-6 mr-2 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
                     {isRTL ? 'سجل الفواتير' : 'Invoice History'}
                   </h3>
                   <div className={`p-4 border rounded-xl text-center ${isDark
-                      ? 'bg-white/5 border-white/10'
-                      : 'bg-gray-50 border-gray-200'
+                    ? 'bg-white/5 border-white/10'
+                    : 'bg-gray-50 border-gray-200'
                     }`}>
                     <FileText className={`w-12 h-12 mx-auto mb-3 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
                     <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -1040,8 +1074,8 @@ export default function ProfilePage() {
 
             {activeTab === 'certificates' && (
               <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
-                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
-                  : 'bg-white/80 border-gray-200'
+                ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
+                : 'bg-white/80 border-gray-200'
                 }`}>
                 <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   <Award className={`w-6 h-6 mr-2 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
@@ -1057,8 +1091,8 @@ export default function ProfilePage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {profile.enrollments.filter(e => e.completedAt).map((enrollment, index) => (
                         <div key={index} className={`p-4 border rounded-xl ${isDark
-                            ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500/30'
-                            : 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-300'
+                          ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500/30'
+                          : 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-300'
                           }`}>
                           <div className="flex items-start justify-between mb-3">
                             <div>
@@ -1073,15 +1107,15 @@ export default function ProfilePage() {
                           </div>
                           <div className="flex gap-2 mt-4">
                             <button className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors text-sm ${isDark
-                                ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
-                                : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
+                              ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
+                              : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
                               }`}>
                               <Download className="w-4 h-4" />
                               {isRTL ? 'تحميل' : 'Download'}
                             </button>
                             <button className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors text-sm ${isDark
-                                ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30'
-                                : 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200'
+                              ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30'
+                              : 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200'
                               }`}>
                               <Share2 className="w-4 h-4" />
                               {isRTL ? 'مشاركة' : 'Share'}
@@ -1092,8 +1126,8 @@ export default function ProfilePage() {
                     </div>
                   ) : (
                     <div className={`text-center py-8 border rounded-xl ${isDark
-                        ? 'bg-white/5 border-white/10'
-                        : 'bg-gray-50 border-gray-200'
+                      ? 'bg-white/5 border-white/10'
+                      : 'bg-gray-50 border-gray-200'
                       }`}>
                       <Award className={`w-16 h-16 mx-auto mb-3 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
                       <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
@@ -1123,21 +1157,21 @@ export default function ProfilePage() {
                         <div
                           key={index}
                           className={`p-4 rounded-xl border text-center ${achievement.unlocked
-                              ? isDark
-                                ? 'bg-[#0a84ff]/10 border-[#0a84ff]/30'
-                                : 'bg-[#0a84ff]/10 border-[#0a84ff]/30'
-                              : isDark
-                                ? 'bg-white/5 border-white/10 opacity-50'
-                                : 'bg-gray-50 border-gray-200 opacity-50'
+                            ? isDark
+                              ? 'bg-[#0a84ff]/10 border-[#0a84ff]/30'
+                              : 'bg-[#0a84ff]/10 border-[#0a84ff]/30'
+                            : isDark
+                              ? 'bg-white/5 border-white/10 opacity-50'
+                              : 'bg-gray-50 border-gray-200 opacity-50'
                             }`}
                         >
                           <Icon className={`w-8 h-8 mx-auto mb-2 ${achievement.unlocked
-                              ? isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'
-                              : 'text-gray-500'
+                            ? isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'
+                            : 'text-gray-500'
                             }`} />
                           <p className={`text-sm font-medium ${achievement.unlocked
-                              ? isDark ? 'text-white' : 'text-gray-900'
-                              : 'text-gray-500'
+                            ? isDark ? 'text-white' : 'text-gray-900'
+                            : 'text-gray-500'
                             }`}>
                             {achievement.name}
                           </p>
@@ -1153,8 +1187,8 @@ export default function ProfilePage() {
               <div className="space-y-6">
                 {/* Creator Stats */}
                 <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
-                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
-                    : 'bg-white/80 border-gray-200'
+                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
+                  : 'bg-white/80 border-gray-200'
                   }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     <Briefcase className={`w-6 h-6 mr-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
@@ -1163,8 +1197,8 @@ export default function ProfilePage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div className={`p-4 border rounded-xl ${isDark
-                        ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-500/30'
-                        : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300'
+                      ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-500/30'
+                      : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300'
                       }`}>
                       <div className="flex items-center justify-between mb-2">
                         <DollarSign className={`w-8 h-8 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
@@ -1175,8 +1209,8 @@ export default function ProfilePage() {
                     </div>
 
                     <div className={`p-4 border rounded-xl ${isDark
-                        ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-500/30'
-                        : 'bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-300'
+                      ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-500/30'
+                      : 'bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-300'
                       }`}>
                       <div className="flex items-center justify-between mb-2">
                         <Users className={`w-8 h-8 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
@@ -1187,8 +1221,8 @@ export default function ProfilePage() {
                     </div>
 
                     <div className={`p-4 border rounded-xl ${isDark
-                        ? 'bg-[#0a84ff]/10 border-[#0a84ff]/30'
-                        : 'bg-[#0a84ff]/10 border-[#0a84ff]/30'
+                      ? 'bg-[#0a84ff]/10 border-[#0a84ff]/30'
+                      : 'bg-[#0a84ff]/10 border-[#0a84ff]/30'
                       }`}>
                       <div className="flex items-center justify-between mb-2">
                         <BookOpen className={`w-8 h-8 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
@@ -1201,8 +1235,8 @@ export default function ProfilePage() {
 
                   {/* KYC Status */}
                   <div className={`p-4 border rounded-xl ${isDark
-                      ? 'bg-yellow-500/20 border-yellow-500/30'
-                      : 'bg-yellow-50 border-yellow-300'
+                    ? 'bg-yellow-500/20 border-yellow-500/30'
+                    : 'bg-yellow-50 border-yellow-300'
                     }`}>
                     <div className="flex items-center space-x-3">
                       <Shield className={`w-6 h-6 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
@@ -1215,8 +1249,8 @@ export default function ProfilePage() {
                         </p>
                       </div>
                       <span className={`px-3 py-1 border rounded-full text-sm font-medium ${isDark
-                          ? 'bg-yellow-500/30 text-yellow-300 border-yellow-500/40'
-                          : 'bg-yellow-100 text-yellow-700 border-yellow-400'
+                        ? 'bg-yellow-500/30 text-yellow-300 border-yellow-500/40'
+                        : 'bg-yellow-100 text-yellow-700 border-yellow-400'
                         }`}>
                         {isRTL ? 'قيد الانتظار' : 'PENDING'}
                       </span>
@@ -1226,8 +1260,8 @@ export default function ProfilePage() {
 
                 {/* Teaching Profile */}
                 <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
-                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
-                    : 'bg-white/80 border-gray-200'
+                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
+                  : 'bg-white/80 border-gray-200'
                   }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     <Award className={`w-6 h-6 mr-2 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
@@ -1236,8 +1270,8 @@ export default function ProfilePage() {
 
                   <div className="space-y-4">
                     <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                        ? 'bg-white/5 border-white/10'
-                        : 'bg-gray-50 border-gray-200'
+                      ? 'bg-white/5 border-white/10'
+                      : 'bg-gray-50 border-gray-200'
                       }`}>
                       <div className="flex items-center space-x-3">
                         <Globe className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
@@ -1253,16 +1287,16 @@ export default function ProfilePage() {
                       <button
                         onClick={() => window.location.href = `/${locale}/mentors/${profile.id}`}
                         className={`px-4 py-2 border rounded-lg transition-colors ${isDark
-                            ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
-                            : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
+                          ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
+                          : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
                           }`}>
                         {isRTL ? 'عرض' : 'View'}
                       </button>
                     </div>
 
                     <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                        ? 'bg-white/5 border-white/10'
-                        : 'bg-gray-50 border-gray-200'
+                      ? 'bg-white/5 border-white/10'
+                      : 'bg-gray-50 border-gray-200'
                       }`}>
                       <div className="flex items-center space-x-3">
                         <DollarSign className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
@@ -1278,16 +1312,16 @@ export default function ProfilePage() {
                       <button
                         onClick={() => alert(isRTL ? 'ستتوفر هذه الميزة قريباً' : 'This feature will be available soon')}
                         className={`px-4 py-2 border rounded-lg transition-colors ${isDark
-                            ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30'
-                            : 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200'
+                          ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30'
+                          : 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200'
                           }`}>
                         {isRTL ? 'إدارة' : 'Manage'}
                       </button>
                     </div>
 
                     <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                        ? 'bg-white/5 border-white/10'
-                        : 'bg-gray-50 border-gray-200'
+                      ? 'bg-white/5 border-white/10'
+                      : 'bg-gray-50 border-gray-200'
                       }`}>
                       <div className="flex items-center space-x-3">
                         <Video className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
@@ -1314,8 +1348,8 @@ export default function ProfilePage() {
 
             {activeTab === 'settings' && (
               <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
-                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
-                  : 'bg-white/80 border-gray-200'
+                ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
+                : 'bg-white/80 border-gray-200'
                 }`}>
                 <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   <Settings className={`w-6 h-6 mr-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
@@ -1331,8 +1365,8 @@ export default function ProfilePage() {
                     </h4>
                     <div className="space-y-3">
                       <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                          ? 'bg-white/5 border-white/10'
-                          : 'bg-gray-50 border-gray-200'
+                        ? 'bg-white/5 border-white/10'
+                        : 'bg-gray-50 border-gray-200'
                         }`}>
                         <div className="flex items-center space-x-3">
                           {privacySettings.profileVisibility === 'PUBLIC' ? (
@@ -1353,8 +1387,8 @@ export default function ProfilePage() {
                           value={privacySettings.profileVisibility}
                           onChange={(e) => setPrivacySettings({ ...privacySettings, profileVisibility: e.target.value })}
                           className={`px-4 py-2 border rounded-lg text-sm ${isDark
-                              ? 'bg-white/10 border-white/20 text-white'
-                              : 'bg-white border-gray-300 text-gray-900'
+                            ? 'bg-white/10 border-white/20 text-white'
+                            : 'bg-white border-gray-300 text-gray-900'
                             }`}
                         >
                           <option value="PUBLIC" className={isDark ? 'bg-gray-800' : 'bg-white'}>{isRTL ? 'عام' : 'Public'}</option>
@@ -1364,8 +1398,8 @@ export default function ProfilePage() {
                       </div>
 
                       <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                          ? 'bg-white/5 border-white/10'
-                          : 'bg-gray-50 border-gray-200'
+                        ? 'bg-white/5 border-white/10'
+                        : 'bg-gray-50 border-gray-200'
                         }`}>
                         <div className="flex items-center space-x-3">
                           <BarChart3 className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
@@ -1381,8 +1415,8 @@ export default function ProfilePage() {
                         <button
                           onClick={() => setPrivacySettings({ ...privacySettings, showProgressPublicly: !privacySettings.showProgressPublicly })}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${privacySettings.showProgressPublicly
-                              ? isDark ? 'bg-blue-600' : 'bg-blue-500'
-                              : isDark ? 'bg-gray-600' : 'bg-gray-400'
+                            ? isDark ? 'bg-blue-600' : 'bg-blue-500'
+                            : isDark ? 'bg-gray-600' : 'bg-gray-400'
                             }`}
                         >
                           <span
@@ -1393,8 +1427,8 @@ export default function ProfilePage() {
                       </div>
 
                       <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                          ? 'bg-white/5 border-white/10'
-                          : 'bg-gray-50 border-gray-200'
+                        ? 'bg-white/5 border-white/10'
+                        : 'bg-gray-50 border-gray-200'
                         }`}>
                         <div className="flex items-center space-x-3">
                           <User className={`w-5 h-5 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
@@ -1410,8 +1444,8 @@ export default function ProfilePage() {
                         <button
                           onClick={() => setPrivacySettings({ ...privacySettings, showRealName: !privacySettings.showRealName })}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${privacySettings.showRealName
-                              ? isDark ? 'bg-yellow-600' : 'bg-yellow-500'
-                              : isDark ? 'bg-gray-600' : 'bg-gray-400'
+                            ? isDark ? 'bg-yellow-600' : 'bg-yellow-500'
+                            : isDark ? 'bg-gray-600' : 'bg-gray-400'
                             }`}
                         >
                           <span
@@ -1431,8 +1465,8 @@ export default function ProfilePage() {
                     </h4>
                     <div className="space-y-3">
                       <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                          ? 'bg-white/5 border-white/10'
-                          : 'bg-gray-50 border-gray-200'
+                        ? 'bg-white/5 border-white/10'
+                        : 'bg-gray-50 border-gray-200'
                         }`}>
                         <div className="flex items-center space-x-3">
                           <Bell className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
@@ -1448,16 +1482,16 @@ export default function ProfilePage() {
                         <button
                           onClick={() => setNotificationModal(true)}
                           className={`px-4 py-2 border rounded-lg transition-colors ${isDark
-                              ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
-                              : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
+                            ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
+                            : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
                             }`}>
                           {isRTL ? 'إدارة' : 'Manage'}
                         </button>
                       </div>
 
                       <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                          ? 'bg-white/5 border-white/10'
-                          : 'bg-gray-50 border-gray-200'
+                        ? 'bg-white/5 border-white/10'
+                        : 'bg-gray-50 border-gray-200'
                         }`}>
                         <div className="flex items-center space-x-3">
                           <Clock className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
@@ -1472,8 +1506,8 @@ export default function ProfilePage() {
                         </div>
                         <select
                           className={`px-4 py-2 border rounded-lg text-sm ${isDark
-                              ? 'bg-white/10 border-white/20 text-white'
-                              : 'bg-white border-gray-300 text-gray-900'
+                            ? 'bg-white/10 border-white/20 text-white'
+                            : 'bg-white border-gray-300 text-gray-900'
                             }`}
                         >
                           <option value="Africa/Cairo" className={isDark ? 'bg-gray-800' : 'bg-white'}>Cairo (GMT+2)</option>
@@ -1491,8 +1525,8 @@ export default function ProfilePage() {
 
             {activeTab === 'security' && (
               <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
-                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
-                  : 'bg-white/80 border-gray-200'
+                ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
+                : 'bg-white/80 border-gray-200'
                 }`}>
                 <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   <Shield className={`w-6 h-6 mr-2 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
@@ -1501,21 +1535,21 @@ export default function ProfilePage() {
 
                 <div className="space-y-6">
                   <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                      ? 'bg-white/5 border-white/10'
-                      : 'bg-gray-50 border-gray-200'
+                    ? 'bg-white/5 border-white/10'
+                    : 'bg-gray-50 border-gray-200'
                     }`}>
                     <div className="flex items-center space-x-3">
                       <CheckCircle className={`w-5 h-5 ${profile.emailVerified
-                          ? isDark ? 'text-green-400' : 'text-green-600'
-                          : isDark ? 'text-yellow-400' : 'text-yellow-600'
+                        ? isDark ? 'text-green-400' : 'text-green-600'
+                        : isDark ? 'text-yellow-400' : 'text-yellow-600'
                         }`} />
                       <div>
                         <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                           {isRTL ? 'تحقق من البريد الإلكتروني' : 'Email Verification'}
                         </p>
                         <p className={`text-sm ${profile.emailVerified
-                            ? isDark ? 'text-green-400' : 'text-green-600'
-                            : isDark ? 'text-yellow-400' : 'text-yellow-600'
+                          ? isDark ? 'text-green-400' : 'text-green-600'
+                          : isDark ? 'text-yellow-400' : 'text-yellow-600'
                           }`}>
                           {profile.emailVerified
                             ? (isRTL ? 'تم التحقق من البريد الإلكتروني' : 'Email verified')
@@ -1526,10 +1560,18 @@ export default function ProfilePage() {
                     </div>
                     {!profile.emailVerified && (
                       <button
-                        onClick={() => alert(isRTL ? 'سيتم إرسال رابط التحقق إلى بريدك الإلكتروني' : 'Verification link will be sent to your email')}
+                        onClick={async () => {
+                          try {
+                            const response = await fetch('/api/auth/request-email-verification', { method: 'POST' });
+                            const data = await response.json();
+                            alert(data.message || (isRTL ? 'تم إرسال رابط التحقق' : 'Verification link sent'));
+                          } catch (error) {
+                            alert(isRTL ? 'فشل إرسال الطلب' : 'Failed to send request');
+                          }
+                        }}
                         className={`px-4 py-2 border rounded-lg transition-colors ${isDark
-                            ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/30'
-                            : 'bg-yellow-100 text-yellow-700 border-yellow-300 hover:bg-yellow-200'
+                          ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/30'
+                          : 'bg-yellow-100 text-yellow-700 border-yellow-300 hover:bg-yellow-200'
                           }`}>
                         {isRTL ? 'تحقق' : 'Verify'}
                       </button>
@@ -1537,8 +1579,8 @@ export default function ProfilePage() {
                   </div>
 
                   <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                      ? 'bg-white/5 border-white/10'
-                      : 'bg-gray-50 border-gray-200'
+                    ? 'bg-white/5 border-white/10'
+                    : 'bg-gray-50 border-gray-200'
                     }`}>
                     <div className="flex items-center space-x-3">
                       <Shield className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
@@ -1552,10 +1594,22 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => alert(isRTL ? 'سيتم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني' : 'Password reset link will be sent to your email')}
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/auth/request-password-reset', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: profile.email })
+                          });
+                          const data = await response.json();
+                          alert(data.message || (isRTL ? 'تم إرسال رابط إعادة تعيين كلمة المرور' : 'Password reset link sent'));
+                        } catch (error) {
+                          alert(isRTL ? 'فشل إرسال الطلب' : 'Failed to send request');
+                        }
+                      }}
                       className={`px-4 py-2 border rounded-lg transition-colors ${isDark
-                          ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
-                          : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
+                        ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
+                        : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
                         }`}>
                       {isRTL ? 'تغيير' : 'Change'}
                     </button>
@@ -1567,8 +1621,8 @@ export default function ProfilePage() {
             {/* Creator Dashboard Tab */}
             {activeTab === 'creator' && profile?.role === 'CREATOR' && (
               <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
-                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
-                  : 'bg-white/80 border-gray-200'
+                ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
+                : 'bg-white/80 border-gray-200'
                 }`}>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className={`text-xl font-bold flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -1580,8 +1634,8 @@ export default function ProfilePage() {
                     whileTap={{ scale: 0.95 }}
                     onClick={() => window.location.href = `/${locale}/mentors`}
                     className={`px-4 py-2 rounded-lg transition-all ${isDark
-                        ? 'bg-[#0a84ff]/20 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/30'
-                        : 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/20'
+                      ? 'bg-[#0a84ff]/20 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/30'
+                      : 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/20'
                       }`}
                   >
                     <Upload className="w-4 h-4 inline mr-2" />
@@ -1590,8 +1644,8 @@ export default function ProfilePage() {
                 </div>
 
                 <div className={`p-6 border rounded-xl mb-6 ${isDark
-                    ? 'bg-[#0a84ff]/5 border-[#0a84ff]/30'
-                    : 'bg-[#0a84ff]/5 border-[#0a84ff]/20'
+                  ? 'bg-[#0a84ff]/5 border-[#0a84ff]/30'
+                  : 'bg-[#0a84ff]/5 border-[#0a84ff]/20'
                   }`}>
                   <div className="flex items-center justify-between mb-4">
                     <div>
@@ -1607,8 +1661,8 @@ export default function ProfilePage() {
                       whileTap={{ scale: 0.95 }}
                       onClick={() => window.location.href = `/${locale}/mentors`}
                       className={`px-4 py-2 rounded-lg transition-all ${isDark
-                          ? 'bg-[#0a84ff]/20 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/30'
-                          : 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/20'
+                        ? 'bg-[#0a84ff]/20 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/30'
+                        : 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/20'
                         }`}
                     >
                       <Upload className="w-4 h-4 inline mr-2" />
@@ -1678,8 +1732,8 @@ export default function ProfilePage() {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => window.location.href = `/${locale}/mentors`}
                     className={`p-4 rounded-xl border transition-all ${isDark
-                        ? 'bg-white/5 border-white/10 hover:border-[#0a84ff]/50'
-                        : 'bg-gray-50 border-gray-200 hover:border-[#0a84ff]/30'
+                      ? 'bg-white/5 border-white/10 hover:border-[#0a84ff]/50'
+                      : 'bg-gray-50 border-gray-200 hover:border-[#0a84ff]/30'
                       }`}
                   >
                     <Upload className={`w-6 h-6 mb-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
@@ -1696,8 +1750,8 @@ export default function ProfilePage() {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => window.location.href = `/${locale}/messaging`}
                     className={`p-4 rounded-xl border transition-all ${isDark
-                        ? 'bg-white/5 border-white/10 hover:border-blue-500/50'
-                        : 'bg-gray-50 border-gray-200 hover:border-blue-300'
+                      ? 'bg-white/5 border-white/10 hover:border-blue-500/50'
+                      : 'bg-gray-50 border-gray-200 hover:border-blue-300'
                       }`}
                   >
                     <MessageCircle className={`w-6 h-6 mb-2 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
@@ -1714,8 +1768,8 @@ export default function ProfilePage() {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => window.location.href = `/${locale}/mentors`}
                     className={`p-4 rounded-xl border transition-all ${isDark
-                        ? 'bg-white/5 border-white/10 hover:border-green-500/50'
-                        : 'bg-gray-50 border-gray-200 hover:border-green-300'
+                      ? 'bg-white/5 border-white/10 hover:border-green-500/50'
+                      : 'bg-gray-50 border-gray-200 hover:border-green-300'
                       }`}
                   >
                     <BarChart3 className={`w-6 h-6 mb-2 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
@@ -1730,8 +1784,8 @@ export default function ProfilePage() {
 
                 {/* Info Box */}
                 <div className={`p-4 rounded-xl ${isDark
-                    ? 'bg-blue-500/10 border border-blue-500/30'
-                    : 'bg-blue-50 border border-blue-200'
+                  ? 'bg-blue-500/10 border border-blue-500/30'
+                  : 'bg-blue-50 border border-blue-200'
                   }`}>
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
@@ -1755,8 +1809,8 @@ export default function ProfilePage() {
                         whileTap={{ scale: 0.98 }}
                         onClick={() => window.location.href = `/${locale}/mentors`}
                         className={`mt-3 px-4 py-2 rounded-lg transition-all font-semibold ${isDark
-                            ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                          ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
                           }`}
                       >
                         {isRTL ? 'انتقل إلى لوحة المنشئين' : 'Go to Creator Panel'}
@@ -2033,8 +2087,8 @@ export default function ProfilePage() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 className={`w-full max-w-2xl border rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto ${isDark
-                    ? 'bg-gradient-to-br from-gray-800/90 via-gray-900/90 to-black/90 backdrop-blur-xl border-white/20'
-                    : 'bg-white/95 backdrop-blur-xl border-gray-200'
+                  ? 'bg-gradient-to-br from-gray-800/90 via-gray-900/90 to-black/90 backdrop-blur-xl border-white/20'
+                  : 'bg-white/95 backdrop-blur-xl border-gray-200'
                   }`}
               >
                 <div className="flex items-center justify-between mb-6">
@@ -2047,8 +2101,8 @@ export default function ProfilePage() {
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setNotificationModal(false)}
                     className={`p-2 rounded-full transition-all duration-200 ${isDark
-                        ? 'bg-white/10 hover:bg-white/20'
-                        : 'bg-gray-100 hover:bg-gray-200'
+                      ? 'bg-white/10 hover:bg-white/20'
+                      : 'bg-gray-100 hover:bg-gray-200'
                       }`}
                   >
                     <X className={`w-5 h-5 ${isDark ? 'text-white' : 'text-gray-900'}`} />
@@ -2058,8 +2112,8 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   {/* Email Notifications */}
                   <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                      ? 'bg-white/5 border-white/10'
-                      : 'bg-gray-50 border-gray-200'
+                    ? 'bg-white/5 border-white/10'
+                    : 'bg-gray-50 border-gray-200'
                     }`}>
                     <div className="flex items-center space-x-3">
                       <Mail className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
@@ -2075,8 +2129,8 @@ export default function ProfilePage() {
                     <button
                       onClick={() => setNotificationSettings({ ...notificationSettings, emailNotifications: !notificationSettings.emailNotifications })}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.emailNotifications
-                          ? isDark ? 'bg-blue-600' : 'bg-blue-500'
-                          : isDark ? 'bg-gray-600' : 'bg-gray-400'
+                        ? isDark ? 'bg-blue-600' : 'bg-blue-500'
+                        : isDark ? 'bg-gray-600' : 'bg-gray-400'
                         }`}
                     >
                       <span
@@ -2088,8 +2142,8 @@ export default function ProfilePage() {
 
                   {/* Push Notifications */}
                   <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                      ? 'bg-white/5 border-white/10'
-                      : 'bg-gray-50 border-gray-200'
+                    ? 'bg-white/5 border-white/10'
+                    : 'bg-gray-50 border-gray-200'
                     }`}>
                     <div className="flex items-center space-x-3">
                       <Bell className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
@@ -2105,8 +2159,8 @@ export default function ProfilePage() {
                     <button
                       onClick={() => setNotificationSettings({ ...notificationSettings, pushNotifications: !notificationSettings.pushNotifications })}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.pushNotifications
-                          ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]'
-                          : isDark ? 'bg-gray-600' : 'bg-gray-400'
+                        ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]'
+                        : isDark ? 'bg-gray-600' : 'bg-gray-400'
                         }`}
                     >
                       <span
@@ -2118,8 +2172,8 @@ export default function ProfilePage() {
 
                   {/* Course Updates */}
                   <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                      ? 'bg-white/5 border-white/10'
-                      : 'bg-gray-50 border-gray-200'
+                    ? 'bg-white/5 border-white/10'
+                    : 'bg-gray-50 border-gray-200'
                     }`}>
                     <div className="flex items-center space-x-3">
                       <BookOpen className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
@@ -2135,8 +2189,8 @@ export default function ProfilePage() {
                     <button
                       onClick={() => setNotificationSettings({ ...notificationSettings, courseUpdates: !notificationSettings.courseUpdates })}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.courseUpdates
-                          ? isDark ? 'bg-green-600' : 'bg-green-500'
-                          : isDark ? 'bg-gray-600' : 'bg-gray-400'
+                        ? isDark ? 'bg-green-600' : 'bg-green-500'
+                        : isDark ? 'bg-gray-600' : 'bg-gray-400'
                         }`}
                     >
                       <span
@@ -2148,8 +2202,8 @@ export default function ProfilePage() {
 
                   {/* New Messages */}
                   <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                      ? 'bg-white/5 border-white/10'
-                      : 'bg-gray-50 border-gray-200'
+                    ? 'bg-white/5 border-white/10'
+                    : 'bg-gray-50 border-gray-200'
                     }`}>
                     <div className="flex items-center space-x-3">
                       <MessageCircle className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
@@ -2165,8 +2219,8 @@ export default function ProfilePage() {
                     <button
                       onClick={() => setNotificationSettings({ ...notificationSettings, newMessages: !notificationSettings.newMessages })}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.newMessages
-                          ? isDark ? 'bg-blue-600' : 'bg-blue-500'
-                          : isDark ? 'bg-gray-600' : 'bg-gray-400'
+                        ? isDark ? 'bg-blue-600' : 'bg-blue-500'
+                        : isDark ? 'bg-gray-600' : 'bg-gray-400'
                         }`}
                     >
                       <span
@@ -2178,8 +2232,8 @@ export default function ProfilePage() {
 
                   {/* Study Buddy Requests */}
                   <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                      ? 'bg-white/5 border-white/10'
-                      : 'bg-gray-50 border-gray-200'
+                    ? 'bg-white/5 border-white/10'
+                    : 'bg-gray-50 border-gray-200'
                     }`}>
                     <div className="flex items-center space-x-3">
                       <Users className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
@@ -2195,8 +2249,8 @@ export default function ProfilePage() {
                     <button
                       onClick={() => setNotificationSettings({ ...notificationSettings, studyBuddyRequests: !notificationSettings.studyBuddyRequests })}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.studyBuddyRequests
-                          ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]'
-                          : isDark ? 'bg-gray-600' : 'bg-gray-400'
+                        ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]'
+                        : isDark ? 'bg-gray-600' : 'bg-gray-400'
                         }`}
                     >
                       <span
@@ -2208,8 +2262,8 @@ export default function ProfilePage() {
 
                   {/* Marketing Emails */}
                   <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                      ? 'bg-white/5 border-white/10'
-                      : 'bg-gray-50 border-gray-200'
+                    ? 'bg-white/5 border-white/10'
+                    : 'bg-gray-50 border-gray-200'
                     }`}>
                     <div className="flex items-center space-x-3">
                       <Mail className={`w-5 h-5 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
@@ -2225,8 +2279,8 @@ export default function ProfilePage() {
                     <button
                       onClick={() => setNotificationSettings({ ...notificationSettings, marketingEmails: !notificationSettings.marketingEmails })}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.marketingEmails
-                          ? isDark ? 'bg-yellow-600' : 'bg-yellow-500'
-                          : isDark ? 'bg-gray-600' : 'bg-gray-400'
+                        ? isDark ? 'bg-yellow-600' : 'bg-yellow-500'
+                        : isDark ? 'bg-gray-600' : 'bg-gray-400'
                         }`}
                     >
                       <span
@@ -2238,8 +2292,8 @@ export default function ProfilePage() {
 
                   {/* Weekly Digest */}
                   <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
-                      ? 'bg-white/5 border-white/10'
-                      : 'bg-gray-50 border-gray-200'
+                    ? 'bg-white/5 border-white/10'
+                    : 'bg-gray-50 border-gray-200'
                     }`}>
                     <div className="flex items-center space-x-3">
                       <FileText className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
@@ -2255,8 +2309,8 @@ export default function ProfilePage() {
                     <button
                       onClick={() => setNotificationSettings({ ...notificationSettings, weeklyDigest: !notificationSettings.weeklyDigest })}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.weeklyDigest
-                          ? isDark ? 'bg-green-600' : 'bg-green-500'
-                          : isDark ? 'bg-gray-600' : 'bg-gray-400'
+                        ? isDark ? 'bg-green-600' : 'bg-green-500'
+                        : isDark ? 'bg-gray-600' : 'bg-gray-400'
                         }`}
                     >
                       <span
@@ -2273,8 +2327,8 @@ export default function ProfilePage() {
                     whileTap={{ scale: 0.98 }}
                     onClick={saveNotificationSettings}
                     className={`flex-1 px-6 py-3 rounded-xl transition-all duration-200 text-white ${isDark
-                        ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
-                        : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
+                      ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
+                      : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
                       }`}
                   >
                     {isRTL ? 'حفظ الإعدادات' : 'Save Settings'}
