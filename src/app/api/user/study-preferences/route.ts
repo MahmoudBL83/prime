@@ -7,7 +7,7 @@ import { z } from 'zod'
 const studyPreferencesSchema = z.object({
     enabled: z.boolean(),
     subjects: z.array(z.string()),
-    availability: z.record(z.any()),
+    availability: z.record(z.string(), z.any()),
     sessionLength: z.string(),
     collaborationPrefs: z.array(z.string()),
     headsetAvailable: z.boolean(),
