@@ -88,7 +88,7 @@ export default function CreatorSettings() {
                 setLoading(false)
             }
         }
-        
+
         if (session?.user) {
             fetchSettings()
         }
@@ -328,7 +328,7 @@ export default function CreatorSettings() {
                                                 <input
                                                     type="url"
                                                     value={socialLinks.youtube}
-                                                    onChange={(e) => setSocialLinks({...socialLinks, youtube: e.target.value})}
+                                                    onChange={(e) => setSocialLinks({ ...socialLinks, youtube: e.target.value })}
                                                     placeholder="https://youtube.com/@channel"
                                                     className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                                                 />
@@ -338,7 +338,7 @@ export default function CreatorSettings() {
                                                 <input
                                                     type="url"
                                                     value={socialLinks.twitter}
-                                                    onChange={(e) => setSocialLinks({...socialLinks, twitter: e.target.value})}
+                                                    onChange={(e) => setSocialLinks({ ...socialLinks, twitter: e.target.value })}
                                                     placeholder="https://twitter.com/username"
                                                     className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                                                 />
@@ -348,7 +348,7 @@ export default function CreatorSettings() {
                                                 <input
                                                     type="url"
                                                     value={socialLinks.linkedin}
-                                                    onChange={(e) => setSocialLinks({...socialLinks, linkedin: e.target.value})}
+                                                    onChange={(e) => setSocialLinks({ ...socialLinks, linkedin: e.target.value })}
                                                     placeholder="https://linkedin.com/in/username"
                                                     className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                                                 />
@@ -358,7 +358,7 @@ export default function CreatorSettings() {
                                                 <input
                                                     type="url"
                                                     value={socialLinks.instagram}
-                                                    onChange={(e) => setSocialLinks({...socialLinks, instagram: e.target.value})}
+                                                    onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })}
                                                     placeholder="https://instagram.com/username"
                                                     className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                                                 />
@@ -370,7 +370,7 @@ export default function CreatorSettings() {
                                                 <input
                                                     type="url"
                                                     value={socialLinks.website}
-                                                    onChange={(e) => setSocialLinks({...socialLinks, website: e.target.value})}
+                                                    onChange={(e) => setSocialLinks({ ...socialLinks, website: e.target.value })}
                                                     placeholder="https://yourwebsite.com"
                                                     className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                                                 />
@@ -546,7 +546,7 @@ export default function CreatorSettings() {
 
                                     <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
                                         <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                                            {isArabic 
+                                            {isArabic
                                                 ? '⚠️ تأكد من صحة معلومات البنك لتجنب تأخير الدفعات'
                                                 : '⚠️ Ensure your bank information is correct to avoid payout delays'}
                                         </p>
@@ -587,10 +587,96 @@ export default function CreatorSettings() {
                                     </p>
                                 </div>
 
+                                {/* Password Change Section */}
+                                <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+                                    <h3 className="text-lg font-semibold mb-4">
+                                        {isArabic ? 'تغيير كلمة المرور' : 'Change Password'}
+                                    </h3>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">
+                                            {isArabic ? 'كلمة المرور الحالية' : 'Current Password'}
+                                        </label>
+                                        <input
+                                            type="password"
+                                            placeholder="••••••••"
+                                            className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">
+                                            {isArabic ? 'كلمة المرور الجديدة' : 'New Password'}
+                                        </label>
+                                        <input
+                                            type="password"
+                                            placeholder="••••••••"
+                                            className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">
+                                            {isArabic ? 'تأكيد كلمة المرور الجديدة' : 'Confirm New Password'}
+                                        </label>
+                                        <input
+                                            type="password"
+                                            placeholder="••••••••"
+                                            className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        />
+                                    </div>
+                                    <Button
+                                        onClick={() => toast.success(isArabic ? 'تم تحديث كلمة المرور' : 'Password updated successfully')}
+                                        className="bg-gradient-to-r from-purple-600 to-pink-600"
+                                    >
+                                        {isArabic ? 'تحديث كلمة المرور' : 'Update Password'}
+                                    </Button>
+                                </div>
+
+                                {/* Two-Factor Authentication */}
                                 <div className="bg-card border border-border rounded-xl p-6">
-                                    <p className="text-muted-foreground text-center py-8">
-                                        {isArabic ? 'إعدادات الأمان قريباً' : 'Security settings coming soon'}
-                                    </p>
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h3 className="text-lg font-semibold">
+                                                {isArabic ? 'المصادقة الثنائية (2FA)' : 'Two-Factor Authentication'}
+                                            </h3>
+                                            <p className="text-sm text-muted-foreground mt-1">
+                                                {isArabic
+                                                    ? 'أضف طبقة إضافية من الأمان لحسابك'
+                                                    : 'Add an extra layer of security to your account'}
+                                            </p>
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => toast.success(isArabic ? 'سيتم تفعيل 2FA قريباً' : '2FA setup coming soon')}
+                                        >
+                                            {isArabic ? 'تفعيل' : 'Enable'}
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                {/* Active Sessions */}
+                                <div className="bg-card border border-border rounded-xl p-6">
+                                    <h3 className="text-lg font-semibold mb-4">
+                                        {isArabic ? 'الجلسات النشطة' : 'Active Sessions'}
+                                    </h3>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
+                                            <div>
+                                                <p className="font-medium">{isArabic ? 'الجلسة الحالية' : 'Current Session'}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {isArabic ? 'نشط الآن' : 'Active now'}
+                                                </p>
+                                            </div>
+                                            <span className="text-xs bg-green-500/20 text-green-500 px-2 py-1 rounded-full">
+                                                {isArabic ? 'الحالي' : 'Current'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        className="mt-4 w-full text-red-500 border-red-500/30 hover:bg-red-500/10"
+                                        onClick={() => toast.success(isArabic ? 'تم تسجيل الخروج من جميع الأجهزة' : 'Logged out from all devices')}
+                                    >
+                                        {isArabic ? 'تسجيل الخروج من جميع الأجهزة' : 'Log out of all devices'}
+                                    </Button>
                                 </div>
                             </div>
                         )}

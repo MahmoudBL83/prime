@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
     Shield,
@@ -23,10 +23,13 @@ import {
     UserX,
     FileWarning,
     Lock,
-    Unlock
+    Unlock,
+    Loader2,
+    RefreshCw
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import toast from 'react-hot-toast'
 
 type ReportType = 'abuse' | 'spam' | 'copyright' | 'harassment' | 'inappropriate' | 'fraud'
 type ReportStatus = 'pending' | 'reviewing' | 'resolved' | 'dismissed'
@@ -44,76 +47,236 @@ interface Report {
     priority: 'low' | 'medium' | 'high' | 'critical'
 }
 
+interface Ban {
+    id: string
+    caseId: string
+    userId: string
+    userName: string
+    userEmail: string
+    banType: string
+    duration: string
+    reason: string
+    evidence: string[]
+    bannedAt: string
+    expiresAt?: string
+    bannedBy: string
+    status: string
+    appealStatus: string
+}
+
+interface DMCARequest {
+    id: string
+    caseNumber: string
+    complainantName: string
+    complainantEmail: string
+    contentTitle: string
+    status: string
+    priority: string
+    submittedAt: string
+}
+
+interface Strike {
+    id: string
+    creatorId: string
+    contentType: string
+    contentId: string
+    reason: string
+    severity: string
+    issuedAt: string
+    expiresAt?: string
+    appealStatus?: string
+}
+
+interface AuditLog {
+    id: string
+    action: string
+    module: string
+    details: string
+    status: string
+    createdAt: string
+    admin: {
+        name: string
+        email: string
+    }
+}
+
+interface Stats {
+    pendingReports: number
+    criticalReports: number
+    activeBans: number
+    dmcaClaims: number
+    activeStrikes: number
+    avgResponseTime: string
+}
+
 export default function SafetyModerationPage() {
     const [activeTab, setActiveTab] = useState<'reports' | 'bans' | 'dmca' | 'strikes' | 'logs'>('reports')
     const [filterStatus, setFilterStatus] = useState<'all' | ReportStatus>('all')
 
-    const reports: Report[] = [
-        {
-            id: '1',
-            type: 'harassment',
-            status: 'pending',
-            contentType: 'message',
-            reportedUser: 'John Doe',
-            reportedBy: 'Jane Smith',
-            description: 'Repeated harassment in private messages',
-            createdAt: '2024-10-15T10:30:00',
-            priority: 'critical'
-        },
-        {
-            id: '2',
-            type: 'spam',
-            status: 'reviewing',
-            contentType: 'post',
-            reportedUser: 'Spam Bot 123',
-            reportedBy: 'Multiple Users',
-            description: 'Posting promotional links in comments',
-            createdAt: '2024-10-15T09:15:00',
-            priority: 'high'
-        },
-        {
-            id: '3',
-            type: 'inappropriate',
-            status: 'pending',
-            contentType: 'video',
-            reportedUser: 'Content Creator X',
-            reportedBy: 'Sarah Johnson',
-            description: 'Video contains inappropriate language',
-            createdAt: '2024-10-15T08:45:00',
-            priority: 'medium'
-        },
-        {
-            id: '4',
-            type: 'copyright',
-            status: 'pending',
-            contentType: 'video',
-            reportedUser: 'Video Uploader',
-            reportedBy: 'Copyright Holder',
-            description: 'Unauthorized use of copyrighted material',
-            createdAt: '2024-10-14T16:20:00',
-            priority: 'high'
-        },
-        {
-            id: '5',
-            type: 'abuse',
-            status: 'resolved',
-            contentType: 'comment',
-            reportedUser: 'Troll User',
-            reportedBy: 'Community Member',
-            description: 'Abusive language in course comments',
-            createdAt: '2024-10-14T14:10:00',
-            priority: 'medium'
-        }
-    ]
+    // Data states
+    const [reports, setReports] = useState<Report[]>([])
+    const [bans, setBans] = useState<Ban[]>([])
+    const [dmcaRequests, setDmcaRequests] = useState<DMCARequest[]>([])
+    const [strikes, setStrikes] = useState<Strike[]>([])
+    const [auditLogs, setAuditLogs] = useState<AuditLog[]>([])
 
-    const stats = {
-        pendingReports: reports.filter(r => r.status === 'pending').length,
-        criticalReports: reports.filter(r => r.priority === 'critical').length,
-        activeBans: 12,
-        dmcaClaims: 3,
-        activeStrikes: 45,
-        avgResponseTime: '2.5 hours'
+    // Loading states
+    const [loading, setLoading] = useState(true)
+    const [refreshing, setRefreshing] = useState(false)
+
+    // Stats state
+    const [stats, setStats] = useState<Stats>({
+        pendingReports: 0,
+        criticalReports: 0,
+        activeBans: 0,
+        dmcaClaims: 0,
+        activeStrikes: 0,
+        avgResponseTime: '0 hours'
+    })
+
+    // Fetch all data on mount
+    useEffect(() => {
+        fetchAllData()
+    }, [])
+
+    const fetchAllData = async () => {
+        setLoading(true)
+        try {
+            await Promise.all([
+                fetchReports(),
+                fetchBans(),
+                fetchDMCA(),
+                fetchStrikes(),
+                fetchAuditLogs()
+            ])
+        } catch (error) {
+            console.error('Error fetching safety data:', error)
+            toast.error('Failed to load safety data')
+        } finally {
+            setLoading(false)
+        }
     }
+
+    const refreshData = async () => {
+        setRefreshing(true)
+        await fetchAllData()
+        setRefreshing(false)
+        toast.success('Data refreshed')
+    }
+
+    const fetchReports = async () => {
+        try {
+            const res = await fetch('/api/admin/safety/reports')
+            if (res.ok) {
+                const data = await res.json()
+                setReports(data.reports || [])
+                if (data.stats) {
+                    setStats(prev => ({
+                        ...prev,
+                        pendingReports: data.stats.pending || 0,
+                        criticalReports: data.reports?.filter((r: any) => r.priority === 'critical').length || 0
+                    }))
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching reports:', error)
+        }
+    }
+
+    const fetchBans = async () => {
+        try {
+            const res = await fetch('/api/admin/safety/bans')
+            if (res.ok) {
+                const data = await res.json()
+                setBans(data.bans || [])
+                setStats(prev => ({
+                    ...prev,
+                    activeBans: data.stats?.totalActive || data.bans?.filter((b: any) => b.status === 'active').length || 0
+                }))
+            }
+        } catch (error) {
+            console.error('Error fetching bans:', error)
+        }
+    }
+
+    const fetchDMCA = async () => {
+        try {
+            const res = await fetch('/api/admin/dmca')
+            if (res.ok) {
+                const data = await res.json()
+                setDmcaRequests(data.requests || [])
+                setStats(prev => ({
+                    ...prev,
+                    dmcaClaims: data.stats?.pending || data.requests?.length || 0
+                }))
+            }
+        } catch (error) {
+            console.error('Error fetching DMCA:', error)
+        }
+    }
+
+    const fetchStrikes = async () => {
+        try {
+            const res = await fetch('/api/admin/strikes')
+            if (res.ok) {
+                const data = await res.json()
+                setStrikes(data.strikes || [])
+                setStats(prev => ({
+                    ...prev,
+                    activeStrikes: data.strikes?.length || 0
+                }))
+            }
+        } catch (error) {
+            console.error('Error fetching strikes:', error)
+        }
+    }
+
+    const fetchAuditLogs = async () => {
+        try {
+            const res = await fetch('/api/admin/audit-log?module=Safety&limit=50')
+            if (res.ok) {
+                const data = await res.json()
+                setAuditLogs(data.logs || [])
+            }
+        } catch (error) {
+            console.error('Error fetching audit logs:', error)
+        }
+    }
+
+    // Action handlers
+    const handleUpdateReportStatus = async (reportId: string, status: string) => {
+        try {
+            const res = await fetch('/api/admin/safety/reports', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reportId, status })
+            })
+            if (res.ok) {
+                toast.success(`Report ${status}`)
+                fetchReports()
+            }
+        } catch (error) {
+            toast.error('Failed to update report')
+        }
+    }
+
+    const handleLiftBan = async (banId: string) => {
+        try {
+            const res = await fetch('/api/admin/safety/bans', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ banId, action: 'lift', reason: 'Lifted by admin' })
+            })
+            if (res.ok) {
+                toast.success('Ban lifted')
+                fetchBans()
+            }
+        } catch (error) {
+            toast.error('Failed to lift ban')
+        }
+    }
+
+
 
     const getReportTypeColor = (type: ReportType) => {
         switch (type) {
@@ -154,8 +317,8 @@ export default function SafetyModerationPage() {
         }
     }
 
-    const filteredReports = filterStatus === 'all' 
-        ? reports 
+    const filteredReports = filterStatus === 'all'
+        ? reports
         : reports.filter(r => r.status === filterStatus)
 
     return (
@@ -175,6 +338,14 @@ export default function SafetyModerationPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
+                    <Button
+                        onClick={refreshData}
+                        disabled={refreshing}
+                        className="bg-white/10 hover:bg-white/20 text-foreground"
+                    >
+                        <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                        Refresh
+                    </Button>
                     <Button className="bg-white/10 hover:bg-white/20 text-foreground">
                         <Filter className="w-4 h-4 mr-2" />
                         Advanced Filters
@@ -309,11 +480,10 @@ export default function SafetyModerationPage() {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
-                                activeTab === tab.id
-                                    ? 'bg-gradient-to-r from-red-600 to-pink-600 text-foreground'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-                            }`}
+                            className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${activeTab === tab.id
+                                ? 'bg-gradient-to-r from-red-600 to-pink-600 text-foreground'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                                }`}
                         >
                             <tab.icon className="w-4 h-4" />
                             <span className="hidden sm:inline">{tab.label}</span>
@@ -362,18 +532,16 @@ export default function SafetyModerationPage() {
                                 className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-6 hover:bg-white/10 transition-all"
                             >
                                 <div className="flex items-start gap-4">
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                                        report.priority === 'critical' ? 'bg-red-600/20' :
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${report.priority === 'critical' ? 'bg-red-600/20' :
                                         report.priority === 'high' ? 'bg-orange-600/20' :
-                                        report.priority === 'medium' ? 'bg-yellow-600/20' :
-                                        'bg-blue-600/20'
-                                    }`}>
-                                        <ContentIcon className={`w-6 h-6 ${
-                                            report.priority === 'critical' ? 'text-red-400' :
+                                            report.priority === 'medium' ? 'bg-yellow-600/20' :
+                                                'bg-blue-600/20'
+                                        }`}>
+                                        <ContentIcon className={`w-6 h-6 ${report.priority === 'critical' ? 'text-red-400' :
                                             report.priority === 'high' ? 'text-orange-400' :
-                                            report.priority === 'medium' ? 'text-yellow-400' :
-                                            'text-blue-400'
-                                        }`} />
+                                                report.priority === 'medium' ? 'text-yellow-400' :
+                                                    'text-blue-400'
+                                            }`} />
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-2">
@@ -414,11 +582,17 @@ export default function SafetyModerationPage() {
                                             </div>
                                         </div>
                                         <div className="flex gap-2">
-                                            <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-foreground">
+                                            <Button
+                                                onClick={() => handleUpdateReportStatus(report.id, 'reviewing')}
+                                                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-foreground"
+                                            >
                                                 <Eye className="w-4 h-4 mr-2" />
                                                 Review
                                             </Button>
-                                            <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-foreground">
+                                            <Button
+                                                onClick={() => handleUpdateReportStatus(report.id, 'resolved')}
+                                                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-foreground"
+                                            >
                                                 <CheckCircle className="w-4 h-4 mr-2" />
                                                 Resolve
                                             </Button>
@@ -426,7 +600,10 @@ export default function SafetyModerationPage() {
                                                 <Ban className="w-4 h-4 mr-2" />
                                                 Ban User
                                             </Button>
-                                            <Button className="bg-white/10 hover:bg-white/20 text-foreground">
+                                            <Button
+                                                onClick={() => handleUpdateReportStatus(report.id, 'dismissed')}
+                                                className="bg-white/10 hover:bg-white/20 text-foreground"
+                                            >
                                                 <XCircle className="w-4 h-4 mr-2" />
                                                 Dismiss
                                             </Button>
@@ -436,8 +613,268 @@ export default function SafetyModerationPage() {
                             </motion.div>
                         )
                     })}
+                    {filteredReports.length === 0 && !loading && (
+                        <div className="text-center py-12 text-muted-foreground">
+                            <Flag className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                            <p>No reports found</p>
+                        </div>
+                    )}
                 </div>
             )}
+
+            {/* Bans Content */}
+            {activeTab === 'bans' && (
+                <div className="space-y-4">
+                    {bans.map((ban, index) => (
+                        <motion.div
+                            key={ban.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-6"
+                        >
+                            <div className="flex items-start justify-between">
+                                <div className="flex items-start gap-4">
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${ban.status === 'active' ? 'bg-red-600/20' : 'bg-gray-600/20'
+                                        }`}>
+                                        <Ban className={`w-6 h-6 ${ban.status === 'active' ? 'text-red-400' : 'text-gray-400'}`} />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <h3 className="text-lg font-bold text-foreground">{ban.userName}</h3>
+                                            <Badge className={ban.status === 'active'
+                                                ? 'bg-red-600/20 text-red-400 border-red-600/30'
+                                                : 'bg-gray-600/20 text-gray-400 border-gray-600/30'
+                                            }>
+                                                {ban.status}
+                                            </Badge>
+                                            <Badge className="bg-purple-600/20 text-purple-400 border-purple-600/30">
+                                                {ban.banType}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground mb-2">{ban.userEmail}</p>
+                                        <p className="text-sm text-foreground mb-3">{ban.reason}</p>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                            <div>
+                                                <p className="text-xs text-muted-foreground">Case ID</p>
+                                                <p className="font-semibold text-foreground">{ban.caseId}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-muted-foreground">Duration</p>
+                                                <p className="font-semibold text-foreground">{ban.duration}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-muted-foreground">Banned At</p>
+                                                <p className="font-semibold text-foreground">{new Date(ban.bannedAt).toLocaleDateString()}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-muted-foreground">Appeal Status</p>
+                                                <p className="font-semibold text-foreground capitalize">{ban.appealStatus}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {ban.status === 'active' && (
+                                    <Button
+                                        onClick={() => handleLiftBan(ban.id)}
+                                        className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                                    >
+                                        <Unlock className="w-4 h-4 mr-2" />
+                                        Lift Ban
+                                    </Button>
+                                )}
+                            </div>
+                        </motion.div>
+                    ))}
+                    {bans.length === 0 && !loading && (
+                        <div className="text-center py-12 text-muted-foreground">
+                            <Ban className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                            <p>No active bans</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* DMCA Content */}
+            {activeTab === 'dmca' && (
+                <div className="space-y-4">
+                    {dmcaRequests.map((dmca, index) => (
+                        <motion.div
+                            key={dmca.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-6"
+                        >
+                            <div className="flex items-start gap-4">
+                                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-600/20">
+                                    <FileWarning className="w-6 h-6 text-blue-400" />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <h3 className="text-lg font-bold text-foreground">Case #{dmca.caseNumber}</h3>
+                                        <Badge className={
+                                            dmca.status === 'PENDING' ? 'bg-yellow-600/20 text-yellow-400 border-yellow-600/30' :
+                                                dmca.status === 'RESOLVED' ? 'bg-green-600/20 text-green-400 border-green-600/30' :
+                                                    'bg-gray-600/20 text-gray-400 border-gray-600/30'
+                                        }>
+                                            {dmca.status}
+                                        </Badge>
+                                        <Badge className={
+                                            dmca.priority === 'HIGH' ? 'bg-red-600/20 text-red-400 border-red-600/30' :
+                                                dmca.priority === 'MEDIUM' ? 'bg-orange-600/20 text-orange-400 border-orange-600/30' :
+                                                    'bg-blue-600/20 text-blue-400 border-blue-600/30'
+                                        }>
+                                            {dmca.priority}
+                                        </Badge>
+                                    </div>
+                                    <p className="text-sm text-foreground mb-2">Content: {dmca.contentTitle}</p>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                                        <div>
+                                            <p className="text-xs text-muted-foreground">Complainant</p>
+                                            <p className="font-semibold text-foreground">{dmca.complainantName}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted-foreground">Email</p>
+                                            <p className="font-semibold text-foreground">{dmca.complainantEmail}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted-foreground">Submitted</p>
+                                            <p className="font-semibold text-foreground">{new Date(dmca.submittedAt).toLocaleDateString()}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button className="bg-white/10 hover:bg-white/20">
+                                        <Eye className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                    {dmcaRequests.length === 0 && !loading && (
+                        <div className="text-center py-12 text-muted-foreground">
+                            <FileWarning className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                            <p>No DMCA requests</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Strikes Content */}
+            {activeTab === 'strikes' && (
+                <div className="space-y-4">
+                    {strikes.map((strike, index) => (
+                        <motion.div
+                            key={strike.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-6"
+                        >
+                            <div className="flex items-start gap-4">
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${strike.severity === 'CRITICAL' ? 'bg-red-600/20' :
+                                    strike.severity === 'HIGH' ? 'bg-orange-600/20' :
+                                        'bg-yellow-600/20'
+                                    }`}>
+                                    <AlertTriangle className={`w-6 h-6 ${strike.severity === 'CRITICAL' ? 'text-red-400' :
+                                        strike.severity === 'HIGH' ? 'text-orange-400' :
+                                            'text-yellow-400'
+                                        }`} />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <h3 className="text-lg font-bold text-foreground">Strike #{strike.id.slice(0, 8)}</h3>
+                                        <Badge className={
+                                            strike.severity === 'CRITICAL' ? 'bg-red-600/20 text-red-400 border-red-600/30' :
+                                                strike.severity === 'HIGH' ? 'bg-orange-600/20 text-orange-400 border-orange-600/30' :
+                                                    'bg-yellow-600/20 text-yellow-400 border-yellow-600/30'
+                                        }>
+                                            {strike.severity}
+                                        </Badge>
+                                        {strike.appealStatus && (
+                                            <Badge className="bg-purple-600/20 text-purple-400 border-purple-600/30">
+                                                Appeal: {strike.appealStatus}
+                                            </Badge>
+                                        )}
+                                    </div>
+                                    <p className="text-sm text-foreground mb-3">{strike.reason}</p>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                        <div>
+                                            <p className="text-xs text-muted-foreground">Content Type</p>
+                                            <p className="font-semibold text-foreground">{strike.contentType}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted-foreground">Issued At</p>
+                                            <p className="font-semibold text-foreground">{new Date(strike.issuedAt).toLocaleDateString()}</p>
+                                        </div>
+                                        {strike.expiresAt && (
+                                            <div>
+                                                <p className="text-xs text-muted-foreground">Expires At</p>
+                                                <p className="font-semibold text-foreground">{new Date(strike.expiresAt).toLocaleDateString()}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                    {strikes.length === 0 && !loading && (
+                        <div className="text-center py-12 text-muted-foreground">
+                            <AlertTriangle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                            <p>No strikes issued</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Audit Logs Content */}
+            {activeTab === 'logs' && (
+                <div className="space-y-4">
+                    <div className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl overflow-hidden">
+                        <table className="w-full">
+                            <thead className="bg-white/5 border-b border-border">
+                                <tr>
+                                    <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">Action</th>
+                                    <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">Module</th>
+                                    <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">Details</th>
+                                    <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">Admin</th>
+                                    <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                                {auditLogs.map((log) => (
+                                    <tr key={log.id} className="hover:bg-white/5">
+                                        <td className="py-3 px-4">
+                                            <Badge className={
+                                                log.action.includes('BAN') ? 'bg-red-600/20 text-red-400 border-red-600/30' :
+                                                    log.action.includes('LIFT') ? 'bg-green-600/20 text-green-400 border-green-600/30' :
+                                                        'bg-blue-600/20 text-blue-400 border-blue-600/30'
+                                            }>
+                                                {log.action}
+                                            </Badge>
+                                        </td>
+                                        <td className="py-3 px-4 text-sm text-foreground">{log.module}</td>
+                                        <td className="py-3 px-4 text-sm text-muted-foreground max-w-xs truncate">{log.details}</td>
+                                        <td className="py-3 px-4 text-sm text-foreground">{log.admin?.name || 'System'}</td>
+                                        <td className="py-3 px-4 text-sm text-muted-foreground">
+                                            {new Date(log.createdAt).toLocaleString()}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    {auditLogs.length === 0 && !loading && (
+                        <div className="text-center py-12 text-muted-foreground">
+                            <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                            <p>No audit logs found</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+
 
             {/* AI Moderation Info */}
             <motion.div

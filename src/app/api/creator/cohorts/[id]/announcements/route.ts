@@ -178,7 +178,7 @@ export async function POST(
       },
     });
 
-    // TODO: If sendEmail is true, send email notifications to all cohort members
+    // Send email notifications to all cohort members if requested
     if (sendEmail) {
       // Get all active members
       const members = await prisma.cohortMember.findMany({
@@ -198,15 +198,44 @@ export async function POST(
         },
       });
 
-      // TODO: Queue email sending job
-      console.log(
-        `TODO: Send announcement email to ${members.length} members:`,
-        {
-          announcementId: announcement.id,
-          title: announcement.title,
-          memberCount: members.length,
+      // Import and send emails to each member
+      const { sendEmail: sendEmailFn } = await import('@/lib/email');
+
+      // Send emails in parallel (with error handling for each)
+      const emailPromises = members.map(async (member) => {
+        try {
+          await sendEmailFn({
+            to: member.user.email,
+            subject: `📢 New Announcement: ${title}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 20px; border-radius: 10px 10px 0 0;">
+                  <h1 style="color: white; margin: 0; font-size: 24px;">📢 New Announcement</h1>
+                </div>
+                <div style="background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+                  <p style="color: #374151;">Hello ${member.user.name || 'Student'},</p>
+                  <h2 style="color: #1f2937; margin: 20px 0 10px;">${title}</h2>
+                  <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #6366f1;">
+                    ${content}
+                  </div>
+                  <p style="color: #6b7280; margin-top: 20px; font-size: 12px;">
+                    This announcement was sent from your cohort. 
+                    <a href="${process.env.NEXTAUTH_URL}/cohorts/${cohortId}" style="color: #6366f1;">View in platform</a>
+                  </p>
+                </div>
+              </div>
+            `
+          });
+          return { success: true, email: member.user.email };
+        } catch (error) {
+          console.error(`Failed to send email to ${member.user.email}:`, error);
+          return { success: false, email: member.user.email, error };
         }
-      );
+      });
+
+      const results = await Promise.all(emailPromises);
+      const successCount = results.filter(r => r.success).length;
+      console.log(`Sent ${successCount}/${members.length} announcement emails for cohort ${cohortId}`);
     }
 
     return NextResponse.json(

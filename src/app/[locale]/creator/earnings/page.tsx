@@ -4,16 +4,17 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { 
-    DollarSign, 
-    TrendingUp, 
-    Clock, 
+import {
+    DollarSign,
+    TrendingUp,
+    Clock,
     CreditCard,
     Download,
     ArrowUpRight,
     Wallet,
     Calendar
 } from 'lucide-react';
+import WithdrawalModal from '@/components/modals/WithdrawalModal';
 
 interface EarningsStats {
     totalEarnings: number;
@@ -45,7 +46,7 @@ export default function CreatorEarningsPage() {
     const t = useTranslations('creator.earnings');
     const [loading, setLoading] = useState(true);
     const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
-    
+
     // Mock data - replace with actual API calls
     const [stats, setStats] = useState<EarningsStats>({
         totalEarnings: 0,
@@ -259,7 +260,7 @@ export default function CreatorEarningsPage() {
                             <h3 className="text-gray-400 text-sm mb-2">{t('courseRevenue')}</h3>
                             <p className="text-2xl font-bold text-white">{formatCurrency(breakdown.courseRevenue)}</p>
                             <div className="mt-2 h-2 bg-gray-700/50 rounded-full overflow-hidden">
-                                <div 
+                                <div
                                     className="h-full bg-gradient-to-r from-purple-500 to-blue-500"
                                     style={{ width: `${(breakdown.courseRevenue / stats.thisMonth) * 100}%` }}
                                 />
@@ -270,7 +271,7 @@ export default function CreatorEarningsPage() {
                             <h3 className="text-gray-400 text-sm mb-2">{t('channelRevenue')}</h3>
                             <p className="text-2xl font-bold text-white">{formatCurrency(breakdown.channelRevenue)}</p>
                             <div className="mt-2 h-2 bg-gray-700/50 rounded-full overflow-hidden">
-                                <div 
+                                <div
                                     className="h-full bg-gradient-to-r from-green-500 to-emerald-500"
                                     style={{ width: `${(breakdown.channelRevenue / stats.thisMonth) * 100}%` }}
                                 />
@@ -281,7 +282,7 @@ export default function CreatorEarningsPage() {
                             <h3 className="text-gray-400 text-sm mb-2">{t('liveSessionRevenue')}</h3>
                             <p className="text-2xl font-bold text-white">{formatCurrency(breakdown.liveSessionRevenue)}</p>
                             <div className="mt-2 h-2 bg-gray-700/50 rounded-full overflow-hidden">
-                                <div 
+                                <div
                                     className="h-full bg-gradient-to-r from-yellow-500 to-orange-500"
                                     style={{ width: `${(breakdown.liveSessionRevenue / stats.thisMonth) * 100}%` }}
                                 />
@@ -332,75 +333,12 @@ export default function CreatorEarningsPage() {
                 </div>
             </div>
 
-            {/* Withdrawal Modal - TODO: Implement modal component */}
-            {showWithdrawalModal && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-8 max-w-md w-full">
-                        <h3 className="text-2xl font-bold text-white mb-2">{t('withdrawalRequest')}</h3>
-                        <p className="text-gray-400 mb-6">{t('minimumWithdrawal', { amount: formatCurrency(100) })}</p>
-                        
-                        {/* Withdrawal form */}
-                        <form
-                            onSubmit={async (e) => {
-                                e.preventDefault()
-                                setIsSubmittingWithdrawal(true)
-                                try {
-                                    await requestWithdrawal(withdrawalAmount, withdrawalMethod, { details: accountDetailsInput })
-                                } finally {
-                                    setIsSubmittingWithdrawal(false)
-                                }
-                            }}
-                        >
-                            <div className="space-y-4">
-                                <label className="block text-sm text-gray-300">{t('amount')}</label>
-                                <input
-                                    type="number"
-                                    min={100}
-                                    step={10}
-                                    value={withdrawalAmount}
-                                    onChange={(e) => setWithdrawalAmount(Number(e.target.value))}
-                                    className="w-full px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-white"
-                                />
-
-                                <label className="block text-sm text-gray-300">{t('method')}</label>
-                                <select
-                                    value={withdrawalMethod}
-                                    onChange={(e) => setWithdrawalMethod(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-white"
-                                >
-                                    <option value="BANK_TRANSFER">{t('bankTransfer')}</option>
-                                    <option value="PAYPAL">{t('paypal')}</option>
-                                    <option value="VODAFONE_CASH">{t('vodafoneCash')}</option>
-                                </select>
-
-                                <label className="block text-sm text-gray-300">{t('accountDetails')}</label>
-                                <textarea
-                                    value={accountDetailsInput}
-                                    onChange={(e) => setAccountDetailsInput(e.target.value)}
-                                    rows={4}
-                                    className="w-full px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-white"
-                                />
-
-                                <button
-                                    type="submit"
-                                    disabled={isSubmittingWithdrawal}
-                                    className="w-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300"
-                                >
-                                    {isSubmittingWithdrawal ? t('submitting') : t('submitWithdrawal')}
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setShowWithdrawalModal(false)}
-                                    className="w-full bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300"
-                                >
-                                    {t('cancel')}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            {/* Withdrawal Modal */}
+            <WithdrawalModal
+                isOpen={showWithdrawalModal}
+                onClose={() => setShowWithdrawalModal(false)}
+                availableBalance={stats.availableBalance}
+            />
         </div>
     );
 }

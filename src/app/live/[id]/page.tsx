@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
@@ -25,6 +25,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { VideoCallService } from '@/services/VideoCallService';
 
 interface LiveSession {
   id: string;
@@ -66,27 +67,61 @@ export default function LiveViewerPage() {
   const params = useParams();
   const sessionId = params?.id as string;
   const { data: session } = useSession();
-  
+
   const [loading, setLoading] = useState(true);
   const [liveSession, setLiveSession] = useState<LiveSession | null>(null);
   const [isJoined, setIsJoined] = useState(false);
   const [muted, setMuted] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
-  
+  const [connectionState, setConnectionState] = useState<string>('disconnected');
+
   // Chat & Q&A
   const [activeTab, setActiveTab] = useState<'chat' | 'qa'>('chat');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [qaQuestions, setQAQuestions] = useState<QAQuestion[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [newQuestion, setNewQuestion] = useState('');
-  
+
   // Stats
   const [viewers, setViewers] = useState(0);
   const [watchTime, setWatchTime] = useState(0);
-  
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoCallServiceRef = useRef<VideoCallService | null>(null);
+
+  // Initialize WebRTC service
+  useEffect(() => {
+    videoCallServiceRef.current = new VideoCallService({
+      constraints: {
+        audio: true,
+        video: false // Viewer only receives, doesn't send video
+      }
+    });
+
+    // Handle remote stream from host
+    videoCallServiceRef.current.onRemoteStream((stream) => {
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        toast.success('Connected to stream!');
+      }
+    });
+
+    // Handle connection state changes
+    videoCallServiceRef.current.onConnectionStateChange((state) => {
+      setConnectionState(state);
+      if (state === 'connected') {
+        toast.success('Stream connected');
+      } else if (state === 'disconnected' || state === 'failed') {
+        toast.error('Stream disconnected');
+      }
+    });
+
+    return () => {
+      videoCallServiceRef.current?.endCall();
+    };
+  }, []);
 
   useEffect(() => {
     if (sessionId) {
@@ -117,7 +152,7 @@ export default function LiveViewerPage() {
       if (res.ok) {
         const data = await res.json();
         setLiveSession(data.session);
-        
+
         if (data.session.status === 'LIVE') {
           setViewers(data.session.viewCount || 0);
         }
@@ -156,9 +191,10 @@ export default function LiveViewerPage() {
       });
 
       if (res.ok) {
+        const data = await res.json();
         setIsJoined(true);
         toast.success('Joined session!');
-        
+
         // Add welcome message
         setChatMessages(prev => [...prev, {
           id: Date.now().toString(),
@@ -167,9 +203,21 @@ export default function LiveViewerPage() {
           message: `${session.user.name} joined the stream`,
           timestamp: new Date(),
         }]);
-        
-        // TODO: Initialize WebRTC connection
-        // For now, just show placeholder
+
+        // Initialize WebRTC connection
+        try {
+          if (videoCallServiceRef.current && data.offer) {
+            // Host is already streaming, handle their offer
+            await videoCallServiceRef.current.handleOffer(data.offer);
+          } else if (videoCallServiceRef.current) {
+            // Start as viewer (receive-only mode)
+            await videoCallServiceRef.current.startCall(sessionId, false);
+          }
+        } catch (webrtcError) {
+          console.error('WebRTC initialization error:', webrtcError);
+          // Fallback: still allow joining for chat functionality
+          toast.error('Video stream unavailable, but you can still chat');
+        }
       } else {
         const error = await res.json();
         toast.error(error.error || 'Failed to join session');
@@ -180,6 +228,8 @@ export default function LiveViewerPage() {
     }
   };
 
+
+
   const leaveSession = async () => {
     try {
       await fetch(`/api/live-sessions/${sessionId}/leave`, {
@@ -187,7 +237,7 @@ export default function LiveViewerPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ watchTime }),
       });
-      
+
       setIsJoined(false);
     } catch (error) {
       console.error('Error leaving session:', error);
@@ -196,7 +246,7 @@ export default function LiveViewerPage() {
 
   const sendMessage = () => {
     if (!newMessage.trim() || !session?.user) return;
-    
+
     const message: ChatMessage = {
       id: Date.now().toString(),
       userId: session.user.id,
@@ -205,16 +255,16 @@ export default function LiveViewerPage() {
       message: newMessage,
       timestamp: new Date(),
     };
-    
+
     setChatMessages(prev => [...prev, message]);
     setNewMessage('');
-    
+
     // TODO: Send via WebSocket
   };
 
   const askQuestion = () => {
     if (!newQuestion.trim() || !session?.user) return;
-    
+
     const question: QAQuestion = {
       id: Date.now().toString(),
       userId: session.user.id,
@@ -225,11 +275,11 @@ export default function LiveViewerPage() {
       hasUpvoted: false,
       answered: false,
     };
-    
+
     setQAQuestions(prev => [...prev, question]);
     setNewQuestion('');
     toast.success('Question submitted');
-    
+
     // TODO: Send to server
   };
 
@@ -307,7 +357,7 @@ export default function LiveViewerPage() {
                     muted={muted}
                     className="w-full h-full object-contain"
                   />
-                  
+
                   {/* Live Badge */}
                   <div className="absolute top-4 left-4 flex gap-2">
                     <Badge className="bg-red-500 text-white animate-pulse">
@@ -319,7 +369,7 @@ export default function LiveViewerPage() {
                       {viewers} watching
                     </Badge>
                   </div>
-                  
+
                   {/* Video Controls */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
                     <div className="flex items-center gap-3">
@@ -331,9 +381,9 @@ export default function LiveViewerPage() {
                       >
                         {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                       </Button>
-                      
+
                       <div className="flex-1" />
-                      
+
                       <Button
                         size="sm"
                         variant="ghost"
@@ -342,7 +392,7 @@ export default function LiveViewerPage() {
                       >
                         <Share2 className="w-5 h-5" />
                       </Button>
-                      
+
                       <Button
                         size="sm"
                         variant="ghost"
@@ -431,22 +481,20 @@ export default function LiveViewerPage() {
             <div className="flex border-b border-gray-700">
               <button
                 onClick={() => setActiveTab('chat')}
-                className={`flex-1 px-4 py-3 font-semibold transition-colors ${
-                  activeTab === 'chat'
+                className={`flex-1 px-4 py-3 font-semibold transition-colors ${activeTab === 'chat'
                     ? 'text-white bg-gray-700'
                     : 'text-gray-400 hover:text-white'
-                }`}
+                  }`}
               >
                 <MessageSquare className="w-4 h-4 inline mr-2" />
                 Chat
               </button>
               <button
                 onClick={() => setActiveTab('qa')}
-                className={`flex-1 px-4 py-3 font-semibold transition-colors ${
-                  activeTab === 'qa'
+                className={`flex-1 px-4 py-3 font-semibold transition-colors ${activeTab === 'qa'
                     ? 'text-white bg-gray-700'
                     : 'text-gray-400 hover:text-white'
-                }`}
+                  }`}
               >
                 <HelpCircle className="w-4 h-4 inline mr-2" />
                 Q&A
@@ -473,14 +521,14 @@ export default function LiveViewerPage() {
                     </div>
                   ))}
                   <div ref={chatEndRef} />
-                  
+
                   {chatMessages.length === 0 && (
                     <p className="text-center text-gray-500 py-8">
                       No messages yet. Be the first to chat!
                     </p>
                   )}
                 </div>
-                
+
                 <div className="p-4 border-t border-gray-700">
                   <div className="flex gap-2">
                     <input
@@ -511,18 +559,16 @@ export default function LiveViewerPage() {
                   {qaQuestions.sort((a, b) => b.upvotes - a.upvotes).map((q) => (
                     <div
                       key={q.id}
-                      className={`p-3 rounded-lg border ${
-                        q.answered
+                      className={`p-3 rounded-lg border ${q.answered
                           ? 'border-green-500 bg-green-500/10'
                           : 'border-gray-700 bg-gray-700/50'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start gap-3">
                         <button
                           onClick={() => upvoteQuestion(q.id)}
-                          className={`flex flex-col items-center gap-1 ${
-                            q.hasUpvoted ? 'text-purple-400' : 'text-gray-400 hover:text-white'
-                          }`}
+                          className={`flex flex-col items-center gap-1 ${q.hasUpvoted ? 'text-purple-400' : 'text-gray-400 hover:text-white'
+                            }`}
                         >
                           <ThumbsUp className="w-4 h-4" />
                           <span className="text-xs font-bold">{q.upvotes}</span>
@@ -541,14 +587,14 @@ export default function LiveViewerPage() {
                       </div>
                     </div>
                   ))}
-                  
+
                   {qaQuestions.length === 0 && (
                     <p className="text-center text-gray-500 py-8">
                       No questions yet. Ask one!
                     </p>
                   )}
                 </div>
-                
+
                 <div className="p-4 border-t border-gray-700">
                   <textarea
                     value={newQuestion}

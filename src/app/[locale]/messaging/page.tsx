@@ -46,6 +46,7 @@ import toast from 'react-hot-toast'
 import VideoCallModal from '@/components/VideoCallModal'
 import VoiceCallModal from '@/components/VoiceCallModal'
 import ReportModal from '@/components/ReportModal'
+import CameraCapture from '@/components/CameraCapture'
 
 interface MessageReaction {
     emoji: string
@@ -390,30 +391,33 @@ function MessengerPage() {
     const [cohorts, setCohorts] = useState<any[]>([])
     const [selectedCohort, setSelectedCohort] = useState<string | null>(null)
     const [showAddMembersModal, setShowAddMembersModal] = useState(false)
-    const [groupMessages, setGroupMessages] = useState<{[key: string]: Message[]}>({})
+    const [groupMessages, setGroupMessages] = useState<{ [key: string]: Message[] }>({})
     const [conversationMenu, setConversationMenu] = useState<{ conversation: Conversation; x: number; y: number } | null>(null)
-    
+
     // Call modals state
     const [showVideoCallModal, setShowVideoCallModal] = useState(false)
     const [showVoiceCallModal, setShowVoiceCallModal] = useState(false)
     const [callSession, setCallSession] = useState<CallSession | null>(null)
-    
+
     // Report modal state
     const [showReportModal, setShowReportModal] = useState(false)
     const [reportTarget, setReportTarget] = useState<{ type: any; id: string; name: string } | null>(null)
-    
+
     // Settings modal state
     const [showSettingsModal, setShowSettingsModal] = useState(false)
-    
+
     // All users state for new message modal
     const [allUsers, setAllUsers] = useState<any[]>([])
     const [loadingUsers, setLoadingUsers] = useState(false)
-    
+
     // Group invite link state
     const [showInviteLinkModal, setShowInviteLinkModal] = useState(false)
     const [inviteLink, setInviteLink] = useState('')
     const [generatingLink, setGeneratingLink] = useState(false)
-    
+
+    // Camera capture state
+    const [showCameraModal, setShowCameraModal] = useState(false)
+
     const isMountedRef = useRef(true)
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
@@ -1123,9 +1127,8 @@ function MessengerPage() {
                     return (
                         <div
                             key={user.id}
-                            className={`w-full p-3 flex items-center gap-3 transition-colors ${
-                                isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
-                            }`}
+                            className={`w-full p-3 flex items-center gap-3 transition-colors ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
+                                }`}
                         >
                             <div className="relative flex-shrink-0">
                                 <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-200">
@@ -1198,12 +1201,12 @@ function MessengerPage() {
     // Typing indicator simulation
     useEffect(() => {
         if (!selectedConversation || !messageInput) return
-        
+
         // Simulate other user typing after you type
         if (typingTimeoutRef.current) {
             clearTimeout(typingTimeoutRef.current)
         }
-        
+
         setOtherUserTyping(true)
         typingTimeoutRef.current = setTimeout(() => {
             setOtherUserTyping(false)
@@ -1220,7 +1223,7 @@ function MessengerPage() {
     const handleReaction = useCallback(async (messageId: string, emoji: string) => {
         const userId = session?.user?.id
         if (!userId) return
-        
+
         try {
             const response = await fetch(`/api/messaging/messages/${messageId}/reaction`, {
                 method: 'POST',
@@ -1231,11 +1234,11 @@ function MessengerPage() {
             if (response.ok) {
                 const data = await response.json()
                 const currentUserId: string = userId
-                
+
                 setMessages(prev => prev.map(msg => {
                     if (msg.id === messageId) {
                         const reactions = msg.reactions || []
-                        
+
                         if (data.action === 'removed') {
                             return {
                                 ...msg,
@@ -1244,8 +1247,8 @@ function MessengerPage() {
                         } else if (data.action === 'updated') {
                             return {
                                 ...msg,
-                                reactions: reactions.map(r => 
-                                    r.userId === currentUserId 
+                                reactions: reactions.map(r =>
+                                    r.userId === currentUserId
                                         ? { emoji: data.reaction.emoji as string, userId: currentUserId, userName: session?.user?.name }
                                         : r
                                 )
@@ -1296,10 +1299,75 @@ function MessengerPage() {
     }, [isArabic])
 
     // Memoize forward message handler
-    const handleForwardMessage = useCallback((messageId: string) => {
-        toast.success('Forward feature coming soon')
+    const handleForwardMessage = useCallback(async (messageId: string) => {
+        const messageToForward = messages.find(m => m.id === messageId)
+        if (!messageToForward) {
+            toast.error(isArabic ? 'لم يتم العثور على الرسالة' : 'Message not found')
+            setShowMessageMenu(null)
+            return
+        }
+
+        // Get available conversations to forward to
+        const otherConversations = conversations.filter(conv => conv.id !== selectedConversation?.id)
+
+        if (otherConversations.length === 0) {
+            toast.error(isArabic ? 'لا توجد محادثات أخرى لإعادة التوجيه إليها' : 'No other conversations to forward to')
+            setShowMessageMenu(null)
+            return
+        }
+
+        // Create a simple selection prompt
+        const conversationNames = otherConversations.map((conv, idx) =>
+            `${idx + 1}. ${conv.isGroup ? conv.groupName : conv.user.name}`
+        ).join('\n')
+
+        const selection = window.prompt(
+            isArabic
+                ? `اختر رقم المحادثة للإعادة التوجيه:\n${conversationNames}`
+                : `Enter conversation number to forward to:\n${conversationNames}`
+        )
+
+        if (!selection) {
+            setShowMessageMenu(null)
+            return
+        }
+
+        const convIndex = parseInt(selection) - 1
+        if (isNaN(convIndex) || convIndex < 0 || convIndex >= otherConversations.length) {
+            toast.error(isArabic ? 'اختيار غير صالح' : 'Invalid selection')
+            setShowMessageMenu(null)
+            return
+        }
+
+        const targetConversation = otherConversations[convIndex]
+
+        try {
+            // Send the forwarded message to the target conversation
+            const response = await fetch(`/api/messaging/conversations/${targetConversation.id}/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: `↪️ ${isArabic ? 'رسالة معاد توجيهها' : 'Forwarded message'}:\n${messageToForward.content}`,
+                    messageType: 'TEXT',
+                })
+            })
+
+            if (response.ok) {
+                toast.success(
+                    isArabic
+                        ? `تم إعادة التوجيه إلى ${targetConversation.isGroup ? targetConversation.groupName : targetConversation.user.name}`
+                        : `Forwarded to ${targetConversation.isGroup ? targetConversation.groupName : targetConversation.user.name}`
+                )
+            } else {
+                toast.error(isArabic ? 'فشل إعادة التوجيه' : 'Failed to forward message')
+            }
+        } catch (error) {
+            console.error('Error forwarding message:', error)
+            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+        }
+
         setShowMessageMenu(null)
-    }, [])
+    }, [messages, conversations, selectedConversation, isArabic])
 
     // Memoize copy message handler
     const handleCopyMessage = useCallback((message: Message) => {
@@ -1390,7 +1458,7 @@ function MessengerPage() {
                 // Create demo group
                 const cohort = selectedCohort ? cohorts.find(c => c.id === selectedCohort) : null
                 const members = cohort?.students || []
-                
+
                 const newGroup: Conversation = {
                     id: `group${Date.now()}`,
                     isGroup: true,
@@ -1413,7 +1481,7 @@ function MessengerPage() {
                     },
                     unreadCount: 0
                 }
-                
+
                 setConversations(prev => [newGroup, ...prev])
                 toast.success(isArabic ? 'تم إنشاء المجموعة!' : 'Group created!')
                 setShowCreateGroupModal(false)
@@ -1513,7 +1581,7 @@ function MessengerPage() {
     // Handle generate invite link
     const handleGenerateInviteLink = useCallback(async () => {
         if (!selectedConversation?.isGroup) return
-        
+
         setGeneratingLink(true)
         try {
             const response = await fetch('/api/groups/invite-link', {
@@ -1679,14 +1747,14 @@ function MessengerPage() {
                         >
                             {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                         </button>
-                        <button 
+                        <button
                             onClick={() => setShowSettingsModal(true)}
                             className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${neutralIconTone}`}
                             title={isArabic ? 'الإعدادات' : 'Settings'}
                         >
                             <Settings className="w-5 h-5" />
                         </button>
-                        <button 
+                        <button
                             onClick={() => setShowNewMessageModal(true)}
                             className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${neutralIconTone}`}
                             title={isArabic ? 'رسالة جديدة' : 'New message'}
@@ -1714,31 +1782,28 @@ function MessengerPage() {
                 <div className={`flex gap-2 px-3 pb-3 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
                     <button
                         onClick={() => setActiveTab('mentors')}
-                        className={`flex-1 px-4 py-2.5 rounded-full font-semibold text-sm transition-colors ${
-                            activeTab === 'mentors'
-                                ? 'bg-[#0a84ff] text-white'
-                                : isDarkMode ? 'text-gray-400 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'
-                        }`}
+                        className={`flex-1 px-4 py-2.5 rounded-full font-semibold text-sm transition-colors ${activeTab === 'mentors'
+                            ? 'bg-[#0a84ff] text-white'
+                            : isDarkMode ? 'text-gray-400 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'
+                            }`}
                     >
                         {isArabic ? 'المرشدون' : 'Mentors'}
                     </button>
                     <button
                         onClick={() => setActiveTab('study-buddies')}
-                        className={`flex-1 px-4 py-2.5 rounded-full font-semibold text-sm transition-colors ${
-                            activeTab === 'study-buddies'
-                                ? 'bg-[#0a84ff] text-white'
-                                : isDarkMode ? 'text-gray-400 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'
-                        }`}
+                        className={`flex-1 px-4 py-2.5 rounded-full font-semibold text-sm transition-colors ${activeTab === 'study-buddies'
+                            ? 'bg-[#0a84ff] text-white'
+                            : isDarkMode ? 'text-gray-400 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'
+                            }`}
                     >
                         {isArabic ? 'زملاء الدراسة' : 'Study Buddies'}
                     </button>
                     <button
                         onClick={() => setActiveTab('recommended')}
-                        className={`flex-1 px-4 py-2.5 rounded-full font-semibold text-sm transition-colors ${
-                            activeTab === 'recommended'
-                                ? 'bg-[#0a84ff] text-white'
-                                : isDarkMode ? 'text-gray-400 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'
-                        }`}
+                        className={`flex-1 px-4 py-2.5 rounded-full font-semibold text-sm transition-colors ${activeTab === 'recommended'
+                            ? 'bg-[#0a84ff] text-white'
+                            : isDarkMode ? 'text-gray-400 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'
+                            }`}
                     >
                         {isArabic ? 'مقترحون' : 'Recommended'}
                     </button>
@@ -1751,9 +1816,8 @@ function MessengerPage() {
                     <div className="p-3 border-b border-gray-200 dark:border-gray-800">
                         <button
                             onClick={() => setShowMessageRequestModal(true)}
-                            className={`w-full p-3 rounded-xl transition-colors ${
-                                isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'
-                            }`}
+                            className={`w-full p-3 rounded-xl transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'
+                                }`}
                         >
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -1792,46 +1856,45 @@ function MessengerPage() {
                                     : (isArabic ? 'مقترح لك' : 'Suggested for you')
 
                                 return (
-                                <div
+                                    <div
                                         key={user.id}
-                                    className={`w-full p-3 flex items-center gap-3 transition-colors ${
-                                        isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
-                                    }`}
-                                >
-                                    <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-200">
-                                        {user.image ? (
-                                            <Image
+                                        className={`w-full p-3 flex items-center gap-3 transition-colors ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-200">
+                                            {user.image ? (
+                                                <Image
                                                     src={user.image}
                                                     alt={displayName}
-                                                width={56}
-                                                height={56}
-                                                className="object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white text-lg font-semibold">
+                                                    width={56}
+                                                    height={56}
+                                                    className="object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white text-lg font-semibold">
                                                     {displayName.charAt(0).toUpperCase()}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className={`font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className={`font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                                                 {displayName}
-                                        </h3>
-                                        <p className={`text-sm truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                            </h3>
+                                            <p className={`text-sm truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                                 {mutualLabel}
-                                        </p>
-                                    </div>
-                                    <button
-                                        onClick={async () => {
-                                            const conv = await createConversationWithUser(user.id)
-                                            if (conv) {
-                                                toast.success(isArabic ? 'تم إرسال طلب الرسالة' : 'Message request sent')
-                                            }
-                                        }}
-                                        className="px-4 py-2 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-full font-semibold text-sm transition-colors"
-                                    >
-                                        {isArabic ? 'مراسلة' : 'Message'}
-                                    </button>
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={async () => {
+                                                const conv = await createConversationWithUser(user.id)
+                                                if (conv) {
+                                                    toast.success(isArabic ? 'تم إرسال طلب الرسالة' : 'Message request sent')
+                                                }
+                                            }}
+                                            className="px-4 py-2 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-full font-semibold text-sm transition-colors"
+                                        >
+                                            {isArabic ? 'مراسلة' : 'Message'}
+                                        </button>
                                     </div>
                                 )
                             })}
@@ -1870,11 +1933,10 @@ function MessengerPage() {
                                     key={conversation.id}
                                     onClick={() => handleSelectConversation(conversation)}
                                     onContextMenu={(event) => handleConversationContextMenu(event, conversation)}
-                                    className={`w-full p-3 flex items-center gap-3 transition-colors ${
-                                        selectedConversation?.id === conversation.id
-                                            ? isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-                                            : isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
-                                    }`}
+                                    className={`w-full p-3 flex items-center gap-3 transition-colors ${selectedConversation?.id === conversation.id
+                                        ? isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+                                        : isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
+                                        }`}
                                 >
                                     {/* Avatar */}
                                     <div className="relative flex-shrink-0">
@@ -1923,11 +1985,10 @@ function MessengerPage() {
                                         </div>
                                         {conversation.lastMessage && (
                                             <div className="flex items-center justify-between">
-                                                <p className={`text-sm truncate ${
-                                                    conversation.unreadCount > 0
-                                                        ? isDarkMode ? 'text-white font-semibold' : 'text-gray-900 font-semibold'
-                                                        : isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                                                }`}>
+                                                <p className={`text-sm truncate ${conversation.unreadCount > 0
+                                                    ? isDarkMode ? 'text-white font-semibold' : 'text-gray-900 font-semibold'
+                                                    : isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                                                    }`}>
                                                     {conversation.lastMessage.senderId === session.user?.id && (
                                                         <span className="mr-1">
                                                             {conversation.lastMessage.read ? (
@@ -2014,16 +2075,16 @@ function MessengerPage() {
                                         {selectedConversation.isGroup
                                             ? `${selectedConversation.members?.length || 0} ${isArabic ? 'أعضاء' : 'members'}`
                                             : selectedConversation.user.isOnline
-                                            ? (isArabic ? 'متصل الآن' : 'Active now')
-                                            : (() => {
-                                                const lastSeenLabel = formatTime(selectedConversation.user.lastSeen || null)
-                                                if (!lastSeenLabel) {
-                                                    return isArabic ? 'نشط مؤخراً' : 'Active recently'
-                                                }
-                                                return isArabic
-                                                    ? `آخر ظهور ${lastSeenLabel}`
-                                                    : `Active ${lastSeenLabel} ago`
-                                            })()
+                                                ? (isArabic ? 'متصل الآن' : 'Active now')
+                                                : (() => {
+                                                    const lastSeenLabel = formatTime(selectedConversation.user.lastSeen || null)
+                                                    if (!lastSeenLabel) {
+                                                        return isArabic ? 'نشط مؤخراً' : 'Active recently'
+                                                    }
+                                                    return isArabic
+                                                        ? `آخر ظهور ${lastSeenLabel}`
+                                                        : `Active ${lastSeenLabel} ago`
+                                                })()
                                         }
                                     </p>
                                 </div>
@@ -2031,14 +2092,14 @@ function MessengerPage() {
                             <div className="flex items-center gap-2">
                                 {!selectedConversation.isGroup && (
                                     <>
-                                        <button 
+                                        <button
                                             onClick={handleInitiateVoiceCall}
                                             className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
                                             title={isArabic ? 'مكالمة صوتية' : 'Voice call'}
                                         >
                                             <Phone className="w-5 h-5" />
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={handleInitiateVideoCall}
                                             className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
                                             title={isArabic ? 'مكالمة فيديو' : 'Video call'}
@@ -2120,9 +2181,8 @@ function MessengerPage() {
                                             <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'} max-w-[70%] relative`}>
                                                 {/* Reply indicator */}
                                                 {message.replyTo && (
-                                                    <div className={`text-xs px-3 py-1 mb-1 rounded-lg ${
-                                                        isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-200 text-gray-600'
-                                                    }`}>
+                                                    <div className={`text-xs px-3 py-1 mb-1 rounded-lg ${isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-200 text-gray-600'
+                                                        }`}>
                                                         <span className="flex items-center gap-1">
                                                             <ArrowLeft className="w-3 h-3" />
                                                             Replying to a message
@@ -2171,9 +2231,8 @@ function MessengerPage() {
                                                                             return (
                                                                                 <div
                                                                                     key={attachment.id}
-                                                                                    className={`px-4 py-3 rounded-2xl flex items-center gap-3 shadow-sm ${
-                                                                                        isOwnMessage ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white' : isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'
-                                                                                    }`}
+                                                                                    className={`px-4 py-3 rounded-2xl flex items-center gap-3 shadow-sm ${isOwnMessage ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white' : isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'
+                                                                                        }`}
                                                                                 >
                                                                                     <Play className="w-4 h-4" />
                                                                                     <audio controls className="w-40">
@@ -2189,9 +2248,8 @@ function MessengerPage() {
                                                                                 href={attachment.fileUrl}
                                                                                 target="_blank"
                                                                                 rel="noreferrer"
-                                                                                className={`block px-4 py-3 rounded-2xl shadow-sm border text-sm ${
-                                                                                    isDarkMode ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-200 bg-white text-gray-900'
-                                                                                }`}
+                                                                                className={`block px-4 py-3 rounded-2xl shadow-sm border text-sm ${isDarkMode ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-200 bg-white text-gray-900'
+                                                                                    }`}
                                                                             >
                                                                                 <div className="flex items-center gap-3">
                                                                                     <Paperclip className="w-4 h-4 text-blue-500" />
@@ -2209,11 +2267,10 @@ function MessengerPage() {
 
                                                                     {shouldShowContent && (
                                                                         <div
-                                                                            className={`px-4 py-2.5 rounded-2xl shadow-sm ${
-                                                                                isOwnMessage
-                                                                                    ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
-                                                                                    : isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'
-                                                                            }`}
+                                                                            className={`px-4 py-2.5 rounded-2xl shadow-sm ${isOwnMessage
+                                                                                ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
+                                                                                : isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'
+                                                                                }`}
                                                                         >
                                                                             <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{message.content}</p>
                                                                         </div>
@@ -2224,9 +2281,8 @@ function MessengerPage() {
 
                                                         if (message.type === 'audio') {
                                                             return (
-                                                                <div className={`px-4 py-3 rounded-2xl flex items-center gap-3 shadow-sm ${
-                                                                    isOwnMessage ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white' : isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'
-                                                                }`}>
+                                                                <div className={`px-4 py-3 rounded-2xl flex items-center gap-3 shadow-sm ${isOwnMessage ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white' : isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'
+                                                                    }`}>
                                                                     <button className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
                                                                         <Play className="w-4 h-4 ml-0.5" fill="currentColor" />
                                                                     </button>
@@ -2242,11 +2298,10 @@ function MessengerPage() {
 
                                                         return (
                                                             <div
-                                                                className={`px-4 py-2.5 rounded-2xl shadow-sm ${
-                                                                    isOwnMessage
-                                                                        ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
-                                                                        : isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'
-                                                                }`}
+                                                                className={`px-4 py-2.5 rounded-2xl shadow-sm ${isOwnMessage
+                                                                    ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
+                                                                    : isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'
+                                                                    }`}
                                                             >
                                                                 <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{message.content}</p>
                                                             </div>
@@ -2261,9 +2316,8 @@ function MessengerPage() {
                                                                 return (
                                                                     <div
                                                                         key={emoji}
-                                                                        className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs ${
-                                                                            isDarkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white border border-gray-300 shadow-sm'
-                                                                        }`}
+                                                                        className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs ${isDarkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white border border-gray-300 shadow-sm'
+                                                                            }`}
                                                                     >
                                                                         <span>{emoji}</span>
                                                                         {count > 1 && <span className="text-[10px]">{count}</span>}
@@ -2278,9 +2332,8 @@ function MessengerPage() {
                                                         <motion.div
                                                             initial={{ opacity: 0, scale: 0.8, y: 10 }}
                                                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                                                            className={`absolute ${isOwnMessage ? 'right-0' : 'left-0'} top-full mt-2 flex gap-1 p-2 rounded-full shadow-lg z-50 ${
-                                                                isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-                                                            }`}
+                                                            className={`absolute ${isOwnMessage ? 'right-0' : 'left-0'} top-full mt-2 flex gap-1 p-2 rounded-full shadow-lg z-50 ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                                                                }`}
                                                         >
                                                             {['❤️', '😂', '😮', '😢', '👍', '👎'].map(emoji => (
                                                                 <button
@@ -2299,33 +2352,29 @@ function MessengerPage() {
                                                         <motion.div
                                                             initial={{ opacity: 0, scale: 0.8 }}
                                                             animate={{ opacity: 1, scale: 1 }}
-                                                            className={`absolute ${isOwnMessage ? 'right-0' : 'left-0'} top-full mt-2 w-48 rounded-lg shadow-xl z-50 overflow-hidden ${
-                                                                isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-                                                            }`}
+                                                            className={`absolute ${isOwnMessage ? 'right-0' : 'left-0'} top-full mt-2 w-48 rounded-lg shadow-xl z-50 overflow-hidden ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                                                                }`}
                                                         >
                                                             <button
                                                                 onClick={() => handleReply(message)}
-                                                                className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                                                                    isDarkMode ? 'text-gray-200' : 'text-gray-700'
-                                                                }`}
+                                                                className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-gray-200' : 'text-gray-700'
+                                                                    }`}
                                                             >
                                                                 <ArrowLeft className="w-4 h-4" />
                                                                 Reply
                                                             </button>
                                                             <button
                                                                 onClick={() => handleCopyMessage(message)}
-                                                                className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                                                                    isDarkMode ? 'text-gray-200' : 'text-gray-700'
-                                                                }`}
+                                                                className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-gray-200' : 'text-gray-700'
+                                                                    }`}
                                                             >
                                                                 <ArrowLeft className="w-4 h-4 rotate-180" />
                                                                 Copy
                                                             </button>
                                                             <button
                                                                 onClick={() => handleForwardMessage(message.id)}
-                                                                className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                                                                    isDarkMode ? 'text-gray-200' : 'text-gray-700'
-                                                                }`}
+                                                                className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-gray-200' : 'text-gray-700'
+                                                                    }`}
                                                             >
                                                                 <ArrowLeft className="w-4 h-4 -rotate-45" />
                                                                 {isArabic ? 'إعادة توجيه' : 'Forward'}
@@ -2452,9 +2501,8 @@ function MessengerPage() {
                         <div className={`p-4 border-t ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
                             {/* Reply Preview */}
                             {replyingTo && (
-                                <div className={`mb-2 p-3 rounded-lg flex items-center justify-between ${
-                                    isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-                                }`}>
+                                <div className={`mb-2 p-3 rounded-lg flex items-center justify-between ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+                                    }`}>
                                     <div className="flex-1 min-w-0">
                                         <p className={`text-xs font-semibold mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                             Replying to {replyingTo.senderId === session.user?.id ? 'yourself' : selectedConversation.user.name}
@@ -2544,13 +2592,21 @@ function MessengerPage() {
                                 >
                                     <ImageIcon className="w-5 h-5" />
                                 </button>
-                                <button 
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCameraModal(true)}
+                                    className={`p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
+                                    title={isArabic ? 'التقاط صورة' : 'Take photo'}
+                                >
+                                    <Camera className="w-5 h-5" />
+                                </button>
+                                <button
                                     className={`p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
                                     title="Choose a sticker"
                                 >
                                     <Sticker className="w-5 h-5" />
                                 </button>
-                                <button 
+                                <button
                                     className={`p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
                                     title="Send a gift"
                                 >
@@ -2565,7 +2621,7 @@ function MessengerPage() {
                                     placeholder={isArabic ? 'اكتب رسالة...' : 'Aa'}
                                     className={`flex-1 bg-transparent outline-none ${isDarkMode ? 'text-white placeholder:text-gray-400' : 'text-gray-900 placeholder:text-gray-500'}`}
                                 />
-                                <button 
+                                <button
                                     onClick={() => setShowEmojiPickerMain(!showEmojiPickerMain)}
                                     className={`p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
                                     title="Choose an emoji"
@@ -2597,7 +2653,7 @@ function MessengerPage() {
                                         )}
                                     </button>
                                 ) : (
-                                    <button 
+                                    <button
                                         onClick={handleVoiceRecord}
                                         className={`p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
                                     >
@@ -2675,12 +2731,11 @@ function MessengerPage() {
                                     {isArabic ? 'إجراءات المجموعة' : 'Group Actions'}
                                 </h4>
                                 <div className="space-y-2">
-                                    <button 
+                                    <button
                                         onClick={handleGenerateInviteLink}
                                         disabled={generatingLink}
-                                        className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${
-                                            isDarkMode ? 'bg-blue-500/10 hover:bg-blue-500/20 text-blue-400' : 'bg-blue-50 hover:bg-blue-100 text-blue-600'
-                                        } ${generatingLink ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${isDarkMode ? 'bg-blue-500/10 hover:bg-blue-500/20 text-blue-400' : 'bg-blue-50 hover:bg-blue-100 text-blue-600'
+                                            } ${generatingLink ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
                                         <Users className="w-5 h-5" />
                                         <div className="flex-1">
@@ -2692,7 +2747,7 @@ function MessengerPage() {
                                             </div>
                                         </div>
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => setShowAddMembersModal(true)}
                                         className={`w-full text-left p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} flex items-center gap-2`}
                                     >
@@ -2722,7 +2777,7 @@ function MessengerPage() {
                                         {isArabic ? 'عرض الملف الشخصي' : 'View profile'}
                                     </button>
                                 )}
-                                <button 
+                                <button
                                     onClick={() => {
                                         setShowInfo(false)
                                         handleOpenReportModal(
@@ -2737,7 +2792,7 @@ function MessengerPage() {
                                     {isArabic ? 'إبلاغ' : 'Report'}
                                 </button>
                                 {selectedConversation.isGroup && (
-                                    <button 
+                                    <button
                                         onClick={() => handleLeaveGroup(selectedConversation.id)}
                                         className={`w-full text-left p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-red-600 flex items-center gap-2`}
                                     >
@@ -2784,17 +2839,16 @@ function MessengerPage() {
             <AnimatePresence>
                 {showEmojiPickerMain && (
                     <>
-                        <div 
-                            className="fixed inset-0 z-40" 
+                        <div
+                            className="fixed inset-0 z-40"
                             onClick={() => setShowEmojiPickerMain(false)}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                            className={`fixed bottom-24 right-8 w-80 p-4 rounded-2xl shadow-2xl z-50 ${
-                                isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-                            }`}
+                            className={`fixed bottom-24 right-8 w-80 p-4 rounded-2xl shadow-2xl z-50 ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                                }`}
                         >
                             <div className="mb-3">
                                 <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -2842,14 +2896,12 @@ function MessengerPage() {
                                     fetchAllUsers()
                                 }
                             }}
-                            className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden ${
-                                isDarkMode ? 'bg-gray-900' : 'bg-white'
-                            }`}
+                            className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-white'
+                                }`}
                         >
                             {/* Modal Header */}
-                            <div className={`flex items-center justify-between p-4 border-b ${
-                                isDarkMode ? 'border-gray-800' : 'border-gray-200'
-                            }`}>
+                            <div className={`flex items-center justify-between p-4 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'
+                                }`}>
                                 <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                                     {isArabic ? 'رسالة جديدة' : 'New Message'}
                                 </h2>
@@ -2867,9 +2919,8 @@ function MessengerPage() {
 
                             {/* Search Users */}
                             <div className="p-4">
-                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${
-                                    isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-                                }`}>
+                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+                                    }`}>
                                     <span className={`font-semibold ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                         {isArabic ? 'إلى:' : 'To:'}
                                     </span>
@@ -2885,9 +2936,8 @@ function MessengerPage() {
                                             }, 300)
                                             return () => clearTimeout(timer)
                                         }}
-                                        className={`flex-1 bg-transparent outline-none ${
-                                            isDarkMode ? 'text-white placeholder:text-gray-500' : 'text-gray-900 placeholder:text-gray-400'
-                                        }`}
+                                        className={`flex-1 bg-transparent outline-none ${isDarkMode ? 'text-white placeholder:text-gray-500' : 'text-gray-900 placeholder:text-gray-400'
+                                            }`}
                                     />
                                 </div>
                             </div>
@@ -2928,9 +2978,8 @@ function MessengerPage() {
                                                 setSearchUsers('')
                                                 setAllUsers([])
                                             }}
-                                            className={`w-full p-3 flex items-center gap-3 transition-colors ${
-                                                isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
-                                            }`}
+                                            className={`w-full p-3 flex items-center gap-3 transition-colors ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
+                                                }`}
                                         >
                                             <div className="relative flex-shrink-0">
                                                 <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
@@ -2954,9 +3003,9 @@ function MessengerPage() {
                                                     {user.name || user.email}
                                                 </h3>
                                                 <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                    {user.role === 'CREATOR' ? (isArabic ? 'منشئ محتوى' : 'Creator') : 
-                                                     user.role === 'LEARNER' ? (isArabic ? 'متعلم' : 'Learner') : 
-                                                     user.email}
+                                                    {user.role === 'CREATOR' ? (isArabic ? 'منشئ محتوى' : 'Creator') :
+                                                        user.role === 'LEARNER' ? (isArabic ? 'متعلم' : 'Learner') :
+                                                            user.email}
                                                 </p>
                                             </div>
                                         </button>
@@ -2983,14 +3032,12 @@ function MessengerPage() {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden ${
-                                isDarkMode ? 'bg-gray-900' : 'bg-white'
-                            }`}
+                            className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-white'
+                                }`}
                         >
                             {/* Modal Header */}
-                            <div className={`flex items-center justify-between p-4 border-b ${
-                                isDarkMode ? 'border-gray-800' : 'border-gray-200'
-                            }`}>
+                            <div className={`flex items-center justify-between p-4 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'
+                                }`}>
                                 <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                                     {isArabic ? 'معلومات المجموعة' : 'Group Info'}
                                 </h2>
@@ -3034,9 +3081,8 @@ function MessengerPage() {
                                     </h4>
                                     <div className="space-y-2">
                                         {selectedConversation.members?.map((member) => (
-                                            <div key={member.id} className={`flex items-center justify-between p-2 rounded-lg ${
-                                                isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
-                                            }`}>
+                                            <div key={member.id} className={`flex items-center justify-between p-2 rounded-lg ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
+                                                }`}>
                                                 <div className="flex items-center gap-3">
                                                     <div className="relative">
                                                         <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
@@ -3106,14 +3152,12 @@ function MessengerPage() {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className={`w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden ${
-                                isDarkMode ? 'bg-gray-900' : 'bg-white'
-                            }`}
+                            className={`w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-white'
+                                }`}
                         >
                             {/* Modal Header */}
-                            <div className={`flex items-center justify-between p-4 border-b ${
-                                isDarkMode ? 'border-gray-800' : 'border-gray-200'
-                            }`}>
+                            <div className={`flex items-center justify-between p-4 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'
+                                }`}>
                                 <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                                     {isArabic ? 'إنشاء مجموعة جديدة' : 'Create New Group'}
                                 </h2>
@@ -3137,11 +3181,10 @@ function MessengerPage() {
                                         value={newGroupName}
                                         onChange={(e) => setNewGroupName(e.target.value)}
                                         placeholder={isArabic ? 'أدخل اسم المجموعة...' : 'Enter group name...'}
-                                        className={`w-full px-4 py-2 rounded-lg border outline-none transition-colors ${
-                                            isDarkMode
-                                                ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
-                                                : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
-                                        }`}
+                                        className={`w-full px-4 py-2 rounded-lg border outline-none transition-colors ${isDarkMode
+                                            ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
+                                            : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
+                                            }`}
                                     />
                                 </div>
 
@@ -3155,11 +3198,10 @@ function MessengerPage() {
                                         onChange={(e) => setNewGroupDescription(e.target.value)}
                                         placeholder={isArabic ? 'وصف المجموعة...' : 'Group description...'}
                                         rows={3}
-                                        className={`w-full px-4 py-2 rounded-lg border outline-none transition-colors resize-none ${
-                                            isDarkMode
-                                                ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
-                                                : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
-                                        }`}
+                                        className={`w-full px-4 py-2 rounded-lg border outline-none transition-colors resize-none ${isDarkMode
+                                            ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
+                                            : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
+                                            }`}
                                     />
                                 </div>
 
@@ -3171,11 +3213,10 @@ function MessengerPage() {
                                     <select
                                         value={selectedCohort || ''}
                                         onChange={(e) => setSelectedCohort(e.target.value || null)}
-                                        className={`w-full px-4 py-2 rounded-lg border outline-none transition-colors ${
-                                            isDarkMode
-                                                ? 'bg-gray-800 border-gray-700 text-white'
-                                                : 'bg-white border-gray-300 text-gray-900'
-                                        }`}
+                                        className={`w-full px-4 py-2 rounded-lg border outline-none transition-colors ${isDarkMode
+                                            ? 'bg-gray-800 border-gray-700 text-white'
+                                            : 'bg-white border-gray-300 text-gray-900'
+                                            }`}
                                     >
                                         <option value="">{isArabic ? 'اختر مجموعة دراسية...' : 'Select a cohort...'}</option>
                                         {cohorts.map((cohort) => (
@@ -3225,9 +3266,8 @@ function MessengerPage() {
                             <div className={`flex items-center justify-end gap-3 p-4 border-t ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
                                 <button
                                     onClick={() => setShowCreateGroupModal(false)}
-                                    className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                                        isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                    }`}
+                                    className={`px-4 py-2 rounded-lg font-semibold transition-colors ${isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                        }`}
                                 >
                                     {isArabic ? 'إلغاء' : 'Cancel'}
                                 </button>
@@ -3246,8 +3286,8 @@ function MessengerPage() {
 
             {/* Click outside to close menus */}
             {(showReactionPicker || showMessageMenu) && (
-                <div 
-                    className="fixed inset-0 z-40" 
+                <div
+                    className="fixed inset-0 z-40"
                     onClick={() => {
                         setShowReactionPicker(null)
                         setShowMessageMenu(null)
@@ -3319,14 +3359,12 @@ function MessengerPage() {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden ${
-                                isDarkMode ? 'bg-gray-900' : 'bg-white'
-                            }`}
+                            className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-white'
+                                }`}
                         >
                             {/* Modal Header */}
-                            <div className={`flex items-center justify-between p-4 border-b ${
-                                isDarkMode ? 'border-gray-800' : 'border-gray-200'
-                            }`}>
+                            <div className={`flex items-center justify-between p-4 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'
+                                }`}>
                                 <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                                     {isArabic ? 'رابط دعوة المجموعة' : 'Group Invite Link'}
                                 </h2>
@@ -3354,20 +3392,18 @@ function MessengerPage() {
                                 </div>
 
                                 {/* Info Box */}
-                                <div className={`p-4 rounded-lg ${
-                                    isDarkMode ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-blue-50 border border-blue-100'
-                                }`}>
+                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-blue-50 border border-blue-100'
+                                    }`}>
                                     <div className="flex gap-3">
                                         <div className="flex-shrink-0">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                                isDarkMode ? 'bg-blue-500/20' : 'bg-blue-100'
-                                            }`}>
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-blue-500/20' : 'bg-blue-100'
+                                                }`}>
                                                 <span className="text-xl">ℹ️</span>
                                             </div>
                                         </div>
                                         <div className="flex-1">
                                             <p className={`text-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-                                                {isArabic 
+                                                {isArabic
                                                     ? 'شارك هذا الرابط مع أي شخص تريد دعوته للانضمام إلى المجموعة'
                                                     : 'Share this link with anyone you want to invite to the group'
                                                 }
@@ -3377,22 +3413,19 @@ function MessengerPage() {
                                 </div>
 
                                 {/* Link Display */}
-                                <div className={`p-4 rounded-lg border ${
-                                    isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'
-                                }`}>
+                                <div className={`p-4 rounded-lg border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'
+                                    }`}>
                                     <div className="flex items-center gap-2">
                                         <div className="flex-1 overflow-hidden">
-                                            <p className={`text-sm font-mono truncate ${
-                                                isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                                            }`}>
+                                            <p className={`text-sm font-mono truncate ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                                }`}>
                                                 {inviteLink}
                                             </p>
                                         </div>
                                         <button
                                             onClick={handleCopyInviteLink}
-                                            className={`flex-shrink-0 px-3 py-1.5 rounded-lg font-semibold text-sm transition-colors ${
-                                                isDarkMode ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'
-                                            }`}
+                                            className={`flex-shrink-0 px-3 py-1.5 rounded-lg font-semibold text-sm transition-colors ${isDarkMode ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                                }`}
                                         >
                                             {isArabic ? 'نسخ' : 'Copy'}
                                         </button>
@@ -3403,9 +3436,8 @@ function MessengerPage() {
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         onClick={handleShareInviteLink}
-                                        className={`px-4 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
-                                            isDarkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                                        }`}
+                                        className={`px-4 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                                            }`}
                                     >
                                         <Send className="w-4 h-4" />
                                         {isArabic ? 'مشاركة' : 'Share'}
@@ -3423,7 +3455,7 @@ function MessengerPage() {
 
                                 {/* Note */}
                                 <p className={`text-xs text-center ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                    {isArabic 
+                                    {isArabic
                                         ? 'هذا الرابط لا ينتهي صلاحيته ويمكن استخدامه من قبل أي شخص'
                                         : 'This link never expires and can be used by anyone'
                                     }
@@ -3449,14 +3481,12 @@ function MessengerPage() {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden ${
-                                isDarkMode ? 'bg-gray-900' : 'bg-white'
-                            }`}
+                            className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-white'
+                                }`}
                         >
                             {/* Modal Header */}
-                            <div className={`flex items-center justify-between p-4 border-b ${
-                                isDarkMode ? 'border-gray-800' : 'border-gray-200'
-                            }`}>
+                            <div className={`flex items-center justify-between p-4 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'
+                                }`}>
                                 <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                                     {isArabic ? 'إعدادات المحادثة' : 'Chat Settings'}
                                 </h2>
@@ -3472,9 +3502,8 @@ function MessengerPage() {
                             <div className="p-4 space-y-3 max-h-[70vh] overflow-y-auto">
                                 {/* Current User Info */}
                                 {session?.user && (
-                                    <div className={`p-3 rounded-lg ${
-                                        isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-                                    }`}>
+                                    <div className={`p-3 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+                                        }`}>
                                         <div className="flex items-center gap-3">
                                             <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
                                                 <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white font-semibold">
@@ -3494,9 +3523,8 @@ function MessengerPage() {
                                 )}
 
                                 {/* Theme Setting */}
-                                <div className={`flex items-center justify-between p-3 rounded-lg ${
-                                    isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-                                }`}>
+                                <div className={`flex items-center justify-between p-3 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+                                    }`}>
                                     <div className="flex items-center gap-3">
                                         {isDarkMode ? <Moon className="w-5 h-5 text-blue-400" /> : <Sun className="w-5 h-5 text-yellow-500" />}
                                         <div>
@@ -3504,7 +3532,7 @@ function MessengerPage() {
                                                 {isArabic ? 'المظهر' : 'Dark Mode'}
                                             </h3>
                                             <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                {isDarkMode 
+                                                {isDarkMode
                                                     ? (isArabic ? 'مفعّل' : 'Enabled')
                                                     : (isArabic ? 'معطّل' : 'Disabled')
                                                 }
@@ -3513,20 +3541,17 @@ function MessengerPage() {
                                     </div>
                                     <button
                                         onClick={() => setIsDarkMode(!isDarkMode)}
-                                        className={`relative w-12 h-6 rounded-full transition-colors ${
-                                            isDarkMode ? 'bg-blue-500' : 'bg-gray-300'
-                                        }`}
+                                        className={`relative w-12 h-6 rounded-full transition-colors ${isDarkMode ? 'bg-blue-500' : 'bg-gray-300'
+                                            }`}
                                     >
-                                        <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
-                                            isDarkMode ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
+                                        <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform ${isDarkMode ? 'translate-x-6' : 'translate-x-0.5'
+                                            }`} />
                                     </button>
                                 </div>
 
                                 {/* Active Status */}
-                                <div className={`flex items-center justify-between p-3 rounded-lg ${
-                                    isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-                                }`}>
+                                <div className={`flex items-center justify-between p-3 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+                                    }`}>
                                     <div className="flex items-center gap-3">
                                         <div className="w-5 h-5 flex items-center justify-center">
                                             <div className="w-3 h-3 bg-green-500 rounded-full"></div>
@@ -3552,9 +3577,8 @@ function MessengerPage() {
                                     onClick={() => {
                                         toast(isArabic ? 'لا توجد طلبات رسائل' : 'No message requests')
                                     }}
-                                    className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
-                                        isDarkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-gray-100 hover:bg-gray-200'
-                                    }`}
+                                    className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-gray-100 hover:bg-gray-200'
+                                        }`}
                                 >
                                     <div className="flex items-center gap-3">
                                         <MessageCircle className="w-5 h-5 text-blue-400" />
@@ -3576,9 +3600,8 @@ function MessengerPage() {
                                         toast(isArabic ? 'لا يوجد تبويب للأرشيف بعد' : 'Archived tab has been removed')
                                         setShowSettingsModal(false)
                                     }}
-                                    className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
-                                        isDarkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-gray-100 hover:bg-gray-200'
-                                    }`}
+                                    className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-gray-100 hover:bg-gray-200'
+                                        }`}
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="w-5 h-5 text-blue-400">📦</div>
@@ -3599,9 +3622,8 @@ function MessengerPage() {
                                     onClick={() => {
                                         toast(isArabic ? 'لا توجد محادثات مكتومة' : 'No muted conversations')
                                     }}
-                                    className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
-                                        isDarkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-gray-100 hover:bg-gray-200'
-                                    }`}
+                                    className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-gray-100 hover:bg-gray-200'
+                                        }`}
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="w-5 h-5 text-gray-400">🔇</div>
@@ -3620,9 +3642,8 @@ function MessengerPage() {
                                 <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} my-2`}></div>
 
                                 {/* Keyboard Shortcuts */}
-                                <div className={`p-3 rounded-lg ${
-                                    isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-                                }`}>
+                                <div className={`p-3 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+                                    }`}>
                                     <h3 className={`font-semibold mb-3 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                                         <span>⌨️</span>
                                         <span>{isArabic ? 'اختصارات لوحة المفاتيح' : 'Keyboard Shortcuts'}</span>
@@ -3632,9 +3653,8 @@ function MessengerPage() {
                                             <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                                 {isArabic ? 'رسالة جديدة' : 'New message'}
                                             </span>
-                                            <kbd className={`px-2 py-1 text-xs rounded ${
-                                                isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
-                                            }`}>
+                                            <kbd className={`px-2 py-1 text-xs rounded ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
+                                                }`}>
                                                 Ctrl + N
                                             </kbd>
                                         </div>
@@ -3642,9 +3662,8 @@ function MessengerPage() {
                                             <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                                 {isArabic ? 'بحث' : 'Search'}
                                             </span>
-                                            <kbd className={`px-2 py-1 text-xs rounded ${
-                                                isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
-                                            }`}>
+                                            <kbd className={`px-2 py-1 text-xs rounded ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
+                                                }`}>
                                                 Ctrl + K
                                             </kbd>
                                         </div>
@@ -3652,9 +3671,8 @@ function MessengerPage() {
                                             <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                                 {isArabic ? 'إرسال رسالة' : 'Send message'}
                                             </span>
-                                            <kbd className={`px-2 py-1 text-xs rounded ${
-                                                isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
-                                            }`}>
+                                            <kbd className={`px-2 py-1 text-xs rounded ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
+                                                }`}>
                                                 Enter
                                             </kbd>
                                         </div>
@@ -3662,9 +3680,8 @@ function MessengerPage() {
                                             <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                                 {isArabic ? 'سطر جديد' : 'New line'}
                                             </span>
-                                            <kbd className={`px-2 py-1 text-xs rounded ${
-                                                isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
-                                            }`}>
+                                            <kbd className={`px-2 py-1 text-xs rounded ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
+                                                }`}>
                                                 Shift + Enter
                                             </kbd>
                                         </div>
@@ -3672,9 +3689,8 @@ function MessengerPage() {
                                             <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                                 {isArabic ? 'إغلاق' : 'Close modal'}
                                             </span>
-                                            <kbd className={`px-2 py-1 text-xs rounded ${
-                                                isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
-                                            }`}>
+                                            <kbd className={`px-2 py-1 text-xs rounded ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
+                                                }`}>
                                                 Esc
                                             </kbd>
                                         </div>
@@ -3682,9 +3698,8 @@ function MessengerPage() {
                                 </div>
 
                                 {/* Statistics */}
-                                <div className={`p-3 rounded-lg ${
-                                    isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-                                }`}>
+                                <div className={`p-3 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+                                    }`}>
                                     <h3 className={`font-semibold mb-3 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                                         <span>📊</span>
                                         <span>{isArabic ? 'إحصائيات' : 'Statistics'}</span>
@@ -3718,9 +3733,8 @@ function MessengerPage() {
                                 </div>
 
                                 {/* About */}
-                                <div className={`p-3 rounded-lg text-center ${
-                                    isDarkMode ? 'bg-gray-800/50' : 'bg-gray-100'
-                                }`}>
+                                <div className={`p-3 rounded-lg text-center ${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-100'
+                                    }`}>
                                     <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                                         {isArabic ? 'برايم' : 'Prime'}
                                     </p>
@@ -3734,9 +3748,8 @@ function MessengerPage() {
                             <div className={`flex items-center justify-center gap-3 p-4 border-t ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
                                 <button
                                     onClick={() => setShowSettingsModal(false)}
-                                    className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                                        isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                    }`}
+                                    className={`px-4 py-2 rounded-lg font-semibold transition-colors ${isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                        }`}
                                 >
                                     {isArabic ? 'إغلاق' : 'Close'}
                                 </button>
@@ -3933,9 +3946,8 @@ function MessengerPage() {
                                                                         toast.error(isArabic ? 'فشل رفض الطلب' : 'Failed to reject request')
                                                                     }
                                                                 }}
-                                                                className={`px-4 py-2 rounded-full font-semibold text-sm transition-colors ${
-                                                                    isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
-                                                                }`}
+                                                                className={`px-4 py-2 rounded-full font-semibold text-sm transition-colors ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
+                                                                    }`}
                                                             >
                                                                 {isArabic ? 'رفض' : 'Reject'}
                                                             </button>
@@ -3970,6 +3982,36 @@ function MessengerPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Camera Capture Modal */}
+            <CameraCapture
+                isOpen={showCameraModal}
+                onClose={() => setShowCameraModal(false)}
+                onCapture={(blob, previewUrl) => {
+                    // Add captured photo to attachments
+                    const timestamp = Date.now()
+                    const fileName = `camera-photo-${timestamp}.jpg`
+                    const id = `${timestamp}-${Math.random().toString(36).slice(2)}`
+
+                    setAttachments(prev => ([
+                        ...prev,
+                        {
+                            id,
+                            fileName,
+                            fileSize: blob.size,
+                            fileType: 'image/jpeg',
+                            previewUrl,
+                            status: 'uploading',
+                            messageType: 'IMAGE',
+                        },
+                    ]))
+
+                    // Upload the attachment
+                    uploadAttachment(id, new File([blob], fileName, { type: 'image/jpeg' }), 'IMAGE')
+                    toast.success(isArabic ? 'تم التقاط الصورة!' : 'Photo captured!')
+                }}
+                isArabic={isArabic}
+            />
         </div>
     )
 }

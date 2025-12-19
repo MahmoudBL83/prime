@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { isUserOnline, getUserLastSeen } from '@/services/onlineStatusService'
 
 export async function GET(request: NextRequest) {
   try {
@@ -82,8 +83,8 @@ export async function GET(request: NextRequest) {
       // Count unread messages
       const unreadCount = p.lastReadAt
         ? conversation.messages.filter(
-            (m: any) => p.lastReadAt && m.createdAt > p.lastReadAt && m.senderId !== userId
-          ).length
+          (m: any) => p.lastReadAt && m.createdAt > p.lastReadAt && m.senderId !== userId
+        ).length
         : 0
 
       if (isGroup && conversation.groups) {
@@ -100,7 +101,7 @@ export async function GET(request: NextRequest) {
             name: m.user.name,
             image: m.user.profileImage,
             role: m.role.toLowerCase(),
-            isOnline: false, // TODO: Implement online status
+            isOnline: isUserOnline(m.user.id),
           })),
           admins: group.members
             .filter((m) => m.role === 'ADMIN')
@@ -113,11 +114,11 @@ export async function GET(request: NextRequest) {
           },
           lastMessage: lastMessage
             ? {
-                content: lastMessage.content,
-                createdAt: lastMessage.createdAt,
-                read: !!p.lastReadAt && lastMessage.createdAt <= p.lastReadAt,
-                senderId: lastMessage.senderId,
-              }
+              content: lastMessage.content,
+              createdAt: lastMessage.createdAt,
+              read: !!p.lastReadAt && lastMessage.createdAt <= p.lastReadAt,
+              senderId: lastMessage.senderId,
+            }
             : undefined,
           unreadCount,
           isArchived: p.isArchived,
@@ -132,16 +133,16 @@ export async function GET(request: NextRequest) {
             id: otherParticipant?.user.id || '',
             name: otherParticipant?.user.name || 'Unknown User',
             image: otherParticipant?.user.profileImage || null,
-            isOnline: false, // TODO: Implement online status
+            isOnline: isUserOnline(otherParticipant?.user.id || ''),
             lastSeen: otherParticipant?.user.createdAt,
           },
           lastMessage: lastMessage
             ? {
-                content: lastMessage.content,
-                createdAt: lastMessage.createdAt,
-                read: !!p.lastReadAt && lastMessage.createdAt <= p.lastReadAt,
-                senderId: lastMessage.senderId,
-              }
+              content: lastMessage.content,
+              createdAt: lastMessage.createdAt,
+              read: !!p.lastReadAt && lastMessage.createdAt <= p.lastReadAt,
+              senderId: lastMessage.senderId,
+            }
             : undefined,
           unreadCount,
           isArchived: p.isArchived,

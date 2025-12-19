@@ -28,6 +28,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/utils'
 import { toast } from 'react-hot-toast'
+import CreateRewardModal from '@/components/admin/CreateRewardModal'
 
 type RewardStatus = 'active' | 'upcoming' | 'completed' | 'cancelled'
 type RewardType = 'SCHOLARSHIP' | 'COMPLETION_BONUS' | 'REFERRAL_BONUS' | 'ACHIEVEMENT' | 'OTHER' | 'course' | 'exam' | 'project' | 'platform'
@@ -94,8 +95,8 @@ export default function RewardsManagementPage() {
         totalWinners: rewards.reduce((sum, r) => sum + r.currentWinners, 0)
     }
 
-    const filteredRewards = activeTab === 'all' 
-        ? rewards 
+    const filteredRewards = activeTab === 'all'
+        ? rewards
         : rewards.filter(r => getRewardStatus(r) === activeTab)
 
     const getStatusColor = (status: RewardStatus) => {
@@ -109,13 +110,13 @@ export default function RewardsManagementPage() {
 
     const getTypeIcon = (type: RewardType) => {
         switch (type) {
-            case 'course': 
+            case 'course':
             case 'COMPLETION_BONUS':
                 return Award
             case 'exam':
             case 'ACHIEVEMENT':
                 return Target
-            case 'project': 
+            case 'project':
             case 'SCHOLARSHIP':
                 return Trophy
             case 'platform':
@@ -171,7 +172,7 @@ export default function RewardsManagementPage() {
                         <Download className="w-4 h-4 mr-2" />
                         Export Winners
                     </Button>
-                    <Button 
+                    <Button
                         onClick={() => setShowCreateModal(true)}
                         className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-foreground"
                     >
@@ -280,11 +281,10 @@ export default function RewardsManagementPage() {
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
-                            className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all capitalize ${
-                                activeTab === tab
+                            className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all capitalize ${activeTab === tab
                                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-foreground'
                                     : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-                            }`}
+                                }`}
                         >
                             {tab}
                         </button>
@@ -304,11 +304,11 @@ export default function RewardsManagementPage() {
                         <Trophy className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-xl font-bold text-foreground mb-2">No Rewards Found</h3>
                         <p className="text-muted-foreground mb-6">
-                            {activeTab === 'all' 
+                            {activeTab === 'all'
                                 ? 'Start by creating your first reward or scholarship.'
                                 : `No ${activeTab} rewards at the moment.`}
                         </p>
-                        <Button 
+                        <Button
                             onClick={() => setShowCreateModal(true)}
                             className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                         >
@@ -320,80 +320,79 @@ export default function RewardsManagementPage() {
                     filteredRewards.map((reward, index) => {
                         const TypeIcon = getTypeIcon(reward.type)
                         return (
-                        <motion.div
-                            key={reward.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.6 + index * 0.1 }}
-                            className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-6 hover:bg-white/10 transition-all"
-                        >
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="flex items-start gap-4 flex-1">
-                                    <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${
-                                        getRewardStatus(reward) === 'active' ? 'bg-gradient-to-br from-green-600 to-emerald-600' :
-                                        getRewardStatus(reward) === 'upcoming' ? 'bg-gradient-to-br from-blue-600 to-cyan-600' :
-                                        getRewardStatus(reward) === 'completed' ? 'bg-gradient-to-br from-gray-600 to-gray-700' :
-                                        'bg-gradient-to-br from-red-600 to-pink-600'
-                                    }`}>
-                                        <TypeIcon className="w-8 h-8 text-foreground" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <h3 className="text-lg font-bold text-foreground">{reward.title}</h3>
-                                            <Badge className={getStatusColor(getRewardStatus(reward)) + ' capitalize'}>
-                                                {getRewardStatus(reward)}
-                                            </Badge>
-                                            {reward.courseTitle && (
-                                                <Badge className="bg-purple-600/20 text-purple-400 border-purple-600/30">
-                                                    {reward.courseTitle}
+                            <motion.div
+                                key={reward.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.6 + index * 0.1 }}
+                                className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-6 hover:bg-white/10 transition-all"
+                            >
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="flex items-start gap-4 flex-1">
+                                        <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${getRewardStatus(reward) === 'active' ? 'bg-gradient-to-br from-green-600 to-emerald-600' :
+                                                getRewardStatus(reward) === 'upcoming' ? 'bg-gradient-to-br from-blue-600 to-cyan-600' :
+                                                    getRewardStatus(reward) === 'completed' ? 'bg-gradient-to-br from-gray-600 to-gray-700' :
+                                                        'bg-gradient-to-br from-red-600 to-pink-600'
+                                            }`}>
+                                            <TypeIcon className="w-8 h-8 text-foreground" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <h3 className="text-lg font-bold text-foreground">{reward.title}</h3>
+                                                <Badge className={getStatusColor(getRewardStatus(reward)) + ' capitalize'}>
+                                                    {getRewardStatus(reward)}
                                                 </Badge>
-                                            )}
-                                        </div>
-                                        <p className="text-sm text-muted-foreground mb-3">{reward.description}</p>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                                            <div>
-                                                <p className="text-xs text-muted-foreground mb-1">Prize Value</p>
-                                                <p className="text-sm font-semibold text-green-400">
-                                                    {reward.value ? formatPrice(reward.value) : 'N/A'}
-                                                </p>
+                                                {reward.courseTitle && (
+                                                    <Badge className="bg-purple-600/20 text-purple-400 border-purple-600/30">
+                                                        {reward.courseTitle}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-muted-foreground mb-3">{reward.description}</p>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">Prize Value</p>
+                                                    <p className="text-sm font-semibold text-green-400">
+                                                        {reward.value ? formatPrice(reward.value) : 'N/A'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">Max Winners</p>
+                                                    <p className="text-sm font-semibold text-blue-400">
+                                                        {reward.maxWinners?.toLocaleString() || 'Unlimited'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">Current Winners</p>
+                                                    <p className="text-sm font-semibold text-yellow-400">
+                                                        {reward.currentWinners}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">Duration</p>
+                                                    <p className="text-sm font-semibold text-foreground">
+                                                        {reward.startDate ? new Date(reward.startDate).toLocaleDateString() : 'N/A'} - {reward.endDate ? new Date(reward.endDate).toLocaleDateString() : 'Ongoing'}
+                                                    </p>
+                                                </div>
                                             </div>
                                             <div>
-                                                <p className="text-xs text-muted-foreground mb-1">Max Winners</p>
-                                                <p className="text-sm font-semibold text-blue-400">
-                                                    {reward.maxWinners?.toLocaleString() || 'Unlimited'}
-                                                </p>
+                                                <p className="text-xs text-muted-foreground mb-2">Type:</p>
+                                                <Badge className="bg-white/5 text-muted-foreground border-border text-xs capitalize">
+                                                    {reward.type.toLowerCase().replace('_', ' ')}
+                                                </Badge>
                                             </div>
-                                            <div>
-                                                <p className="text-xs text-muted-foreground mb-1">Current Winners</p>
-                                                <p className="text-sm font-semibold text-yellow-400">
-                                                    {reward.currentWinners}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-muted-foreground mb-1">Duration</p>
-                                                <p className="text-sm font-semibold text-foreground">
-                                                    {reward.startDate ? new Date(reward.startDate).toLocaleDateString() : 'N/A'} - {reward.endDate ? new Date(reward.endDate).toLocaleDateString() : 'Ongoing'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-muted-foreground mb-2">Type:</p>
-                                            <Badge className="bg-white/5 text-muted-foreground border-border text-xs capitalize">
-                                                {reward.type.toLowerCase().replace('_', ' ')}
-                                            </Badge>
                                         </div>
                                     </div>
+                                    <div className="flex gap-2">
+                                        <Button className="bg-white/10 hover:bg-white/20 text-foreground">
+                                            <Eye className="w-4 h-4" />
+                                        </Button>
+                                        <Button className="bg-white/10 hover:bg-white/20 text-foreground">
+                                            <Edit className="w-4 h-4" />
+                                        </Button>
+                                    </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Button className="bg-white/10 hover:bg-white/20 text-foreground">
-                                        <Eye className="w-4 h-4" />
-                                    </Button>
-                                    <Button className="bg-white/10 hover:bg-white/20 text-foreground">
-                                        <Edit className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                            </div>
-                        </motion.div>
+                            </motion.div>
                         )
                     })
                 )}
@@ -449,6 +448,13 @@ export default function RewardsManagementPage() {
                     </div>
                 </div>
             </motion.div>
+
+            {/* Create Reward Modal */}
+            <CreateRewardModal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                onSuccess={fetchRewards}
+            />
         </div>
     )
 }

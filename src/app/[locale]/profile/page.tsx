@@ -4,16 +4,16 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams } from 'next/navigation';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Edit3, 
-  Save, 
-  X, 
-  Award, 
-  BookOpen, 
-  Target, 
+import {
+  User,
+  Mail,
+  Phone,
+  Edit3,
+  Save,
+  X,
+  Award,
+  BookOpen,
+  Target,
   Star,
   Settings,
   Shield,
@@ -72,11 +72,11 @@ export default function ProfilePage() {
   const { data: session } = useSession();
   const params = useParams();
   const locale = params.locale as string;
-  
+
   // Always use dark mode
   const [mounted, setMounted] = useState(false);
   const isDark = true;
-  
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -288,9 +288,8 @@ export default function ProfilePage() {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className={`w-16 h-16 border-4 rounded-full mx-auto mb-4 ${
-              isDark ? 'border-[#0a84ff]/30 border-t-[#0a84ff]' : 'border-[#0a84ff]/30 border-t-[#0a84ff]'
-            }`}
+            className={`w-16 h-16 border-4 rounded-full mx-auto mb-4 ${isDark ? 'border-[#0a84ff]/30 border-t-[#0a84ff]' : 'border-[#0a84ff]/30 border-t-[#0a84ff]'
+              }`}
           />
           <p className={`text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>
             {isRTL ? 'جاري تحميل الملف الشخصي...' : 'Loading profile...'}
@@ -320,27 +319,25 @@ export default function ProfilePage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`backdrop-blur-xl border rounded-3xl p-8 mb-8 shadow-2xl ${
-            isDark 
-              ? 'bg-gradient-to-r from-black/30 via-black/20 to-black/30 border-white/10' 
+          className={`backdrop-blur-xl border rounded-3xl p-8 mb-8 shadow-2xl ${isDark
+              ? 'bg-gradient-to-r from-black/30 via-black/20 to-black/30 border-white/10'
               : 'bg-white/80 border-gray-200'
-          }`}
+            }`}
         >
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div className="flex items-center space-x-6">
               <motion.div
                 whileHover={{ scale: 1.05, rotate: 5 }}
-                className={`w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl ${
-                  isDark 
-                    ? 'bg-[#0a84ff]' 
+                className={`w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl ${isDark
+                    ? 'bg-[#0a84ff]'
                     : 'bg-[#0a84ff]'
-                }`}
+                  }`}
               >
                 <span className="text-white font-bold text-3xl">
                   {profile.name.charAt(0).toUpperCase()}
                 </span>
               </motion.div>
-              
+
               <div>
                 <h1 className={`text-3xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {profile.name}
@@ -350,14 +347,14 @@ export default function ProfilePage() {
                     </span>
                   )}
                 </h1>
-                
+
                 <div className="flex flex-wrap items-center gap-3 mb-3">
                   {getSubscriptionBadge(profile.subscriptionStatus)}
-                  
+
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
                     {profile.role === 'CREATOR' ? (isRTL ? '👨‍🏫 مدرس' : '👨‍🏫 Instructor') : (isRTL ? '🎓 طالب' : '🎓 Student')}
                   </span>
-                  
+
                   {profile.emailVerified && (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-400 border border-green-500/30">
                       <CheckCircle className="w-4 h-4 mr-1" />
@@ -365,22 +362,21 @@ export default function ProfilePage() {
                     </span>
                   )}
                 </div>
-                
+
                 <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                   {isRTL ? 'عضو منذ' : 'Member since'} {formatDate(profile.createdAt)}
                 </p>
               </div>
             </div>
-            
+
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setEditMode(true)}
-              className={`flex items-center space-x-2 px-6 py-3 text-white rounded-xl transition-all duration-200 shadow-lg ${
-                isDark 
-                  ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90 hover:shadow-[#0a84ff]/25' 
+              className={`flex items-center space-x-2 px-6 py-3 text-white rounded-xl transition-all duration-200 shadow-lg ${isDark
+                  ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90 hover:shadow-[#0a84ff]/25'
                   : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
-              }`}
+                }`}
             >
               <Edit3 className="w-5 h-5" />
               <span>{isRTL ? 'تعديل الملف الشخصي' : 'Edit Profile'}</span>
@@ -391,26 +387,24 @@ export default function ProfilePage() {
         {/* Navigation Tabs */}
         <div className="mb-8">
           <div className="overflow-x-auto overflow-y-hidden scrollbar-hide">
-            <div className={`flex space-x-1 p-1 backdrop-blur-xl rounded-2xl border min-w-max ${
-              isDark 
-                ? 'bg-black/20 border-white/10' 
+            <div className={`flex space-x-1 p-1 backdrop-blur-xl rounded-2xl border min-w-max ${isDark
+                ? 'bg-black/20 border-white/10'
                 : 'bg-white/80 border-gray-200'
-            }`}>
+              }`}>
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-xl transition-all duration-200 whitespace-nowrap ${
-                      activeTab === tab.id
-                        ? isDark 
+                    className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-xl transition-all duration-200 whitespace-nowrap ${activeTab === tab.id
+                        ? isDark
                           ? 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 shadow-lg'
                           : 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 shadow-md'
                         : isDark
                           ? 'text-gray-400 hover:text-white hover:bg-white/5'
                           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    }`}
+                      }`}
                   >
                     <Icon className="w-5 h-5 flex-shrink-0" />
                     <span className="font-medium">{tab.label}</span>
@@ -433,70 +427,65 @@ export default function ProfilePage() {
             {activeTab === 'overview' && (
               <div>
                 {/* Personal Information */}
-                <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${
-                  isDark 
-                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10' 
+                <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
+                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
                     : 'bg-white/80 border-gray-200'
-                }`}>
+                  }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     <User className={`w-6 h-6 mr-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                     {isRTL ? 'المعلومات الشخصية' : 'Personal Information'}
                   </h3>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                         {isRTL ? 'الاسم' : 'Name'}
                       </label>
-                      <div className={`flex items-center space-x-3 p-3 border rounded-lg ${
-                        isDark 
-                          ? 'bg-white/5 border-white/10' 
+                      <div className={`flex items-center space-x-3 p-3 border rounded-lg ${isDark
+                          ? 'bg-white/5 border-white/10'
                           : 'bg-gray-50 border-gray-200'
-                      }`}>
+                        }`}>
                         <User className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
                         <span className={isDark ? 'text-white' : 'text-gray-900'}>{profile.name}</span>
                       </div>
                     </div>
-                    
+
                     <div>
                       <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                         {isRTL ? 'البريد الإلكتروني' : 'Email'}
                       </label>
-                      <div className={`flex items-center space-x-3 p-3 border rounded-lg ${
-                        isDark 
-                          ? 'bg-white/5 border-white/10' 
+                      <div className={`flex items-center space-x-3 p-3 border rounded-lg ${isDark
+                          ? 'bg-white/5 border-white/10'
                           : 'bg-gray-50 border-gray-200'
-                      }`}>
+                        }`}>
                         <Mail className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
                         <span className={isDark ? 'text-white' : 'text-gray-900'}>{profile.email}</span>
                       </div>
                     </div>
-                    
+
                     {profile.phone && (
                       <div>
                         <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                           {isRTL ? 'رقم الهاتف' : 'Phone'}
                         </label>
-                        <div className={`flex items-center space-x-3 p-3 border rounded-lg ${
-                          isDark 
-                            ? 'bg-white/5 border-white/10' 
+                        <div className={`flex items-center space-x-3 p-3 border rounded-lg ${isDark
+                            ? 'bg-white/5 border-white/10'
                             : 'bg-gray-50 border-gray-200'
-                        }`}>
+                          }`}>
                           <Phone className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
                           <span className={isDark ? 'text-white' : 'text-gray-900'}>{profile.phone}</span>
                         </div>
                       </div>
                     )}
-                    
+
                     <div>
                       <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                         {isRTL ? 'المستوى' : 'Skill Level'}
                       </label>
-                      <div className={`flex items-center space-x-3 p-3 border rounded-lg ${
-                        isDark 
-                          ? 'bg-white/5 border-white/10' 
+                      <div className={`flex items-center space-x-3 p-3 border rounded-lg ${isDark
+                          ? 'bg-white/5 border-white/10'
                           : 'bg-gray-50 border-gray-200'
-                      }`}>
+                        }`}>
                         <Award className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
                         <span className={isDark ? 'text-white' : 'text-gray-900'}>
                           {skillLevels.find(level => level.value === profile.skillLevel)?.label || profile.skillLevel}
@@ -516,18 +505,17 @@ export default function ProfilePage() {
                         {profile.interests.map((interest, index) => (
                           <span
                             key={index}
-                            className={`px-3 py-1 border rounded-full text-sm ${
-                              isDark 
-                                ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30' 
+                            className={`px-3 py-1 border rounded-full text-sm ${isDark
+                                ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30'
                                 : 'bg-[#0a84ff]/10 text-[#0a84ff] border-[#0a84ff]/30'
-                            }`}
+                              }`}
                           >
                             {interest}
                           </span>
                         ))}
                       </div>
                     </div>
-                    
+
                     <div>
                       <label className={`block text-sm font-medium mb-3 flex items-center ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                         <Target className={`w-5 h-5 mr-2 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
@@ -537,11 +525,10 @@ export default function ProfilePage() {
                         {profile.goals.map((goal, index) => (
                           <span
                             key={index}
-                            className={`px-3 py-1 border rounded-full text-sm ${
-                              isDark 
-                                ? 'bg-green-500/20 text-green-300 border-green-500/30' 
+                            className={`px-3 py-1 border rounded-full text-sm ${isDark
+                                ? 'bg-green-500/20 text-green-300 border-green-500/30'
                                 : 'bg-green-100 text-green-700 border-green-300'
-                            }`}
+                              }`}
                           >
                             {goal}
                           </span>
@@ -554,16 +541,15 @@ export default function ProfilePage() {
             )}
 
             {activeTab === 'learning' && (
-              <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${
-                isDark 
-                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10' 
+              <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
+                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
                   : 'bg-white/80 border-gray-200'
-              }`}>
+                }`}>
                 <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   <BookOpen className={`w-6 h-6 mr-2 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                   {isRTL ? 'رحلة التعلم' : 'Learning Journey'}
                 </h3>
-                
+
                 {profile.enrollments.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {profile.enrollments.map((enrollment, index) => (
@@ -572,11 +558,10 @@ export default function ProfilePage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className={`border rounded-xl p-4 ${
-                          isDark 
-                            ? 'bg-white/5 border-white/10' 
+                        className={`border rounded-xl p-4 ${isDark
+                            ? 'bg-white/5 border-white/10'
                             : 'bg-gray-50 border-gray-200'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center justify-between mb-3">
                           <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -586,20 +571,19 @@ export default function ProfilePage() {
                             {Math.round(enrollment.progress)}%
                           </span>
                         </div>
-                        
+
                         <div className={`w-full rounded-full h-2 mb-3 ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${enrollment.progress}%` }}
                             transition={{ duration: 1, delay: index * 0.1 }}
-                            className={`h-2 rounded-full ${
-                              isDark 
-                                ? 'bg-[#0a84ff]' 
+                            className={`h-2 rounded-full ${isDark
+                                ? 'bg-[#0a84ff]'
                                 : 'bg-[#0a84ff]'
-                            }`}
+                              }`}
                           />
                         </div>
-                        
+
                         <div className={`text-xs space-y-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                           <p>{isRTL ? 'تسجيل في:' : 'Enrolled:'} {formatDate(enrollment.enrolledAt)}</p>
                           {enrollment.lastAccessed && (
@@ -628,25 +612,23 @@ export default function ProfilePage() {
               </div>
             )}
 
-            
+
 
             {activeTab === 'study-buddy' && (
-              <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${
-                isDark 
-                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10' 
+              <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
+                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
                   : 'bg-white/80 border-gray-200'
-              }`}>
+                }`}>
                 <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   <Users className={`w-6 h-6 mr-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                   {isRTL ? 'تفضيلات شريك الدراسة' : 'Study Buddy Preferences'}
                 </h3>
 
                 {/* Enable/Disable Toggle */}
-                <div className={`mb-8 p-4 border rounded-xl ${
-                  isDark 
-                    ? 'bg-white/5 border-white/10' 
+                <div className={`mb-8 p-4 border rounded-xl ${isDark
+                    ? 'bg-white/5 border-white/10'
                     : 'bg-gray-50 border-gray-200'
-                }`}>
+                  }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <Users className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
@@ -660,17 +642,15 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => setStudyBuddyPrefs({...studyBuddyPrefs, enabled: !studyBuddyPrefs.enabled})}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        studyBuddyPrefs.enabled 
-                          ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]' 
+                      onClick={() => setStudyBuddyPrefs({ ...studyBuddyPrefs, enabled: !studyBuddyPrefs.enabled })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${studyBuddyPrefs.enabled
+                          ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]'
                           : isDark ? 'bg-gray-600' : 'bg-gray-400'
-                      }`}
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          studyBuddyPrefs.enabled ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${studyBuddyPrefs.enabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
@@ -687,17 +667,16 @@ export default function ProfilePage() {
                         {studyBuddyPrefs.subjects.map((subject, index) => (
                           <span
                             key={index}
-                            className={`inline-flex items-center px-3 py-1 border rounded-full text-sm ${
-                              isDark 
-                                ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30' 
+                            className={`inline-flex items-center px-3 py-1 border rounded-full text-sm ${isDark
+                                ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30'
                                 : 'bg-[#0a84ff]/10 text-[#0a84ff] border-[#0a84ff]/30'
-                            }`}
+                              }`}
                           >
                             {subject}
                             <button
                               onClick={() => {
                                 const newSubjects = studyBuddyPrefs.subjects.filter((_, i) => i !== index);
-                                setStudyBuddyPrefs({...studyBuddyPrefs, subjects: newSubjects});
+                                setStudyBuddyPrefs({ ...studyBuddyPrefs, subjects: newSubjects });
                               }}
                               className="ml-2"
                             >
@@ -709,16 +688,15 @@ export default function ProfilePage() {
                       <input
                         type="text"
                         placeholder={isRTL ? 'أضف موضوع دراسة...' : 'Add study subject...'}
-                        className={`w-full px-4 py-2 border rounded-lg ${
-                          isDark 
-                            ? 'bg-white/10 border-white/20 text-white placeholder-gray-400' 
+                        className={`w-full px-4 py-2 border rounded-lg ${isDark
+                            ? 'bg-white/10 border-white/20 text-white placeholder-gray-400'
                             : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                        }`}
+                          }`}
                         onKeyPress={(e) => {
                           if (e.key === 'Enter') {
                             const value = e.currentTarget.value.trim();
                             if (value && !studyBuddyPrefs.subjects.includes(value)) {
-                              setStudyBuddyPrefs({...studyBuddyPrefs, subjects: [...studyBuddyPrefs.subjects, value]});
+                              setStudyBuddyPrefs({ ...studyBuddyPrefs, subjects: [...studyBuddyPrefs.subjects, value] });
                               e.currentTarget.value = '';
                             }
                           }
@@ -735,16 +713,15 @@ export default function ProfilePage() {
                         {['30min', '1hr', '2hr', '3hr'].map((length) => (
                           <button
                             key={length}
-                            onClick={() => setStudyBuddyPrefs({...studyBuddyPrefs, sessionLength: length})}
-                            className={`px-4 py-2 rounded-lg border transition-colors ${
-                              studyBuddyPrefs.sessionLength === length
-                                ? isDark 
-                                  ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30' 
+                            onClick={() => setStudyBuddyPrefs({ ...studyBuddyPrefs, sessionLength: length })}
+                            className={`px-4 py-2 rounded-lg border transition-colors ${studyBuddyPrefs.sessionLength === length
+                                ? isDark
+                                  ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30'
                                   : 'bg-[#0a84ff]/10 text-[#0a84ff] border-[#0a84ff]/30'
-                                : isDark 
-                                  ? 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10' 
+                                : isDark
+                                  ? 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'
                                   : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
-                            }`}
+                              }`}
                           >
                             {length}
                           </button>
@@ -773,17 +750,16 @@ export default function ProfilePage() {
                                 const newPrefs = isSelected
                                   ? studyBuddyPrefs.collaborationPrefs.filter(p => p !== method.id)
                                   : [...studyBuddyPrefs.collaborationPrefs, method.id];
-                                setStudyBuddyPrefs({...studyBuddyPrefs, collaborationPrefs: newPrefs});
+                                setStudyBuddyPrefs({ ...studyBuddyPrefs, collaborationPrefs: newPrefs });
                               }}
-                              className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border transition-colors ${
-                                isSelected
-                                  ? isDark 
-                                    ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' 
+                              className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border transition-colors ${isSelected
+                                  ? isDark
+                                    ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
                                     : 'bg-blue-100 text-blue-700 border-blue-300'
-                                  : isDark 
-                                    ? 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10' 
+                                  : isDark
+                                    ? 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'
                                     : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
-                              }`}
+                                }`}
                             >
                               <Icon className="w-4 h-4" />
                               <span className="text-sm">{method.label}</span>
@@ -794,11 +770,10 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Headset Availability */}
-                    <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                      isDark 
-                        ? 'bg-white/5 border-white/10' 
+                    <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                        ? 'bg-white/5 border-white/10'
                         : 'bg-gray-50 border-gray-200'
-                    }`}>
+                      }`}>
                       <div className="flex items-center space-x-3">
                         <Headphones className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
                         <div>
@@ -811,17 +786,15 @@ export default function ProfilePage() {
                         </div>
                       </div>
                       <button
-                        onClick={() => setStudyBuddyPrefs({...studyBuddyPrefs, headsetAvailable: !studyBuddyPrefs.headsetAvailable})}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          studyBuddyPrefs.headsetAvailable 
-                            ? isDark ? 'bg-green-600' : 'bg-green-600' 
+                        onClick={() => setStudyBuddyPrefs({ ...studyBuddyPrefs, headsetAvailable: !studyBuddyPrefs.headsetAvailable })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${studyBuddyPrefs.headsetAvailable
+                            ? isDark ? 'bg-green-600' : 'bg-green-600'
                             : isDark ? 'bg-gray-600' : 'bg-gray-400'
-                        }`}
+                          }`}
                       >
                         <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            studyBuddyPrefs.headsetAvailable ? 'translate-x-6' : 'translate-x-1'
-                          }`}
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${studyBuddyPrefs.headsetAvailable ? 'translate-x-6' : 'translate-x-1'
+                            }`}
                         />
                       </button>
                     </div>
@@ -833,12 +806,11 @@ export default function ProfilePage() {
                       </label>
                       <select
                         value={studyBuddyPrefs.timezone}
-                        onChange={(e) => setStudyBuddyPrefs({...studyBuddyPrefs, timezone: e.target.value})}
-                        className={`w-full px-4 py-3 border rounded-lg ${
-                          isDark 
-                            ? 'bg-white/10 border-white/20 text-white' 
+                        onChange={(e) => setStudyBuddyPrefs({ ...studyBuddyPrefs, timezone: e.target.value })}
+                        className={`w-full px-4 py-3 border rounded-lg ${isDark
+                            ? 'bg-white/10 border-white/20 text-white'
                             : 'bg-white border-gray-300 text-gray-900'
-                        }`}
+                          }`}
                       >
                         <option value="UTC+2" className={isDark ? 'bg-gray-800' : 'bg-white'}>UTC+2 (Cairo)</option>
                         <option value="UTC+0" className={isDark ? 'bg-gray-800' : 'bg-white'}>UTC+0 (London)</option>
@@ -849,13 +821,12 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Save Button */}
-                    <button 
+                    <button
                       onClick={() => alert(isRTL ? 'تم حفظ تفضيلات شريك الدراسة بنجاح!' : 'Study buddy preferences saved successfully!')}
-                      className={`w-full px-6 py-3 text-white rounded-xl transition-all duration-200 ${
-                      isDark 
-                        ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90' 
-                        : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
-                    }`}>
+                      className={`w-full px-6 py-3 text-white rounded-xl transition-all duration-200 ${isDark
+                          ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
+                          : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
+                        }`}>
                       {isRTL ? 'حفظ التفضيلات' : 'Save Preferences'}
                     </button>
                   </div>
@@ -866,11 +837,10 @@ export default function ProfilePage() {
             {activeTab === 'subscriptions' && (
               <div className="space-y-6">
                 {/* Active Subscriptions */}
-                <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${
-                  isDark 
-                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10' 
+                <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
+                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
                     : 'bg-white/80 border-gray-200'
-                }`}>
+                  }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     <CreditCard className={`w-6 h-6 mr-2 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
                     {isRTL ? 'الاشتراكات النشطة' : 'Active Subscriptions'}
@@ -878,11 +848,10 @@ export default function ProfilePage() {
 
                   <div className="space-y-4">
                     {/* Platform Subscription (Category A) */}
-                    <div className={`p-4 border rounded-xl ${
-                      isDark 
-                        ? 'bg-gradient-to-r from-green-500/20 to-blue-500/20 border-green-500/30' 
+                    <div className={`p-4 border rounded-xl ${isDark
+                        ? 'bg-gradient-to-r from-green-500/20 to-blue-500/20 border-green-500/30'
                         : 'bg-gradient-to-r from-green-50 to-blue-50 border-green-300'
-                    }`}>
+                      }`}>
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center space-x-3">
                           <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-xl flex items-center justify-center">
@@ -906,7 +875,7 @@ export default function ProfilePage() {
                               <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{isRTL ? 'شهري' : 'Monthly'}</p>
                             </>
                           ) : (
-                            <button 
+                            <button
                               onClick={() => window.location.href = `/${locale}/pricing`}
                               className="px-4 py-2 bg-[#0a84ff] text-white rounded-lg hover:bg-[#0a84ff]/90 transition-all duration-200 text-sm">
                               {isRTL ? 'عرض الأسعار' : 'View Pricing'}
@@ -916,29 +885,45 @@ export default function ProfilePage() {
                       </div>
                       <div className={`flex items-center justify-between pt-3 border-t ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
                         <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                          {profile.subscriptionStatus === 'ACTIVE' 
+                          {profile.subscriptionStatus === 'ACTIVE'
                             ? (isRTL ? 'الاشتراك نشط' : 'Subscription active')
                             : (isRTL ? 'لا يوجد اشتراك نشط' : 'No active subscription')
                           }
                         </p>
-                        <button 
-                          onClick={() => alert(isRTL ? 'ستتوفر هذه الميزة قريباً' : 'Subscription management coming soon')}
-                          className={`px-4 py-2 border rounded-lg transition-colors text-sm ${
-                          isDark 
-                            ? 'bg-white/10 text-white border-white/20 hover:bg-white/20' 
-                            : 'bg-gray-100 text-gray-900 border-gray-300 hover:bg-gray-200'
-                        }`}>
+                        <button
+                          onClick={async () => {
+                            if (profile.subscriptionStatus === 'ACTIVE') {
+                              if (window.confirm(isRTL ? 'هل تريد إلغاء الاشتراك؟' : 'Cancel your subscription?')) {
+                                try {
+                                  const response = await fetch('/api/subscriptions/cancel', { method: 'POST' });
+                                  if (response.ok) {
+                                    alert(isRTL ? 'تم إلغاء الاشتراك بنجاح' : 'Subscription cancelled successfully');
+                                    window.location.reload();
+                                  } else {
+                                    alert(isRTL ? 'فشل إلغاء الاشتراك' : 'Failed to cancel subscription');
+                                  }
+                                } catch (error) {
+                                  alert(isRTL ? 'حدث خطأ' : 'An error occurred');
+                                }
+                              }
+                            } else {
+                              window.location.href = `/${locale}/pricing`;
+                            }
+                          }}
+                          className={`px-4 py-2 border rounded-lg transition-colors text-sm ${isDark
+                              ? 'bg-white/10 text-white border-white/20 hover:bg-white/20'
+                              : 'bg-gray-100 text-gray-900 border-gray-300 hover:bg-gray-200'
+                            }`}>
                           {isRTL ? 'إدارة' : 'Manage'}
                         </button>
                       </div>
                     </div>
 
                     {/* Premium Subscription (Category B) - Placeholder */}
-                    <div className={`p-4 border rounded-xl opacity-60 ${
-                      isDark 
-                        ? 'bg-white/5 border-white/10' 
+                    <div className={`p-4 border rounded-xl opacity-60 ${isDark
+                        ? 'bg-white/5 border-white/10'
                         : 'bg-gray-50 border-gray-200'
-                    }`}>
+                      }`}>
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center space-x-3">
                           <div className="w-12 h-12 bg-[#0a84ff] rounded-xl flex items-center justify-center">
@@ -960,22 +945,20 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Creator Subscriptions (Category C) */}
-                    <div className={`p-4 border rounded-xl ${
-                      isDark 
-                        ? 'bg-white/5 border-white/10' 
+                    <div className={`p-4 border rounded-xl ${isDark
+                        ? 'bg-white/5 border-white/10'
                         : 'bg-gray-50 border-gray-200'
-                    }`}>
+                      }`}>
                       <h4 className={`text-lg font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                         {isRTL ? 'قنوات المدربين (الفئة C)' : 'Creator Channels (Category C)'}
                       </h4>
                       <p className={`text-sm text-center py-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                         {isRTL ? 'لم تشترك في أي قناة بعد' : 'No creator channel subscriptions yet'}
                       </p>
-                      <button className={`w-full px-4 py-2 border rounded-lg transition-colors ${
-                        isDark 
-                          ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30' 
+                      <button className={`w-full px-4 py-2 border rounded-lg transition-colors ${isDark
+                          ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
                           : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
-                      }`}>
+                        }`}>
                         {isRTL ? 'تصفح المدربين' : 'Browse Creators'}
                       </button>
                     </div>
@@ -983,51 +966,66 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Payment Methods */}
-                <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${
-                  isDark 
-                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10' 
+                <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
+                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
                     : 'bg-white/80 border-gray-200'
-                }`}>
+                  }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     <CreditCard className={`w-6 h-6 mr-2 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                     {isRTL ? 'طرق الدفع' : 'Payment Methods'}
                   </h3>
-                  <div className={`p-4 border rounded-xl text-center ${
-                    isDark 
-                      ? 'bg-white/5 border-white/10' 
+                  <div className={`p-4 border rounded-xl text-center ${isDark
+                      ? 'bg-white/5 border-white/10'
                       : 'bg-gray-50 border-gray-200'
-                  }`}>
+                    }`}>
                     <CreditCard className={`w-12 h-12 mx-auto mb-3 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
                     <p className={`mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                       {isRTL ? 'لا توجد طرق دفع محفوظة' : 'No saved payment methods'}
                     </p>
-                    <button 
-                      onClick={() => alert(isRTL ? 'سيتم إضافة طرق الدفع قريباً' : 'Payment methods coming soon')}
-                      className={`px-6 py-2 text-white rounded-lg transition-all duration-200 ${
-                      isDark 
-                        ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90' 
-                        : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
-                    }`}>
+                    <button
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/payments/create-link', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ type: 'portal' })
+                          });
+                          if (response.ok) {
+                            const data = await response.json();
+                            if (data.url) {
+                              window.open(data.url, '_blank');
+                            } else {
+                              alert(isRTL ? 'قم بالاشتراك أولاً لإدارة طرق الدفع' : 'Subscribe first to manage payment methods');
+                            }
+                          } else {
+                            alert(isRTL ? 'قم بالاشتراك أولاً لإدارة طرق الدفع' : 'Subscribe first to manage payment methods');
+                          }
+                        } catch (error) {
+                          window.location.href = `/${locale}/pricing`;
+                        }
+                      }}
+                      className={`px-6 py-2 text-white rounded-lg transition-all duration-200 ${isDark
+                          ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
+                          : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
+                        }`}>
                       {isRTL ? 'إضافة طريقة دفع' : 'Add Payment Method'}
                     </button>
                   </div>
                 </div>
 
                 {/* Invoice History */}
-                <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${
-                  isDark 
-                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10' 
+                <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
+                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
                     : 'bg-white/80 border-gray-200'
-                }`}>
+                  }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     <FileText className={`w-6 h-6 mr-2 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
                     {isRTL ? 'سجل الفواتير' : 'Invoice History'}
                   </h3>
-                  <div className={`p-4 border rounded-xl text-center ${
-                    isDark 
-                      ? 'bg-white/5 border-white/10' 
+                  <div className={`p-4 border rounded-xl text-center ${isDark
+                      ? 'bg-white/5 border-white/10'
                       : 'bg-gray-50 border-gray-200'
-                  }`}>
+                    }`}>
                     <FileText className={`w-12 h-12 mx-auto mb-3 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
                     <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                       {isRTL ? 'لا توجد فواتير حتى الآن' : 'No invoices yet'}
@@ -1041,11 +1039,10 @@ export default function ProfilePage() {
             )}
 
             {activeTab === 'certificates' && (
-              <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${
-                isDark 
-                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10' 
+              <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
+                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
                   : 'bg-white/80 border-gray-200'
-              }`}>
+                }`}>
                 <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   <Award className={`w-6 h-6 mr-2 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
                   {isRTL ? 'الشهادات والإنجازات' : 'Certificates & Achievements'}
@@ -1059,11 +1056,10 @@ export default function ProfilePage() {
                   {profile.enrollments.filter(e => e.completedAt).length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {profile.enrollments.filter(e => e.completedAt).map((enrollment, index) => (
-                        <div key={index} className={`p-4 border rounded-xl ${
-                          isDark 
-                            ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500/30' 
+                        <div key={index} className={`p-4 border rounded-xl ${isDark
+                            ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500/30'
                             : 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-300'
-                        }`}>
+                          }`}>
                           <div className="flex items-start justify-between mb-3">
                             <div>
                               <p className={`font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -1076,19 +1072,17 @@ export default function ProfilePage() {
                             <Award className={`w-8 h-8 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
                           </div>
                           <div className="flex gap-2 mt-4">
-                            <button className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors text-sm ${
-                              isDark 
-                                ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30' 
+                            <button className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors text-sm ${isDark
+                                ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
                                 : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
-                            }`}>
+                              }`}>
                               <Download className="w-4 h-4" />
                               {isRTL ? 'تحميل' : 'Download'}
                             </button>
-                            <button className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors text-sm ${
-                              isDark 
-                                ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30' 
+                            <button className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 border rounded-lg transition-colors text-sm ${isDark
+                                ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30'
                                 : 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200'
-                            }`}>
+                              }`}>
                               <Share2 className="w-4 h-4" />
                               {isRTL ? 'مشاركة' : 'Share'}
                             </button>
@@ -1097,11 +1091,10 @@ export default function ProfilePage() {
                       ))}
                     </div>
                   ) : (
-                    <div className={`text-center py-8 border rounded-xl ${
-                      isDark 
-                        ? 'bg-white/5 border-white/10' 
+                    <div className={`text-center py-8 border rounded-xl ${isDark
+                        ? 'bg-white/5 border-white/10'
                         : 'bg-gray-50 border-gray-200'
-                    }`}>
+                      }`}>
                       <Award className={`w-16 h-16 mx-auto mb-3 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
                       <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
                         {isRTL ? 'لم تحصل على شهادات بعد' : 'No certificates earned yet'}
@@ -1129,26 +1122,23 @@ export default function ProfilePage() {
                       return (
                         <div
                           key={index}
-                          className={`p-4 rounded-xl border text-center ${
-                            achievement.unlocked
-                              ? isDark 
-                                ? 'bg-[#0a84ff]/10 border-[#0a84ff]/30' 
+                          className={`p-4 rounded-xl border text-center ${achievement.unlocked
+                              ? isDark
+                                ? 'bg-[#0a84ff]/10 border-[#0a84ff]/30'
                                 : 'bg-[#0a84ff]/10 border-[#0a84ff]/30'
-                              : isDark 
-                                ? 'bg-white/5 border-white/10 opacity-50' 
+                              : isDark
+                                ? 'bg-white/5 border-white/10 opacity-50'
                                 : 'bg-gray-50 border-gray-200 opacity-50'
-                          }`}
+                            }`}
                         >
-                          <Icon className={`w-8 h-8 mx-auto mb-2 ${
-                            achievement.unlocked 
-                              ? isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]' 
+                          <Icon className={`w-8 h-8 mx-auto mb-2 ${achievement.unlocked
+                              ? isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'
                               : 'text-gray-500'
-                          }`} />
-                          <p className={`text-sm font-medium ${
-                            achievement.unlocked 
-                              ? isDark ? 'text-white' : 'text-gray-900' 
+                            }`} />
+                          <p className={`text-sm font-medium ${achievement.unlocked
+                              ? isDark ? 'text-white' : 'text-gray-900'
                               : 'text-gray-500'
-                          }`}>
+                            }`}>
                             {achievement.name}
                           </p>
                         </div>
@@ -1162,22 +1152,20 @@ export default function ProfilePage() {
             {activeTab === 'creator' && profile.role === 'CREATOR' && (
               <div className="space-y-6">
                 {/* Creator Stats */}
-                <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${
-                  isDark 
-                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10' 
+                <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
+                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
                     : 'bg-white/80 border-gray-200'
-                }`}>
+                  }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     <Briefcase className={`w-6 h-6 mr-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                     {isRTL ? 'نظرة عامة على المدرب' : 'Creator Overview'}
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className={`p-4 border rounded-xl ${
-                      isDark 
-                        ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-500/30' 
+                    <div className={`p-4 border rounded-xl ${isDark
+                        ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-500/30'
                         : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300'
-                    }`}>
+                      }`}>
                       <div className="flex items-center justify-between mb-2">
                         <DollarSign className={`w-8 h-8 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
                         <TrendingUp className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
@@ -1186,11 +1174,10 @@ export default function ProfilePage() {
                       <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{isRTL ? 'إجمالي الأرباح' : 'Total Earnings'}</p>
                     </div>
 
-                    <div className={`p-4 border rounded-xl ${
-                      isDark 
-                        ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-500/30' 
+                    <div className={`p-4 border rounded-xl ${isDark
+                        ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-500/30'
                         : 'bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-300'
-                    }`}>
+                      }`}>
                       <div className="flex items-center justify-between mb-2">
                         <Users className={`w-8 h-8 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                         <TrendingUp className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
@@ -1199,11 +1186,10 @@ export default function ProfilePage() {
                       <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{isRTL ? 'المشتركون' : 'Subscribers'}</p>
                     </div>
 
-                    <div className={`p-4 border rounded-xl ${
-                      isDark 
-                        ? 'bg-[#0a84ff]/10 border-[#0a84ff]/30' 
+                    <div className={`p-4 border rounded-xl ${isDark
+                        ? 'bg-[#0a84ff]/10 border-[#0a84ff]/30'
                         : 'bg-[#0a84ff]/10 border-[#0a84ff]/30'
-                    }`}>
+                      }`}>
                       <div className="flex items-center justify-between mb-2">
                         <BookOpen className={`w-8 h-8 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                         <TrendingUp className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
@@ -1214,11 +1200,10 @@ export default function ProfilePage() {
                   </div>
 
                   {/* KYC Status */}
-                  <div className={`p-4 border rounded-xl ${
-                    isDark 
-                      ? 'bg-yellow-500/20 border-yellow-500/30' 
+                  <div className={`p-4 border rounded-xl ${isDark
+                      ? 'bg-yellow-500/20 border-yellow-500/30'
                       : 'bg-yellow-50 border-yellow-300'
-                  }`}>
+                    }`}>
                     <div className="flex items-center space-x-3">
                       <Shield className={`w-6 h-6 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
                       <div className="flex-1">
@@ -1229,11 +1214,10 @@ export default function ProfilePage() {
                           {isRTL ? 'قيد المراجعة - يستغرق حتى 10 أيام' : 'Under Review - Takes up to 10 days'}
                         </p>
                       </div>
-                      <span className={`px-3 py-1 border rounded-full text-sm font-medium ${
-                        isDark 
-                          ? 'bg-yellow-500/30 text-yellow-300 border-yellow-500/40' 
+                      <span className={`px-3 py-1 border rounded-full text-sm font-medium ${isDark
+                          ? 'bg-yellow-500/30 text-yellow-300 border-yellow-500/40'
                           : 'bg-yellow-100 text-yellow-700 border-yellow-400'
-                      }`}>
+                        }`}>
                         {isRTL ? 'قيد الانتظار' : 'PENDING'}
                       </span>
                     </div>
@@ -1241,22 +1225,20 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Teaching Profile */}
-                <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${
-                  isDark 
-                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10' 
+                <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
+                    ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
                     : 'bg-white/80 border-gray-200'
-                }`}>
+                  }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     <Award className={`w-6 h-6 mr-2 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                     {isRTL ? 'الملف التعليمي' : 'Teaching Profile'}
                   </h3>
 
                   <div className="space-y-4">
-                    <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                      isDark 
-                        ? 'bg-white/5 border-white/10' 
+                    <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                        ? 'bg-white/5 border-white/10'
                         : 'bg-gray-50 border-gray-200'
-                    }`}>
+                      }`}>
                       <div className="flex items-center space-x-3">
                         <Globe className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                         <div>
@@ -1268,22 +1250,20 @@ export default function ProfilePage() {
                           </p>
                         </div>
                       </div>
-                      <button 
+                      <button
                         onClick={() => window.location.href = `/${locale}/mentors/${profile.id}`}
-                        className={`px-4 py-2 border rounded-lg transition-colors ${
-                        isDark 
-                          ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30' 
-                          : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
-                      }`}>
+                        className={`px-4 py-2 border rounded-lg transition-colors ${isDark
+                            ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
+                            : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
+                          }`}>
                         {isRTL ? 'عرض' : 'View'}
                       </button>
                     </div>
 
-                    <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                      isDark 
-                        ? 'bg-white/5 border-white/10' 
+                    <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                        ? 'bg-white/5 border-white/10'
                         : 'bg-gray-50 border-gray-200'
-                    }`}>
+                      }`}>
                       <div className="flex items-center space-x-3">
                         <DollarSign className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
                         <div>
@@ -1295,22 +1275,20 @@ export default function ProfilePage() {
                           </p>
                         </div>
                       </div>
-                      <button 
+                      <button
                         onClick={() => alert(isRTL ? 'ستتوفر هذه الميزة قريباً' : 'This feature will be available soon')}
-                        className={`px-4 py-2 border rounded-lg transition-colors ${
-                        isDark 
-                          ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30' 
-                          : 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200'
-                      }`}>
+                        className={`px-4 py-2 border rounded-lg transition-colors ${isDark
+                            ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30'
+                            : 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200'
+                          }`}>
                         {isRTL ? 'إدارة' : 'Manage'}
                       </button>
                     </div>
 
-                    <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                      isDark 
-                        ? 'bg-white/5 border-white/10' 
+                    <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                        ? 'bg-white/5 border-white/10'
                         : 'bg-gray-50 border-gray-200'
-                    }`}>
+                      }`}>
                       <div className="flex items-center space-x-3">
                         <Video className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                         <div>
@@ -1322,11 +1300,10 @@ export default function ProfilePage() {
                           </p>
                         </div>
                       </div>
-                      <button 
+                      <button
                         onClick={() => setMeetingAvailability(!meetingAvailability)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        meetingAvailability ? 'bg-green-600' : 'bg-gray-600'
-                      }`}>
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${meetingAvailability ? 'bg-green-600' : 'bg-gray-600'
+                          }`}>
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${meetingAvailability ? 'translate-x-6' : 'translate-x-1'}`} />
                       </button>
                     </div>
@@ -1336,16 +1313,15 @@ export default function ProfilePage() {
             )}
 
             {activeTab === 'settings' && (
-              <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${
-                isDark 
-                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10' 
+              <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
+                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
                   : 'bg-white/80 border-gray-200'
-              }`}>
+                }`}>
                 <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   <Settings className={`w-6 h-6 mr-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
                   {isRTL ? 'إعدادات الحساب' : 'Account Settings'}
                 </h3>
-                
+
                 <div className="space-y-6">
                   {/* Privacy Settings */}
                   <div>
@@ -1354,11 +1330,10 @@ export default function ProfilePage() {
                       {isRTL ? 'إعدادات الخصوصية' : 'Privacy Settings'}
                     </h4>
                     <div className="space-y-3">
-                      <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                        isDark 
-                          ? 'bg-white/5 border-white/10' 
+                      <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                          ? 'bg-white/5 border-white/10'
                           : 'bg-gray-50 border-gray-200'
-                      }`}>
+                        }`}>
                         <div className="flex items-center space-x-3">
                           {privacySettings.profileVisibility === 'PUBLIC' ? (
                             <Eye className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
@@ -1376,12 +1351,11 @@ export default function ProfilePage() {
                         </div>
                         <select
                           value={privacySettings.profileVisibility}
-                          onChange={(e) => setPrivacySettings({...privacySettings, profileVisibility: e.target.value})}
-                          className={`px-4 py-2 border rounded-lg text-sm ${
-                            isDark 
-                              ? 'bg-white/10 border-white/20 text-white' 
+                          onChange={(e) => setPrivacySettings({ ...privacySettings, profileVisibility: e.target.value })}
+                          className={`px-4 py-2 border rounded-lg text-sm ${isDark
+                              ? 'bg-white/10 border-white/20 text-white'
                               : 'bg-white border-gray-300 text-gray-900'
-                          }`}
+                            }`}
                         >
                           <option value="PUBLIC" className={isDark ? 'bg-gray-800' : 'bg-white'}>{isRTL ? 'عام' : 'Public'}</option>
                           <option value="PRIVATE" className={isDark ? 'bg-gray-800' : 'bg-white'}>{isRTL ? 'خاص' : 'Private'}</option>
@@ -1389,11 +1363,10 @@ export default function ProfilePage() {
                         </select>
                       </div>
 
-                      <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                        isDark 
-                          ? 'bg-white/5 border-white/10' 
+                      <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                          ? 'bg-white/5 border-white/10'
                           : 'bg-gray-50 border-gray-200'
-                      }`}>
+                        }`}>
                         <div className="flex items-center space-x-3">
                           <BarChart3 className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                           <div>
@@ -1406,26 +1379,23 @@ export default function ProfilePage() {
                           </div>
                         </div>
                         <button
-                          onClick={() => setPrivacySettings({...privacySettings, showProgressPublicly: !privacySettings.showProgressPublicly})}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            privacySettings.showProgressPublicly 
-                              ? isDark ? 'bg-blue-600' : 'bg-blue-500' 
+                          onClick={() => setPrivacySettings({ ...privacySettings, showProgressPublicly: !privacySettings.showProgressPublicly })}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${privacySettings.showProgressPublicly
+                              ? isDark ? 'bg-blue-600' : 'bg-blue-500'
                               : isDark ? 'bg-gray-600' : 'bg-gray-400'
-                          }`}
+                            }`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              privacySettings.showProgressPublicly ? 'translate-x-6' : 'translate-x-1'
-                            }`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${privacySettings.showProgressPublicly ? 'translate-x-6' : 'translate-x-1'
+                              }`}
                           />
                         </button>
                       </div>
 
-                      <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                        isDark 
-                          ? 'bg-white/5 border-white/10' 
+                      <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                          ? 'bg-white/5 border-white/10'
                           : 'bg-gray-50 border-gray-200'
-                      }`}>
+                        }`}>
                         <div className="flex items-center space-x-3">
                           <User className={`w-5 h-5 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
                           <div>
@@ -1438,17 +1408,15 @@ export default function ProfilePage() {
                           </div>
                         </div>
                         <button
-                          onClick={() => setPrivacySettings({...privacySettings, showRealName: !privacySettings.showRealName})}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            privacySettings.showRealName 
-                              ? isDark ? 'bg-yellow-600' : 'bg-yellow-500' 
+                          onClick={() => setPrivacySettings({ ...privacySettings, showRealName: !privacySettings.showRealName })}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${privacySettings.showRealName
+                              ? isDark ? 'bg-yellow-600' : 'bg-yellow-500'
                               : isDark ? 'bg-gray-600' : 'bg-gray-400'
-                          }`}
+                            }`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              privacySettings.showRealName ? 'translate-x-6' : 'translate-x-1'
-                            }`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${privacySettings.showRealName ? 'translate-x-6' : 'translate-x-1'
+                              }`}
                           />
                         </button>
                       </div>
@@ -1462,11 +1430,10 @@ export default function ProfilePage() {
                       {isRTL ? 'الإشعارات والتفضيلات' : 'Notifications & Preferences'}
                     </h4>
                     <div className="space-y-3">
-                      <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                        isDark 
-                          ? 'bg-white/5 border-white/10' 
+                      <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                          ? 'bg-white/5 border-white/10'
                           : 'bg-gray-50 border-gray-200'
-                      }`}>
+                        }`}>
                         <div className="flex items-center space-x-3">
                           <Bell className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                           <div>
@@ -1478,22 +1445,20 @@ export default function ProfilePage() {
                             </p>
                           </div>
                         </div>
-                        <button 
+                        <button
                           onClick={() => setNotificationModal(true)}
-                          className={`px-4 py-2 border rounded-lg transition-colors ${
-                          isDark 
-                            ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30' 
-                            : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
-                        }`}>
+                          className={`px-4 py-2 border rounded-lg transition-colors ${isDark
+                              ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
+                              : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
+                            }`}>
                           {isRTL ? 'إدارة' : 'Manage'}
                         </button>
                       </div>
-                      
-                      <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                        isDark 
-                          ? 'bg-white/5 border-white/10' 
+
+                      <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                          ? 'bg-white/5 border-white/10'
                           : 'bg-gray-50 border-gray-200'
-                      }`}>
+                        }`}>
                         <div className="flex items-center space-x-3">
                           <Clock className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
                           <div>
@@ -1506,11 +1471,10 @@ export default function ProfilePage() {
                           </div>
                         </div>
                         <select
-                          className={`px-4 py-2 border rounded-lg text-sm ${
-                            isDark 
-                              ? 'bg-white/10 border-white/20 text-white' 
+                          className={`px-4 py-2 border rounded-lg text-sm ${isDark
+                              ? 'bg-white/10 border-white/20 text-white'
                               : 'bg-white border-gray-300 text-gray-900'
-                          }`}
+                            }`}
                         >
                           <option value="Africa/Cairo" className={isDark ? 'bg-gray-800' : 'bg-white'}>Cairo (GMT+2)</option>
                           <option value="Asia/Dubai" className={isDark ? 'bg-gray-800' : 'bg-white'}>Dubai (GMT+4)</option>
@@ -1526,38 +1490,34 @@ export default function ProfilePage() {
             )}
 
             {activeTab === 'security' && (
-              <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${
-                isDark 
-                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10' 
+              <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
+                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
                   : 'bg-white/80 border-gray-200'
-              }`}>
+                }`}>
                 <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   <Shield className={`w-6 h-6 mr-2 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
                   {isRTL ? 'الأمان والخصوصية' : 'Security & Privacy'}
                 </h3>
-                
+
                 <div className="space-y-6">
-                  <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                    isDark 
-                      ? 'bg-white/5 border-white/10' 
+                  <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                      ? 'bg-white/5 border-white/10'
                       : 'bg-gray-50 border-gray-200'
-                  }`}>
+                    }`}>
                     <div className="flex items-center space-x-3">
-                      <CheckCircle className={`w-5 h-5 ${
-                        profile.emailVerified 
-                          ? isDark ? 'text-green-400' : 'text-green-600' 
+                      <CheckCircle className={`w-5 h-5 ${profile.emailVerified
+                          ? isDark ? 'text-green-400' : 'text-green-600'
                           : isDark ? 'text-yellow-400' : 'text-yellow-600'
-                      }`} />
+                        }`} />
                       <div>
                         <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                           {isRTL ? 'تحقق من البريد الإلكتروني' : 'Email Verification'}
                         </p>
-                        <p className={`text-sm ${
-                          profile.emailVerified 
-                            ? isDark ? 'text-green-400' : 'text-green-600' 
+                        <p className={`text-sm ${profile.emailVerified
+                            ? isDark ? 'text-green-400' : 'text-green-600'
                             : isDark ? 'text-yellow-400' : 'text-yellow-600'
-                        }`}>
-                          {profile.emailVerified 
+                          }`}>
+                          {profile.emailVerified
                             ? (isRTL ? 'تم التحقق من البريد الإلكتروني' : 'Email verified')
                             : (isRTL ? 'البريد الإلكتروني غير مُحقق' : 'Email not verified')
                           }
@@ -1565,23 +1525,21 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     {!profile.emailVerified && (
-                      <button 
+                      <button
                         onClick={() => alert(isRTL ? 'سيتم إرسال رابط التحقق إلى بريدك الإلكتروني' : 'Verification link will be sent to your email')}
-                        className={`px-4 py-2 border rounded-lg transition-colors ${
-                        isDark 
-                          ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/30' 
-                          : 'bg-yellow-100 text-yellow-700 border-yellow-300 hover:bg-yellow-200'
-                      }`}>
+                        className={`px-4 py-2 border rounded-lg transition-colors ${isDark
+                            ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/30'
+                            : 'bg-yellow-100 text-yellow-700 border-yellow-300 hover:bg-yellow-200'
+                          }`}>
                         {isRTL ? 'تحقق' : 'Verify'}
                       </button>
                     )}
                   </div>
-                  
-                  <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                    isDark 
-                      ? 'bg-white/5 border-white/10' 
+
+                  <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                      ? 'bg-white/5 border-white/10'
                       : 'bg-gray-50 border-gray-200'
-                  }`}>
+                    }`}>
                     <div className="flex items-center space-x-3">
                       <Shield className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                       <div>
@@ -1593,13 +1551,12 @@ export default function ProfilePage() {
                         </p>
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={() => alert(isRTL ? 'سيتم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني' : 'Password reset link will be sent to your email')}
-                      className={`px-4 py-2 border rounded-lg transition-colors ${
-                      isDark 
-                        ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30' 
-                        : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
-                    }`}>
+                      className={`px-4 py-2 border rounded-lg transition-colors ${isDark
+                          ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30'
+                          : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
+                        }`}>
                       {isRTL ? 'تغيير' : 'Change'}
                     </button>
                   </div>
@@ -1609,11 +1566,10 @@ export default function ProfilePage() {
 
             {/* Creator Dashboard Tab */}
             {activeTab === 'creator' && profile?.role === 'CREATOR' && (
-              <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${
-                isDark 
-                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10' 
+              <div className={`backdrop-blur-xl border rounded-2xl p-6 shadow-xl ${isDark
+                  ? 'bg-gradient-to-br from-black/30 via-black/20 to-black/30 border-white/10'
                   : 'bg-white/80 border-gray-200'
-              }`}>
+                }`}>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className={`text-xl font-bold flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     <Briefcase className={`w-6 h-6 mr-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
@@ -1623,22 +1579,20 @@ export default function ProfilePage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => window.location.href = `/${locale}/mentors`}
-                    className={`px-4 py-2 rounded-lg transition-all ${
-                      isDark 
-                        ? 'bg-[#0a84ff]/20 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/30' 
-                          : 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/20'
-                    }`}
+                    className={`px-4 py-2 rounded-lg transition-all ${isDark
+                        ? 'bg-[#0a84ff]/20 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/30'
+                        : 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/20'
+                      }`}
                   >
                     <Upload className="w-4 h-4 inline mr-2" />
                     {isRTL ? 'منشور جديد' : 'New Post'}
                   </motion.button>
                 </div>
-                
-                <div className={`p-6 border rounded-xl mb-6 ${
-                  isDark 
-                    ? 'bg-[#0a84ff]/5 border-[#0a84ff]/30' 
+
+                <div className={`p-6 border rounded-xl mb-6 ${isDark
+                    ? 'bg-[#0a84ff]/5 border-[#0a84ff]/30'
                     : 'bg-[#0a84ff]/5 border-[#0a84ff]/20'
-                }`}>
+                  }`}>
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h4 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -1652,11 +1606,10 @@ export default function ProfilePage() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => window.location.href = `/${locale}/mentors`}
-                      className={`px-4 py-2 rounded-lg transition-all ${
-                        isDark 
-                          ? 'bg-[#0a84ff]/20 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/30' 
+                      className={`px-4 py-2 rounded-lg transition-all ${isDark
+                          ? 'bg-[#0a84ff]/20 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/30'
                           : 'bg-[#0a84ff]/10 text-[#0a84ff] border border-[#0a84ff]/30 hover:bg-[#0a84ff]/20'
-                      }`}
+                        }`}
                     >
                       <Upload className="w-4 h-4 inline mr-2" />
                       {isRTL ? 'منشور جديد' : 'New Post'}
@@ -1664,9 +1617,8 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className={`p-4 rounded-xl ${
-                      isDark ? 'bg-black/20' : 'bg-white/50'
-                    }`}>
+                    <div className={`p-4 rounded-xl ${isDark ? 'bg-black/20' : 'bg-white/50'
+                      }`}>
                       <div className="flex items-center gap-2 mb-2">
                         <FileText className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                         <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -1678,9 +1630,8 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    <div className={`p-4 rounded-xl ${
-                      isDark ? 'bg-black/20' : 'bg-white/50'
-                    }`}>
+                    <div className={`p-4 rounded-xl ${isDark ? 'bg-black/20' : 'bg-white/50'
+                      }`}>
                       <div className="flex items-center gap-2 mb-2">
                         <Users className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                         <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -1692,9 +1643,8 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    <div className={`p-4 rounded-xl ${
-                      isDark ? 'bg-black/20' : 'bg-white/50'
-                    }`}>
+                    <div className={`p-4 rounded-xl ${isDark ? 'bg-black/20' : 'bg-white/50'
+                      }`}>
                       <div className="flex items-center gap-2 mb-2">
                         <Eye className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
                         <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -1706,9 +1656,8 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    <div className={`p-4 rounded-xl ${
-                      isDark ? 'bg-black/20' : 'bg-white/50'
-                    }`}>
+                    <div className={`p-4 rounded-xl ${isDark ? 'bg-black/20' : 'bg-white/50'
+                      }`}>
                       <div className="flex items-center gap-2 mb-2">
                         <DollarSign className={`w-5 h-5 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
                         <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -1728,11 +1677,10 @@ export default function ProfilePage() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => window.location.href = `/${locale}/mentors`}
-                    className={`p-4 rounded-xl border transition-all ${
-                      isDark 
-                        ? 'bg-white/5 border-white/10 hover:border-[#0a84ff]/50' 
+                    className={`p-4 rounded-xl border transition-all ${isDark
+                        ? 'bg-white/5 border-white/10 hover:border-[#0a84ff]/50'
                         : 'bg-gray-50 border-gray-200 hover:border-[#0a84ff]/30'
-                    }`}
+                      }`}
                   >
                     <Upload className={`w-6 h-6 mb-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                     <div className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -1747,11 +1695,10 @@ export default function ProfilePage() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => window.location.href = `/${locale}/messaging`}
-                    className={`p-4 rounded-xl border transition-all ${
-                      isDark 
-                        ? 'bg-white/5 border-white/10 hover:border-blue-500/50' 
+                    className={`p-4 rounded-xl border transition-all ${isDark
+                        ? 'bg-white/5 border-white/10 hover:border-blue-500/50'
                         : 'bg-gray-50 border-gray-200 hover:border-blue-300'
-                    }`}
+                      }`}
                   >
                     <MessageCircle className={`w-6 h-6 mb-2 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                     <div className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -1766,11 +1713,10 @@ export default function ProfilePage() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => window.location.href = `/${locale}/mentors`}
-                    className={`p-4 rounded-xl border transition-all ${
-                      isDark 
-                        ? 'bg-white/5 border-white/10 hover:border-green-500/50' 
+                    className={`p-4 rounded-xl border transition-all ${isDark
+                        ? 'bg-white/5 border-white/10 hover:border-green-500/50'
                         : 'bg-gray-50 border-gray-200 hover:border-green-300'
-                    }`}
+                      }`}
                   >
                     <BarChart3 className={`w-6 h-6 mb-2 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
                     <div className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -1783,16 +1729,14 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Info Box */}
-                <div className={`p-4 rounded-xl ${
-                  isDark 
-                    ? 'bg-blue-500/10 border border-blue-500/30' 
+                <div className={`p-4 rounded-xl ${isDark
+                    ? 'bg-blue-500/10 border border-blue-500/30'
                     : 'bg-blue-50 border border-blue-200'
-                }`}>
+                  }`}>
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        isDark ? 'bg-blue-500/20' : 'bg-blue-100'
-                      }`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isDark ? 'bg-blue-500/20' : 'bg-blue-100'
+                        }`}>
                         <Sparkles className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                       </div>
                     </div>
@@ -1801,7 +1745,7 @@ export default function ProfilePage() {
                         {isRTL ? 'نصيحة للمنشئين' : 'Creator Tip'}
                       </h4>
                       <p className={`text-sm ${isDark ? 'text-blue-300' : 'text-blue-800'}`}>
-                        {isRTL 
+                        {isRTL
                           ? 'انتقل إلى صفحة المنشئين للوصول إلى جميع ميزات إدارة المحتوى والتحليلات المتقدمة.'
                           : 'Go to the Creators page to access all content management features and advanced analytics.'
                         }
@@ -1810,11 +1754,10 @@ export default function ProfilePage() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => window.location.href = `/${locale}/mentors`}
-                        className={`mt-3 px-4 py-2 rounded-lg transition-all font-semibold ${
-                          isDark 
-                            ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' 
+                        className={`mt-3 px-4 py-2 rounded-lg transition-all font-semibold ${isDark
+                            ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
                             : 'bg-blue-600 text-white hover:bg-blue-700'
-                        }`}
+                          }`}
                       >
                         {isRTL ? 'انتقل إلى لوحة المنشئين' : 'Go to Creator Panel'}
                       </motion.button>
@@ -1859,11 +1802,11 @@ export default function ProfilePage() {
                       <input
                         type="text"
                         value={editForm.name}
-                        onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                         className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0a84ff]/50 focus:border-[#0a84ff]/50"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         {isRTL ? 'الاسم العربي' : 'Arabic Name'}
@@ -1871,7 +1814,7 @@ export default function ProfilePage() {
                       <input
                         type="text"
                         value={editForm.arabicName}
-                        onChange={(e) => setEditForm({...editForm, arabicName: e.target.value})}
+                        onChange={(e) => setEditForm({ ...editForm, arabicName: e.target.value })}
                         className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0a84ff]/50 focus:border-[#0a84ff]/50"
                       />
                     </div>
@@ -1884,7 +1827,7 @@ export default function ProfilePage() {
                     <input
                       type="tel"
                       value={editForm.phone}
-                      onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
+                      onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0a84ff]/50 focus:border-[#0a84ff]/50"
                     />
                   </div>
@@ -1896,7 +1839,7 @@ export default function ProfilePage() {
                       </label>
                       <select
                         value={editForm.skillLevel}
-                        onChange={(e) => setEditForm({...editForm, skillLevel: e.target.value})}
+                        onChange={(e) => setEditForm({ ...editForm, skillLevel: e.target.value })}
                         className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#0a84ff]/50 focus:border-[#0a84ff]/50"
                       >
                         {skillLevels.map(level => (
@@ -1906,14 +1849,14 @@ export default function ProfilePage() {
                         ))}
                       </select>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         {isRTL ? 'نمط التعلم' : 'Learning Mode'}
                       </label>
                       <select
                         value={editForm.learningMode}
-                        onChange={(e) => setEditForm({...editForm, learningMode: e.target.value})}
+                        onChange={(e) => setEditForm({ ...editForm, learningMode: e.target.value })}
                         className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#0a84ff]/50 focus:border-[#0a84ff]/50"
                       >
                         {learningModes.map(mode => (
@@ -1945,7 +1888,7 @@ export default function ProfilePage() {
                               type="button"
                               onClick={() => {
                                 const newInterests = editForm.interests.filter((_, i) => i !== index);
-                                setEditForm({...editForm, interests: newInterests});
+                                setEditForm({ ...editForm, interests: newInterests });
                               }}
                               className="ml-2 text-green-300 hover:text-red-400 transition-colors"
                             >
@@ -1963,7 +1906,7 @@ export default function ProfilePage() {
                             if (e.key === 'Enter') {
                               const value = e.currentTarget.value.trim();
                               if (value && !editForm.interests.includes(value)) {
-                                setEditForm({...editForm, interests: [...editForm.interests, value]});
+                                setEditForm({ ...editForm, interests: [...editForm.interests, value] });
                                 e.currentTarget.value = '';
                               }
                             }
@@ -1975,7 +1918,7 @@ export default function ProfilePage() {
                             const input = e.currentTarget.previousElementSibling as HTMLInputElement;
                             const value = input?.value.trim();
                             if (value && !editForm.interests.includes(value)) {
-                              setEditForm({...editForm, interests: [...editForm.interests, value]});
+                              setEditForm({ ...editForm, interests: [...editForm.interests, value] });
                               input.value = '';
                             }
                           }}
@@ -2008,7 +1951,7 @@ export default function ProfilePage() {
                               type="button"
                               onClick={() => {
                                 const newGoals = editForm.goals.filter((_, i) => i !== index);
-                                setEditForm({...editForm, goals: newGoals});
+                                setEditForm({ ...editForm, goals: newGoals });
                               }}
                               className="text-gray-400 hover:text-red-400 transition-colors"
                             >
@@ -2026,7 +1969,7 @@ export default function ProfilePage() {
                             if (e.key === 'Enter') {
                               const value = e.currentTarget.value.trim();
                               if (value && !editForm.goals.includes(value)) {
-                                setEditForm({...editForm, goals: [...editForm.goals, value]});
+                                setEditForm({ ...editForm, goals: [...editForm.goals, value] });
                                 e.currentTarget.value = '';
                               }
                             }
@@ -2038,7 +1981,7 @@ export default function ProfilePage() {
                             const input = e.currentTarget.previousElementSibling as HTMLInputElement;
                             const value = input?.value.trim();
                             if (value && !editForm.goals.includes(value)) {
-                              setEditForm({...editForm, goals: [...editForm.goals, value]});
+                              setEditForm({ ...editForm, goals: [...editForm.goals, value] });
                               input.value = '';
                             }
                           }}
@@ -2065,7 +2008,7 @@ export default function ProfilePage() {
                       )}
                       <span>{saving ? (isRTL ? 'جاري الحفظ...' : 'Saving...') : (isRTL ? 'حفظ التغييرات' : 'Save Changes')}</span>
                     </motion.button>
-                    
+
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -2089,11 +2032,10 @@ export default function ProfilePage() {
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className={`w-full max-w-2xl border rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto ${
-                  isDark 
-                    ? 'bg-gradient-to-br from-gray-800/90 via-gray-900/90 to-black/90 backdrop-blur-xl border-white/20' 
+                className={`w-full max-w-2xl border rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto ${isDark
+                    ? 'bg-gradient-to-br from-gray-800/90 via-gray-900/90 to-black/90 backdrop-blur-xl border-white/20'
                     : 'bg-white/95 backdrop-blur-xl border-gray-200'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between mb-6">
                   <h3 className={`text-2xl font-bold flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -2104,11 +2046,10 @@ export default function ProfilePage() {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setNotificationModal(false)}
-                    className={`p-2 rounded-full transition-all duration-200 ${
-                      isDark 
-                        ? 'bg-white/10 hover:bg-white/20' 
+                    className={`p-2 rounded-full transition-all duration-200 ${isDark
+                        ? 'bg-white/10 hover:bg-white/20'
                         : 'bg-gray-100 hover:bg-gray-200'
-                    }`}
+                      }`}
                   >
                     <X className={`w-5 h-5 ${isDark ? 'text-white' : 'text-gray-900'}`} />
                   </motion.button>
@@ -2116,11 +2057,10 @@ export default function ProfilePage() {
 
                 <div className="space-y-4">
                   {/* Email Notifications */}
-                  <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                    isDark 
-                      ? 'bg-white/5 border-white/10' 
+                  <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                      ? 'bg-white/5 border-white/10'
                       : 'bg-gray-50 border-gray-200'
-                  }`}>
+                    }`}>
                     <div className="flex items-center space-x-3">
                       <Mail className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                       <div>
@@ -2133,27 +2073,24 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => setNotificationSettings({...notificationSettings, emailNotifications: !notificationSettings.emailNotifications})}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        notificationSettings.emailNotifications 
-                          ? isDark ? 'bg-blue-600' : 'bg-blue-500' 
+                      onClick={() => setNotificationSettings({ ...notificationSettings, emailNotifications: !notificationSettings.emailNotifications })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.emailNotifications
+                          ? isDark ? 'bg-blue-600' : 'bg-blue-500'
                           : isDark ? 'bg-gray-600' : 'bg-gray-400'
-                      }`}
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          notificationSettings.emailNotifications ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationSettings.emailNotifications ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
 
                   {/* Push Notifications */}
-                  <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                    isDark 
-                      ? 'bg-white/5 border-white/10' 
+                  <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                      ? 'bg-white/5 border-white/10'
                       : 'bg-gray-50 border-gray-200'
-                  }`}>
+                    }`}>
                     <div className="flex items-center space-x-3">
                       <Bell className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                       <div>
@@ -2166,27 +2103,24 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => setNotificationSettings({...notificationSettings, pushNotifications: !notificationSettings.pushNotifications})}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        notificationSettings.pushNotifications 
-                          ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]' 
+                      onClick={() => setNotificationSettings({ ...notificationSettings, pushNotifications: !notificationSettings.pushNotifications })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.pushNotifications
+                          ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]'
                           : isDark ? 'bg-gray-600' : 'bg-gray-400'
-                      }`}
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          notificationSettings.pushNotifications ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationSettings.pushNotifications ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
 
                   {/* Course Updates */}
-                  <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                    isDark 
-                      ? 'bg-white/5 border-white/10' 
+                  <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                      ? 'bg-white/5 border-white/10'
                       : 'bg-gray-50 border-gray-200'
-                  }`}>
+                    }`}>
                     <div className="flex items-center space-x-3">
                       <BookOpen className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
                       <div>
@@ -2199,27 +2133,24 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => setNotificationSettings({...notificationSettings, courseUpdates: !notificationSettings.courseUpdates})}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        notificationSettings.courseUpdates 
-                          ? isDark ? 'bg-green-600' : 'bg-green-500' 
+                      onClick={() => setNotificationSettings({ ...notificationSettings, courseUpdates: !notificationSettings.courseUpdates })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.courseUpdates
+                          ? isDark ? 'bg-green-600' : 'bg-green-500'
                           : isDark ? 'bg-gray-600' : 'bg-gray-400'
-                      }`}
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          notificationSettings.courseUpdates ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationSettings.courseUpdates ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
 
                   {/* New Messages */}
-                  <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                    isDark 
-                      ? 'bg-white/5 border-white/10' 
+                  <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                      ? 'bg-white/5 border-white/10'
                       : 'bg-gray-50 border-gray-200'
-                  }`}>
+                    }`}>
                     <div className="flex items-center space-x-3">
                       <MessageCircle className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                       <div>
@@ -2232,27 +2163,24 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => setNotificationSettings({...notificationSettings, newMessages: !notificationSettings.newMessages})}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        notificationSettings.newMessages 
-                          ? isDark ? 'bg-blue-600' : 'bg-blue-500' 
+                      onClick={() => setNotificationSettings({ ...notificationSettings, newMessages: !notificationSettings.newMessages })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.newMessages
+                          ? isDark ? 'bg-blue-600' : 'bg-blue-500'
                           : isDark ? 'bg-gray-600' : 'bg-gray-400'
-                      }`}
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          notificationSettings.newMessages ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationSettings.newMessages ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
 
                   {/* Study Buddy Requests */}
-                  <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                    isDark 
-                      ? 'bg-white/5 border-white/10' 
+                  <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                      ? 'bg-white/5 border-white/10'
                       : 'bg-gray-50 border-gray-200'
-                  }`}>
+                    }`}>
                     <div className="flex items-center space-x-3">
                       <Users className={`w-5 h-5 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
                       <div>
@@ -2265,27 +2193,24 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => setNotificationSettings({...notificationSettings, studyBuddyRequests: !notificationSettings.studyBuddyRequests})}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        notificationSettings.studyBuddyRequests 
-                          ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]' 
+                      onClick={() => setNotificationSettings({ ...notificationSettings, studyBuddyRequests: !notificationSettings.studyBuddyRequests })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.studyBuddyRequests
+                          ? isDark ? 'bg-[#0a84ff]' : 'bg-[#0a84ff]'
                           : isDark ? 'bg-gray-600' : 'bg-gray-400'
-                      }`}
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          notificationSettings.studyBuddyRequests ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationSettings.studyBuddyRequests ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
 
                   {/* Marketing Emails */}
-                  <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                    isDark 
-                      ? 'bg-white/5 border-white/10' 
+                  <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                      ? 'bg-white/5 border-white/10'
                       : 'bg-gray-50 border-gray-200'
-                  }`}>
+                    }`}>
                     <div className="flex items-center space-x-3">
                       <Mail className={`w-5 h-5 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
                       <div>
@@ -2298,27 +2223,24 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => setNotificationSettings({...notificationSettings, marketingEmails: !notificationSettings.marketingEmails})}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        notificationSettings.marketingEmails 
-                          ? isDark ? 'bg-yellow-600' : 'bg-yellow-500' 
+                      onClick={() => setNotificationSettings({ ...notificationSettings, marketingEmails: !notificationSettings.marketingEmails })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.marketingEmails
+                          ? isDark ? 'bg-yellow-600' : 'bg-yellow-500'
                           : isDark ? 'bg-gray-600' : 'bg-gray-400'
-                      }`}
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          notificationSettings.marketingEmails ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationSettings.marketingEmails ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
 
                   {/* Weekly Digest */}
-                  <div className={`flex items-center justify-between p-4 border rounded-xl ${
-                    isDark 
-                      ? 'bg-white/5 border-white/10' 
+                  <div className={`flex items-center justify-between p-4 border rounded-xl ${isDark
+                      ? 'bg-white/5 border-white/10'
                       : 'bg-gray-50 border-gray-200'
-                  }`}>
+                    }`}>
                     <div className="flex items-center space-x-3">
                       <FileText className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
                       <div>
@@ -2331,17 +2253,15 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => setNotificationSettings({...notificationSettings, weeklyDigest: !notificationSettings.weeklyDigest})}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        notificationSettings.weeklyDigest 
-                          ? isDark ? 'bg-green-600' : 'bg-green-500' 
+                      onClick={() => setNotificationSettings({ ...notificationSettings, weeklyDigest: !notificationSettings.weeklyDigest })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationSettings.weeklyDigest
+                          ? isDark ? 'bg-green-600' : 'bg-green-500'
                           : isDark ? 'bg-gray-600' : 'bg-gray-400'
-                      }`}
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          notificationSettings.weeklyDigest ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationSettings.weeklyDigest ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
@@ -2352,11 +2272,10 @@ export default function ProfilePage() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={saveNotificationSettings}
-                    className={`flex-1 px-6 py-3 rounded-xl transition-all duration-200 text-white ${
-                      isDark 
-                        ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90' 
+                    className={`flex-1 px-6 py-3 rounded-xl transition-all duration-200 text-white ${isDark
+                        ? 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
                         : 'bg-[#0a84ff] hover:bg-[#0a84ff]/90'
-                    }`}
+                      }`}
                   >
                     {isRTL ? 'حفظ الإعدادات' : 'Save Settings'}
                   </motion.button>
