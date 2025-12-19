@@ -5,11 +5,11 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { signIn } from "next-auth/react";
-import { X } from "lucide-react";
+import { X, Check } from "lucide-react";
 import toast from "react-hot-toast";
 
 type AuthModalMode = "signin" | "signup";
-type AuthStep = "email" | "auth";
+type AuthStep = "email" | "auth" | "forgot-password";
 
 interface AuthModalProps {
     isOpen: boolean;
@@ -36,6 +36,7 @@ export function AuthModal({ isOpen, mode, onClose, onModeChange, onSuccess }: Au
     const [mounted, setMounted] = useState(false);
     const [agreeToTerms, setAgreeToTerms] = useState(false);
     const [receiveUpdates, setReceiveUpdates] = useState(true);
+    const [resetComplete, setResetComplete] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -58,6 +59,7 @@ export function AuthModal({ isOpen, mode, onClose, onModeChange, onSuccess }: Au
             setError(null);
             setIsLoading(false);
             setStep("email");
+            setResetComplete(false);
             setEmail("");
             setPassword("");
             setConfirmPassword("");
@@ -183,6 +185,28 @@ export function AuthModal({ isOpen, mode, onClose, onModeChange, onSuccess }: Au
         }
     };
 
+    const handlePasswordReset = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            await fetch("/api/auth/request-password-reset", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
+
+            // Always show success state for security
+            setResetComplete(true);
+        } catch (error) {
+            console.error("Password reset error", error);
+            setError("Something went wrong. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const featureList = [
         "Unlimited access to every course",
         "Live sessions & interactive tools",
@@ -251,6 +275,17 @@ export function AuthModal({ isOpen, mode, onClose, onModeChange, onSuccess }: Au
                                             You can sign in if you already have an account, or we'll help you create one.
                                         </p>
                                     </>
+                                ) : step === "forgot-password" ? (
+                                    <>
+                                        <h2 className="text-2xl lg:text-3xl font-semibold text-white text-center mb-2">
+                                            {resetComplete ? "Check your email" : "Reset Password"}
+                                        </h2>
+                                        <p className="text-[#86868b] text-center text-sm lg:text-base max-w-md">
+                                            {resetComplete
+                                                ? "We've sent a password reset link to your email."
+                                                : "Enter your email to receive a password reset link."}
+                                        </p>
+                                    </>
                                 ) : mode === "signin" ? (
                                     <>
                                         <h2 className="text-2xl lg:text-3xl font-semibold text-white text-center mb-2">
@@ -301,6 +336,56 @@ export function AuthModal({ isOpen, mode, onClose, onModeChange, onSuccess }: Au
                                             {isLoading ? "Checking..." : "Continue"}
                                         </button>
                                     </form>
+                                ) : step === "forgot-password" ? (
+                                    resetComplete ? (
+                                        <div className="flex flex-col items-center space-y-6">
+                                            <div className="w-16 h-16 bg-[#2d2d2d] rounded-full flex items-center justify-center">
+                                                <Check className="w-8 h-8 text-[#0071e3]" />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setStep("auth");
+                                                    onModeChange("signin");
+                                                    setResetComplete(false);
+                                                }}
+                                                className="w-full rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white py-3.5 text-sm font-semibold transition-all"
+                                            >
+                                                Back to Sign In
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <form className="space-y-4" onSubmit={handlePasswordReset}>
+                                            <div>
+                                                <input
+                                                    type="email"
+                                                    required
+                                                    value={email}
+                                                    onChange={(event) => setEmail(event.target.value)}
+                                                    className="w-full rounded-xl border border-[#3d3d3d] bg-[#2d2d2d] px-4 py-3.5 text-white text-sm placeholder-[#86868b] focus:border-[#0071e3] focus:outline-none transition-all"
+                                                    placeholder="Email"
+                                                    autoFocus
+                                                />
+                                            </div>
+                                            <button
+                                                type="submit"
+                                                disabled={isLoading}
+                                                className="w-full rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white py-3.5 text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {isLoading ? "Sending..." : "Send Reset Link"}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setStep("auth");
+                                                    onModeChange("signin");
+                                                }}
+                                                className="w-full text-[#0071e3] text-sm hover:underline"
+                                            >
+                                                Back to Sign In
+                                            </button>
+                                        </form>
+                                    )
                                 ) : mode === "signin" ? (
                                     <form className="space-y-4" onSubmit={handleSignIn}>
                                         <div>
@@ -322,6 +407,18 @@ export function AuthModal({ isOpen, mode, onClose, onModeChange, onSuccess }: Au
                                                 placeholder="Password"
                                                 autoFocus
                                             />
+                                        </div>
+                                        <div className="flex justify-end">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setStep("forgot-password");
+                                                    setResetComplete(false);
+                                                }}
+                                                className="text-[#0071e3] text-sm hover:underline font-medium"
+                                            >
+                                                Forgot password?
+                                            </button>
                                         </div>
                                         <button
                                             type="submit"
@@ -487,7 +584,7 @@ export function AuthModal({ isOpen, mode, onClose, onModeChange, onSuccess }: Au
                                 <div className="mt-6 flex items-start gap-3">
                                     <div className="mt-0.5">
                                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                            <path d="M10 2C8.07 2 6.5 3.57 6.5 5.5V8H5.5C4.67 8 4 8.67 4 9.5V16.5C4 17.33 4.67 18 5.5 18H14.5C15.33 18 16 17.33 16 16.5V9.5C16 8.67 15.33 8 14.5 8H13.5V5.5C13.5 3.57 11.93 2 10 2ZM10 3.5C11.1 3.5 12 4.4 12 5.5V8H8V5.5C8 4.4 8.9 3.5 10 3.5Z" fill="#0071e3"/>
+                                            <path d="M10 2C8.07 2 6.5 3.57 6.5 5.5V8H5.5C4.67 8 4 8.67 4 9.5V16.5C4 17.33 4.67 18 5.5 18H14.5C15.33 18 16 17.33 16 16.5V9.5C16 8.67 15.33 8 14.5 8H13.5V5.5C13.5 3.57 11.93 2 10 2ZM10 3.5C11.1 3.5 12 4.4 12 5.5V8H8V5.5C8 4.4 8.9 3.5 10 3.5Z" fill="#0071e3" />
                                         </svg>
                                     </div>
                                     <p className="text-[11px] text-[#86868b] leading-relaxed">
@@ -500,10 +597,10 @@ export function AuthModal({ isOpen, mode, onClose, onModeChange, onSuccess }: Au
                             </div>
                         </div>
                     </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        );
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
 
     return createPortal(modalContent, document.body);
 }

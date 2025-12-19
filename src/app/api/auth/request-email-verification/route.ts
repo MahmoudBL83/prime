@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { sendEmailVerificationEmail } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
     try {
@@ -22,20 +23,26 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: 'Email already verified' }, { status: 400 })
         }
 
-        // TODO: Integrate with actual email service
-        // For now, we mock the email sending
-        console.log(`[MOCK EMAIL] Email verification requested for ${user.email}. Code: ${Math.random().toString().substring(2, 8)}`)
-
-        // We can also create a UserVerification record
-        await prisma.userVerification.create({
+        // Create a UserVerification record
+        const verification = await prisma.userVerification.create({
             data: {
                 userId: user.id,
                 type: 'EMAIL',
                 status: 'PENDING',
                 method: 'EMAIL_LINK',
-                // Mock expiration 24h
                 expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
             }
+        })
+
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+        const locale = 'en' // Default to English as we don't have user locale in session yet
+        const verificationLink = `${baseUrl}/${locale}/auth/verify-email?token=${verification.id}`
+
+        await sendEmailVerificationEmail({
+            userEmail: user.email,
+            userName: user.name || 'User',
+            verificationLink,
+            locale
         })
 
         return NextResponse.json({

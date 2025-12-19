@@ -59,7 +59,7 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
             return (
                 <Image
                     src={(session.user as any).image}
-                    alt={session.user?.name || 'User'} 
+                    alt={session.user?.name || 'User'}
                     width={32}
                     height={32}
                     className="w-full h-full object-cover rounded-full"
@@ -112,10 +112,10 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                         >
                             <MessageCircle className="w-5 h-5" />
                         </Button>
-                        
+
                         {/* Notifications */}
                         <NotificationDropdown />
-                        
+
 
                     </div>
                 )}
@@ -146,9 +146,8 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
                                 transition={{ duration: 0.15, ease: "easeOut" }}
-                                className={`absolute ${isMobile ? 'left-0 right-0 top-full' : 'right-0 top-full'} mt-3 z-50 ${
-                                    isMobile ? 'mx-4' : 'w-64'
-                                }`}
+                                className={`absolute ${isMobile ? 'left-0 right-0 top-full' : 'right-0 top-full'} mt-3 z-50 ${isMobile ? 'mx-4' : 'w-64'
+                                    }`}
                             >
                                 <div className="bg-background dark:bg-[#1f1f1f] border border-border dark:border-[hsla(0,0%,100%,.16)] rounded-xl shadow-xl overflow-hidden">
                                     {/* User Info Header */}
@@ -200,15 +199,14 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                                 <Sparkles className="w-4 h-4 text-[#0a84ff]" />
                                                 <span className="flex-1 text-left">Creator Dashboard</span>
                                                 {session.user?.applicationStatus && session.user.applicationStatus !== 'APPROVED' && (
-                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                                                        session.user.applicationStatus === 'PENDING' 
+                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${session.user.applicationStatus === 'PENDING'
                                                             ? 'bg-blue-500/20 text-blue-400'
                                                             : session.user.applicationStatus === 'UNDER_REVIEW'
-                                                            ? 'bg-yellow-500/20 text-yellow-400'
-                                                            : session.user.applicationStatus === 'REJECTED'
-                                                            ? 'bg-red-500/20 text-red-400'
-                                                            : 'bg-orange-500/20 text-orange-400'
-                                                    }`}>
+                                                                ? 'bg-yellow-500/20 text-yellow-400'
+                                                                : session.user.applicationStatus === 'REJECTED'
+                                                                    ? 'bg-red-500/20 text-red-400'
+                                                                    : 'bg-orange-500/20 text-orange-400'
+                                                        }`}>
                                                         {session.user.applicationStatus === 'PENDING' && 'Pending'}
                                                         {session.user.applicationStatus === 'UNDER_REVIEW' && 'Review'}
                                                         {session.user.applicationStatus === 'REJECTED' && 'Rejected'}
@@ -217,7 +215,7 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                                 )}
                                             </button>
                                         )}
-                                        
+
                                         {/* Learner Dashboard - Always show */}
                                         <button
                                             onClick={() => {
@@ -239,16 +237,7 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                             <UserCog className="w-4 h-4" />
                                             {tNav('profile')}
                                         </button>
-                                        <button
-                                            onClick={() => {
-                                                router.push(`/${locale}/settings`);
-                                                closeDropdown();
-                                            }}
-                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground dark:text-white/90 hover:bg-accent dark:hover:bg-white/10 transition-colors"
-                                        >
-                                            <Settings className="w-4 h-4" />
-                                            {tNav('settings')}
-                                        </button>
+
                                     </div>
 
                                     {/* Creator Hub Section - Only for CREATOR role */}
@@ -343,7 +332,7 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                     >
                         <MessageCircle className="w-5 h-5" />
                     </Button>
-                    
+
                     {/* Notifications */}
                     <NotificationDropdown />
                 </div>
@@ -382,9 +371,8 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: -10 }}
                             transition={{ duration: 0.15, ease: "easeOut" }}
-                            className={`absolute ${isMobile ? 'left-0 right-0 top-full' : 'right-0 top-full'} mt-3 z-50 ${
-                                isMobile ? 'mx-4' : 'w-64'
-                            }`}
+                            className={`absolute ${isMobile ? 'left-0 right-0 top-full' : 'right-0 top-full'} mt-3 z-50 ${isMobile ? 'mx-4' : 'w-64'
+                                }`}
                         >
                             <div className="bg-background dark:bg-[#1f1f1f] border border-border dark:border-[hsla(0,0%,100%,.16)] rounded-xl shadow-xl overflow-hidden">
                                 {/* User Info Header */}
@@ -440,15 +428,14 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                             <Sparkles className="w-4 h-4 text-purple-400" />
                                             <span className="flex-1 text-left">Creator Dashboard</span>
                                             {session.user?.applicationStatus && session.user.applicationStatus !== 'APPROVED' && (
-                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                                                    session.user.applicationStatus === 'PENDING' 
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${session.user.applicationStatus === 'PENDING'
                                                         ? 'bg-blue-500/20 text-blue-400'
                                                         : session.user.applicationStatus === 'UNDER_REVIEW'
-                                                        ? 'bg-yellow-500/20 text-yellow-400'
-                                                        : session.user.applicationStatus === 'REJECTED'
-                                                        ? 'bg-red-500/20 text-red-400'
-                                                        : 'bg-orange-500/20 text-orange-400'
-                                                }`}>
+                                                            ? 'bg-yellow-500/20 text-yellow-400'
+                                                            : session.user.applicationStatus === 'REJECTED'
+                                                                ? 'bg-red-500/20 text-red-400'
+                                                                : 'bg-orange-500/20 text-orange-400'
+                                                    }`}>
                                                     {session.user.applicationStatus === 'PENDING' && 'Pending'}
                                                     {session.user.applicationStatus === 'UNDER_REVIEW' && 'Review'}
                                                     {session.user.applicationStatus === 'REJECTED' && 'Rejected'}
@@ -457,7 +444,7 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                             )}
                                         </button>
                                     )}
-                                    
+
                                     {/* Learner Dashboard - Always show */}
                                     <button
                                         onClick={() => {
@@ -479,16 +466,7 @@ export function NavigationAuthSection({ isMobile = false, onCloseMobileMenu }: N
                                         <UserCog className="w-4 h-4 text-blue-400" />
                                         {tNav('profile')}
                                     </button>
-                                    <button
-                                        onClick={() => {
-                                            router.push(`/${locale}/settings`);
-                                            closeDropdown();
-                                        }}
-                                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
-                                    >
-                                        <Settings className="w-4 h-4 text-muted-foreground" />
-                                        {tNav('settings')}
-                                    </button>
+
                                 </div>
 
                                 {/* Logout */}

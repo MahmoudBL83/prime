@@ -90,6 +90,15 @@ export async function GET(
             Math.floor((new Date().getTime() - new Date(mentor.createdAt || new Date()).getTime()) / (1000 * 60 * 60 * 24 * 365))
         )
 
+        // Calculate followers count
+        const totalFollowersCount = await prisma.instructorFollow.count({
+            where: {
+                creatorId: mentor.id
+            }
+        })
+
+        const totalFollowers = totalFollowersCount;
+
         // Check if user is subscribed
         let isSubscribed = false
         let userTier = undefined
@@ -215,7 +224,7 @@ export async function GET(
                 yearsOfExperience,
                 totalStudents,
                 completedMeetings,
-                totalFollowers: mentor.totalSubscribers || 0,
+                totalFollowers,
                 totalCourses: mentor.courses.length
             },
             // Include courses list for reviews

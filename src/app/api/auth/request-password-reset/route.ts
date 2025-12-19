@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { sign } from 'jsonwebtoken'
+import { sendPasswordResetEmail } from '@/lib/email'
 
 const resetSchema = z.object({
     email: z.string().email()
@@ -26,16 +28,30 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: true, message: 'If an account exists, a reset link has been sent.' })
         }
 
-        // TODO: Integrate with actual email service (SendGrid/AWS SES)
-        // For now, we mock the email sending
-        console.log(`[MOCK EMAIL] Password reset requested for ${email}. Token: ${Math.random().toString(36).substring(7)}`)
+        // Generate a secure token
+        const token = sign(
+            { userId: user.id, email: user.email },
+            process.env.NEXTAUTH_SECRET || 'fallback_secret',
+            { expiresIn: '1h' }
+        )
 
-        // In a real app, we would create a verification token in the DB here
+        // Store token in DB (optional, but good for invalidation) - skipping for now as per schema
         await prisma.user.update({
             where: { id: user.id },
             data: {
                 passwordResetRequired: true
             }
+        })
+
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+        const locale = 'en' // Default to 'en'
+        const resetLink = `${baseUrl}/${locale}/auth/reset-password?token=${token}`
+
+        await sendPasswordResetEmail({
+            userEmail: user.email,
+            userName: user.name || 'User',
+            resetLink,
+            locale
         })
 
         return NextResponse.json({

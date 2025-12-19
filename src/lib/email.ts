@@ -52,10 +52,10 @@ export const EmailTemplates = {
     locale: string;
   }) => {
     const isArabic = data.locale === 'ar';
-    
+
     return {
-      subject: isArabic 
-        ? `🎉 مرحباً بك في Prime Learning!` 
+      subject: isArabic
+        ? `🎉 مرحباً بك في Prime Learning!`
         : `🎉 Welcome to Prime Learning!`,
       html: `
         <!DOCTYPE html>
@@ -82,9 +82,9 @@ export const EmailTemplates = {
           <div class="content">
             <h2>${isArabic ? `أهلاً ${data.userName}!` : `Hi ${data.userName}!`}</h2>
             
-            <p>${isArabic 
-              ? `شكراً لاشتراكك في ${data.subscriptionType}. نحن متحمسون لمساعدتك في رحلتك التعليمية!` 
-              : `Thank you for subscribing to ${data.subscriptionType}. We're excited to help you on your learning journey!`}
+            <p>${isArabic
+          ? `شكراً لاشتراكك في ${data.subscriptionType}. نحن متحمسون لمساعدتك في رحلتك التعليمية!`
+          : `Thank you for subscribing to ${data.subscriptionType}. We're excited to help you on your learning journey!`}
             </p>
             
             <div class="highlight">
@@ -109,9 +109,9 @@ export const EmailTemplates = {
             </div>
             
             <p style="margin-top: 30px; color: #6B7280; font-size: 14px;">
-              ${isArabic 
-                ? 'هل تحتاج إلى مساعدة؟ فريق الدعم لدينا متاح على مدار الساعة طوال أيام الأسبوع.' 
-                : 'Need help? Our support team is available 24/7.'}
+              ${isArabic
+          ? 'هل تحتاج إلى مساعدة؟ فريق الدعم لدينا متاح على مدار الساعة طوال أيام الأسبوع.'
+          : 'Need help? Our support team is available 24/7.'}
             </p>
           </div>
           
@@ -137,10 +137,10 @@ export const EmailTemplates = {
     locale: string;
   }) => {
     const isArabic = data.locale === 'ar';
-    
+
     return {
-      subject: isArabic 
-        ? `إيصال الدفع - ${data.subscriptionType}` 
+      subject: isArabic
+        ? `إيصال الدفع - ${data.subscriptionType}`
         : `Payment Receipt - ${data.subscriptionType}`,
       html: `
         <!DOCTYPE html>
@@ -167,9 +167,9 @@ export const EmailTemplates = {
           <div class="content">
             <p>${isArabic ? `عزيزي ${data.userName}،` : `Dear ${data.userName},`}</p>
             
-            <p>${isArabic 
-              ? 'شكراً لدفعك. تم معالجة اشتراكك بنجاح.' 
-              : 'Thank you for your payment. Your subscription has been successfully processed.'}</p>
+            <p>${isArabic
+          ? 'شكراً لدفعك. تم معالجة اشتراكك بنجاح.'
+          : 'Thank you for your payment. Your subscription has been successfully processed.'}</p>
             
             <div class="receipt-box">
               <h3 style="margin-top: 0;">${isArabic ? 'تفاصيل الدفع' : 'Payment Details'}</h3>
@@ -204,9 +204,9 @@ export const EmailTemplates = {
             ` : ''}
             
             <p style="margin-top: 30px; color: #6B7280; font-size: 14px;">
-              ${isArabic 
-                ? 'ستظهر هذه المعاملة في كشف حسابك البنكي باسم "Prime Learning".' 
-                : 'This transaction will appear on your bank statement as "Prime Learning".'}
+              ${isArabic
+          ? 'ستظهر هذه المعاملة في كشف حسابك البنكي باسم "Prime Learning".'
+          : 'This transaction will appear on your bank statement as "Prime Learning".'}
             </p>
           </div>
           
@@ -227,10 +227,10 @@ export const EmailTemplates = {
     locale: string;
   }) => {
     const isArabic = data.locale === 'ar';
-    
+
     return {
-      subject: isArabic 
-        ? `🎉 لديك Study Buddy جديد!` 
+      subject: isArabic
+        ? `🎉 لديك Study Buddy جديد!`
         : `🎉 You have a new Study Buddy!`,
       html: `
         <!DOCTYPE html>
@@ -257,9 +257,9 @@ export const EmailTemplates = {
           <div class="content">
             <p>${isArabic ? `مرحباً ${data.userName}!` : `Hi ${data.userName}!`}</p>
             
-            <p>${isArabic 
-              ? `رائع! لقد تم مطابقتك مع ${data.buddyName}. أنتما تشتركان في اهتمامات تعليمية مشابهة!` 
-              : `Great news! You've been matched with ${data.buddyName}. You both share similar learning interests!`}
+            <p>${isArabic
+          ? `رائع! لقد تم مطابقتك مع ${data.buddyName}. أنتما تشتركان في اهتمامات تعليمية مشابهة!`
+          : `Great news! You've been matched with ${data.buddyName}. You both share similar learning interests!`}
             </p>
             
             <div class="buddy-card">
@@ -303,10 +303,10 @@ export const EmailTemplates = {
     locale: string;
   }) => {
     const isArabic = data.locale === 'ar';
-    
+
     return {
-      subject: isArabic 
-        ? `🎓 تهانينا! لقد أكملت ${data.courseName}` 
+      subject: isArabic
+        ? `🎓 تهانينا! لقد أكملت ${data.courseName}`
         : `🎓 Congratulations! You completed ${data.courseName}`,
       html: `
         <!DOCTYPE html>
@@ -439,6 +439,128 @@ export async function sendCourseCompletionEmail(data: {
   locale: string;
 }) {
   const template = EmailTemplates.courseCompletion(data);
+  return sendEmail({
+    to: data.userEmail,
+    ...template,
+  });
+}
+
+// Add to EmailTemplates object
+Object.assign(EmailTemplates, {
+  // Email Verification
+  emailVerification: (data: {
+    userName: string;
+    verificationLink: string;
+    locale: string;
+  }) => {
+    const isArabic = data.locale === 'ar';
+    return {
+      subject: isArabic ? 'تأكيد البريد الإلكتروني' : 'Verify your email address',
+      html: `
+        <!DOCTYPE html>
+        <html dir="${isArabic ? 'rtl' : 'ltr'}">
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }
+            .header { background: #0a84ff; padding: 30px 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; font-size: 24px; }
+            .content { padding: 30px 20px; background: #ffffff; }
+            .cta-button { display: inline-block; background: #0a84ff; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+            .footer { background: #F3F4F6; padding: 20px; text-align: center; font-size: 12px; color: #6B7280; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${isArabic ? 'تأكيد البريد الإلكتروني' : 'Verify Email Address'}</h1>
+          </div>
+          <div class="content">
+            <p>${isArabic ? `مرحباً ${data.userName}،` : `Hi ${data.userName},`}</p>
+            <p>${isArabic ? 'يرجى النقر على الرابط أدناه لتفعيل حسابك:' : 'Please click the button below to verify your email address:'}</p>
+            <div style="text-align: center;">
+              <a href="${data.verificationLink}" class="cta-button">${isArabic ? 'تفعيل الحساب' : 'Verify Email'}</a>
+            </div>
+            <p>${isArabic ? 'إذا لم تطلب هذا، يمكنك تجاهل هذا البريد.' : 'If you did not request this, please ignore this email.'}</p>
+          </div>
+          <div class="footer">
+            <p>Prime Learning</p>
+          </div>
+        </body>
+        </html>
+      `
+    };
+  },
+
+  // Password Reset
+  passwordReset: (data: {
+    userName: string;
+    resetLink: string;
+    locale: string;
+  }) => {
+    const isArabic = data.locale === 'ar';
+    return {
+      subject: isArabic ? 'إعادة تعيين كلمة المرور' : 'Reset your password',
+      html: `
+        <!DOCTYPE html>
+        <html dir="${isArabic ? 'rtl' : 'ltr'}">
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }
+            .header { background: #DC2626; padding: 30px 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; font-size: 24px; }
+            .content { padding: 30px 20px; background: #ffffff; }
+            .cta-button { display: inline-block; background: #DC2626; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+            .footer { background: #F3F4F6; padding: 20px; text-align: center; font-size: 12px; color: #6B7280; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${isArabic ? 'إعادة تعيين كلمة المرور' : 'Reset Password'}</h1>
+          </div>
+          <div class="content">
+            <p>${isArabic ? `مرحباً ${data.userName}،` : `Hi ${data.userName},`}</p>
+            <p>${isArabic ? 'لقد تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بك. انقر أدناه للمتابعة:' : 'We received a request to reset your password. Click below to proceed:'}</p>
+            <div style="text-align: center;">
+              <a href="${data.resetLink}" class="cta-button">${isArabic ? 'إعادة تعيين كلمة المرور' : 'Reset Password'}</a>
+            </div>
+            <p>${isArabic ? 'سينتهي هذا الرابط خلال ساعة واحدة.' : 'This link will expire in 1 hour.'}</p>
+            <p>${isArabic ? 'إذا لم تطلب هذا، يرجى تأمين حسابك.' : 'If you did not request this, please secure your account.'}</p>
+          </div>
+          <div class="footer">
+            <p>Prime Learning</p>
+          </div>
+        </body>
+        </html>
+      `
+    };
+  }
+});
+
+// Helper function to send email verification
+export async function sendEmailVerificationEmail(data: {
+  userEmail: string;
+  userName: string;
+  verificationLink: string;
+  locale: string;
+}) {
+  // @ts-ignore - Dynamic property assignment
+  const template = EmailTemplates.emailVerification(data);
+  return sendEmail({
+    to: data.userEmail,
+    ...template,
+  });
+}
+
+// Helper function to send password reset
+export async function sendPasswordResetEmail(data: {
+  userEmail: string;
+  userName: string;
+  resetLink: string;
+  locale: string;
+}) {
+  // @ts-ignore - Dynamic property assignment
+  const template = EmailTemplates.passwordReset(data);
   return sendEmail({
     to: data.userEmail,
     ...template,

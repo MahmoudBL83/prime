@@ -2320,8 +2320,8 @@ export default function OnlyFansMentorProfilePage() {
                                 <button
                                     onClick={handleSetPostsTab}
                                     className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${activeTab === 'posts'
-                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
-                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
+                                        ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                        : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                         }`}
                                 >
                                     <MessageCircle className="w-6 h-6" />
@@ -2332,8 +2332,8 @@ export default function OnlyFansMentorProfilePage() {
                                 <button
                                     onClick={handleSetMediaTab}
                                     className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${activeTab === 'media'
-                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
-                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
+                                        ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                        : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                         }`}
                                 >
                                     <ImageIcon className="w-6 h-6" />
@@ -2344,8 +2344,8 @@ export default function OnlyFansMentorProfilePage() {
                                 <button
                                     onClick={handleSetSessionsTab}
                                     className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${activeTab === 'sessions'
-                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
-                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
+                                        ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                        : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                         }`}
                                 >
                                     <Calendar className="w-6 h-6" />
@@ -2362,8 +2362,8 @@ export default function OnlyFansMentorProfilePage() {
                                     <button
                                         onClick={() => setActiveTab('community')}
                                         className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${activeTab === 'community'
-                                                ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
-                                                : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
+                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                             }`}
                                     >
                                         <Users className="w-6 h-6" />
@@ -2381,8 +2381,8 @@ export default function OnlyFansMentorProfilePage() {
                                     <button
                                         onClick={() => setActiveTab('resources')}
                                         className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${activeTab === 'resources'
-                                                ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
-                                                : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
+                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                             }`}
                                     >
                                         <Paperclip className="w-6 h-6" />
@@ -2399,8 +2399,8 @@ export default function OnlyFansMentorProfilePage() {
                                 <button
                                     onClick={() => setActiveTab('about')}
                                     className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${activeTab === 'about'
-                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
-                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
+                                        ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                        : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                         }`}
                                 >
                                     <Globe className="w-6 h-6" />
@@ -2412,8 +2412,8 @@ export default function OnlyFansMentorProfilePage() {
                                     <button
                                         onClick={() => setActiveTab('profile')}
                                         className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${activeTab === 'profile'
-                                                ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-foreground border-2 border-yellow-500/50'
-                                                : 'hover:bg-white/5 text-muted-foreground border-2 border-transparent'
+                                            ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-foreground border-2 border-yellow-500/50'
+                                            : 'hover:bg-white/5 text-muted-foreground border-2 border-transparent'
                                             }`}
                                     >
                                         <Crown className="w-6 h-6 text-yellow-500" />
@@ -2586,8 +2586,8 @@ export default function OnlyFansMentorProfilePage() {
                                                         onClick={handleFollow}
                                                         disabled={!session}
                                                         className={`px-6 py-2 rounded-full font-semibold transition-all ${isFollowing
-                                                                ? 'bg-card/50 text-foreground hover:bg-card-hover border border-border'
-                                                                : 'bg-card hover:bg-card-hover text-foreground border border-border'
+                                                            ? 'bg-card/50 text-foreground hover:bg-card-hover border border-border'
+                                                            : 'bg-card hover:bg-card-hover text-foreground border border-border'
                                                             } ${!session ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                     >
                                                         {isFollowing ? (isArabic ? 'متابع' : 'Following') : (isArabic ? 'متابعة' : 'Follow')}
@@ -2646,8 +2646,8 @@ export default function OnlyFansMentorProfilePage() {
                                             </h1>
                                             {currentSubscription && (
                                                 <Badge className={`${currentSubscription === 'VIP' ? 'bg-[#0a84ff] border-2 border-white/20' :
-                                                        currentSubscription === 'PREMIUM' ? 'bg-[#0a84ff]/80' :
-                                                            'bg-[#0a84ff]/60'
+                                                    currentSubscription === 'PREMIUM' ? 'bg-[#0a84ff]/80' :
+                                                        'bg-[#0a84ff]/60'
                                                     } text-white border-0`}>
                                                     <Crown className="w-3 h-3 mr-1" />
                                                     {currentSubscription}
@@ -2659,7 +2659,7 @@ export default function OnlyFansMentorProfilePage() {
                                     </div>
 
                                     {/* Stats */}
-                                    <div className="flex items-center gap-6 pb-6 border-b border-border">
+                                    <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pb-6 border-b border-border">
                                         <div>
                                             <span className="font-bold text-foreground text-lg">{mentor.stats.totalPosts}</span>
                                             <span className="text-muted-foreground text-sm ml-1">{isArabic ? 'منشورات' : 'posts'}</span>
@@ -2787,8 +2787,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                     <CheckCircle className="w-4 h-4 text-blue-500 fill-blue-500" />
                                                                     {post.tier !== 'FREE' && (
                                                                         <Badge className={`${post.tier === 'VIP' ? 'bg-[#0a84ff] border-2 border-white/20' :
-                                                                                post.tier === 'PREMIUM' ? 'bg-[#0a84ff]/80' :
-                                                                                    'bg-[#0a84ff]/60'
+                                                                            post.tier === 'PREMIUM' ? 'bg-[#0a84ff]/80' :
+                                                                                'bg-[#0a84ff]/60'
                                                                             } text-white border-0 text-xs`}>
                                                                             <Crown className="w-3 h-3 mr-1" />
                                                                             {post.tier}
@@ -3195,8 +3195,8 @@ export default function OnlyFansMentorProfilePage() {
                                             <button
                                                 onClick={() => setMediaFilter('all')}
                                                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${mediaFilter === 'all'
-                                                        ? 'bg-purple-500 text-white'
-                                                        : 'hover:bg-card-hover text-muted-foreground hover:text-foreground'
+                                                    ? 'bg-purple-500 text-white'
+                                                    : 'hover:bg-card-hover text-muted-foreground hover:text-foreground'
                                                     }`}
                                             >
                                                 {isArabic ? 'الكل' : 'All'}
@@ -3204,8 +3204,8 @@ export default function OnlyFansMentorProfilePage() {
                                             <button
                                                 onClick={() => setMediaFilter('images')}
                                                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${mediaFilter === 'images'
-                                                        ? 'bg-purple-500 text-white'
-                                                        : 'hover:bg-card-hover text-muted-foreground hover:text-foreground'
+                                                    ? 'bg-purple-500 text-white'
+                                                    : 'hover:bg-card-hover text-muted-foreground hover:text-foreground'
                                                     }`}
                                             >
                                                 {isArabic ? 'صور' : 'Photos'}
@@ -3213,8 +3213,8 @@ export default function OnlyFansMentorProfilePage() {
                                             <button
                                                 onClick={() => setMediaFilter('videos')}
                                                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${mediaFilter === 'videos'
-                                                        ? 'bg-purple-500 text-white'
-                                                        : 'hover:bg-card-hover text-muted-foreground hover:text-foreground'
+                                                    ? 'bg-purple-500 text-white'
+                                                    : 'hover:bg-card-hover text-muted-foreground hover:text-foreground'
                                                     }`}
                                             >
                                                 {isArabic ? 'فيديوهات' : 'Videos'}
@@ -3292,8 +3292,8 @@ export default function OnlyFansMentorProfilePage() {
                                                         >
                                                             {/* Background */}
                                                             <div className={`absolute inset-0 bg-gradient-to-br ${post.type === 'video'
-                                                                    ? 'from-purple-900/30 to-pink-900/30'
-                                                                    : 'from-purple-600/20 to-pink-600/20'
+                                                                ? 'from-purple-900/30 to-pink-900/30'
+                                                                : 'from-purple-600/20 to-pink-600/20'
                                                                 }`} />
 
                                                             {isLocked ? (
@@ -3317,8 +3317,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                     >
                                                                         <Lock className="w-8 h-8 text-muted-foreground mb-2 group-hover:scale-110 transition-transform" />
                                                                         <Badge className={`${post.tier === 'VIP' ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
-                                                                                post.tier === 'PREMIUM' ? 'bg-gradient-to-r from-purple-500 to-pink-500' :
-                                                                                    'bg-gradient-to-r from-blue-500 to-cyan-500'
+                                                                            post.tier === 'PREMIUM' ? 'bg-gradient-to-r from-purple-500 to-pink-500' :
+                                                                                'bg-gradient-to-r from-blue-500 to-cyan-500'
                                                                             } text-white border-0 text-xs mb-2`}>
                                                                             <Crown className="w-3 h-3 mr-1" />
                                                                             {post.tier}
@@ -3388,8 +3388,8 @@ export default function OnlyFansMentorProfilePage() {
                                                             {post.tier !== 'FREE' && (
                                                                 <div className="absolute top-2 right-2">
                                                                     <Badge className={`${post.tier === 'VIP' ? 'bg-yellow-500/90' :
-                                                                            post.tier === 'PREMIUM' ? 'bg-purple-500/90' :
-                                                                                'bg-blue-500/90'
+                                                                        post.tier === 'PREMIUM' ? 'bg-purple-500/90' :
+                                                                            'bg-blue-500/90'
                                                                         } text-white border-0 text-xs backdrop-blur-sm`}>
                                                                         {post.tier}
                                                                     </Badge>
@@ -3839,8 +3839,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                                 }
                                                                             }}
                                                                             className={`w-full font-semibold ${session.status === 'LIVE'
-                                                                                    ? 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 animate-pulse'
-                                                                                    : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600'
+                                                                                ? 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 animate-pulse'
+                                                                                : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600'
                                                                                 } text-white`}
                                                                         >
                                                                             <Video className="w-4 h-4 mr-2" />
@@ -3956,8 +3956,8 @@ export default function OnlyFansMentorProfilePage() {
                                                 <button
                                                     onClick={handleSessionFilterAll}
                                                     className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${sessionFilter === 'all'
-                                                            ? 'bg-purple-500 text-white'
-                                                            : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
+                                                        ? 'bg-purple-500 text-white'
+                                                        : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
                                                     {isArabic ? 'الكل' : 'All'}
@@ -3965,8 +3965,8 @@ export default function OnlyFansMentorProfilePage() {
                                                 <button
                                                     onClick={handleSessionFilterWorkshop}
                                                     className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${sessionFilter === 'workshop'
-                                                            ? 'bg-purple-500 text-white'
-                                                            : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
+                                                        ? 'bg-purple-500 text-white'
+                                                        : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
                                                     {isArabic ? 'ورش العمل' : 'Workshops'}
@@ -3974,8 +3974,8 @@ export default function OnlyFansMentorProfilePage() {
                                                 <button
                                                     onClick={() => setSessionFilter('qa')}
                                                     className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${sessionFilter === 'qa'
-                                                            ? 'bg-purple-500 text-white'
-                                                            : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
+                                                        ? 'bg-purple-500 text-white'
+                                                        : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
                                                     {isArabic ? 'أسئلة وأجوبة' : 'Q&A Sessions'}
@@ -3983,8 +3983,8 @@ export default function OnlyFansMentorProfilePage() {
                                                 <button
                                                     onClick={() => setSessionFilter('oneOnOne')}
                                                     className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${sessionFilter === 'oneOnOne'
-                                                            ? 'bg-purple-500 text-white'
-                                                            : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
+                                                        ? 'bg-purple-500 text-white'
+                                                        : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
                                                     {isArabic ? '1:1' : '1-on-1'}
@@ -4410,8 +4410,8 @@ export default function OnlyFansMentorProfilePage() {
                                                     <button
                                                         onClick={() => setCommunityManagementTab('posts')}
                                                         className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all ${communityManagementTab === 'posts'
-                                                                ? 'bg-purple-500 text-white'
-                                                                : 'text-muted-foreground hover:text-foreground'
+                                                            ? 'bg-purple-500 text-white'
+                                                            : 'text-muted-foreground hover:text-foreground'
                                                             }`}
                                                     >
                                                         <MessageSquare className="w-4 h-4 mr-2 inline" />
@@ -4423,8 +4423,8 @@ export default function OnlyFansMentorProfilePage() {
                                                             fetchCommunityMembers()
                                                         }}
                                                         className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all ${communityManagementTab === 'members'
-                                                                ? 'bg-purple-500 text-white'
-                                                                : 'text-muted-foreground hover:text-foreground'
+                                                            ? 'bg-purple-500 text-white'
+                                                            : 'text-muted-foreground hover:text-foreground'
                                                             }`}
                                                     >
                                                         <Users className="w-4 h-4 mr-2 inline" />
@@ -4436,8 +4436,8 @@ export default function OnlyFansMentorProfilePage() {
                                                             fetchCommunityAnalytics()
                                                         }}
                                                         className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all ${communityManagementTab === 'analytics'
-                                                                ? 'bg-purple-500 text-white'
-                                                                : 'text-muted-foreground hover:text-foreground'
+                                                            ? 'bg-purple-500 text-white'
+                                                            : 'text-muted-foreground hover:text-foreground'
                                                             }`}
                                                     >
                                                         <BarChart3 className="w-4 h-4 mr-2 inline" />
@@ -4513,8 +4513,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                                         {post.author.name}
                                                                                     </span>
                                                                                     <Badge className={`${post.author.tier === 'VIP' ? 'bg-yellow-500' :
-                                                                                            post.author.tier === 'PREMIUM' ? 'bg-purple-500' :
-                                                                                                'bg-blue-500'
+                                                                                        post.author.tier === 'PREMIUM' ? 'bg-purple-500' :
+                                                                                            'bg-blue-500'
                                                                                         } text-white border-0 text-xs`}>
                                                                                         {post.author.tier}
                                                                                     </Badge>
@@ -4546,8 +4546,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                                 <button
                                                                                     onClick={() => handleTogglePin(post.id, post.isPinned || false)}
                                                                                     className={`p-2 rounded-lg transition-colors ${post.isPinned
-                                                                                            ? 'bg-orange-500/10 text-orange-500'
-                                                                                            : 'hover:bg-card-hover text-muted-foreground'
+                                                                                        ? 'bg-orange-500/10 text-orange-500'
+                                                                                        : 'hover:bg-card-hover text-muted-foreground'
                                                                                         }`}
                                                                                     title={post.isPinned ? (isArabic ? 'إلغاء التثبيت' : 'Unpin') : (isArabic ? 'تثبيت' : 'Pin')}
                                                                                 >
@@ -4709,8 +4709,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                                                 {isArabic ? member.arabicName : member.name}
                                                                                             </h4>
                                                                                             <Badge className={`${member.tier === 'VIP' ? 'bg-yellow-500' :
-                                                                                                    member.tier === 'PREMIUM' ? 'bg-purple-500' :
-                                                                                                        'bg-blue-500'
+                                                                                                member.tier === 'PREMIUM' ? 'bg-purple-500' :
+                                                                                                    'bg-blue-500'
                                                                                                 } text-white border-0 text-xs`}>
                                                                                                 {member.tier}
                                                                                             </Badge>
@@ -4768,8 +4768,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             }
                                                                                         }}
                                                                                         className={`p-2 rounded-lg transition-colors ${member.status === 'warned'
-                                                                                                ? 'hover:bg-green-500/10 text-green-500'
-                                                                                                : 'hover:bg-orange-500/10 text-orange-500'
+                                                                                            ? 'hover:bg-green-500/10 text-green-500'
+                                                                                            : 'hover:bg-orange-500/10 text-orange-500'
                                                                                             }`}
                                                                                         title={member.status === 'warned' ?
                                                                                             (isArabic ? 'إزالة التحذير' : 'Remove warning') :
@@ -4803,8 +4803,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             }
                                                                                         }}
                                                                                         className={`p-2 rounded-lg transition-colors ${member.status === 'muted'
-                                                                                                ? 'hover:bg-green-500/10 text-green-500'
-                                                                                                : 'hover:bg-purple-500/10 text-purple-500'
+                                                                                            ? 'hover:bg-green-500/10 text-green-500'
+                                                                                            : 'hover:bg-purple-500/10 text-purple-500'
                                                                                             }`}
                                                                                         title={member.status === 'muted' ?
                                                                                             (isArabic ? 'إلغاء الكتم' : 'Unmute') :
@@ -4989,8 +4989,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                         <div key={index} className="flex items-center justify-between p-3 bg-card rounded-lg">
                                                                             <div className="flex items-center gap-3">
                                                                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
-                                                                                        index === 1 ? 'bg-gray-400/20 text-gray-400' :
-                                                                                            'bg-orange-500/20 text-orange-500'
+                                                                                    index === 1 ? 'bg-gray-400/20 text-gray-400' :
+                                                                                        'bg-orange-500/20 text-orange-500'
                                                                                     }`}>
                                                                                     <span className="text-sm font-bold">#{index + 1}</span>
                                                                                 </div>
@@ -5170,8 +5170,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                                 {isArabic && post.author?.arabicName ? post.author.arabicName : post.author?.name || 'Unknown'}
                                                                             </span>
                                                                             <Badge className={`${post.author?.tier === 'VIP' ? 'bg-yellow-500' :
-                                                                                    post.author?.tier === 'PREMIUM' ? 'bg-purple-500' :
-                                                                                        'bg-blue-500'
+                                                                                post.author?.tier === 'PREMIUM' ? 'bg-purple-500' :
+                                                                                    'bg-blue-500'
                                                                                 } text-white border-0 text-xs`}>
                                                                                 {post.author?.tier || 'BASIC'}
                                                                             </Badge>
@@ -5316,8 +5316,8 @@ export default function OnlyFansMentorProfilePage() {
                                                 <button
                                                     onClick={() => setResourceCategory('all')}
                                                     className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${resourceCategory === 'all'
-                                                            ? 'bg-green-500 text-white'
-                                                            : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
+                                                        ? 'bg-green-500 text-white'
+                                                        : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
                                                     {isArabic ? 'الكل' : 'All'}
@@ -5325,8 +5325,8 @@ export default function OnlyFansMentorProfilePage() {
                                                 <button
                                                     onClick={() => setResourceCategory('pdf')}
                                                     className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${resourceCategory === 'pdf'
-                                                            ? 'bg-green-500 text-white'
-                                                            : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
+                                                        ? 'bg-green-500 text-white'
+                                                        : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
                                                     📄 PDF
@@ -5334,8 +5334,8 @@ export default function OnlyFansMentorProfilePage() {
                                                 <button
                                                     onClick={() => setResourceCategory('video')}
                                                     className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${resourceCategory === 'video'
-                                                            ? 'bg-green-500 text-white'
-                                                            : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
+                                                        ? 'bg-green-500 text-white'
+                                                        : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
                                                     🎥 {isArabic ? 'فيديو' : 'Video'}
@@ -5343,8 +5343,8 @@ export default function OnlyFansMentorProfilePage() {
                                                 <button
                                                     onClick={() => setResourceCategory('template')}
                                                     className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${resourceCategory === 'template'
-                                                            ? 'bg-green-500 text-white'
-                                                            : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
+                                                        ? 'bg-green-500 text-white'
+                                                        : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
                                                     📋 {isArabic ? 'قوالب' : 'Templates'}
@@ -5352,8 +5352,8 @@ export default function OnlyFansMentorProfilePage() {
                                                 <button
                                                     onClick={() => setResourceCategory('code')}
                                                     className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${resourceCategory === 'code'
-                                                            ? 'bg-green-500 text-white'
-                                                            : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
+                                                        ? 'bg-green-500 text-white'
+                                                        : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
                                                     💻 {isArabic ? 'أكواد' : 'Code'}
@@ -5394,9 +5394,9 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="flex items-start gap-4">
                                                                     {/* Icon */}
                                                                     <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${resource.type === 'PDF' ? 'bg-red-500/20' :
-                                                                            resource.type === 'Video' ? 'bg-purple-500/20' :
-                                                                                resource.type === 'Excel' || resource.type === 'Template' ? 'bg-green-500/20' :
-                                                                                    'bg-blue-500/20'
+                                                                        resource.type === 'Video' ? 'bg-purple-500/20' :
+                                                                            resource.type === 'Excel' || resource.type === 'Template' ? 'bg-green-500/20' :
+                                                                                'bg-blue-500/20'
                                                                         }`}>
                                                                         {resource.type === 'PDF' && <span className="text-2xl">📄</span>}
                                                                         {resource.type === 'Video' && <Play className="w-6 h-6 text-purple-400" />}
@@ -5886,9 +5886,9 @@ export default function OnlyFansMentorProfilePage() {
                                                 {(creatorStats.recentActivity ?? []).map((activity: any, idx: number) => (
                                                     <div key={idx} className="flex items-center gap-3 p-3 bg-card-hover rounded-lg hover:bg-card transition-colors">
                                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${activity.type === 'subscription' ? 'bg-green-500/20' :
-                                                                activity.type === 'post_like' ? 'bg-pink-500/20' :
-                                                                    activity.type === 'session_booked' ? 'bg-purple-500/20' :
-                                                                        'bg-yellow-500/20'
+                                                            activity.type === 'post_like' ? 'bg-pink-500/20' :
+                                                                activity.type === 'session_booked' ? 'bg-purple-500/20' :
+                                                                    'bg-yellow-500/20'
                                                             }`}>
                                                             {activity.type === 'subscription' && <Crown className="w-4 h-4 text-green-400" />}
                                                             {activity.type === 'post_like' && <Heart className="w-4 h-4 text-pink-400" />}
@@ -6001,8 +6001,8 @@ export default function OnlyFansMentorProfilePage() {
                                                 <button
                                                     onClick={() => setContentManagementTab('posts')}
                                                     className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-all ${contentManagementTab === 'posts'
-                                                            ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                                                            : 'bg-card-hover text-muted-foreground hover:text-foreground'
+                                                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                                                        : 'bg-card-hover text-muted-foreground hover:text-foreground'
                                                         }`}
                                                 >
                                                     <MessageCircle className="w-4 h-4 inline mr-2" />
@@ -6011,8 +6011,8 @@ export default function OnlyFansMentorProfilePage() {
                                                 <button
                                                     onClick={() => setContentManagementTab('media')}
                                                     className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-all ${contentManagementTab === 'media'
-                                                            ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                                                            : 'bg-card-hover text-muted-foreground hover:text-foreground'
+                                                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                                                        : 'bg-card-hover text-muted-foreground hover:text-foreground'
                                                         }`}
                                                 >
                                                     <ImageIcon className="w-4 h-4 inline mr-2" />
@@ -6021,8 +6021,8 @@ export default function OnlyFansMentorProfilePage() {
                                                 <button
                                                     onClick={() => setContentManagementTab('calendar')}
                                                     className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-all ${contentManagementTab === 'calendar'
-                                                            ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                                                            : 'bg-card-hover text-muted-foreground hover:text-foreground'
+                                                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                                                        : 'bg-card-hover text-muted-foreground hover:text-foreground'
                                                         }`}
                                                 >
                                                     <Calendar className="w-4 h-4 inline mr-2" />
@@ -6031,8 +6031,8 @@ export default function OnlyFansMentorProfilePage() {
                                                 <button
                                                     onClick={() => setContentManagementTab('scheduled')}
                                                     className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-all ${contentManagementTab === 'scheduled'
-                                                            ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                                                            : 'bg-card-hover text-muted-foreground hover:text-foreground'
+                                                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                                                        : 'bg-card-hover text-muted-foreground hover:text-foreground'
                                                         }`}
                                                 >
                                                     <Clock className="w-4 h-4 inline mr-2" />
@@ -6051,9 +6051,9 @@ export default function OnlyFansMentorProfilePage() {
                                                                         <div className="flex-1">
                                                                             <div className="flex items-center gap-2 mb-2">
                                                                                 <Badge className={`${post.tier === 'VIP' ? 'bg-yellow-500' :
-                                                                                        post.tier === 'PREMIUM' ? 'bg-purple-500' :
-                                                                                            post.tier === 'BASIC' ? 'bg-blue-500' :
-                                                                                                'bg-gray-500'
+                                                                                    post.tier === 'PREMIUM' ? 'bg-purple-500' :
+                                                                                        post.tier === 'BASIC' ? 'bg-blue-500' :
+                                                                                            'bg-gray-500'
                                                                                     } text-white border-0 text-xs`}>
                                                                                     {post.tier}
                                                                                 </Badge>
@@ -6130,9 +6130,9 @@ export default function OnlyFansMentorProfilePage() {
                                                                             </p>
                                                                             <div className="flex items-center gap-3 text-xs text-muted-foreground">
                                                                                 <Badge className={`${post.tier === 'VIP' ? 'bg-yellow-500' :
-                                                                                        post.tier === 'PREMIUM' ? 'bg-purple-500' :
-                                                                                            post.tier === 'BASIC' ? 'bg-blue-500' :
-                                                                                                'bg-gray-500'
+                                                                                    post.tier === 'PREMIUM' ? 'bg-purple-500' :
+                                                                                        post.tier === 'BASIC' ? 'bg-blue-500' :
+                                                                                            'bg-gray-500'
                                                                                     } text-white border-0 text-xs`}>
                                                                                     {post.tier}
                                                                                 </Badge>
@@ -6328,11 +6328,11 @@ export default function OnlyFansMentorProfilePage() {
                                                                             key={day}
                                                                             onClick={() => setSelectedCalendarDate(dateStr)}
                                                                             className={`aspect-square bg-card-hover rounded-lg border transition-all cursor-pointer p-2 hover:border-purple-500 hover:shadow-lg ${isToday ? 'border-purple-500 bg-purple-500/10' :
-                                                                                    isSelected ? 'border-blue-500 bg-blue-500/10' : 'border-border'
+                                                                                isSelected ? 'border-blue-500 bg-blue-500/10' : 'border-border'
                                                                                 }`}
                                                                         >
                                                                             <div className={`text-xs font-semibold mb-1 ${isToday ? 'text-purple-400' :
-                                                                                    isSelected ? 'text-blue-400' : 'text-muted-foreground'
+                                                                                isSelected ? 'text-blue-400' : 'text-muted-foreground'
                                                                                 }`}>
                                                                                 {day}
                                                                             </div>
@@ -6999,8 +6999,8 @@ export default function OnlyFansMentorProfilePage() {
                                             <div
                                                 key={request.id}
                                                 className={`p-3 rounded-lg border ${request.status === 'ANSWERED'
-                                                        ? 'bg-green-500/10 border-green-500/30'
-                                                        : 'bg-yellow-500/10 border-yellow-500/30'
+                                                    ? 'bg-green-500/10 border-green-500/30'
+                                                    : 'bg-yellow-500/10 border-yellow-500/30'
                                                     }`}
                                             >
                                                 <div className="flex items-start justify-between gap-2 mb-2">
@@ -9449,9 +9449,9 @@ export default function OnlyFansMentorProfilePage() {
                                                 <div key={w.id} className="flex items-center justify-between text-sm p-2 bg-card-hover rounded-lg">
                                                     <span className="text-foreground">€{w.amount}</span>
                                                     <span className={`px-2 py-0.5 rounded-full text-xs ${w.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
-                                                            w.status === 'PENDING' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                                w.status === 'PROCESSING' ? 'bg-blue-500/20 text-blue-400' :
-                                                                    'bg-red-500/20 text-red-400'
+                                                        w.status === 'PENDING' ? 'bg-yellow-500/20 text-yellow-400' :
+                                                            w.status === 'PROCESSING' ? 'bg-blue-500/20 text-blue-400' :
+                                                                'bg-red-500/20 text-red-400'
                                                         }`}>
                                                         {w.status}
                                                     </span>
@@ -9487,6 +9487,46 @@ export default function OnlyFansMentorProfilePage() {
                     </motion.div>
                 )}
             </AnimatePresence>
+            {/* Mobile Bottom Navigation - Profile Tabs */}
+            <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-[#1f1f1f]/95 backdrop-blur-xl border-t border-white/10 safe-area-bottom">
+                <div className="flex items-center justify-around py-2 px-1">
+                    <button
+                        onClick={handleSetPostsTab}
+                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeTab === 'posts' ? 'text-[#0a84ff]' : 'text-white/60 hover:text-white'
+                            }`}
+                    >
+                        <MessageCircle className="w-6 h-6" />
+                        <span className="text-[10px] font-medium">{isArabic ? 'المنشورات' : 'Posts'}</span>
+                    </button>
+
+                    <button
+                        onClick={handleSetMediaTab}
+                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeTab === 'media' ? 'text-[#0a84ff]' : 'text-white/60 hover:text-white'
+                            }`}
+                    >
+                        <ImageIcon className="w-6 h-6" />
+                        <span className="text-[10px] font-medium">{isArabic ? 'الوسائط' : 'Media'}</span>
+                    </button>
+
+                    <button
+                        onClick={handleSetSessionsTab}
+                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeTab === 'sessions' ? 'text-[#0a84ff]' : 'text-white/60 hover:text-white'
+                            }`}
+                    >
+                        <Calendar className="w-6 h-6" />
+                        <span className="text-[10px] font-medium">{isArabic ? 'الجلسات' : 'Sessions'}</span>
+                    </button>
+
+                    <button
+                        onClick={() => setActiveTab('about')}
+                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeTab === 'about' ? 'text-[#0a84ff]' : 'text-white/60 hover:text-white'
+                            }`}
+                    >
+                        <Globe className="w-6 h-6" />
+                        <span className="text-[10px] font-medium">{isArabic ? 'حول' : 'About'}</span>
+                    </button>
+                </div>
+            </div>
         </div>
     )
 }
