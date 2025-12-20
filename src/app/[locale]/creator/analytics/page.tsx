@@ -70,9 +70,9 @@ interface AnalyticsData {
 function generateChartData(days: number, totalEnrollments: number, totalRevenue: number) {
     const enrollments: Array<{ date: string; value: number }> = []
     const revenue: Array<{ date: string; value: number }> = []
-    
+
     const today = new Date()
-    
+
     // Show real data as a single point or empty if no historical data available
     // For production, this should be replaced with actual historical data from the API
     if (totalEnrollments > 0 || totalRevenue > 0) {
@@ -87,7 +87,7 @@ function generateChartData(days: number, totalEnrollments: number, totalRevenue:
             value: totalRevenue
         })
     }
-    
+
     return { enrollments, revenue }
 }
 
@@ -194,7 +194,35 @@ export default function CreatorAnalytics() {
                                         <ChevronDown className="w-4 h-4" />
                                     </button>
                                 </div>
-                                <Button variant="outline" size="icon">
+                                <Button variant="outline" size="icon" onClick={() => {
+                                    if (!analytics) return
+
+                                    const csvContent = [
+                                        ['Metric', 'Value'],
+                                        ['Total Enrollments', analytics.overview.totalEnrollments],
+                                        ['Total Students', analytics.overview.totalStudents],
+                                        ['Avg Completion Rate', `${analytics.overview.avgCompletionRate}%`],
+                                        ['Total Revenue', `$${analytics.overview.totalRevenue}`],
+                                        [],
+                                        ['Top Courses', 'Enrollments', 'Rating', 'Revenue'],
+                                        ...analytics.topCourses.map(c => [
+                                            `"${c.title}"`,
+                                            c.enrollments,
+                                            c.avgRating,
+                                            `$${c.revenue}`
+                                        ])
+                                    ].map(e => e.join(',')).join('\n')
+
+                                    const blob = new Blob([csvContent], { type: 'text/csv' })
+                                    const url = window.URL.createObjectURL(blob)
+                                    const a = document.createElement('a')
+                                    a.href = url
+                                    a.download = `analytics-${new Date().toISOString().split('T')[0]}.csv`
+                                    document.body.appendChild(a)
+                                    a.click()
+                                    document.body.removeChild(a)
+                                    window.URL.revokeObjectURL(url)
+                                }}>
                                     <Download className="w-4 h-4" />
                                 </Button>
                             </div>
@@ -221,9 +249,8 @@ export default function CreatorAnalytics() {
                                         <div className="text-3xl font-bold mb-1">
                                             {analytics?.overview.totalEnrollments || 0}
                                         </div>
-                                        <div className={`flex items-center gap-1 text-sm ${
-                                            (analytics?.overview.enrollmentsChange || 0) >= 0 ? 'text-green-500' : 'text-red-500'
-                                        }`}>
+                                        <div className={`flex items-center gap-1 text-sm ${(analytics?.overview.enrollmentsChange || 0) >= 0 ? 'text-green-500' : 'text-red-500'
+                                            }`}>
                                             {(analytics?.overview.enrollmentsChange || 0) >= 0 ? (
                                                 <TrendingUp className="w-4 h-4" />
                                             ) : (
@@ -248,9 +275,8 @@ export default function CreatorAnalytics() {
                                         <div className="text-3xl font-bold mb-1">
                                             {analytics?.overview.totalStudents || 0}
                                         </div>
-                                        <div className={`flex items-center gap-1 text-sm ${
-                                            (analytics?.overview.studentsChange || 0) >= 0 ? 'text-green-500' : 'text-red-500'
-                                        }`}>
+                                        <div className={`flex items-center gap-1 text-sm ${(analytics?.overview.studentsChange || 0) >= 0 ? 'text-green-500' : 'text-red-500'
+                                            }`}>
                                             {(analytics?.overview.studentsChange || 0) >= 0 ? (
                                                 <TrendingUp className="w-4 h-4" />
                                             ) : (
@@ -275,9 +301,8 @@ export default function CreatorAnalytics() {
                                         <div className="text-3xl font-bold mb-1">
                                             {analytics?.overview.avgCompletionRate || 0}%
                                         </div>
-                                        <div className={`flex items-center gap-1 text-sm ${
-                                            (analytics?.overview.completionChange || 0) >= 0 ? 'text-green-500' : 'text-red-500'
-                                        }`}>
+                                        <div className={`flex items-center gap-1 text-sm ${(analytics?.overview.completionChange || 0) >= 0 ? 'text-green-500' : 'text-red-500'
+                                            }`}>
                                             {(analytics?.overview.completionChange || 0) >= 0 ? (
                                                 <TrendingUp className="w-4 h-4" />
                                             ) : (
@@ -302,9 +327,8 @@ export default function CreatorAnalytics() {
                                         <div className="text-3xl font-bold mb-1">
                                             ${analytics?.overview.totalRevenue || 0}
                                         </div>
-                                        <div className={`flex items-center gap-1 text-sm ${
-                                            (analytics?.overview.revenueChange || 0) >= 0 ? 'text-green-500' : 'text-red-500'
-                                        }`}>
+                                        <div className={`flex items-center gap-1 text-sm ${(analytics?.overview.revenueChange || 0) >= 0 ? 'text-green-500' : 'text-red-500'
+                                            }`}>
                                             {(analytics?.overview.revenueChange || 0) >= 0 ? (
                                                 <TrendingUp className="w-4 h-4" />
                                             ) : (
@@ -336,35 +360,35 @@ export default function CreatorAnalytics() {
                                                     <AreaChart data={analytics.chartData.enrollments}>
                                                         <defs>
                                                             <linearGradient id="enrollmentGradient" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-                                                                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                                                                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                                                                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
                                                             </linearGradient>
                                                         </defs>
                                                         <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
-                                                        <XAxis 
-                                                            dataKey="date" 
-                                                            stroke="#6b7280" 
+                                                        <XAxis
+                                                            dataKey="date"
+                                                            stroke="#6b7280"
                                                             fontSize={12}
                                                             tickLine={false}
                                                         />
-                                                        <YAxis 
-                                                            stroke="#6b7280" 
+                                                        <YAxis
+                                                            stroke="#6b7280"
                                                             fontSize={12}
                                                             tickLine={false}
                                                             axisLine={false}
                                                         />
-                                                        <Tooltip 
-                                                            contentStyle={{ 
-                                                                backgroundColor: 'hsl(var(--card))', 
+                                                        <Tooltip
+                                                            contentStyle={{
+                                                                backgroundColor: 'hsl(var(--card))',
                                                                 border: '1px solid hsl(var(--border))',
                                                                 borderRadius: '8px'
                                                             }}
                                                             labelStyle={{ color: 'hsl(var(--foreground))' }}
                                                         />
-                                                        <Area 
-                                                            type="monotone" 
-                                                            dataKey="value" 
-                                                            stroke="#8b5cf6" 
+                                                        <Area
+                                                            type="monotone"
+                                                            dataKey="value"
+                                                            stroke="#8b5cf6"
                                                             strokeWidth={2}
                                                             fill="url(#enrollmentGradient)"
                                                             name={isArabic ? 'التسجيلات' : 'Enrollments'}
@@ -396,36 +420,36 @@ export default function CreatorAnalytics() {
                                                     <AreaChart data={analytics.chartData.revenue}>
                                                         <defs>
                                                             <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
-                                                                <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                                                                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
+                                                                <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
                                                             </linearGradient>
                                                         </defs>
                                                         <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
-                                                        <XAxis 
-                                                            dataKey="date" 
-                                                            stroke="#6b7280" 
+                                                        <XAxis
+                                                            dataKey="date"
+                                                            stroke="#6b7280"
                                                             fontSize={12}
                                                             tickLine={false}
                                                         />
-                                                        <YAxis 
-                                                            stroke="#6b7280" 
+                                                        <YAxis
+                                                            stroke="#6b7280"
                                                             fontSize={12}
                                                             tickLine={false}
                                                             axisLine={false}
                                                         />
-                                                        <Tooltip 
-                                                            contentStyle={{ 
-                                                                backgroundColor: 'hsl(var(--card))', 
+                                                        <Tooltip
+                                                            contentStyle={{
+                                                                backgroundColor: 'hsl(var(--card))',
                                                                 border: '1px solid hsl(var(--border))',
                                                                 borderRadius: '8px'
                                                             }}
                                                             labelStyle={{ color: 'hsl(var(--foreground))' }}
                                                             formatter={(value: number) => [`$${value}`, isArabic ? 'الإيرادات' : 'Revenue']}
                                                         />
-                                                        <Area 
-                                                            type="monotone" 
-                                                            dataKey="value" 
-                                                            stroke="#22c55e" 
+                                                        <Area
+                                                            type="monotone"
+                                                            dataKey="value"
+                                                            stroke="#22c55e"
                                                             strokeWidth={2}
                                                             fill="url(#revenueGradient)"
                                                             name={isArabic ? 'الإيرادات' : 'Revenue'}
@@ -565,7 +589,7 @@ export default function CreatorAnalytics() {
 
                                         <div className="text-center py-8 text-muted-foreground">
                                             <p className="text-sm">
-                                                {isArabic 
+                                                {isArabic
                                                     ? 'لا يوجد نشاط فوري حالياً'
                                                     : 'No realtime activity right now'}
                                             </p>

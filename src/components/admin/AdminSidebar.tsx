@@ -22,12 +22,9 @@ import {
     AlertTriangle,
     Wallet,
     History,
-    Gavel
+    Gavel,
+    Megaphone
 } from 'lucide-react'
-import { signOut, useSession } from 'next-auth/react'
-import { motion } from 'framer-motion'
-import { Badge } from '@/components/ui/badge'
-import { LucideIcon } from 'lucide-react'
 
 interface NavigationItem {
     name: string
@@ -82,6 +79,12 @@ const navigation: NavigationItem[] = [
         name: 'Rewards',
         href: '/admin/rewards',
         icon: Trophy,
+        badge: null
+    },
+    {
+        name: 'Communication',
+        href: '/admin/communication',
+        icon: Megaphone,
         badge: null
     },
     {
@@ -215,7 +218,7 @@ export function AdminSidebar() {
                                     (item.href !== '/admin' && pathname.startsWith(item.href))
 
                                 return (
-                                    <motion.li 
+                                    <motion.li
                                         key={item.name}
                                         whileHover={{ x: 4 }}
                                         transition={{ duration: 0.2 }}

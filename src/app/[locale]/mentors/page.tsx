@@ -27,7 +27,7 @@ const loadIcon = async (iconName: string) => {
     if (iconCache.has(iconName)) {
         return iconCache.get(iconName)
     }
-    
+
     try {
         const iconModule = await import('lucide-react')
         const IconComponent = iconModule[iconName as keyof typeof iconModule]
@@ -42,25 +42,25 @@ const loadIcon = async (iconName: string) => {
 }
 
 // Dynamic Icon component
-const DynamicIcon = memo(({ 
-    name, 
-    className = "w-4 h-4", 
-    ...props 
-}: { 
+const DynamicIcon = memo(({
+    name,
+    className = "w-4 h-4",
+    ...props
+}: {
     name: string
-    className?: string 
-    [key: string]: any 
+    className?: string
+    [key: string]: any
 }) => {
     const [IconComponent, setIconComponent] = useState<any>(null)
-    
+
     useEffect(() => {
         loadIcon(name).then(setIconComponent)
     }, [name])
-    
+
     if (!IconComponent) {
         return <div className={`${className} animate-pulse bg-muted rounded`} />
     }
-    
+
     return <IconComponent className={className} {...props} />
 })
 
@@ -74,7 +74,7 @@ const PostSkeleton = memo(() => (
             <div className="flex-shrink-0">
                 <div className="w-12 h-12 rounded-full bg-muted" />
             </div>
-            
+
             {/* Post Content Skeleton */}
             <div className="flex-1 min-w-0 space-y-3">
                 {/* Header Skeleton */}
@@ -83,17 +83,17 @@ const PostSkeleton = memo(() => (
                     <div className="h-4 bg-muted rounded w-16" />
                     <div className="h-4 bg-muted rounded w-12" />
                 </div>
-                
+
                 {/* Content Skeleton */}
                 <div className="space-y-2">
                     <div className="h-4 bg-muted rounded w-full" />
                     <div className="h-4 bg-muted rounded w-4/5" />
                     <div className="h-4 bg-muted rounded w-3/5" />
                 </div>
-                
+
                 {/* Media Skeleton */}
                 <div className="h-48 bg-muted rounded-2xl" />
-                
+
                 {/* Engagement Skeleton */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -125,7 +125,7 @@ const CreatorCardSkeleton = memo(() => (
         <div className="flex items-center gap-3 mb-3">
             {/* Profile Image Skeleton */}
             <div className="w-12 h-12 rounded-full bg-muted flex-shrink-0" />
-            
+
             {/* Creator Info Skeleton */}
             <div className="flex-1 min-w-0 space-y-2">
                 <div className="flex items-center gap-2">
@@ -139,7 +139,7 @@ const CreatorCardSkeleton = memo(() => (
                 <div className="h-3 bg-muted rounded w-20" />
             </div>
         </div>
-        
+
         {/* Action Buttons Skeleton */}
         <div className="flex items-center gap-2">
             <div className="flex-1 h-8 bg-muted rounded-full" />
@@ -158,7 +158,7 @@ const CreatorGridSkeleton = memo(() => (
                 <div className="space-y-4">
                     {/* Cover Image Skeleton */}
                     <div className="h-32 bg-muted rounded-xl" />
-                    
+
                     {/* Profile Section Skeleton */}
                     <div className="flex items-center gap-3">
                         <div className="w-16 h-16 rounded-full bg-muted" />
@@ -167,7 +167,7 @@ const CreatorGridSkeleton = memo(() => (
                             <div className="h-3 bg-muted rounded w-1/2" />
                         </div>
                     </div>
-                    
+
                     {/* Stats Skeleton */}
                     <div className="flex justify-between">
                         <div className="text-center space-y-1">
@@ -183,7 +183,7 @@ const CreatorGridSkeleton = memo(() => (
                             <div className="h-3 bg-muted rounded w-12 mx-auto" />
                         </div>
                     </div>
-                    
+
                     {/* Button Skeleton */}
                     <div className="h-10 bg-muted rounded-full" />
                 </div>
@@ -231,7 +231,7 @@ const motion = {
     div: ({ children, className, initial, animate, transition, onClick, ...props }: any) => {
         const animationClass = initial ? 'animate-fade-in' : ''
         const delay = transition?.delay ? `${transition.delay * 1000}ms` : '0ms'
-        
+
         return (
             <div
                 className={`${className} ${animationClass}`}
@@ -334,7 +334,7 @@ export default function OnlyFansStyleMentorsPage() {
     const [selectedPost, setSelectedPost] = useState<any>(null)
     const [editPostModalOpen, setEditPostModalOpen] = useState(false)
     const [subscriberCount, setSubscriberCount] = useState(0)
-    
+
     // Modal states
     const [subscribeModalOpen, setSubscribeModalOpen] = useState(false)
     const [tipModalOpen, setTipModalOpen] = useState(false)
@@ -377,7 +377,7 @@ export default function OnlyFansStyleMentorsPage() {
     // Fetch user's bookmarks from API
     const fetchUserBookmarks = useCallback(async () => {
         if (!session?.user?.id) return
-        
+
         try {
             const response = await fetch('/api/bookmarks')
             if (response.ok) {
@@ -407,7 +407,7 @@ export default function OnlyFansStyleMentorsPage() {
 
             if (response.ok) {
                 const data = await response.json()
-                
+
                 if (data.bookmarked) {
                     setBookmarkedPostIds(prev => [...prev, postId])
                     toast.success(isArabic ? 'تم حفظ الإشارة المرجعية' : 'Bookmark saved')
@@ -493,7 +493,7 @@ export default function OnlyFansStyleMentorsPage() {
                 setSelectedCreator(userCreator)
             }
         }
-        
+
         // If viewing profile but selectedCreator doesn't exist in creators list, clear it
         if (activeView === 'profile' && selectedCreator && creators.length > 0) {
             const creatorExists = creators.find(c => c.id === selectedCreator.id)
@@ -508,12 +508,12 @@ export default function OnlyFansStyleMentorsPage() {
         if (session) {
             // Check if user has CREATOR role
             const hasCreatorRole = (session.user as any)?.role === 'CREATOR'
-            
+
             // Or check if user exists in creators list
             if (creators.length > 0) {
                 const exists = creators.some(c => c.userId === session.user?.id)
                 setIsCreatorAccount(hasCreatorRole || exists)
-                
+
                 // Fetch creator stats if user is a creator
                 if (hasCreatorRole || exists) {
                     const userCreator = creators.find(c => c.userId === session.user?.id)
@@ -526,7 +526,7 @@ export default function OnlyFansStyleMentorsPage() {
             }
         }
     }, [creators, session])
-    
+
     const fetchCreatorStats = useCallback(async (creatorId: string) => {
         // Check cache first
         const cacheKey = `${CACHE_KEYS.CREATOR_STATS}_${creatorId}`
@@ -548,7 +548,7 @@ export default function OnlyFansStyleMentorsPage() {
             console.error('Failed to fetch creator stats:', error)
         }
     }, [])
-    
+
     // Memoize subscribe click handler
     const handleSubscribeClick = useCallback((creator: Creator) => {
         if (!session) {
@@ -752,7 +752,7 @@ export default function OnlyFansStyleMentorsPage() {
     // Memoize subscribe handler
     const handleSubscribe = useCallback(async () => {
         if (!selectedCreator) return
-        
+
         try {
             const response = await fetch('/api/mentor-subscriptions', {
                 method: 'POST',
@@ -772,11 +772,11 @@ export default function OnlyFansStyleMentorsPage() {
 
             // Close modal
             setSubscribeModalOpen(false)
-            
+
             // Show success toast
             toast.success(
-                isArabic 
-                    ? `تم الاشتراك بنجاح في ${selectedCreator.user.name}!` 
+                isArabic
+                    ? `تم الاشتراك بنجاح في ${selectedCreator.user.name}!`
                     : `Successfully subscribed to ${selectedCreator.user.name}!`
             )
 
@@ -785,8 +785,8 @@ export default function OnlyFansStyleMentorsPage() {
         } catch (error: any) {
             console.error('Subscription error:', error)
             toast.error(
-                isArabic 
-                    ? error.message || 'فشل الاشتراك. حاول مرة أخرى.' 
+                isArabic
+                    ? error.message || 'فشل الاشتراك. حاول مرة أخرى.'
                     : error.message || 'Failed to subscribe. Please try again.'
             )
         }
@@ -795,7 +795,7 @@ export default function OnlyFansStyleMentorsPage() {
     // Memoize send tip handler
     const handleSendTip = useCallback(async (amount: number, message?: string) => {
         if (!selectedCreator) return
-        
+
         try {
             const response = await fetch('/api/tips', {
                 method: 'POST',
@@ -816,11 +816,11 @@ export default function OnlyFansStyleMentorsPage() {
 
             // Close modal
             setTipModalOpen(false)
-            
+
             // Show success toast
             toast.success(
-                isArabic 
-                    ? `تم إرسال €${amount} بنجاح!` 
+                isArabic
+                    ? `تم إرسال €${amount} بنجاح!`
                     : `Successfully sent €${amount}!`
             )
 
@@ -829,8 +829,8 @@ export default function OnlyFansStyleMentorsPage() {
         } catch (error: any) {
             console.error('Tip error:', error)
             toast.error(
-                isArabic 
-                    ? error.message || 'فشل إرسال الإكرامية. حاول مرة أخرى.' 
+                isArabic
+                    ? error.message || 'فشل إرسال الإكرامية. حاول مرة أخرى.'
                     : error.message || 'Failed to send tip. Please try again.'
             )
         }
@@ -858,7 +858,7 @@ export default function OnlyFansStyleMentorsPage() {
             }
 
             toast.success(isArabic ? 'تم حذف المنشور' : 'Post deleted')
-            
+
             // Refresh posts
             if (selectedCreator?.id) {
                 fetchCreatorPostsByCreatorId(selectedCreator.id)
@@ -872,7 +872,7 @@ export default function OnlyFansStyleMentorsPage() {
     // Memoize send message handler
     const handleSendMessage = useCallback(async (message: string, type: string) => {
         if (!selectedCreator) return
-        
+
         try {
             const response = await fetch('/api/messages', {
                 method: 'POST',
@@ -892,15 +892,15 @@ export default function OnlyFansStyleMentorsPage() {
 
             // Show success feedback
             toast.success(
-                isArabic 
-                    ? 'تم إرسال الرسالة بنجاح!' 
+                isArabic
+                    ? 'تم إرسال الرسالة بنجاح!'
                     : 'Message sent successfully!'
             )
         } catch (error: any) {
             console.error('Message error:', error)
             toast.error(
-                isArabic 
-                    ? error.message || 'فشل إرسال الرسالة. حاول مرة أخرى.' 
+                isArabic
+                    ? error.message || 'فشل إرسال الرسالة. حاول مرة أخرى.'
                     : error.message || 'Failed to send message. Please try again.'
             )
         }
@@ -910,7 +910,7 @@ export default function OnlyFansStyleMentorsPage() {
     const handleSetFeedView = useCallback(() => setActiveView('feed'), [])
     const handleSetCreatorsView = useCallback(() => setActiveView('creators'), [])
     const handleSetProfileView = useCallback(() => setActiveView('profile'), [])
-    
+
     const handleSetSubscriptionsView = useCallback(() => {
         if (session) {
             setActiveView('subscriptions')
@@ -918,7 +918,7 @@ export default function OnlyFansStyleMentorsPage() {
             toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
         }
     }, [session, isArabic])
-    
+
     const handleSetBookmarksView = useCallback(() => {
         if (session) {
             setActiveView('bookmarks')
@@ -962,10 +962,10 @@ export default function OnlyFansStyleMentorsPage() {
         e.stopPropagation()
         const target = e.currentTarget as HTMLElement
         const icon = target.querySelector('.bookmark-icon')
-        
+
         // Call API to save bookmark
         const bookmarked = await handleBookmark(postId)
-        
+
         // Update UI based on result
         if (bookmarked) {
             target.classList.add('text-blue-500')
@@ -993,7 +993,7 @@ export default function OnlyFansStyleMentorsPage() {
 
     // Memoized Creator Card component for better performance
     const CreatorCard = memo(({ creator }: { creator: Creator }) => (
-        <div 
+        <div
             className="bg-card rounded-xl border border-border overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer"
             onClick={() => handleCreatorClick(creator.id)}
         >
@@ -1007,9 +1007,9 @@ export default function OnlyFansStyleMentorsPage() {
                     />
                 ) : (
                     <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
-                        <AvatarPlaceholder 
-                            name={creator.user.name} 
-                            size={120} 
+                        <AvatarPlaceholder
+                            name={creator.user.name}
+                            size={120}
                             className="rounded-full"
                         />
                     </div>
@@ -1023,7 +1023,7 @@ export default function OnlyFansStyleMentorsPage() {
                     </div>
                 )}
             </div>
-            
+
             <div className="p-4">
                 <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-semibold text-lg">{creator.user.name}</h3>
@@ -1031,11 +1031,11 @@ export default function OnlyFansStyleMentorsPage() {
                         <DynamicIcon name="Crown" className="w-4 h-4 text-yellow-500" />
                     )}
                 </div>
-                
+
                 <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
                     {creator.expertise}
                 </p>
-                
+
                 <div className="flex items-center gap-4 mb-3 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                         <DynamicIcon name="Star" className="w-4 h-4 text-yellow-500" />
@@ -1046,7 +1046,7 @@ export default function OnlyFansStyleMentorsPage() {
                         {creator.totalSubscribers}
                     </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                     <span className="text-lg font-bold text-purple-400">
                         €{creator.monthlyPrice || 0}/mo
@@ -1093,7 +1093,7 @@ export default function OnlyFansStyleMentorsPage() {
         <div className="min-h-screen bg-[#1f1f1f] text-foreground transition-colors">
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/50 z-40 lg:hidden"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
@@ -1103,9 +1103,8 @@ export default function OnlyFansStyleMentorsPage() {
             <div className="container mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
                     {/* Left Sidebar - Navigation */}
-                    <div className={`fixed lg:static inset-y-0 left-0 z-50 w-[280px] sm:w-72 lg:w-auto lg:col-span-3 p-3 sm:p-4 bg-[#1f1f1f] lg:bg-transparent transform transition-transform duration-300 lg:transform-none ${
-                        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-                    }`}>
+                    <div className={`fixed lg:static inset-y-0 left-0 z-50 w-[280px] sm:w-72 lg:w-auto lg:col-span-3 p-3 sm:p-4 bg-[#1f1f1f] lg:bg-transparent transform transition-transform duration-300 lg:transform-none ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+                        }`}>
                         <div className="lg:sticky lg:top-24">
                             {/* Mobile Close Button */}
                             <button
@@ -1120,11 +1119,10 @@ export default function OnlyFansStyleMentorsPage() {
                                 {/* Feed/Home Button */}
                                 <button
                                     onClick={handleSetFeedView}
-                                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
-                                        activeView === 'feed'
-                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
-                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
-                                    }`}
+                                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${activeView === 'feed'
+                                        ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                        : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
+                                        }`}
                                 >
                                     <DynamicIcon name="Home" className="w-6 h-6" />
                                     <span className="text-lg font-bold">{isArabic ? 'الرئيسية' : 'Feed'}</span>
@@ -1134,11 +1132,10 @@ export default function OnlyFansStyleMentorsPage() {
                                 {/* Creators List */}
                                 <button
                                     onClick={handleSetCreatorsView}
-                                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
-                                        activeView === 'creators'
-                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
-                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
-                                    }`}
+                                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${activeView === 'creators'
+                                        ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                        : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
+                                        }`}
                                 >
                                     <DynamicIcon name="Users" className="w-6 h-6" />
                                     <span className="text-lg font-bold">{isArabic ? 'المبدعون' : 'Creators'}</span>
@@ -1147,11 +1144,10 @@ export default function OnlyFansStyleMentorsPage() {
                                 {/* Subscriptions */}
                                 <button
                                     onClick={handleSetSubscriptionsView}
-                                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
-                                        activeView === 'subscriptions'
-                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
-                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
-                                    }`}
+                                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${activeView === 'subscriptions'
+                                        ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                        : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
+                                        }`}
                                 >
                                     <DynamicIcon name="Crown" className="w-6 h-6" />
                                     <span className="text-lg font-bold">{isArabic ? 'اشتراكاتي' : 'Subscriptions'}</span>
@@ -1161,11 +1157,10 @@ export default function OnlyFansStyleMentorsPage() {
                                 {session && (
                                     <button
                                         onClick={handleSetBookmarksView}
-                                        className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${
-                                            activeView === 'bookmarks'
-                                                ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
-                                                : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
-                                        }`}
+                                        className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all ${activeView === 'bookmarks'
+                                            ? 'bg-[#0a84ff]/10 text-[#0a84ff]'
+                                            : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
+                                            }`}
                                     >
                                         <DynamicIcon name="Bookmark" className="w-6 h-6" />
                                         <span className="text-lg font-bold">{isArabic ? 'المحفوظات' : 'Bookmarks'}</span>
@@ -1272,11 +1267,11 @@ export default function OnlyFansStyleMentorsPage() {
                                     </svg>
                                 </button>
                                 <h2 className="text-lg sm:text-2xl font-black text-foreground">
-                                {activeView === 'feed' && (isArabic ? 'الأخبار' : 'Feed')}
-                                {activeView === 'subscriptions' && (isArabic ? 'اشتراكاتي' : 'My Subscriptions')}
-                                {activeView === 'bookmarks' && (isArabic ? 'المحفوظات' : 'Bookmarks')}
-                                {activeView === 'creators' && (isArabic ? 'جميع المبدعين' : 'All Creators')}
-                            </h2>
+                                    {activeView === 'feed' && (isArabic ? 'الأخبار' : 'Feed')}
+                                    {activeView === 'subscriptions' && (isArabic ? 'اشتراكاتي' : 'My Subscriptions')}
+                                    {activeView === 'bookmarks' && (isArabic ? 'المحفوظات' : 'Bookmarks')}
+                                    {activeView === 'creators' && (isArabic ? 'جميع المبدعين' : 'All Creators')}
+                                </h2>
                             </div>
                         </div>
 
@@ -1290,7 +1285,7 @@ export default function OnlyFansStyleMentorsPage() {
                                     ))}
                                 </>
                             )}
-                            
+
                             {/* Show empty state only when not loading and no posts */}
                             {activeView === 'feed' && !loadingPosts && posts.length === 0 && (
                                 <div className="text-center py-12">
@@ -1301,40 +1296,40 @@ export default function OnlyFansStyleMentorsPage() {
                                     </p>
                                 </div>
                             )}
-                            
+
                             {/* Real Posts from Database */}
                             {activeView === 'feed' && !loadingPosts && posts.length > 0 && posts.map((post: any, i: number) => (
-                                        <div
-                                            key={post.id}
-                                            className="px-3 sm:px-4 py-3 sm:py-4 hover:bg-white/[0.02] transition-colors animate-fade-in"
-                                            style={{ animationDelay: `${i * 50}ms`, borderBottom: i < posts.length - 1 ? '0.5px solid hsla(0,0%,100%,.1)' : 'none' }}
-                                        >
-                                            <div className="flex gap-3">
-                                                {/* Profile Image */}
-                                                <div className="flex-shrink-0 cursor-pointer" onClick={() => handleCreatorClick(post.channel.creator.id)}>
-                                                {post.channel.creator.user.profileImage ? (
-                                                        <Image
-                                                            src={post.channel.creator.user.profileImage}
-                                                            alt={post.channel.creator.user.name}
-                                                            width={48} height={48} className="rounded-full object-cover w-12 h-12"
-                                                        />
-                                                    ) : (
-                                                        <AvatarPlaceholder 
-                                                            name={post.channel.creator.user.name} 
-                                                            size={48} 
-                                                            className="rounded-full"
-                                                        />
-                                                    )}
-                                                </div>
+                                <div
+                                    key={post.id}
+                                    className="px-3 sm:px-4 py-3 sm:py-4 hover:bg-white/[0.02] transition-colors animate-fade-in"
+                                    style={{ animationDelay: `${i * 50}ms`, borderBottom: i < posts.length - 1 ? '0.5px solid hsla(0,0%,100%,.1)' : 'none' }}
+                                >
+                                    <div className="flex gap-3">
+                                        {/* Profile Image */}
+                                        <div className="flex-shrink-0 cursor-pointer" onClick={() => handleCreatorClick(post.channel.creator.id)}>
+                                            {post.channel.creator.user.profileImage ? (
+                                                <Image
+                                                    src={post.channel.creator.user.profileImage}
+                                                    alt={post.channel.creator.user.name}
+                                                    width={48} height={48} className="rounded-full object-cover w-12 h-12"
+                                                />
+                                            ) : (
+                                                <AvatarPlaceholder
+                                                    name={post.channel.creator.user.name}
+                                                    size={48}
+                                                    className="rounded-full"
+                                                />
+                                            )}
+                                        </div>
 
-                                                {/* Post Content */}
-                                                <div className="flex-1 min-w-0">
-                                                    {/* Header */}
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <span 
-                                                            className="font-bold text-foreground hover:underline cursor-pointer"
-                                                            onClick={() => handleCreatorClick(post.channel.creator.id)}
-                                                        >
+                                        {/* Post Content */}
+                                        <div className="flex-1 min-w-0">
+                                            {/* Header */}
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span
+                                                    className="font-bold text-foreground hover:underline cursor-pointer"
+                                                    onClick={() => handleCreatorClick(post.channel.creator.id)}
+                                                >
                                                     {isArabic && post.channel.creator.user.arabicName
                                                         ? post.channel.creator.user.arabicName
                                                         : post.channel.creator.user.name}
@@ -1353,7 +1348,7 @@ export default function OnlyFansStyleMentorsPage() {
                                             </div>
 
                                             {/* Post Text */}
-                                            <div 
+                                            <div
                                                 className="text-foreground mb-3 cursor-pointer hover:bg-card-hover -mx-2 px-2 py-1 rounded transition-colors"
                                                 onClick={(e) => {
                                                     e.stopPropagation()
@@ -1386,7 +1381,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                 {/* VIDEO Post */}
                                                 {post.type === 'VIDEO' && (
                                                     <div className="relative rounded-2xl overflow-hidden border border-border mt-3 bg-gradient-to-br from-purple-900/30 to-pink-900/30">
-                                                        
+
                                                         <div className="aspect-video relative">
                                                             {/* Only show thumbnail if it's an actual image file, not a video file */}
                                                             {post.thumbnailUrl && post.thumbnailUrl.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i) ? (
@@ -1426,7 +1421,7 @@ export default function OnlyFansStyleMentorsPage() {
 
                                             {/* Engagement Stats */}
                                             <div className="flex items-center justify-between text-muted-foreground text-sm">
-                                                <button 
+                                                <button
                                                     onClick={(e) => {
                                                         e.stopPropagation()
                                                         router.push(`/${locale}/posts/${post.id}`)
@@ -1439,7 +1434,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                     <span>{post._count?.comments || 0}</span>
                                                 </button>
 
-                                                <button 
+                                                <button
                                                     onClick={(e) => {
                                                         e.stopPropagation()
                                                         toast.success(isArabic ? 'تم إعادة النشر!' : 'Reposted!')
@@ -1454,7 +1449,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                     <span>{post._count?.reposts || 0}</span>
                                                 </button>
 
-                                                <button 
+                                                <button
                                                     onClick={(e) => {
                                                         e.stopPropagation()
                                                         const target = e.currentTarget
@@ -1472,31 +1467,29 @@ export default function OnlyFansStyleMentorsPage() {
 
                                                 {/* Bookmark button - Only show for signed in users */}
                                                 {session && (
-                                                    <button 
+                                                    <button
                                                         onClick={async (e) => {
                                                             e.stopPropagation()
                                                             await handleBookmark(post.id)
                                                         }}
-                                                        className={`flex items-center gap-2 transition-colors group ${
-                                                            bookmarkedPostIds.includes(post.id) 
-                                                                ? 'text-blue-500' 
-                                                                : 'hover:text-blue-400'
-                                                        }`}
+                                                        className={`flex items-center gap-2 transition-colors group ${bookmarkedPostIds.includes(post.id)
+                                                            ? 'text-blue-500'
+                                                            : 'hover:text-blue-400'
+                                                            }`}
                                                     >
                                                         <div className="p-2 rounded-full group-hover:bg-blue-500/10">
-                                                            <DynamicIcon 
-                                                                name="Bookmark" 
-                                                                className={`w-4 h-4 transition-all ${
-                                                                    bookmarkedPostIds.includes(post.id) 
-                                                                        ? 'fill-blue-500' 
-                                                                        : ''
-                                                                }`} 
+                                                            <DynamicIcon
+                                                                name="Bookmark"
+                                                                className={`w-4 h-4 transition-all ${bookmarkedPostIds.includes(post.id)
+                                                                    ? 'fill-blue-500'
+                                                                    : ''
+                                                                    }`}
                                                             />
                                                         </div>
                                                     </button>
                                                 )}
 
-                                                <button 
+                                                <button
                                                     onClick={(e) => {
                                                         e.stopPropagation()
                                                         toast.success(isArabic ? 'تم النسخ!' : 'Link copied!')
@@ -1534,7 +1527,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                     const creator = subscription.creator
                                                     const tier = subscription.tier || subscription.metadata?.tier || 'All-Access'
                                                     const price = subscription.amount || creator?.monthlyPrice || 0
-                                                    const benefits = isArabic 
+                                                    const benefits = isArabic
                                                         ? ['جميع المنشورات والجلسات المباشرة', 'الوصول للمجتمع', 'رسائل مباشرة']
                                                         : ['All posts & live sessions', 'Community access', 'Priority DMs']
                                                     const startDate = subscription.startDate || subscription.createdAt
@@ -1563,9 +1556,9 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                 className="rounded-full object-cover"
                                                                             />
                                                                         ) : (
-                                                                            <AvatarPlaceholder 
-                                                                                name={creator.user?.name || 'Creator'} 
-                                                                                size={64} 
+                                                                            <AvatarPlaceholder
+                                                                                name={creator.user?.name || 'Creator'}
+                                                                                size={64}
                                                                                 className="rounded-full"
                                                                             />
                                                                         )}
@@ -1801,9 +1794,9 @@ export default function OnlyFansStyleMentorsPage() {
                                                                     className="w-12 h-12 rounded-full object-cover"
                                                                 />
                                                             ) : (
-                                                                <AvatarPlaceholder 
-                                                                    name={creator.user.name} 
-                                                                    size={48} 
+                                                                <AvatarPlaceholder
+                                                                    name={creator.user.name}
+                                                                    size={48}
                                                                     className="rounded-full"
                                                                 />
                                                             )}
@@ -1901,9 +1894,9 @@ export default function OnlyFansStyleMentorsPage() {
                                                                         width={48} height={48} className="rounded-full object-cover w-12 h-12"
                                                                     />
                                                                 ) : (
-                                                                    <AvatarPlaceholder 
-                                                                        name={post.channel.creator.user.name} 
-                                                                        size={48} 
+                                                                    <AvatarPlaceholder
+                                                                        name={post.channel.creator.user.name}
+                                                                        size={48}
                                                                         className="rounded-full"
                                                                     />
                                                                 )}
@@ -1913,7 +1906,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                             <div className="flex-1 min-w-0">
                                                                 {/* Header */}
                                                                 <div className="flex items-center gap-2 mb-2">
-                                                                    <span 
+                                                                    <span
                                                                         className="font-bold text-foreground hover:text-purple-400 transition-colors cursor-pointer"
                                                                         onClick={() => handleCreatorClick(post.channel.creator.id)}
                                                                     >
@@ -1960,9 +1953,9 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                 className="w-full max-h-96 object-cover"
                                                                             />
                                                                         ) : post.mediaType?.startsWith('video/') ? (
-                                                                            <video 
-                                                                                className="w-full max-h-96 object-cover" 
-                                                                                controls 
+                                                                            <video
+                                                                                className="w-full max-h-96 object-cover"
+                                                                                controls
                                                                                 src={post.mediaUrl}
                                                                             />
                                                                         ) : null}
@@ -1986,7 +1979,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                             <span>{post._count?.comments || 0}</span>
                                                                         </button>
 
-                                                                        <button 
+                                                                        <button
                                                                             onClick={async (e) => {
                                                                                 e.stopPropagation()
                                                                                 // Remove bookmark
@@ -2043,7 +2036,7 @@ export default function OnlyFansStyleMentorsPage() {
                                             />
                                         </div>
                                     </div>
-                                    
+
                                     {/* No Results Message */}
                                     {filteredCreators.length === 0 && searchQuery && (
                                         <div className="text-center py-12">
@@ -2056,59 +2049,59 @@ export default function OnlyFansStyleMentorsPage() {
                                             </p>
                                         </div>
                                     )}
-                                    
+
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
                                         {filteredCreators.map((creator, idx) => (
                                             <div
                                                 key={creator.id}
                                                 onClick={() => handleCreatorClick(creator.id)}
                                                 className="group relative cursor-pointer overflow-hidden animate-fade-in border border-white/[.16] rounded-[14px] block w-full"
-                                                style={{ 
+                                                style={{
                                                     animationDelay: `${idx * 50}ms`
                                                 }}
                                             >
                                                 {/* Hover Scrim Overlay */}
-                                                <div 
+                                                <div
                                                     className="absolute inset-0 pointer-events-none bg-[rgba(51,51,51,.3)] rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-100 z-10"
                                                 />
-                                                
-                                {/* Card Image with Profile Photo */}
-                                <div className="relative aspect-[16/10] overflow-hidden" style={{ borderRadius: 'inherit' }}>
-                                    <div className="w-full h-full bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600">
-                                        {creator.user?.profileImage ? (
-                                            <Image
-                                                src={creator.user.profileImage}
-                                                alt={creator.user?.name || 'Creator'}
-                                                fill
-                                                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                                unoptimized
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <AvatarPlaceholder 
-                                                    name={creator.user?.name || 'Creator'} 
-                                                    size={96}
-                                                    className="shadow-lg"
-                                                />
-                                            </div>
-                                        )}
-                                    </div>                                                    {/* Gradient Overlay */}
+
+                                                {/* Card Image with Profile Photo */}
+                                                <div className="relative aspect-[16/10] overflow-hidden" style={{ borderRadius: 'inherit' }}>
+                                                    <div className="w-full h-full bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600">
+                                                        {creator.user?.profileImage ? (
+                                                            <Image
+                                                                src={creator.user.profileImage}
+                                                                alt={creator.user?.name || 'Creator'}
+                                                                fill
+                                                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                unoptimized
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center">
+                                                                <AvatarPlaceholder
+                                                                    name={creator.user?.name || 'Creator'}
+                                                                    size={96}
+                                                                    className="shadow-lg"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>                                                    {/* Gradient Overlay */}
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                                                    
+
                                                     {/* Category Tag - Top Left */}
                                                     <div className="absolute top-3 left-3 z-20">
                                                         <span className="px-2.5 py-1 bg-white/90 backdrop-blur-sm text-black text-xs font-semibold rounded">
                                                             {creator.expertise.toUpperCase()}
                                                         </span>
                                                     </div>
-                                                    
+
                                                     {/* Online Status - Top Right */}
                                                     {creator.isOnline && (
                                                         <div className="absolute top-3 right-3 z-20">
                                                             <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
                                                         </div>
                                                     )}
-                                                    
+
                                                     {/* Content - Bottom */}
                                                     <div className="absolute bottom-0 left-0 right-0 p-3 z-20">
                                                         <h3 className="text-white font-bold text-lg mb-1 line-clamp-1">
@@ -2117,8 +2110,8 @@ export default function OnlyFansStyleMentorsPage() {
                                                         <div className="flex items-center justify-between text-xs text-white/80">
                                                             <span className="flex items-center gap-1">
                                                                 <DynamicIcon name="Users" className="w-3.5 h-3.5" />
-                                                                {creator.totalSubscribers >= 1000 
-                                                                    ? `${(creator.totalSubscribers / 1000).toFixed(1)}K` 
+                                                                {creator.totalSubscribers >= 1000
+                                                                    ? `${(creator.totalSubscribers / 1000).toFixed(1)}K`
                                                                     : creator.totalSubscribers} {isArabic ? 'مشترك' : 'subs'}
                                                             </span>
                                                             <span className="font-bold text-white">
@@ -2141,7 +2134,7 @@ export default function OnlyFansStyleMentorsPage() {
                                         <div className="absolute inset-0 rounded-2xl overflow-hidden">
                                             <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
                                         </div>
-                                        
+
                                         {/* Profile Picture - Positioned at bottom of cover */}
                                         <div className="absolute -bottom-12 sm:-bottom-16 left-4 sm:left-6 z-10">
                                             <div className="relative">
@@ -2249,7 +2242,7 @@ export default function OnlyFansStyleMentorsPage() {
                                     {/* Bio */}
                                     <div className="bg-card border border-border rounded-2xl p-6 mb-6">
                                         <p className="text-foreground mb-4">
-                                            {selectedCreator?.user?.bio || session.user?.name 
+                                            {selectedCreator?.user?.bio || session.user?.name
                                                 ? `Welcome to ${(selectedCreator?.user?.name || session.user?.name)}'s exclusive content! 🔥`
                                                 : 'Welcome to my exclusive content! 🔥 Subscribe for premium educational content, 1-on-1 coaching, and behind-the-scenes access.'}
                                         </p>
@@ -2273,9 +2266,9 @@ export default function OnlyFansStyleMentorsPage() {
                                     {/* Credentials / Qualifications */}
                                     {creatorCredentials.length > 0 && (
                                         <div className="bg-card border border-border rounded-2xl p-6 mb-6">
-                                            <CredentialsDisplay 
-                                                credentials={creatorCredentials} 
-                                                isArabic={isArabic} 
+                                            <CredentialsDisplay
+                                                credentials={creatorCredentials}
+                                                isArabic={isArabic}
                                             />
                                         </div>
                                     )}
@@ -2342,7 +2335,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                     {creatorStats?.earnings?.thisMonth?.toLocaleString() || '0'}
                                                 </div>
                                                 <div className="text-xs text-green-400">
-                                                    {creatorStats?.earnings?.percentChange 
+                                                    {creatorStats?.earnings?.percentChange
                                                         ? `${creatorStats.earnings.percentChange > 0 ? '+' : ''}${creatorStats.earnings.percentChange}% vs last month`
                                                         : 'No data'}
                                                 </div>
@@ -2361,7 +2354,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                     {isArabic ? 'الإجمالي' : 'Total Earned'}
                                                 </div>
                                                 <div className="text-3xl font-black text-foreground mb-1">
-                                                    {(selectedCreator as any)?.totalEarnings 
+                                                    {(selectedCreator as any)?.totalEarnings
                                                         ? ((selectedCreator as any).totalEarnings / 1000).toFixed(1) + 'K'
                                                         : '0'}
                                                 </div>
@@ -2388,19 +2381,17 @@ export default function OnlyFansStyleMentorsPage() {
                                             {creatorStats?.recentActivity && creatorStats.recentActivity.length > 0 ? (
                                                 creatorStats.recentActivity.slice(0, 5).map((activity: any, index: number) => (
                                                     <div key={index} className="p-4 flex items-center gap-4">
-                                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                                                            activity.type === 'new_subscription' 
-                                                                ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20'
-                                                                : activity.type === 'withdrawal'
+                                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${activity.type === 'new_subscription'
+                                                            ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20'
+                                                            : activity.type === 'withdrawal'
                                                                 ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20'
                                                                 : 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20'
-                                                        }`}>
+                                                            }`}>
                                                             {activity.type === 'new_subscription' ? (
-                                                                <DynamicIcon name="Crown" className={`w-6 h-6 ${
-                                                                    activity.tier === 'VIP' ? 'text-yellow-400' :
+                                                                <DynamicIcon name="Crown" className={`w-6 h-6 ${activity.tier === 'VIP' ? 'text-yellow-400' :
                                                                     activity.tier === 'PREMIUM' ? 'text-purple-400' :
-                                                                    'text-gray-400'
-                                                                }`} />
+                                                                        'text-gray-400'
+                                                                    }`} />
                                                             ) : activity.type === 'withdrawal' ? (
                                                                 <DynamicIcon name="TrendingUp" className="w-6 h-6 text-green-400" />
                                                             ) : (
@@ -2409,11 +2400,11 @@ export default function OnlyFansStyleMentorsPage() {
                                                         </div>
                                                         <div className="flex-1">
                                                             <p className="text-foreground font-semibold">
-                                                                {activity.type === 'new_subscription' 
+                                                                {activity.type === 'new_subscription'
                                                                     ? `New ${activity.tier} Subscriber`
                                                                     : activity.type === 'withdrawal'
-                                                                    ? 'Withdrawal Completed'
-                                                                    : 'Activity'}
+                                                                        ? 'Withdrawal Completed'
+                                                                        : 'Activity'}
                                                             </p>
                                                             <p className="text-sm text-muted-foreground">
                                                                 {activity.user || activity.description || 'New activity'}
@@ -2434,262 +2425,254 @@ export default function OnlyFansStyleMentorsPage() {
                                             )}
                                         </div>
                                     </div>
-                                    
+
                                     {/* Creator Dashboard - Always Visible */}
                                     <div className="mt-6">
                                         {/* Creator Dashboard Header */}
                                         <div className="mb-4 sm:mb-6 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl sm:rounded-2xl p-4 sm:p-6">
-                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                                                    <div>
-                                                        <h2 className="text-xl sm:text-2xl md:text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                                            {isArabic ? 'لوحة تحكم المنشئ' : 'Creator Dashboard'}
-                                                        </h2>
-                                                        <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
-                                                            {isArabic ? 'إدارة محتواك والأرباح والمشتركين' : 'Manage your content, earnings, and subscribers'}
-                                                        </p>
-                                                    </div>
-                                                    <Button
-                                                        onClick={() => toast.success(isArabic ? 'قريباً!' : 'Coming soon!')}
-                                                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-foreground font-bold text-sm sm:text-base w-full sm:w-auto"
-                                                    >
-                                                        <DynamicIcon name="Crown" className="w-4 h-4 mr-2" />
-                                                        <span className="hidden sm:inline">{isArabic ? 'ترقية الحساب' : 'Upgrade Account'}</span>
-                                                        <span className="sm:hidden">{isArabic ? 'ترقية' : 'Upgrade'}</span>
-                                                    </Button>
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                                                <div>
+                                                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                                        {isArabic ? 'لوحة تحكم المنشئ' : 'Creator Dashboard'}
+                                                    </h2>
+                                                    <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
+                                                        {isArabic ? 'إدارة محتواك والأرباح والمشتركين' : 'Manage your content, earnings, and subscribers'}
+                                                    </p>
                                                 </div>
-                                                {/* Quick Stats Bar */}
-                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
-                                                    <div className="text-center bg-card/50 rounded-lg p-2 sm:p-3">
-                                                        <div className="text-lg sm:text-xl md:text-2xl font-black text-foreground">
-                                                            {creatorStats?.subscribers?.total?.toLocaleString() || subscriberCount}
-                                                        </div>
-                                                        <div className="text-[10px] sm:text-xs text-muted-foreground">{isArabic ? 'مشترك نشط' : 'Active Subs'}</div>
+                                                <Button
+                                                    onClick={() => toast.success(isArabic ? 'قريباً!' : 'Coming soon!')}
+                                                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-foreground font-bold text-sm sm:text-base w-full sm:w-auto"
+                                                >
+                                                    <DynamicIcon name="Crown" className="w-4 h-4 mr-2" />
+                                                    <span className="hidden sm:inline">{isArabic ? 'ترقية الحساب' : 'Upgrade Account'}</span>
+                                                    <span className="sm:hidden">{isArabic ? 'ترقية' : 'Upgrade'}</span>
+                                                </Button>
+                                            </div>
+                                            {/* Quick Stats Bar */}
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                                                <div className="text-center bg-card/50 rounded-lg p-2 sm:p-3">
+                                                    <div className="text-lg sm:text-xl md:text-2xl font-black text-foreground">
+                                                        {creatorStats?.subscribers?.total?.toLocaleString() || subscriberCount}
                                                     </div>
-                                                    <div className="text-center bg-card/50 rounded-lg p-2 sm:p-3">
-                                                        <div className="text-lg sm:text-xl md:text-2xl font-black text-foreground">
-                                                            €{creatorStats?.earnings?.thisMonth 
-                                                                ? (creatorStats.earnings.thisMonth / 1000).toFixed(1) + 'K'
-                                                                : '0'}
-                                                        </div>
-                                                        <div className="text-[10px] sm:text-xs text-muted-foreground">{isArabic ? 'هذا الشهر' : 'This Month'}</div>
+                                                    <div className="text-[10px] sm:text-xs text-muted-foreground">{isArabic ? 'مشترك نشط' : 'Active Subs'}</div>
+                                                </div>
+                                                <div className="text-center bg-card/50 rounded-lg p-2 sm:p-3">
+                                                    <div className="text-lg sm:text-xl md:text-2xl font-black text-foreground">
+                                                        €{creatorStats?.earnings?.thisMonth
+                                                            ? (creatorStats.earnings.thisMonth / 1000).toFixed(1) + 'K'
+                                                            : '0'}
                                                     </div>
-                                                    <div className="text-center bg-card/50 rounded-lg p-2 sm:p-3">
-                                                        <div className="text-lg sm:text-xl md:text-2xl font-black text-foreground">
-                                                            {creatorStats?.content?.totalViews 
-                                                                ? (creatorStats.content.totalViews / 1000).toFixed(1) + 'K'
-                                                                : creatorPosts.reduce((sum, post) => sum + (post.viewCount || 0), 0).toLocaleString()}
-                                                        </div>
-                                                        <div className="text-[10px] sm:text-xs text-muted-foreground">{isArabic ? 'المشاهدات' : 'Total Views'}</div>
+                                                    <div className="text-[10px] sm:text-xs text-muted-foreground">{isArabic ? 'هذا الشهر' : 'This Month'}</div>
+                                                </div>
+                                                <div className="text-center bg-card/50 rounded-lg p-2 sm:p-3">
+                                                    <div className="text-lg sm:text-xl md:text-2xl font-black text-foreground">
+                                                        {creatorStats?.content?.totalViews
+                                                            ? (creatorStats.content.totalViews / 1000).toFixed(1) + 'K'
+                                                            : creatorPosts.reduce((sum, post) => sum + (post.viewCount || 0), 0).toLocaleString()}
                                                     </div>
-                                                    <div className="text-center bg-card/50 rounded-lg p-2 sm:p-3">
-                                                        <div className={`text-lg sm:text-xl md:text-2xl font-black ${
-                                                            (creatorStats?.earnings?.percentChange || 0) >= 0 
-                                                                ? 'text-green-400' 
-                                                                : 'text-red-400'
+                                                    <div className="text-[10px] sm:text-xs text-muted-foreground">{isArabic ? 'المشاهدات' : 'Total Views'}</div>
+                                                </div>
+                                                <div className="text-center bg-card/50 rounded-lg p-2 sm:p-3">
+                                                    <div className={`text-lg sm:text-xl md:text-2xl font-black ${(creatorStats?.earnings?.percentChange || 0) >= 0
+                                                        ? 'text-green-400'
+                                                        : 'text-red-400'
                                                         }`}>
-                                                            {creatorStats?.earnings?.percentChange 
-                                                                ? `${creatorStats.earnings.percentChange > 0 ? '+' : ''}${creatorStats.earnings.percentChange}%`
-                                                                : '+0%'}
-                                                        </div>
-                                                        <div className="text-[10px] sm:text-xs text-muted-foreground">{isArabic ? 'النمو' : 'Growth'}</div>
+                                                        {creatorStats?.earnings?.percentChange
+                                                            ? `${creatorStats.earnings.percentChange > 0 ? '+' : ''}${creatorStats.earnings.percentChange}%`
+                                                            : '+0%'}
                                                     </div>
+                                                    <div className="text-[10px] sm:text-xs text-muted-foreground">{isArabic ? 'النمو' : 'Growth'}</div>
                                                 </div>
                                             </div>
+                                        </div>
 
-                                            {/* Media Management Section - OnlyFans Style */}
-                                            <div className="mb-4 sm:mb-6">
-                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                                                    <h3 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
-                                                        <DynamicIcon name="ImageIcon" className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
-                                                        {isArabic ? 'إدارة المحتوى' : 'Content Management'}
-                                                    </h3>
-                                                    <Button
-                                                        onClick={() => setUploadModalOpen(true)}
-                                                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-full flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
+                                        {/* Media Management Section - OnlyFans Style */}
+                                        <div className="mb-4 sm:mb-6">
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                                                <h3 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+                                                    <DynamicIcon name="ImageIcon" className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
+                                                    {isArabic ? 'إدارة المحتوى' : 'Content Management'}
+                                                </h3>
+                                                <Button
+                                                    onClick={() => setUploadModalOpen(true)}
+                                                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-full flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
+                                                >
+                                                    <DynamicIcon name="Upload" className="w-4 h-4 sm:w-5 sm:h-5" />
+                                                    <span className="hidden sm:inline">{isArabic ? 'رفع محتوى جديد' : 'Upload New Content'}</span>
+                                                    <span className="sm:hidden">{isArabic ? 'رفع محتوى' : 'Upload'}</span>
+                                                </Button>
+                                            </div>
+
+                                            {/* Content Tabs */}
+                                            <div className="bg-card border border-border rounded-xl sm:rounded-2xl overflow-hidden">
+                                                <div className="flex items-center border-b border-border overflow-x-auto scrollbar-hide">
+                                                    <button
+                                                        onClick={() => setProfileTab('posts')}
+                                                        className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${profileTab === 'posts'
+                                                            ? 'text-foreground bg-card-hover'
+                                                            : 'text-muted-foreground hover:text-foreground'
+                                                            }`}
                                                     >
-                                                        <DynamicIcon name="Upload" className="w-4 h-4 sm:w-5 sm:h-5" />
-                                                        <span className="hidden sm:inline">{isArabic ? 'رفع محتوى جديد' : 'Upload New Content'}</span>
-                                                        <span className="sm:hidden">{isArabic ? 'رفع محتوى' : 'Upload'}</span>
-                                                    </Button>
+                                                        <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
+                                                            <DynamicIcon name="ImageIcon" className="w-3 h-3 sm:w-4 sm:h-4" />
+                                                            <span className="hidden sm:inline">{isArabic ? 'جميع المنشورات' : 'All Posts'}</span>
+                                                            <span className="sm:hidden">{isArabic ? 'الكل' : 'All'}</span>
+                                                            ({creatorPosts.length})
+                                                        </div>
+                                                        {profileTab === 'posts' && (
+                                                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" />
+                                                        )}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setProfileTab('media')}
+                                                        className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${profileTab === 'media'
+                                                            ? 'text-foreground bg-card-hover'
+                                                            : 'text-muted-foreground hover:text-foreground'
+                                                            }`}
+                                                    >
+                                                        <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
+                                                            <DynamicIcon name="Film" className="w-3 h-3 sm:w-4 sm:h-4" />
+                                                            {isArabic ? 'صور' : 'Photos'} ({creatorPosts.filter(p => p.type === 'IMAGE').length})
+                                                        </div>
+                                                        {profileTab === 'media' && (
+                                                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" />
+                                                        )}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setProfileTab('videos')}
+                                                        className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${profileTab === 'videos'
+                                                            ? 'text-foreground bg-card-hover'
+                                                            : 'text-muted-foreground hover:text-foreground'
+                                                            }`}
+                                                    >
+                                                        <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
+                                                            <DynamicIcon name="Video" className="w-3 h-3 sm:w-4 sm:h-4" />
+                                                            {isArabic ? 'فيديو' : 'Videos'} ({creatorPosts.filter(p => p.type === 'VIDEO').length})
+                                                        </div>
+                                                        {profileTab === 'videos' && (
+                                                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" />
+                                                        )}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setProfileTab('calendar')}
+                                                        className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${profileTab === 'calendar'
+                                                            ? 'text-foreground bg-card-hover'
+                                                            : 'text-muted-foreground hover:text-foreground'
+                                                            }`}
+                                                    >
+                                                        <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
+                                                            <DynamicIcon name="Calendar" className="w-3 h-3 sm:w-4 sm:h-4" />
+                                                            {isArabic ? 'التقويم' : 'Calendar'}
+                                                        </div>
+                                                        {profileTab === 'calendar' && (
+                                                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" />
+                                                        )}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setProfileTab('stats')}
+                                                        className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${profileTab === 'stats'
+                                                            ? 'text-foreground bg-card-hover'
+                                                            : 'text-muted-foreground hover:text-foreground'
+                                                            }`}
+                                                    >
+                                                        <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
+                                                            <DynamicIcon name="BarChart3" className="w-3 h-3 sm:w-4 sm:h-4" />
+                                                            <span className="hidden sm:inline">{isArabic ? 'الإحصائيات' : 'Analytics'}</span>
+                                                            <span className="sm:hidden">{isArabic ? 'إحصاء' : 'Stats'}</span>
+                                                        </div>
+                                                        {profileTab === 'stats' && (
+                                                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" />
+                                                        )}
+                                                    </button>
                                                 </div>
 
-                                                {/* Content Tabs */}
-                                                <div className="bg-card border border-border rounded-xl sm:rounded-2xl overflow-hidden">
-                                                    <div className="flex items-center border-b border-border overflow-x-auto scrollbar-hide">
-                                                        <button
-                                                            onClick={() => setProfileTab('posts')}
-                                                            className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${
-                                                                profileTab === 'posts'
-                                                                    ? 'text-foreground bg-card-hover'
-                                                                    : 'text-muted-foreground hover:text-foreground'
-                                                            }`}
-                                                        >
-                                                            <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
-                                                                <DynamicIcon name="ImageIcon" className="w-3 h-3 sm:w-4 sm:h-4" />
-                                                                <span className="hidden sm:inline">{isArabic ? 'جميع المنشورات' : 'All Posts'}</span>
-                                                                <span className="sm:hidden">{isArabic ? 'الكل' : 'All'}</span>
-                                                                ({creatorPosts.length})
-                                                            </div>
-                                                            {profileTab === 'posts' && (
-                                                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" />
-                                                            )}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setProfileTab('media')}
-                                                            className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${
-                                                                profileTab === 'media'
-                                                                    ? 'text-foreground bg-card-hover'
-                                                                    : 'text-muted-foreground hover:text-foreground'
-                                                            }`}
-                                                        >
-                                                            <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
-                                                                <DynamicIcon name="Film" className="w-3 h-3 sm:w-4 sm:h-4" />
-                                                                {isArabic ? 'صور' : 'Photos'} ({creatorPosts.filter(p => p.type === 'IMAGE').length})
-                                                            </div>
-                                                            {profileTab === 'media' && (
-                                                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" />
-                                                            )}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setProfileTab('videos')}
-                                                            className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${
-                                                                profileTab === 'videos'
-                                                                    ? 'text-foreground bg-card-hover'
-                                                                    : 'text-muted-foreground hover:text-foreground'
-                                                            }`}
-                                                        >
-                                                            <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
-                                                                <DynamicIcon name="Video" className="w-3 h-3 sm:w-4 sm:h-4" />
-                                                                {isArabic ? 'فيديو' : 'Videos'} ({creatorPosts.filter(p => p.type === 'VIDEO').length})
-                                                            </div>
-                                                            {profileTab === 'videos' && (
-                                                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" />
-                                                            )}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setProfileTab('calendar')}
-                                                            className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${
-                                                                profileTab === 'calendar'
-                                                                    ? 'text-foreground bg-card-hover'
-                                                                    : 'text-muted-foreground hover:text-foreground'
-                                                            }`}
-                                                        >
-                                                            <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
-                                                                <DynamicIcon name="Calendar" className="w-3 h-3 sm:w-4 sm:h-4" />
-                                                                {isArabic ? 'التقويم' : 'Calendar'}
-                                                            </div>
-                                                            {profileTab === 'calendar' && (
-                                                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" />
-                                                            )}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setProfileTab('stats')}
-                                                            className={`flex-shrink-0 py-3 sm:py-4 px-3 sm:px-6 font-semibold transition-all relative text-xs sm:text-sm ${
-                                                                profileTab === 'stats'
-                                                                    ? 'text-foreground bg-card-hover'
-                                                                    : 'text-muted-foreground hover:text-foreground'
-                                                            }`}
-                                                        >
-                                                            <div className="flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
-                                                                <DynamicIcon name="BarChart3" className="w-3 h-3 sm:w-4 sm:h-4" />
-                                                                <span className="hidden sm:inline">{isArabic ? 'الإحصائيات' : 'Analytics'}</span>
-                                                                <span className="sm:hidden">{isArabic ? 'إحصاء' : 'Stats'}</span>
-                                                            </div>
-                                                            {profileTab === 'stats' && (
-                                                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" />
-                                                            )}
-                                                        </button>
-                                                    </div>
-
-                                                    {/* Tab Content */}
-                                                    <div className="p-6">
-                                                        {/* Calendar Tab */}
-                                                        {profileTab === 'calendar' && (
-                                                            selectedCreator?.id ? (
-                                                                <>
-                                                                    <ContentCalendar
-                                                                        isArabic={isArabic}
-                                                                        creatorId={selectedCreator.id}
-                                                                        onCreateNew={() => setUploadModalOpen(true)}
-                                                                        onEditPost={(post) => {
-                                                                            // Open edit modal with post data
-                                                                            setUploadModalOpen(true)
-                                                                        }}
-                                                                    />
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <div className="text-center py-12">
-                                                                        <DynamicIcon name="Calendar" className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                                                                        <h3 className="text-xl font-bold mb-2 text-foreground">
-                                                                            {isArabic ? 'لم يتم العثور على ملف المنشئ' : 'Creator Profile Not Found'}
-                                                                        </h3>
-                                                                        <p className="text-muted-foreground mb-4">
-                                                                            {isArabic 
-                                                                                ? 'يرجى إكمال عملية تأهيل المنشئ للوصول إلى التقويم' 
-                                                                                : 'Please complete the creator onboarding process to access the calendar'}
-                                                                        </p>
-                                                                        <Button
-                                                                            onClick={() => router.push(`/${locale}/creator-apply`)}
-                                                                            className="bg-purple-600 hover:bg-purple-700"
-                                                                        >
-                                                                            {isArabic ? 'أصبح منشئًا' : 'Become a Creator'}
-                                                                        </Button>
-                                                                    </div>
-                                                                </>
-                                                            )
-                                                        )}
-                                                        
-                                                        {/* Posts Management */}
-                                                        {profileTab === 'posts' && (
-                                                            <div className="space-y-4">
-                                                                {/* View Toggle */}
-                                                                <div className="flex items-center justify-between mb-3">
-                                                                    <div className="flex items-center gap-1 sm:gap-2">
-                                                                        <button
-                                                                            onClick={() => setMediaView('grid')}
-                                                                            className={`p-1.5 sm:p-2 rounded-lg transition-all ${
-                                                                                mediaView === 'grid'
-                                                                                    ? 'bg-purple-500 text-white'
-                                                                                    : 'bg-card-hover text-muted-foreground hover:text-foreground'
-                                                                            }`}
-                                                                        >
-                                                                            <DynamicIcon name="Grid" className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => setMediaView('list')}
-                                                                            className={`p-1.5 sm:p-2 rounded-lg transition-all ${
-                                                                                mediaView === 'list'
-                                                                                    ? 'bg-purple-500 text-white'
-                                                                                    : 'bg-card-hover text-muted-foreground hover:text-foreground'
-                                                                            }`}
-                                                                        >
-                                                                            <DynamicIcon name="List" className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                                                        </button>
-                                                                    </div>
-                                                                    <div className="flex items-center gap-1 sm:gap-2">
-                                                                        <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
-                                                                            {isArabic ? 'فلتر' : 'Filter'}
-                                                                        </Button>
-                                                                        <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
-                                                                            {isArabic ? 'ترتيب' : 'Sort'}
-                                                                        </Button>
-                                                                    </div>
+                                                {/* Tab Content */}
+                                                <div className="p-6">
+                                                    {/* Calendar Tab */}
+                                                    {profileTab === 'calendar' && (
+                                                        selectedCreator?.id ? (
+                                                            <>
+                                                                <ContentCalendar
+                                                                    isArabic={isArabic}
+                                                                    creatorId={selectedCreator.id}
+                                                                    onCreateNew={() => setUploadModalOpen(true)}
+                                                                    onEditPost={(post) => {
+                                                                        // Open edit modal with post data
+                                                                        setUploadModalOpen(true)
+                                                                    }}
+                                                                />
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className="text-center py-12">
+                                                                    <DynamicIcon name="Calendar" className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                                                                    <h3 className="text-xl font-bold mb-2 text-foreground">
+                                                                        {isArabic ? 'لم يتم العثور على ملف المنشئ' : 'Creator Profile Not Found'}
+                                                                    </h3>
+                                                                    <p className="text-muted-foreground mb-4">
+                                                                        {isArabic
+                                                                            ? 'يرجى إكمال عملية تأهيل المنشئ للوصول إلى التقويم'
+                                                                            : 'Please complete the creator onboarding process to access the calendar'}
+                                                                    </p>
+                                                                    <Button
+                                                                        onClick={() => router.push(`/${locale}/creator-apply`)}
+                                                                        className="bg-purple-600 hover:bg-purple-700"
+                                                                    >
+                                                                        {isArabic ? 'أصبح منشئًا' : 'Become a Creator'}
+                                                                    </Button>
                                                                 </div>
+                                                            </>
+                                                        )
+                                                    )}
 
-                                                                {/* Grid View */}
-                                                                {mediaView === 'grid' && (
-                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
-                                                                        {loadingCreatorPosts ? (
-                                                                            Array.from({ length: 8 }).map((_, i) => (
-                                                                                <div key={i} className="aspect-square bg-card-hover rounded-xl animate-pulse" />
-                                                                            ))
-                                                                        ) : creatorPosts.length === 0 ? (
-                                                                            <div className="col-span-full text-center py-12 text-muted-foreground">
-                                                                                {isArabic ? 'لا توجد منشورات بعد' : 'No posts yet'}
-                                                                            </div>
-                                                                        ) : (
-                                                                            creatorPosts.map((post, i) => (
+                                                    {/* Posts Management */}
+                                                    {profileTab === 'posts' && (
+                                                        <div className="space-y-4">
+                                                            {/* View Toggle */}
+                                                            <div className="flex items-center justify-between mb-3">
+                                                                <div className="flex items-center gap-1 sm:gap-2">
+                                                                    <button
+                                                                        onClick={() => setMediaView('grid')}
+                                                                        className={`p-1.5 sm:p-2 rounded-lg transition-all ${mediaView === 'grid'
+                                                                            ? 'bg-purple-500 text-white'
+                                                                            : 'bg-card-hover text-muted-foreground hover:text-foreground'
+                                                                            }`}
+                                                                    >
+                                                                        <DynamicIcon name="Grid" className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => setMediaView('list')}
+                                                                        className={`p-1.5 sm:p-2 rounded-lg transition-all ${mediaView === 'list'
+                                                                            ? 'bg-purple-500 text-white'
+                                                                            : 'bg-card-hover text-muted-foreground hover:text-foreground'
+                                                                            }`}
+                                                                    >
+                                                                        <DynamicIcon name="List" className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                                                    </button>
+                                                                </div>
+                                                                <div className="flex items-center gap-1 sm:gap-2">
+                                                                    <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
+                                                                        {isArabic ? 'فلتر' : 'Filter'}
+                                                                    </Button>
+                                                                    <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
+                                                                        {isArabic ? 'ترتيب' : 'Sort'}
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Grid View */}
+                                                            {mediaView === 'grid' && (
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
+                                                                    {loadingCreatorPosts ? (
+                                                                        Array.from({ length: 8 }).map((_, i) => (
+                                                                            <div key={i} className="aspect-square bg-card-hover rounded-xl animate-pulse" />
+                                                                        ))
+                                                                    ) : creatorPosts.length === 0 ? (
+                                                                        <div className="col-span-full text-center py-12 text-muted-foreground">
+                                                                            {isArabic ? 'لا توجد منشورات بعد' : 'No posts yet'}
+                                                                        </div>
+                                                                    ) : (
+                                                                        creatorPosts.map((post, i) => (
                                                                             <motion.div
                                                                                 key={post.id}
                                                                                 initial={{ opacity: 0, scale: 0.9 }}
@@ -2711,7 +2694,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                                 if (fallback) fallback.style.display = 'flex'
                                                                                             }}
                                                                                         />
-                                                                                        <div className="hidden w-full h-full items-center justify-center bg-gradient-to-br from-purple-500/20 to-pink-500/20" style={{position: 'absolute', top: 0, left: 0}}>
+                                                                                        <div className="hidden w-full h-full items-center justify-center bg-gradient-to-br from-purple-500/20 to-pink-500/20" style={{ position: 'absolute', top: 0, left: 0 }}>
                                                                                             <span className="text-4xl">{post.type === 'VIDEO' ? '🎥' : post.type === 'IMAGE' ? '🖼️' : '📝'}</span>
                                                                                         </div>
                                                                                     </div>
@@ -2754,9 +2737,9 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                             </div>
                                                                                         </div>
                                                                                         <div className="flex items-center gap-2">
-                                                                                            <Button 
-                                                                                                size="sm" 
-                                                                                                variant="outline" 
+                                                                                            <Button
+                                                                                                size="sm"
+                                                                                                variant="outline"
                                                                                                 className="flex-1 text-xs"
                                                                                                 onClick={(e) => {
                                                                                                     e.stopPropagation()
@@ -2766,9 +2749,9 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                                 <DynamicIcon name="Edit" className="w-3 h-3 mr-1" />
                                                                                                 {isArabic ? 'تعديل' : 'Edit'}
                                                                                             </Button>
-                                                                                            <Button 
-                                                                                                size="sm" 
-                                                                                                variant="outline" 
+                                                                                            <Button
+                                                                                                size="sm"
+                                                                                                variant="outline"
                                                                                                 className="flex-1 text-xs text-red-400 hover:text-red-500"
                                                                                                 onClick={(e) => {
                                                                                                     e.stopPropagation()
@@ -2786,23 +2769,23 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                 </div>
                                                                             </motion.div>
                                                                         ))
-                                                                        )}
-                                                                    </div>
-                                                                )}
+                                                                    )}
+                                                                </div>
+                                                            )}
 
-                                                                {/* List View */}
-                                                                {mediaView === 'list' && (
-                                                                    <div className="space-y-3">
-                                                                        {loadingCreatorPosts ? (
-                                                                            Array.from({ length: 5 }).map((_, i) => (
-                                                                                <div key={i} className="h-24 bg-card-hover rounded-xl animate-pulse" />
-                                                                            ))
-                                                                        ) : creatorPosts.length === 0 ? (
-                                                                            <div className="text-center py-12 text-muted-foreground">
-                                                                                {isArabic ? 'لا توجد منشورات بعد' : 'No posts yet'}
-                                                                            </div>
-                                                                        ) : (
-                                                                            creatorPosts.map((post) => (
+                                                            {/* List View */}
+                                                            {mediaView === 'list' && (
+                                                                <div className="space-y-3">
+                                                                    {loadingCreatorPosts ? (
+                                                                        Array.from({ length: 5 }).map((_, i) => (
+                                                                            <div key={i} className="h-24 bg-card-hover rounded-xl animate-pulse" />
+                                                                        ))
+                                                                    ) : creatorPosts.length === 0 ? (
+                                                                        <div className="text-center py-12 text-muted-foreground">
+                                                                            {isArabic ? 'لا توجد منشورات بعد' : 'No posts yet'}
+                                                                        </div>
+                                                                    ) : (
+                                                                        creatorPosts.map((post) => (
                                                                             <div
                                                                                 key={post.id}
                                                                                 onClick={() => setSelectedPost(post)}
@@ -2840,17 +2823,17 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                             {post.viewCount || 0}
                                                                                         </span>
                                                                                         <Badge className={
-                                                                                            post.tier === 'GOLD' ? 'bg-yellow-500/20 text-yellow-400' : 
-                                                                                            post.tier === 'SILVER' ? 'bg-purple-500/20 text-purple-400' : 
-                                                                                            'bg-gray-500/20 text-gray-400'
+                                                                                            post.tier === 'GOLD' ? 'bg-yellow-500/20 text-yellow-400' :
+                                                                                                post.tier === 'SILVER' ? 'bg-purple-500/20 text-purple-400' :
+                                                                                                    'bg-gray-500/20 text-gray-400'
                                                                                         }>
                                                                                             {post.tier === 'GOLD' ? 'VIP' : post.tier === 'SILVER' ? 'Premium' : 'Basic'}
                                                                                         </Badge>
                                                                                     </div>
                                                                                 </div>
                                                                                 <div className="flex flex-col gap-2">
-                                                                                    <Button 
-                                                                                        size="sm" 
+                                                                                    <Button
+                                                                                        size="sm"
                                                                                         variant="outline"
                                                                                         onClick={(e) => {
                                                                                             e.stopPropagation()
@@ -2860,9 +2843,9 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                         <DynamicIcon name="Edit" className="w-3 h-3 mr-1" />
                                                                                         {isArabic ? 'تعديل' : 'Edit'}
                                                                                     </Button>
-                                                                                    <Button 
-                                                                                        size="sm" 
-                                                                                        variant="outline" 
+                                                                                    <Button
+                                                                                        size="sm"
+                                                                                        variant="outline"
                                                                                         className="text-red-400 hover:text-red-500"
                                                                                         onClick={(e) => {
                                                                                             e.stopPropagation()
@@ -2875,29 +2858,29 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                 </div>
                                                                             </div>
                                                                         ))
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        )}
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
 
-                                                        {/* Media Tab */}
-                                                        {profileTab === 'media' && (
-                                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                                                {loadingCreatorPosts ? (
-                                                                    Array.from({ length: 12 }).map((_, i) => (
-                                                                        <div key={i} className="aspect-square bg-card-hover rounded-lg animate-pulse" />
-                                                                    ))
-                                                                ) : creatorPosts.filter(post => post.type === 'IMAGE' && (post.mediaUrl || post.thumbnailUrl)).length === 0 ? (
-                                                                    <div className="col-span-full text-center py-12 text-muted-foreground">
-                                                                        {isArabic ? 'لا توجد صور بعد' : 'No images yet'}
-                                                                    </div>
-                                                                ) : (
-                                                                    creatorPosts
-                                                                        .filter(post => post.type === 'IMAGE' && (post.mediaUrl || post.thumbnailUrl))
-                                                                        .map((post) => (
-                                                                        <div 
-                                                                            key={post.id} 
+                                                    {/* Media Tab */}
+                                                    {profileTab === 'media' && (
+                                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                                            {loadingCreatorPosts ? (
+                                                                Array.from({ length: 12 }).map((_, i) => (
+                                                                    <div key={i} className="aspect-square bg-card-hover rounded-lg animate-pulse" />
+                                                                ))
+                                                            ) : creatorPosts.filter(post => post.type === 'IMAGE' && (post.mediaUrl || post.thumbnailUrl)).length === 0 ? (
+                                                                <div className="col-span-full text-center py-12 text-muted-foreground">
+                                                                    {isArabic ? 'لا توجد صور بعد' : 'No images yet'}
+                                                                </div>
+                                                            ) : (
+                                                                creatorPosts
+                                                                    .filter(post => post.type === 'IMAGE' && (post.mediaUrl || post.thumbnailUrl))
+                                                                    .map((post) => (
+                                                                        <div
+                                                                            key={post.id}
                                                                             onClick={() => setSelectedPost(post)}
                                                                             className="relative aspect-square bg-card-hover rounded-lg overflow-hidden group cursor-pointer"
                                                                         >
@@ -2921,26 +2904,26 @@ export default function OnlyFansStyleMentorsPage() {
                                                                             </div>
                                                                         </div>
                                                                     ))
-                                                                )}
-                                                            </div>
-                                                        )}
+                                                            )}
+                                                        </div>
+                                                    )}
 
-                                                        {/* Videos Tab */}
-                                                        {profileTab === 'videos' && (
-                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                                                                {loadingCreatorPosts ? (
-                                                                    Array.from({ length: 6 }).map((_, i) => (
-                                                                        <div key={i} className="aspect-video bg-card-hover rounded-xl animate-pulse" />
-                                                                    ))
-                                                                ) : creatorPosts.filter(post => post.type === 'VIDEO').length === 0 ? (
-                                                                    <div className="col-span-full text-center py-12 text-muted-foreground">
-                                                                        {isArabic ? 'لا توجد فيديوهات بعد' : 'No videos yet'}
-                                                                    </div>
-                                                                ) : (
-                                                                    creatorPosts
-                                                                        .filter(post => post.type === 'VIDEO')
-                                                                        .map((post) => (
-                                                                        <div 
+                                                    {/* Videos Tab */}
+                                                    {profileTab === 'videos' && (
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                                                            {loadingCreatorPosts ? (
+                                                                Array.from({ length: 6 }).map((_, i) => (
+                                                                    <div key={i} className="aspect-video bg-card-hover rounded-xl animate-pulse" />
+                                                                ))
+                                                            ) : creatorPosts.filter(post => post.type === 'VIDEO').length === 0 ? (
+                                                                <div className="col-span-full text-center py-12 text-muted-foreground">
+                                                                    {isArabic ? 'لا توجد فيديوهات بعد' : 'No videos yet'}
+                                                                </div>
+                                                            ) : (
+                                                                creatorPosts
+                                                                    .filter(post => post.type === 'VIDEO')
+                                                                    .map((post) => (
+                                                                        <div
                                                                             key={post.id}
                                                                             onClick={() => setSelectedPost(post)}
                                                                             className="relative aspect-video bg-card-hover rounded-xl overflow-hidden group cursor-pointer border border-border"
@@ -2977,675 +2960,672 @@ export default function OnlyFansStyleMentorsPage() {
                                                                             )}
                                                                         </div>
                                                                     ))
-                                                                )}
-                                                            </div>
-                                                        )}
+                                                            )}
+                                                        </div>
+                                                    )}
 
-                                                        {/* Analytics Tab */}
-                                                        {profileTab === 'stats' && (
-                                                            <div className="space-y-4">
-                                                                <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                                                                    <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-4">
-                                                                        <DynamicIcon name="Heart" className="w-8 h-8 text-purple-400 mb-2" />
-                                                                        <div className="text-2xl font-black text-foreground">
-                                                                            {creatorPosts.reduce((sum, post) => sum + (post.likeCount || 0), 0).toLocaleString()}
-                                                                        </div>
-                                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'إجمالي الإعجابات' : 'Total Likes'}</div>
+                                                    {/* Analytics Tab */}
+                                                    {profileTab === 'stats' && (
+                                                        <div className="space-y-4">
+                                                            <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                                                                <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-4">
+                                                                    <DynamicIcon name="Heart" className="w-8 h-8 text-purple-400 mb-2" />
+                                                                    <div className="text-2xl font-black text-foreground">
+                                                                        {creatorPosts.reduce((sum, post) => sum + (post.likeCount || 0), 0).toLocaleString()}
                                                                     </div>
-                                                                    <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-xl p-4">
-                                                                        <DynamicIcon name="MessageCircle" className="w-8 h-8 text-blue-400 mb-2" />
-                                                                        <div className="text-2xl font-black text-foreground">
-                                                                            {creatorPosts.reduce((sum, post) => sum + (post.commentCount || 0), 0).toLocaleString()}
-                                                                        </div>
-                                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'التعليقات' : 'Comments'}</div>
+                                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'إجمالي الإعجابات' : 'Total Likes'}</div>
+                                                                </div>
+                                                                <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-xl p-4">
+                                                                    <DynamicIcon name="MessageCircle" className="w-8 h-8 text-blue-400 mb-2" />
+                                                                    <div className="text-2xl font-black text-foreground">
+                                                                        {creatorPosts.reduce((sum, post) => sum + (post.commentCount || 0), 0).toLocaleString()}
                                                                     </div>
-                                                                    <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-4">
-                                                                        <DynamicIcon name="Eye" className="w-8 h-8 text-green-400 mb-2" />
-                                                                        <div className="text-2xl font-black text-foreground">
-                                                                            {creatorPosts.reduce((sum, post) => sum + (post.viewCount || 0), 0).toLocaleString()}
-                                                                        </div>
-                                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'المشاهدات' : 'Views'}</div>
+                                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'التعليقات' : 'Comments'}</div>
+                                                                </div>
+                                                                <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-4">
+                                                                    <DynamicIcon name="Eye" className="w-8 h-8 text-green-400 mb-2" />
+                                                                    <div className="text-2xl font-black text-foreground">
+                                                                        {creatorPosts.reduce((sum, post) => sum + (post.viewCount || 0), 0).toLocaleString()}
                                                                     </div>
-                                                                    <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-xl p-4">
-                                                                        <DynamicIcon name="Film" className="w-8 h-8 text-yellow-400 mb-2" />
-                                                                        <div className="text-2xl font-black text-foreground">
-                                                                            {creatorPosts.length}
-                                                                        </div>
-                                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'المنشورات' : 'Posts'}</div>
+                                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'المشاهدات' : 'Views'}</div>
+                                                                </div>
+                                                                <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-xl p-4">
+                                                                    <DynamicIcon name="Film" className="w-8 h-8 text-yellow-400 mb-2" />
+                                                                    <div className="text-2xl font-black text-foreground">
+                                                                        {creatorPosts.length}
                                                                     </div>
+                                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'المنشورات' : 'Posts'}</div>
                                                                 </div>
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Withdrawal Section - OnlyFans Style */}
-                                            <div className="mb-4 sm:mb-6">
-                                                <h3 className="text-base sm:text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                                                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    {isArabic ? 'الأرباح والسحب' : 'Earnings & Withdrawals'}
-                                                </h3>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4">
-                                                    {/* Available Balance */}
-                                                    <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl sm:rounded-2xl p-4 sm:p-6">
-                                                        <div className="flex items-center justify-between mb-3 sm:mb-4">
-                                                            <div>
-                                                                <div className="text-xs sm:text-sm text-muted-foreground mb-1">
-                                                                    {isArabic ? 'الرصيد المتاح' : 'Available Balance'}
-                                                                </div>
-                                                                <div className="text-2xl sm:text-3xl md:text-4xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                                                                    €{creatorStats?.earnings?.available?.toLocaleString() || '0'}
-                                                                </div>
-                                                                <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-                                                                    {isArabic ? 'جاهز للسحب' : 'Ready to withdraw'}
-                                                                </div>
-                                                            </div>
-                                                            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                                                                <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                                                </svg>
-                                                            </div>
-                                                        </div>
-                                                        <Button
-                                                            onClick={() => setWithdrawalModalOpen(true)}
-                                                            className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold"
-                                                        >
-                                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                            </svg>
-                                                            {isArabic ? 'سحب الأموال' : 'Withdraw Funds'}
-                                                        </Button>
-                                                    </div>
-
-                                                    {/* Pending Clearance */}
-                                                    <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
-                                                        <div className="flex items-center justify-between mb-3 sm:mb-4">
-                                                            <div>
-                                                                <div className="text-xs sm:text-sm text-muted-foreground mb-1">
-                                                                    {isArabic ? 'قيد المعالجة' : 'Pending Clearance'}
-                                                                </div>
-                                                                <div className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground">
-                                                                    €{creatorStats?.earnings?.pending?.toLocaleString() || '0'}
-                                                                </div>
-                                                                <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-                                                                    {isArabic ? 'متاح في 3-5 أيام' : 'Available in 3-5 days'}
-                                                                </div>
-                                                            </div>
-                                                            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
-                                                                <svg className="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                </svg>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Withdrawal History */}
-                                                <div className="bg-card border border-border rounded-2xl overflow-hidden">
-                                                    <div className="p-4 border-b border-border flex items-center justify-between">
-                                                        <h4 className="font-bold text-foreground">{isArabic ? 'سجل السحب' : 'Withdrawal History'}</h4>
-                                                        <button className="text-purple-400 hover:text-purple-300 text-sm font-semibold">
-                                                            {isArabic ? 'عرض الكل' : 'View All'} →
-                                                        </button>
-                                                    </div>
-                                                    <div className="divide-y divide-border">
-                                                        {creatorStats?.recentActivity && creatorStats.recentActivity.length > 0 ? (
-                                                            creatorStats.recentActivity
-                                                                .filter((activity: any) => activity.type === 'withdrawal')
-                                                                .slice(0, 3)
-                                                                .map((withdrawal: any, i: number) => (
-                                                                    <div key={i} className="p-4 flex items-center justify-between hover:bg-card-hover transition-colors">
-                                                                        <div className="flex items-center gap-3">
-                                                                            <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                                                                                <span className="text-green-400 font-bold">✓</span>
-                                                                            </div>
-                                                                            <div>
-                                                                                <div className="font-bold text-foreground">€{withdrawal.amount?.toLocaleString() || '0'}</div>
-                                                                                <div className="text-xs text-muted-foreground">
-                                                                                    {new Date(withdrawal.time).toLocaleDateString()}
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                                                                            {withdrawal.status || 'Completed'}
-                                                                        </Badge>
-                                                                    </div>
-                                                                ))
-                                                        ) : (
-                                                            <div className="p-8 text-center text-muted-foreground">
-                                                                {isArabic ? 'لا يوجد سجل سحب حتى الآن' : 'No withdrawal history yet'}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Revenue Analytics Chart */}
-                                            <div className="mb-4 sm:mb-6">
-                                                <h3 className="text-base sm:text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                                                    <DynamicIcon name="TrendingUp" className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
-                                                    {isArabic ? 'تحليلات الإيرادات' : 'Revenue Analytics'}
-                                                </h3>
-                                                <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
-                                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
-                                                        <div>
-                                                            <div className="text-xs sm:text-sm text-muted-foreground">{isArabic ? 'إجمالي الإيرادات' : 'Total Revenue'}</div>
-                                                            <div className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                                                €{creatorStats?.earnings?.total?.toLocaleString() || '0'}
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex gap-1 sm:gap-2">
-                                                            <Button size="sm" variant="outline" className="text-xs px-2 sm:px-3">{isArabic ? '7 أيام' : '7D'}</Button>
-                                                            <Button size="sm" variant="outline" className="text-xs px-2 sm:px-3">{isArabic ? '30 يوم' : '30D'}</Button>
-                                                            <Button size="sm" className="bg-purple-500/20 text-purple-400 text-xs px-2 sm:px-3">{isArabic ? '6 شهور' : '6M'}</Button>
-                                                        </div>
-                                                    </div>
-                                                    {/* Revenue Breakdown - single tier */}
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                                        <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-xl p-4">
-                                                            <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'مشتركون نشطون' : 'Active Subscribers'}</div>
-                                                            <div className="text-xl font-bold text-foreground">
-                                                                {subscriberCount.toLocaleString()} {isArabic ? 'مشترك' : 'subs'}
-                                                            </div>
-                                                            <div className="text-xs text-muted-foreground mt-1">
-                                                                {isArabic ? 'اشتراك موحد' : 'Single-tier access'}
-                                                            </div>
-                                                        </div>
-                                                        <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-4">
-                                                            <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'عائد شهري تقديري' : 'Est. Monthly MRR'}</div>
-                                                            <div className="text-xl font-bold text-foreground">
-                                                                €{(subscriberCount * (selectedCreator?.monthlyPrice || 0)).toLocaleString()}
-                                                            </div>
-                                                            <div className="text-xs text-muted-foreground mt-1">
-                                                                {isArabic ? 'يشمل الجلسات المباشرة' : 'Includes live sessions access'}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Quick Actions */}
-                                            <div className="mb-4 sm:mb-6">
-                                                <h3 className="text-base sm:text-lg font-bold text-foreground mb-2 sm:mb-3">{isArabic ? 'إجراءات سريعة' : 'Quick Actions'}</h3>
-                                                <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
-                                                    <Button 
-                                                        onClick={() => setUploadModalOpen(true)} 
-                                                        variant="outline"
-                                                        className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-purple-500/10 hover:border-purple-500/50 transition-all"
-                                                    >
-                                                        <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                                        </svg>
-                                                        <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'منشور' : 'Post'}</span>
-                                                    </Button>
-                                                    <Button 
-                                                        onClick={() => {
-                                                            // Navigate to own mentor page sessions tab
-                                                            if (selectedCreator?.id) {
-                                                                router.push(`/${locale}/mentors/${selectedCreator.id}?tab=sessions`)
-                                                            }
-                                                        }} 
-                                                        variant="outline"
-                                                        className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-blue-500/10 hover:border-blue-500/50 transition-all"
-                                                    >
-                                                        <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                        </svg>
-                                                        <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'جدولة' : 'Schedule'}</span>
-                                                    </Button>
-                                                    <Button 
-                                                        onClick={() => {
-                                                            // Navigate to own mentor page resources tab
-                                                            if (selectedCreator?.id) {
-                                                                router.push(`/${locale}/mentors/${selectedCreator.id}?tab=resources`)
-                                                            }
-                                                        }} 
-                                                        variant="outline"
-                                                        className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-green-500/10 hover:border-green-500/50 transition-all"
-                                                    >
-                                                        <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                                        </svg>
-                                                        <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'رفع' : 'Upload'}</span>
-                                                    </Button>
-                                                    <Button 
-                                                        onClick={() => {
-                                                            setIsNavigating(true)
-                                                            router.push(`/${locale}/messaging`)
-                                                        }}
-                                                        variant="outline"
-                                                        disabled={isNavigating}
-                                                        className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-pink-500/10 hover:border-pink-500/50 transition-all"
-                                                    >
-                                                        {isNavigating ? (
-                                                            <DynamicIcon name="Loader2" className="w-5 h-5 sm:w-6 sm:h-6 text-pink-500 animate-spin" />
-                                                        ) : (
-                                                            <DynamicIcon name="MessageCircle" className="w-5 h-5 sm:w-6 sm:h-6 text-pink-500" />
-                                                        )}
-                                                        <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'رسائل' : 'DMs'}</span>
-                                                    </Button>
-                                                    <Button 
-                                                        onClick={() => {
-                                                            // Navigate to own mentor page community tab
-                                                            if (selectedCreator?.id) {
-                                                                router.push(`/${locale}/mentors/${selectedCreator.id}?tab=community`)
-                                                            }
-                                                        }} 
-                                                        variant="outline"
-                                                        className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-yellow-500/10 hover:border-yellow-500/50 transition-all"
-                                                    >
-                                                        <DynamicIcon name="Users" className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
-                                                        <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'مشتركين' : 'Subs'}</span>
-                                                    </Button>
-                                                    <Button 
-                                                        onClick={() => setProfileTab('stats')} 
-                                                        variant="outline"
-                                                        className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all"
-                                                    >
-                                                        <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                                        </svg>
-                                                        <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'إحصاء' : 'Stats'}</span>
-                                                    </Button>
-                                                </div>
-                                            </div>
-
-                                            {/* Subscribers Breakdown */}
-                                            <div className="mb-6">
-                                                <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                                                    <DynamicIcon name="Users" className="w-5 h-5 text-purple-400" />
-                                                    {isArabic ? 'تحليل المشتركين' : 'Subscriber Analytics'}
-                                                </h3>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                                    <motion.div
-                                                        initial={{ opacity: 0, scale: 0.95 }}
-                                                        animate={{ opacity: 1, scale: 1 }}
-                                                        className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-2xl p-6"
-                                                    >
-                                                        <div className="flex items-center justify-between mb-3">
-                                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-                                                                <DynamicIcon name="Users" className="w-6 h-6 text-white" />
-                                                            </div>
-                                                            <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">{isArabic ? 'المشتركون' : 'Subscribers'}</Badge>
-                                                        </div>
-                                                        <div className="text-4xl font-black text-foreground mb-2">{subscriberCount}</div>
-                                                        <div className="text-sm text-muted-foreground mb-3">{isArabic ? 'اشتراك موحد' : 'Single-tier access'}</div>
-                                                        <div className="text-sm text-foreground font-bold">
-                                                            €{(subscriberCount * (selectedCreator?.monthlyPrice || 0)).toLocaleString()}/mo
-                                                        </div>
-                                                    </motion.div>
-
-                                                    <motion.div
-                                                        initial={{ opacity: 0, scale: 0.95 }}
-                                                        animate={{ opacity: 1, scale: 1 }}
-                                                        transition={{ delay: 0.08 }}
-                                                        className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-2xl p-6"
-                                                    >
-                                                        <div className="flex items-center justify-between mb-3">
-                                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-                                                                <DynamicIcon name="CalendarCheck" className="w-6 h-6 text-white" />
-                                                            </div>
-                                                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Live</Badge>
-                                                        </div>
-                                                        <div className="text-2xl font-black text-foreground mb-2">{isArabic ? 'جلسات مباشرة أسبوعية' : 'Weekly live sessions'}</div>
-                                                        <div className="text-sm text-muted-foreground mb-3">{isArabic ? 'متاحة من خلال التقويم' : 'Manage via calendar tab'}</div>
-                                                        <Button size="sm" onClick={() => setProfileTab('calendar')} className="bg-green-500/20 text-green-400 hover:bg-green-500/30">
-                                                            {isArabic ? 'افتح التقويم' : 'Open calendar'}
-                                                        </Button>
-                                                    </motion.div>
-                                                </div>
-
-                                                {/* Subscriber Stats Grid */}
-                                                <div className="grid grid-cols-1 gap-4">
-                                                    <div className="bg-card border border-border rounded-2xl p-4 text-center">
-                                                        <div className="text-2xl font-black text-foreground">{selectedCreator?.totalSubscribers || 0}</div>
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'إجمالي المشتركين' : 'Total Subscribers'}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Content Performance */}
-                                            <div className="mb-6">
-                                                <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                                                    <DynamicIcon name="Sparkles" className="w-5 h-5 text-purple-400" />
-                                                    {isArabic ? 'أداء المحتوى' : 'Content Performance'}
-                                                </h3>
-                                                <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-                                                    <div className="bg-card border border-border rounded-2xl p-4 text-center hover:border-purple-500/50 transition-all">
-                                                        <svg className="w-8 h-8 text-purple-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                        </svg>
-                                                        <div className="text-2xl font-black text-foreground">{creatorStats?.content?.totalPosts || creatorPosts.length}</div>
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'منشورات' : 'Posts'}</div>
-                                                    </div>
-                                                    <div className="bg-card border border-border rounded-2xl p-4 text-center hover:border-purple-500/50 transition-all">
-                                                        <svg className="w-8 h-8 text-blue-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                        </svg>
-                                                        <div className="text-2xl font-black text-foreground">
-                                                            {creatorStats?.content?.totalViews 
-                                                                ? `${(creatorStats.content.totalViews / 1000).toFixed(1)}K` 
-                                                                : creatorPosts.reduce((sum, p) => sum + (p.viewCount || 0), 0)}
-                                                        </div>
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'مشاهدات' : 'Views'}</div>
-                                                    </div>
-                                                    <div className="bg-card border border-border rounded-2xl p-4 text-center hover:border-purple-500/50 transition-all">
-                                                        <DynamicIcon name="Heart" className="w-8 h-8 text-pink-400 mx-auto mb-2" />
-                                                        <div className="text-2xl font-black text-foreground">
-                                                            {creatorStats?.content?.avgLikes || Math.floor(creatorPosts.reduce((sum, p) => sum + (p.likeCount || 0), 0) / (creatorPosts.length || 1))}
-                                                        </div>
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'متوسط الإعجابات' : 'Avg Likes'}</div>
-                                                    </div>
-                                                    <div className="bg-card border border-border rounded-2xl p-4 text-center hover:border-purple-500/50 transition-all">
-                                                        <svg className="w-8 h-8 text-green-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                                        </svg>
-                                                        <div className="text-2xl font-black text-foreground">
-                                                            {creatorStats?.content?.engagementRate 
-                                                                ? `${creatorStats.content.engagementRate.toFixed(1)}%` 
-                                                                : '0%'}
-                                                        </div>
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'التفاعل' : 'Engagement'}</div>
-                                                    </div>
-                                                    <div className="bg-card border border-border rounded-2xl p-4 text-center hover:border-purple-500/50 transition-all">
-                                                        <svg className="w-8 h-8 text-yellow-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                        </svg>
-                                                        <div className="text-2xl font-black text-foreground">
-                                                            {creatorPosts.filter(p => p.scheduledAt && new Date(p.scheduledAt) > new Date()).length}
-                                                        </div>
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'مجدولة' : 'Scheduled'}</div>
-                                                    </div>
-                                                    <div className="bg-card border border-border rounded-2xl p-4 text-center hover:border-purple-500/50 transition-all">
-                                                        <svg className="w-8 h-8 text-purple-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-                                                        </svg>
-                                                        <div className="text-2xl font-black text-foreground">
-                                                            {creatorPosts.reduce((sum, p) => sum + (p.commentCount || 0), 0)}
-                                                        </div>
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'تعليقات' : 'Comments'}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Top Subscribers */}
-                                            <div className="mb-6">
-                                                <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                                                    <DynamicIcon name="Crown" className="w-5 h-5 text-yellow-400" />
-                                                    {isArabic ? 'أفضل المشتركين' : 'Top Subscribers'}
-                                                </h3>
-                                                <div className="bg-card border border-border rounded-2xl overflow-hidden">
-                                                    <div className="divide-y divide-border">
-                                                        {creatorStats?.topSubscribers && creatorStats.topSubscribers.length > 0 ? (
-                                                            creatorStats.topSubscribers.slice(0, 3).map((subscriber: any, i: number) => (
-                                                                <div key={i} className="p-4 flex items-center gap-4 hover:bg-card-hover transition-colors">
-                                                                    <div className="flex items-center gap-1">
-                                                                        <span className="text-2xl font-black text-muted-foreground">#{i + 1}</span>
-                                                                    </div>
-                                                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                                                                        <span className="text-xl font-bold text-white">{subscriber.name?.[0]?.toUpperCase() || 'U'}</span>
-                                                                    </div>
-                                                                    <div className="flex-1">
-                                                                        <div className="flex items-center gap-2 mb-1">
-                                                                            <div className="font-bold text-foreground">{subscriber.name || 'Subscriber'}</div>
-                                                                            {subscriber.tier === 'VIP' && <DynamicIcon name="Crown" className="w-4 h-4 text-yellow-400" />}
-                                                                        </div>
-                                                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                                            <Badge className={`${
-                                                                                subscriber.tier === 'VIP' 
-                                                                                    ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' 
-                                                                                    : subscriber.tier === 'PREMIUM'
-                                                                                    ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
-                                                                                    : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
-                                                                            }`}>
-                                                                                {subscriber.tier}
-                                                                            </Badge>
-                                                                            <span>• {subscriber.monthsSubscribed || 1} {isArabic ? 'شهر' : 'months'}</span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="text-right">
-                                                                        <div className="text-xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                                                            €{(subscriber.totalSpent || 0).toLocaleString()}
-                                                                        </div>
-                                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'إجمالي الإنفاق' : 'Total spent'}</div>
-                                                                    </div>
-                                                                </div>
-                                                            ))
-                                                        ) : (
-                                                            <div className="p-8 text-center text-muted-foreground">
-                                                                {isArabic ? 'لا يوجد مشتركون حتى الآن' : 'No subscribers yet'}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Recent Subscriber Activity */}
-                                            <div className="mb-6">
-                                                <h3 className="text-lg font-bold text-foreground mb-3">{isArabic ? 'نشاط المشتركين الأخير' : 'Recent Subscriber Activity'}</h3>
-                                                <div className="bg-card border border-border rounded-2xl divide-y divide-border">
-                                                    {creatorStats?.recentActivity && creatorStats.recentActivity.length > 0 ? (
-                                                        creatorStats.recentActivity
-                                                            .filter((activity: any) => activity.type !== 'withdrawal')
-                                                            .slice(0, 4)
-                                                            .map((activity: any, i: number) => (
-                                                                <div key={i} className="p-4 flex items-center gap-4 hover:bg-card-hover transition-colors">
-                                                                    <div className="text-2xl">
-                                                                        {activity.type === 'new_subscription' && '🎉'}
-                                                                        {activity.type === 'upgrade' && '⬆️'}
-                                                                        {activity.type === 'renewal' && '🔄'}
-                                                                        {activity.type === 'tip' && '💰'}
-                                                                    </div>
-                                                                    <div className="flex-1">
-                                                                        <div className="font-semibold text-foreground">
-                                                                            {activity.type === 'new_subscription' && `${activity.user} subscribed`}
-                                                                            {activity.type === 'upgrade' && `${activity.user} upgraded subscription`}
-                                                                            {activity.type === 'renewal' && `${activity.user} renewed subscription`}
-                                                                            {activity.type === 'tip' && `${activity.user} sent you €${activity.amount} tip`}
-                                                                        </div>
-                                                                        <div className="text-xs text-muted-foreground">
-                                                                            {new Date(activity.time).toLocaleDateString()} {new Date(activity.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                                        </div>
-                                                                    </div>
-                                                                    {activity.tier && (
-                                                                        <Badge className={`${
-                                                                            activity.tier === 'VIP' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' :
-                                                                            activity.tier === 'PREMIUM' ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' :
-                                                                            'bg-gray-500/20 text-gray-400 border-gray-500/30'
-                                                                        }`}>
-                                                                            {activity.tier}
-                                                                        </Badge>
-                                                                    )}
-                                                                </div>
-                                                            ))
-                                                    ) : (
-                                                        <div className="p-8 text-center text-muted-foreground">
-                                                            {isArabic ? 'لا يوجد نشاط حديث' : 'No recent activity'}
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
+                                        </div>
 
-                                            {/* Content Calendar Preview */}
-                                            <div className="mb-6">
-                                                <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                                                    <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                    </svg>
-                                                    {isArabic ? 'جدول المحتوى' : 'Content Calendar'}
-                                                </h3>
-                                                <div className="bg-card border border-border rounded-2xl p-6 text-center">
-                                                    <p className="text-muted-foreground mb-4">
-                                                        {isArabic ? 'عرض جدول المحتوى الكامل في علامة التبويب التقويم' : 'View full content calendar in the Calendar tab'}
-                                                    </p>
+                                        {/* Withdrawal Section - OnlyFans Style */}
+                                        <div className="mb-4 sm:mb-6">
+                                            <h3 className="text-base sm:text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                                                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                {isArabic ? 'الأرباح والسحب' : 'Earnings & Withdrawals'}
+                                            </h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4">
+                                                {/* Available Balance */}
+                                                <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl sm:rounded-2xl p-4 sm:p-6">
+                                                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                                        <div>
+                                                            <div className="text-xs sm:text-sm text-muted-foreground mb-1">
+                                                                {isArabic ? 'الرصيد المتاح' : 'Available Balance'}
+                                                            </div>
+                                                            <div className="text-2xl sm:text-3xl md:text-4xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                                                                €{creatorStats?.earnings?.available?.toLocaleString() || '0'}
+                                                            </div>
+                                                            <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                                                                {isArabic ? 'جاهز للسحب' : 'Ready to withdraw'}
+                                                            </div>
+                                                        </div>
+                                                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                                            <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                            </svg>
+                                                        </div>
+                                                    </div>
                                                     <Button
-                                                        onClick={() => setProfileTab('calendar')}
-                                                        className="bg-purple-600 hover:bg-purple-700"
+                                                        onClick={() => setWithdrawalModalOpen(true)}
+                                                        className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold"
                                                     >
                                                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                         </svg>
-                                                        {isArabic ? 'انتقل إلى التقويم' : 'Go to Calendar'}
+                                                        {isArabic ? 'سحب الأموال' : 'Withdraw Funds'}
                                                     </Button>
                                                 </div>
-                                            </div>
 
-                                            {/* Goals & Milestones */}
-                                            <div>
-                                                <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                                                    <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                                                    </svg>
-                                                    {isArabic ? 'الأهداف والإنجازات' : 'Goals & Milestones'}
-                                                </h3>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {[
-                                                        { title: '1,500 Subscribers', current: selectedCreator?.totalSubscribers || 0, target: 1500, color: 'purple' },
-                                                        { title: '€15,000/month', current: creatorStats?.earnings?.thisMonth || 0, target: 15000, color: 'green' }
-                                                    ].map((goal, i) => (
-                                                        <div key={i} className="bg-card border border-border rounded-2xl p-6">
-                                                            <div className="flex items-center justify-between mb-3">
-                                                                <h4 className="font-bold text-foreground">{goal.title}</h4>
-                                                                <span className="text-sm font-bold text-muted-foreground">
-                                                                    {Math.floor((goal.current / goal.target) * 100)}%
-                                                                </span>
+                                                {/* Pending Clearance */}
+                                                <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
+                                                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                                        <div>
+                                                            <div className="text-xs sm:text-sm text-muted-foreground mb-1">
+                                                                {isArabic ? 'قيد المعالجة' : 'Pending Clearance'}
                                                             </div>
-                                                            <div className="w-full bg-white/5 rounded-full h-3 mb-2 overflow-hidden">
-                                                                <div
-                                                                    className={`h-full bg-gradient-to-r ${
-                                                                        goal.color === 'purple' 
-                                                                            ? 'from-purple-500 to-pink-500' 
-                                                                            : 'from-green-500 to-emerald-500'
-                                                                    } transition-all`}
-                                                                    style={{ width: `${(goal.current / goal.target) * 100}%` }}
-                                                                />
+                                                            <div className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground">
+                                                                €{creatorStats?.earnings?.pending?.toLocaleString() || '0'}
                                                             </div>
-                                                            <div className="flex items-center justify-between text-sm text-muted-foreground">
-                                                                <span>{goal.current.toLocaleString()}</span>
-                                                                <span>{goal.target.toLocaleString()}</span>
+                                                            <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                                                                {isArabic ? 'متاح في 3-5 أيام' : 'Available in 3-5 days'}
                                                             </div>
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            {/* Member Perks & Benefits */}
-                                            <div className="mb-6">
-                                                <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                                                    <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-                                                    </svg>
-                                                    {isArabic ? 'المزايا والفوائد' : 'Member Perks & Benefits'}
-                                                </h3>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-2xl p-5">
-                                                        <div className="flex items-center gap-3 mb-4">
-                                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-                                                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                            </div>
-                                                            <div>
-                                                                <h4 className="font-bold text-foreground">{isArabic ? 'اشتراك موحد' : 'All-Access'}</h4>
-                                                                <p className="text-xs text-muted-foreground">€{selectedCreator?.monthlyPrice || 0}/mo</p>
-                                                            </div>
+                                                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                                                            <svg className="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
                                                         </div>
-                                                        <ul className="space-y-2 text-sm">
-                                                            <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <span>{isArabic ? 'الوصول إلى جميع المنشورات والفيديو' : 'Access to all posts & video'}</span>
-                                                            </li>
-                                                            <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <span>{isArabic ? 'جلسات مباشرة أسبوعية' : 'Weekly live sessions'}</span>
-                                                            </li>
-                                                            <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <span>{isArabic ? 'محادثات مباشرة أولوية' : 'Priority DMs & Q&A'}</span>
-                                                            </li>
-                                                            <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <span>{isArabic ? 'حجوزات عبر التقويم' : 'Calendar booking access'}</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-
-                                                    <div className="bg-gradient-to-br from-emerald-500/10 to-green-500/10 border border-emerald-500/30 rounded-2xl p-5">
-                                                        <div className="flex items-center gap-3 mb-4">
-                                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center">
-                                                                <DynamicIcon name="CalendarCheck" className="w-5 h-5 text-white" />
-                                                            </div>
-                                                            <div>
-                                                                <h4 className="font-bold text-foreground">{isArabic ? 'جلسات حية' : 'Live Sessions'}</h4>
-                                                                <p className="text-xs text-muted-foreground">{isArabic ? 'متاحة للمشتركين' : 'Included for members'}</p>
-                                                            </div>
-                                                        </div>
-                                                        <ul className="space-y-2 text-sm">
-                                                            <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <span>{isArabic ? 'انضم/احجز عبر التقويم' : 'Join/book through calendar'}</span>
-                                                            </li>
-                                                            <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <span>{isArabic ? 'تنبيهات مباشرة في الوقت الحقيقي' : 'Real-time live alerts'}</span>
-                                                            </li>
-                                                            <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <span>{isArabic ? 'جلسات أسئلة وأجوبة تفاعلية' : 'Interactive Q&A segments'}</span>
-                                                            </li>
-                                                            <li className="flex items-start gap-2 text-foreground">
-                                                                <svg className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <span>{isArabic ? 'إعادة تشغيل الجلسات للمشتركين' : 'Session replays for members'}</span>
-                                                            </li>
-                                                        </ul>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* Rewards & Achievements - Coming Soon */}
-                                            <div className="mb-6">
-                                                <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                                                    <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                                                    </svg>
-                                                    {isArabic ? 'المكافآت والإنجازات' : 'Rewards & Achievements'}
-                                                </h3>
-                                                <div className="bg-card border border-border rounded-2xl p-8 text-center">
-                                                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                                                        <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                                                        </svg>
-                                                    </div>
-                                                    <h4 className="text-lg font-bold text-foreground mb-2">
-                                                        {isArabic ? 'قريباً' : 'Coming Soon'}
-                                                    </h4>
-                                                    <p className="text-muted-foreground text-sm">
-                                                        {isArabic ? 'مسابقات وإنجازات ومكافآت للأعضاء النشطين' : 'Contests, achievements and rewards for active members'}
-                                                    </p>
+                                            {/* Withdrawal History */}
+                                            <div className="bg-card border border-border rounded-2xl overflow-hidden">
+                                                <div className="p-4 border-b border-border flex items-center justify-between">
+                                                    <h4 className="font-bold text-foreground">{isArabic ? 'سجل السحب' : 'Withdrawal History'}</h4>
+                                                    <button className="text-purple-400 hover:text-purple-300 text-sm font-semibold">
+                                                        {isArabic ? 'عرض الكل' : 'View All'} →
+                                                    </button>
+                                                </div>
+                                                <div className="divide-y divide-border">
+                                                    {creatorStats?.recentActivity && creatorStats.recentActivity.length > 0 ? (
+                                                        creatorStats.recentActivity
+                                                            .filter((activity: any) => activity.type === 'withdrawal')
+                                                            .slice(0, 3)
+                                                            .map((withdrawal: any, i: number) => (
+                                                                <div key={i} className="p-4 flex items-center justify-between hover:bg-card-hover transition-colors">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                                                                            <span className="text-green-400 font-bold">✓</span>
+                                                                        </div>
+                                                                        <div>
+                                                                            <div className="font-bold text-foreground">€{withdrawal.amount?.toLocaleString() || '0'}</div>
+                                                                            <div className="text-xs text-muted-foreground">
+                                                                                {new Date(withdrawal.time).toLocaleDateString()}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                                                                        {withdrawal.status || 'Completed'}
+                                                                    </Badge>
+                                                                </div>
+                                                            ))
+                                                    ) : (
+                                                        <div className="p-8 text-center text-muted-foreground">
+                                                            {isArabic ? 'لا يوجد سجل سحب حتى الآن' : 'No withdrawal history yet'}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
+
+                                        {/* Revenue Analytics Chart */}
+                                        <div className="mb-4 sm:mb-6">
+                                            <h3 className="text-base sm:text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                                                <DynamicIcon name="TrendingUp" className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
+                                                {isArabic ? 'تحليلات الإيرادات' : 'Revenue Analytics'}
+                                            </h3>
+                                            <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
+                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
+                                                    <div>
+                                                        <div className="text-xs sm:text-sm text-muted-foreground">{isArabic ? 'إجمالي الإيرادات' : 'Total Revenue'}</div>
+                                                        <div className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                                            €{creatorStats?.earnings?.total?.toLocaleString() || '0'}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-1 sm:gap-2">
+                                                        <Button size="sm" variant="outline" className="text-xs px-2 sm:px-3">{isArabic ? '7 أيام' : '7D'}</Button>
+                                                        <Button size="sm" variant="outline" className="text-xs px-2 sm:px-3">{isArabic ? '30 يوم' : '30D'}</Button>
+                                                        <Button size="sm" className="bg-purple-500/20 text-purple-400 text-xs px-2 sm:px-3">{isArabic ? '6 شهور' : '6M'}</Button>
+                                                    </div>
+                                                </div>
+                                                {/* Revenue Breakdown - single tier */}
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                                    <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-xl p-4">
+                                                        <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'مشتركون نشطون' : 'Active Subscribers'}</div>
+                                                        <div className="text-xl font-bold text-foreground">
+                                                            {subscriberCount.toLocaleString()} {isArabic ? 'مشترك' : 'subs'}
+                                                        </div>
+                                                        <div className="text-xs text-muted-foreground mt-1">
+                                                            {isArabic ? 'اشتراك موحد' : 'Single-tier access'}
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-4">
+                                                        <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'عائد شهري تقديري' : 'Est. Monthly MRR'}</div>
+                                                        <div className="text-xl font-bold text-foreground">
+                                                            €{(subscriberCount * (selectedCreator?.monthlyPrice || 0)).toLocaleString()}
+                                                        </div>
+                                                        <div className="text-xs text-muted-foreground mt-1">
+                                                            {isArabic ? 'يشمل الجلسات المباشرة' : 'Includes live sessions access'}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Quick Actions */}
+                                        <div className="mb-4 sm:mb-6">
+                                            <h3 className="text-base sm:text-lg font-bold text-foreground mb-2 sm:mb-3">{isArabic ? 'إجراءات سريعة' : 'Quick Actions'}</h3>
+                                            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
+                                                <Button
+                                                    onClick={() => setUploadModalOpen(true)}
+                                                    variant="outline"
+                                                    className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-purple-500/10 hover:border-purple-500/50 transition-all"
+                                                >
+                                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                    </svg>
+                                                    <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'منشور' : 'Post'}</span>
+                                                </Button>
+                                                <Button
+                                                    onClick={() => {
+                                                        // Navigate to own mentor page sessions tab
+                                                        if (selectedCreator?.id) {
+                                                            router.push(`/${locale}/mentors/${selectedCreator.id}?tab=sessions`)
+                                                        }
+                                                    }}
+                                                    variant="outline"
+                                                    className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-blue-500/10 hover:border-blue-500/50 transition-all"
+                                                >
+                                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                    <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'جدولة' : 'Schedule'}</span>
+                                                </Button>
+                                                <Button
+                                                    onClick={() => {
+                                                        // Navigate to own mentor page resources tab
+                                                        if (selectedCreator?.id) {
+                                                            router.push(`/${locale}/mentors/${selectedCreator.id}?tab=resources`)
+                                                        }
+                                                    }}
+                                                    variant="outline"
+                                                    className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-green-500/10 hover:border-green-500/50 transition-all"
+                                                >
+                                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                    </svg>
+                                                    <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'رفع' : 'Upload'}</span>
+                                                </Button>
+                                                <Button
+                                                    onClick={() => {
+                                                        setIsNavigating(true)
+                                                        router.push(`/${locale}/messaging`)
+                                                    }}
+                                                    variant="outline"
+                                                    disabled={isNavigating}
+                                                    className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-pink-500/10 hover:border-pink-500/50 transition-all"
+                                                >
+                                                    {isNavigating ? (
+                                                        <DynamicIcon name="Loader2" className="w-5 h-5 sm:w-6 sm:h-6 text-pink-500 animate-spin" />
+                                                    ) : (
+                                                        <DynamicIcon name="MessageCircle" className="w-5 h-5 sm:w-6 sm:h-6 text-pink-500" />
+                                                    )}
+                                                    <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'رسائل' : 'DMs'}</span>
+                                                </Button>
+                                                <Button
+                                                    onClick={() => {
+                                                        // Navigate to own mentor page community tab
+                                                        if (selectedCreator?.id) {
+                                                            router.push(`/${locale}/mentors/${selectedCreator.id}?tab=community`)
+                                                        }
+                                                    }}
+                                                    variant="outline"
+                                                    className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-yellow-500/10 hover:border-yellow-500/50 transition-all"
+                                                >
+                                                    <DynamicIcon name="Users" className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
+                                                    <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'مشتركين' : 'Subs'}</span>
+                                                </Button>
+                                                <Button
+                                                    onClick={() => setProfileTab('stats')}
+                                                    variant="outline"
+                                                    className="flex flex-col items-center gap-1 sm:gap-2 h-auto py-2 sm:py-4 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all"
+                                                >
+                                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                                    </svg>
+                                                    <span className="text-[10px] sm:text-xs font-semibold text-foreground">{isArabic ? 'إحصاء' : 'Stats'}</span>
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {/* Subscribers Breakdown */}
+                                        <div className="mb-6">
+                                            <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                                                <DynamicIcon name="Users" className="w-5 h-5 text-purple-400" />
+                                                {isArabic ? 'تحليل المشتركين' : 'Subscriber Analytics'}
+                                            </h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                <motion.div
+                                                    initial={{ opacity: 0, scale: 0.95 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-2xl p-6"
+                                                >
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                                                            <DynamicIcon name="Users" className="w-6 h-6 text-white" />
+                                                        </div>
+                                                        <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">{isArabic ? 'المشتركون' : 'Subscribers'}</Badge>
+                                                    </div>
+                                                    <div className="text-4xl font-black text-foreground mb-2">{subscriberCount}</div>
+                                                    <div className="text-sm text-muted-foreground mb-3">{isArabic ? 'اشتراك موحد' : 'Single-tier access'}</div>
+                                                    <div className="text-sm text-foreground font-bold">
+                                                        €{(subscriberCount * (selectedCreator?.monthlyPrice || 0)).toLocaleString()}/mo
+                                                    </div>
+                                                </motion.div>
+
+                                                <motion.div
+                                                    initial={{ opacity: 0, scale: 0.95 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    transition={{ delay: 0.08 }}
+                                                    className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-2xl p-6"
+                                                >
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                                                            <DynamicIcon name="CalendarCheck" className="w-6 h-6 text-white" />
+                                                        </div>
+                                                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Live</Badge>
+                                                    </div>
+                                                    <div className="text-2xl font-black text-foreground mb-2">{isArabic ? 'جلسات مباشرة أسبوعية' : 'Weekly live sessions'}</div>
+                                                    <div className="text-sm text-muted-foreground mb-3">{isArabic ? 'متاحة من خلال التقويم' : 'Manage via calendar tab'}</div>
+                                                    <Button size="sm" onClick={() => setProfileTab('calendar')} className="bg-green-500/20 text-green-400 hover:bg-green-500/30">
+                                                        {isArabic ? 'افتح التقويم' : 'Open calendar'}
+                                                    </Button>
+                                                </motion.div>
+                                            </div>
+
+                                            {/* Subscriber Stats Grid */}
+                                            <div className="grid grid-cols-1 gap-4">
+                                                <div className="bg-card border border-border rounded-2xl p-4 text-center">
+                                                    <div className="text-2xl font-black text-foreground">{selectedCreator?.totalSubscribers || 0}</div>
+                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'إجمالي المشتركين' : 'Total Subscribers'}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Content Performance */}
+                                        <div className="mb-6">
+                                            <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                                                <DynamicIcon name="Sparkles" className="w-5 h-5 text-purple-400" />
+                                                {isArabic ? 'أداء المحتوى' : 'Content Performance'}
+                                            </h3>
+                                            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                                                <div className="bg-card border border-border rounded-2xl p-4 text-center hover:border-purple-500/50 transition-all">
+                                                    <svg className="w-8 h-8 text-purple-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    </svg>
+                                                    <div className="text-2xl font-black text-foreground">{creatorStats?.content?.totalPosts || creatorPosts.length}</div>
+                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'منشورات' : 'Posts'}</div>
+                                                </div>
+                                                <div className="bg-card border border-border rounded-2xl p-4 text-center hover:border-purple-500/50 transition-all">
+                                                    <svg className="w-8 h-8 text-blue-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                    <div className="text-2xl font-black text-foreground">
+                                                        {creatorStats?.content?.totalViews
+                                                            ? `${(creatorStats.content.totalViews / 1000).toFixed(1)}K`
+                                                            : creatorPosts.reduce((sum, p) => sum + (p.viewCount || 0), 0)}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'مشاهدات' : 'Views'}</div>
+                                                </div>
+                                                <div className="bg-card border border-border rounded-2xl p-4 text-center hover:border-purple-500/50 transition-all">
+                                                    <DynamicIcon name="Heart" className="w-8 h-8 text-pink-400 mx-auto mb-2" />
+                                                    <div className="text-2xl font-black text-foreground">
+                                                        {creatorStats?.content?.avgLikes || Math.floor(creatorPosts.reduce((sum, p) => sum + (p.likeCount || 0), 0) / (creatorPosts.length || 1))}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'متوسط الإعجابات' : 'Avg Likes'}</div>
+                                                </div>
+                                                <div className="bg-card border border-border rounded-2xl p-4 text-center hover:border-purple-500/50 transition-all">
+                                                    <svg className="w-8 h-8 text-green-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                                    </svg>
+                                                    <div className="text-2xl font-black text-foreground">
+                                                        {creatorStats?.content?.engagementRate
+                                                            ? `${creatorStats.content.engagementRate.toFixed(1)}%`
+                                                            : '0%'}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'التفاعل' : 'Engagement'}</div>
+                                                </div>
+                                                <div className="bg-card border border-border rounded-2xl p-4 text-center hover:border-purple-500/50 transition-all">
+                                                    <svg className="w-8 h-8 text-yellow-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                    <div className="text-2xl font-black text-foreground">
+                                                        {creatorPosts.filter(p => p.scheduledAt && new Date(p.scheduledAt) > new Date()).length}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'مجدولة' : 'Scheduled'}</div>
+                                                </div>
+                                                <div className="bg-card border border-border rounded-2xl p-4 text-center hover:border-purple-500/50 transition-all">
+                                                    <svg className="w-8 h-8 text-purple-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                                                    </svg>
+                                                    <div className="text-2xl font-black text-foreground">
+                                                        {creatorPosts.reduce((sum, p) => sum + (p.commentCount || 0), 0)}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'تعليقات' : 'Comments'}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Top Subscribers */}
+                                        <div className="mb-6">
+                                            <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                                                <DynamicIcon name="Crown" className="w-5 h-5 text-yellow-400" />
+                                                {isArabic ? 'أفضل المشتركين' : 'Top Subscribers'}
+                                            </h3>
+                                            <div className="bg-card border border-border rounded-2xl overflow-hidden">
+                                                <div className="divide-y divide-border">
+                                                    {creatorStats?.topSubscribers && creatorStats.topSubscribers.length > 0 ? (
+                                                        creatorStats.topSubscribers.slice(0, 3).map((subscriber: any, i: number) => (
+                                                            <div key={i} className="p-4 flex items-center gap-4 hover:bg-card-hover transition-colors">
+                                                                <div className="flex items-center gap-1">
+                                                                    <span className="text-2xl font-black text-muted-foreground">#{i + 1}</span>
+                                                                </div>
+                                                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+                                                                    <span className="text-xl font-bold text-white">{subscriber.name?.[0]?.toUpperCase() || 'U'}</span>
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <div className="flex items-center gap-2 mb-1">
+                                                                        <div className="font-bold text-foreground">{subscriber.name || 'Subscriber'}</div>
+                                                                        {subscriber.tier === 'VIP' && <DynamicIcon name="Crown" className="w-4 h-4 text-yellow-400" />}
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                                        <Badge className={`${subscriber.tier === 'VIP'
+                                                                            ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                                                                            : subscriber.tier === 'PREMIUM'
+                                                                                ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+                                                                                : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                                                                            }`}>
+                                                                            {subscriber.tier}
+                                                                        </Badge>
+                                                                        <span>• {subscriber.monthsSubscribed || 1} {isArabic ? 'شهر' : 'months'}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-right">
+                                                                    <div className="text-xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                                                        €{(subscriber.totalSpent || 0).toLocaleString()}
+                                                                    </div>
+                                                                    <div className="text-xs text-muted-foreground">{isArabic ? 'إجمالي الإنفاق' : 'Total spent'}</div>
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="p-8 text-center text-muted-foreground">
+                                                            {isArabic ? 'لا يوجد مشتركون حتى الآن' : 'No subscribers yet'}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Recent Subscriber Activity */}
+                                        <div className="mb-6">
+                                            <h3 className="text-lg font-bold text-foreground mb-3">{isArabic ? 'نشاط المشتركين الأخير' : 'Recent Subscriber Activity'}</h3>
+                                            <div className="bg-card border border-border rounded-2xl divide-y divide-border">
+                                                {creatorStats?.recentActivity && creatorStats.recentActivity.length > 0 ? (
+                                                    creatorStats.recentActivity
+                                                        .filter((activity: any) => activity.type !== 'withdrawal')
+                                                        .slice(0, 4)
+                                                        .map((activity: any, i: number) => (
+                                                            <div key={i} className="p-4 flex items-center gap-4 hover:bg-card-hover transition-colors">
+                                                                <div className="text-2xl">
+                                                                    {activity.type === 'new_subscription' && '🎉'}
+                                                                    {activity.type === 'upgrade' && '⬆️'}
+                                                                    {activity.type === 'renewal' && '🔄'}
+                                                                    {activity.type === 'tip' && '💰'}
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <div className="font-semibold text-foreground">
+                                                                        {activity.type === 'new_subscription' && `${activity.user} subscribed`}
+                                                                        {activity.type === 'upgrade' && `${activity.user} upgraded subscription`}
+                                                                        {activity.type === 'renewal' && `${activity.user} renewed subscription`}
+                                                                        {activity.type === 'tip' && `${activity.user} sent you €${activity.amount} tip`}
+                                                                    </div>
+                                                                    <div className="text-xs text-muted-foreground">
+                                                                        {new Date(activity.time).toLocaleDateString()} {new Date(activity.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                    </div>
+                                                                </div>
+                                                                {activity.tier && (
+                                                                    <Badge className={`${activity.tier === 'VIP' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' :
+                                                                        activity.tier === 'PREMIUM' ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' :
+                                                                            'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                                                                        }`}>
+                                                                        {activity.tier}
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                        ))
+                                                ) : (
+                                                    <div className="p-8 text-center text-muted-foreground">
+                                                        {isArabic ? 'لا يوجد نشاط حديث' : 'No recent activity'}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Content Calendar Preview */}
+                                        <div className="mb-6">
+                                            <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                                                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                {isArabic ? 'جدول المحتوى' : 'Content Calendar'}
+                                            </h3>
+                                            <div className="bg-card border border-border rounded-2xl p-6 text-center">
+                                                <p className="text-muted-foreground mb-4">
+                                                    {isArabic ? 'عرض جدول المحتوى الكامل في علامة التبويب التقويم' : 'View full content calendar in the Calendar tab'}
+                                                </p>
+                                                <Button
+                                                    onClick={() => setProfileTab('calendar')}
+                                                    className="bg-purple-600 hover:bg-purple-700"
+                                                >
+                                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                    {isArabic ? 'انتقل إلى التقويم' : 'Go to Calendar'}
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {/* Goals & Milestones */}
+                                        <div>
+                                            <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                                                <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                                </svg>
+                                                {isArabic ? 'الأهداف والإنجازات' : 'Goals & Milestones'}
+                                            </h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {[
+                                                    { title: '1,500 Subscribers', current: selectedCreator?.totalSubscribers || 0, target: 1500, color: 'purple' },
+                                                    { title: '€15,000/month', current: creatorStats?.earnings?.thisMonth || 0, target: 15000, color: 'green' }
+                                                ].map((goal, i) => (
+                                                    <div key={i} className="bg-card border border-border rounded-2xl p-6">
+                                                        <div className="flex items-center justify-between mb-3">
+                                                            <h4 className="font-bold text-foreground">{goal.title}</h4>
+                                                            <span className="text-sm font-bold text-muted-foreground">
+                                                                {Math.floor((goal.current / goal.target) * 100)}%
+                                                            </span>
+                                                        </div>
+                                                        <div className="w-full bg-white/5 rounded-full h-3 mb-2 overflow-hidden">
+                                                            <div
+                                                                className={`h-full bg-gradient-to-r ${goal.color === 'purple'
+                                                                    ? 'from-purple-500 to-pink-500'
+                                                                    : 'from-green-500 to-emerald-500'
+                                                                    } transition-all`}
+                                                                style={{ width: `${(goal.current / goal.target) * 100}%` }}
+                                                            />
+                                                        </div>
+                                                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                                                            <span>{goal.current.toLocaleString()}</span>
+                                                            <span>{goal.target.toLocaleString()}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Member Perks & Benefits */}
+                                        <div className="mb-6">
+                                            <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                                                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                                                </svg>
+                                                {isArabic ? 'المزايا والفوائد' : 'Member Perks & Benefits'}
+                                            </h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-2xl p-5">
+                                                    <div className="flex items-center gap-3 mb-4">
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-bold text-foreground">{isArabic ? 'اشتراك موحد' : 'All-Access'}</h4>
+                                                            <p className="text-xs text-muted-foreground">€{selectedCreator?.monthlyPrice || 0}/mo</p>
+                                                        </div>
+                                                    </div>
+                                                    <ul className="space-y-2 text-sm">
+                                                        <li className="flex items-start gap-2 text-foreground">
+                                                            <svg className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                            <span>{isArabic ? 'الوصول إلى جميع المنشورات والفيديو' : 'Access to all posts & video'}</span>
+                                                        </li>
+                                                        <li className="flex items-start gap-2 text-foreground">
+                                                            <svg className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                            <span>{isArabic ? 'جلسات مباشرة أسبوعية' : 'Weekly live sessions'}</span>
+                                                        </li>
+                                                        <li className="flex items-start gap-2 text-foreground">
+                                                            <svg className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                            <span>{isArabic ? 'محادثات مباشرة أولوية' : 'Priority DMs & Q&A'}</span>
+                                                        </li>
+                                                        <li className="flex items-start gap-2 text-foreground">
+                                                            <svg className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                            <span>{isArabic ? 'حجوزات عبر التقويم' : 'Calendar booking access'}</span>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+
+                                                <div className="bg-gradient-to-br from-emerald-500/10 to-green-500/10 border border-emerald-500/30 rounded-2xl p-5">
+                                                    <div className="flex items-center gap-3 mb-4">
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center">
+                                                            <DynamicIcon name="CalendarCheck" className="w-5 h-5 text-white" />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-bold text-foreground">{isArabic ? 'جلسات حية' : 'Live Sessions'}</h4>
+                                                            <p className="text-xs text-muted-foreground">{isArabic ? 'متاحة للمشتركين' : 'Included for members'}</p>
+                                                        </div>
+                                                    </div>
+                                                    <ul className="space-y-2 text-sm">
+                                                        <li className="flex items-start gap-2 text-foreground">
+                                                            <svg className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                            <span>{isArabic ? 'انضم/احجز عبر التقويم' : 'Join/book through calendar'}</span>
+                                                        </li>
+                                                        <li className="flex items-start gap-2 text-foreground">
+                                                            <svg className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                            <span>{isArabic ? 'تنبيهات مباشرة في الوقت الحقيقي' : 'Real-time live alerts'}</span>
+                                                        </li>
+                                                        <li className="flex items-start gap-2 text-foreground">
+                                                            <svg className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                            <span>{isArabic ? 'جلسات أسئلة وأجوبة تفاعلية' : 'Interactive Q&A segments'}</span>
+                                                        </li>
+                                                        <li className="flex items-start gap-2 text-foreground">
+                                                            <svg className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                            <span>{isArabic ? 'إعادة تشغيل الجلسات للمشتركين' : 'Session replays for members'}</span>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Rewards & Achievements - Coming Soon */}
+                                        <div className="mb-6">
+                                            <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                                                <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                                </svg>
+                                                {isArabic ? 'المكافآت والإنجازات' : 'Rewards & Achievements'}
+                                            </h3>
+                                            <div className="bg-card border border-border rounded-2xl p-8 text-center">
+                                                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                                                    <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                                    </svg>
+                                                </div>
+                                                <h4 className="text-lg font-bold text-foreground mb-2">
+                                                    {isArabic ? 'قريباً' : 'Coming Soon'}
+                                                </h4>
+                                                <p className="text-muted-foreground text-sm">
+                                                    {isArabic ? 'مسابقات وإنجازات ومكافآت للأعضاء النشطين' : 'Contests, achievements and rewards for active members'}
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -3691,74 +3671,74 @@ export default function OnlyFansStyleMentorsPage() {
                                         </div>
                                     ) : (
                                         filteredCreators.slice(0, 5).map((creator, idx) => (
-                                        <div
-                                            key={creator.id}
-                                            className="group cursor-pointer animate-fade-in border border-white/[.16] rounded-[10px] overflow-hidden relative"
-                                            style={{ 
-                                                animationDelay: `${idx * 50}ms`
-                                            }}
-                                            onClick={() => handleCreatorClick(creator.id)}
-                                        >
-                                            {/* Lockup Scrim Overlay */}
-                                            <div 
-                                                className="absolute inset-0 bg-[rgba(51,51,51,.3)] opacity-0 group-hover:opacity-100 transition-opacity duration-100 pointer-events-none z-10"
-                                            />
+                                            <div
+                                                key={creator.id}
+                                                className="group cursor-pointer animate-fade-in border border-white/[.16] rounded-[10px] overflow-hidden relative"
+                                                style={{
+                                                    animationDelay: `${idx * 50}ms`
+                                                }}
+                                                onClick={() => handleCreatorClick(creator.id)}
+                                            >
+                                                {/* Lockup Scrim Overlay */}
+                                                <div
+                                                    className="absolute inset-0 bg-[rgba(51,51,51,.3)] opacity-0 group-hover:opacity-100 transition-opacity duration-100 pointer-events-none z-10"
+                                                />
 
-                                            {/* Image Container with Profile Photo */}
-                                            <div className="relative w-full h-28 overflow-hidden bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600">
-                                                {creator.user?.profileImage ? (
-                                                    <Image
-                                                        src={creator.user.profileImage}
-                                                        alt={creator.user?.name || 'Creator'}
-                                                        fill
-                                                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                                        unoptimized
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center">
-                                                        <AvatarPlaceholder 
-                                                            name={creator.user?.name || 'Creator'} 
-                                                            size={56}
-                                                            className="shadow-lg"
+                                                {/* Image Container with Profile Photo */}
+                                                <div className="relative w-full h-28 overflow-hidden bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600">
+                                                    {creator.user?.profileImage ? (
+                                                        <Image
+                                                            src={creator.user.profileImage}
+                                                            alt={creator.user?.name || 'Creator'}
+                                                            fill
+                                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                                            unoptimized
                                                         />
-                                                    </div>
-                                                )}
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <AvatarPlaceholder
+                                                                name={creator.user?.name || 'Creator'}
+                                                                size={56}
+                                                                className="shadow-lg"
+                                                            />
+                                                        </div>
+                                                    )}
 
-                                                {/* Online Status - Top Right */}
-                                                {creator.isOnline && (
-                                                    <div className="absolute top-1.5 right-1.5 z-20">
-                                                        <div className="w-2 h-2 bg-[#0a84ff] rounded-full border border-white/50" />
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Content - Bottom */}
-                                            <div className="relative p-2.5 bg-transparent">
-                                                <div className="flex items-center gap-1.5 mb-1">
-                                                    <h4 className="font-semibold text-white text-xs truncate flex-1">
-                                                        {creator.user?.name || 'Creator'}
-                                                    </h4>
-                                                    {creator.stats.averageRating >= 4.5 && (
-                                                        <DynamicIcon name="CheckCircle" className="w-3.5 h-3.5 text-[#0a84ff] fill-[#0a84ff] flex-shrink-0" />
+                                                    {/* Online Status - Top Right */}
+                                                    {creator.isOnline && (
+                                                        <div className="absolute top-1.5 right-1.5 z-20">
+                                                            <div className="w-2 h-2 bg-[#0a84ff] rounded-full border border-white/50" />
+                                                        </div>
                                                     )}
                                                 </div>
 
-                                                <div className="flex items-center justify-between text-[10px] text-white/50">
-                                                    <span>
-                                                        {creator.totalSubscribers >= 1000 
-                                                            ? `${(creator.totalSubscribers / 1000).toFixed(1)}K` 
-                                                            : creator.totalSubscribers
-                                                        } {isArabic ? 'مشترك' : 'subs'}
-                                                    </span>
-                                                    <span className="font-semibold text-white/80">
-                                                        €{creator.monthlyPrice || 0}
-                                                    </span>
+                                                {/* Content - Bottom */}
+                                                <div className="relative p-2.5 bg-transparent">
+                                                    <div className="flex items-center gap-1.5 mb-1">
+                                                        <h4 className="font-semibold text-white text-xs truncate flex-1">
+                                                            {creator.user?.name || 'Creator'}
+                                                        </h4>
+                                                        {creator.stats.averageRating >= 4.5 && (
+                                                            <DynamicIcon name="CheckCircle" className="w-3.5 h-3.5 text-[#0a84ff] fill-[#0a84ff] flex-shrink-0" />
+                                                        )}
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between text-[10px] text-white/50">
+                                                        <span>
+                                                            {creator.totalSubscribers >= 1000
+                                                                ? `${(creator.totalSubscribers / 1000).toFixed(1)}K`
+                                                                : creator.totalSubscribers
+                                                            } {isArabic ? 'مشترك' : 'subs'}
+                                                        </span>
+                                                        <span className="font-semibold text-white/80">
+                                                            €{creator.monthlyPrice || 0}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    )))}
+                                        )))}
                                 </div>
-                                <button 
+                                <button
                                     className="w-full p-3 text-[#0a84ff] hover:text-white hover:bg-white/5 text-sm font-semibold transition-all text-center border-t border-white/10"
                                     onClick={() => setActiveView('creators')}
                                 >
@@ -3773,11 +3753,11 @@ export default function OnlyFansStyleMentorsPage() {
             {/* Modals */}
             {/* Post View Modal */}
             {selectedPost && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
                     onClick={() => setSelectedPost(null)}
                 >
-                    <div 
+                    <div
                         className="bg-card border border-border rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -3785,37 +3765,37 @@ export default function OnlyFansStyleMentorsPage() {
                         <div className="p-6">
                             <div className="flex items-start justify-between mb-4">
                                 <h2 className="text-2xl font-bold">{selectedPost.title || 'Post'}</h2>
-                                <Button 
-                                    variant="ghost" 
+                                <Button
+                                    variant="ghost"
                                     size="icon"
                                     onClick={() => setSelectedPost(null)}
                                 >
                                     <DynamicIcon name="X" className="w-5 h-5" />
                                 </Button>
                             </div>
-                            
+
                             {selectedPost.mediaUrl && (
                                 <div className="mb-4 rounded-lg overflow-hidden">
                                     {selectedPost.type === 'VIDEO' ? (
-                                        <video 
-                                            controls 
+                                        <video
+                                            controls
                                             className="w-full"
                                             src={selectedPost.mediaUrl}
                                         />
                                     ) : (
-                                        <img 
-                                            src={selectedPost.mediaUrl} 
-                                            alt={selectedPost.title || 'Post'} 
+                                        <img
+                                            src={selectedPost.mediaUrl}
+                                            alt={selectedPost.title || 'Post'}
                                             className="w-full"
                                         />
                                     )}
                                 </div>
                             )}
-                            
+
                             <div className="prose prose-invert max-w-none">
                                 <p>{selectedPost.content}</p>
                             </div>
-                            
+
                             <div className="flex items-center gap-4 mt-6 pt-6 border-t border-border">
                                 <Button variant="outline" className="flex items-center gap-2">
                                     <DynamicIcon name="Heart" className="w-4 h-4" />
@@ -3857,14 +3837,14 @@ export default function OnlyFansStyleMentorsPage() {
                             fetchUserSubscriptions()
                         }}
                     />
-                    
+
                     <TipModal
                         isOpen={tipModalOpen}
                         onClose={() => setTipModalOpen(false)}
                         creator={selectedCreator}
                         onSend={handleSendTip}
                     />
-                    
+
                     <DirectMessageModal
                         isOpen={messageModalOpen && selectedCreator !== null}
                         onClose={() => setMessageModalOpen(false)}
@@ -3873,7 +3853,7 @@ export default function OnlyFansStyleMentorsPage() {
                     />
                 </>
             )}
-            
+
             <WithdrawalModal
                 isOpen={withdrawalModalOpen}
                 onClose={() => setWithdrawalModalOpen(false)}
@@ -3915,12 +3895,12 @@ export default function OnlyFansStyleMentorsPage() {
                         profileImage: selectedCreator?.user?.profileImage || (session.user as any)?.image || null,
                         coverImage: null,
                         socialLinks: {
-                                twitter: '',
-                                instagram: '',
-                                linkedin: '',
-                                youtube: '',
-                                website: ''
-                            },
+                            twitter: '',
+                            instagram: '',
+                            linkedin: '',
+                            youtube: '',
+                            website: ''
+                        },
                         monthlyPrice: selectedCreator?.monthlyPrice || 0
                     }}
                     isArabic={isArabic}
@@ -3932,11 +3912,10 @@ export default function OnlyFansStyleMentorsPage() {
                 <div className="flex items-center justify-around py-2 px-1">
                     <button
                         onClick={handleSetFeedView}
-                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${
-                            activeView === 'feed'
-                                ? 'text-[#0a84ff]'
-                                : 'text-white/60 hover:text-white'
-                        }`}
+                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeView === 'feed'
+                            ? 'text-[#0a84ff]'
+                            : 'text-white/60 hover:text-white'
+                            }`}
                     >
                         <svg className="w-6 h-6" fill={activeView === 'feed' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeView === 'feed' ? 0 : 2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -3946,11 +3925,10 @@ export default function OnlyFansStyleMentorsPage() {
 
                     <button
                         onClick={handleSetCreatorsView}
-                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${
-                            activeView === 'creators'
-                                ? 'text-[#0a84ff]'
-                                : 'text-white/60 hover:text-white'
-                        }`}
+                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeView === 'creators'
+                            ? 'text-[#0a84ff]'
+                            : 'text-white/60 hover:text-white'
+                            }`}
                     >
                         <svg className="w-6 h-6" fill={activeView === 'creators' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeView === 'creators' ? 0 : 2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -3960,11 +3938,10 @@ export default function OnlyFansStyleMentorsPage() {
 
                     <button
                         onClick={handleSetSubscriptionsView}
-                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${
-                            activeView === 'subscriptions'
-                                ? 'text-[#0a84ff]'
-                                : 'text-white/60 hover:text-white'
-                        }`}
+                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeView === 'subscriptions'
+                            ? 'text-[#0a84ff]'
+                            : 'text-white/60 hover:text-white'
+                            }`}
                     >
                         <svg className="w-6 h-6" fill={activeView === 'subscriptions' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeView === 'subscriptions' ? 0 : 2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
@@ -3975,11 +3952,10 @@ export default function OnlyFansStyleMentorsPage() {
                     {session && (
                         <button
                             onClick={handleSetBookmarksView}
-                            className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${
-                                activeView === 'bookmarks'
-                                    ? 'text-[#0a84ff]'
-                                    : 'text-white/60 hover:text-white'
-                            }`}
+                            className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeView === 'bookmarks'
+                                ? 'text-[#0a84ff]'
+                                : 'text-white/60 hover:text-white'
+                                }`}
                         >
                             <svg className="w-6 h-6" fill={activeView === 'bookmarks' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeView === 'bookmarks' ? 0 : 2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />

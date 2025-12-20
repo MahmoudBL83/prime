@@ -2,17 +2,17 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-    Video, 
-    VideoOff, 
-    Mic, 
-    MicOff, 
-    Phone, 
-    PhoneOff, 
-    Monitor, 
-    MonitorOff, 
-    Settings, 
-    MessageCircle, 
+import {
+    Video,
+    VideoOff,
+    Mic,
+    MicOff,
+    Phone,
+    PhoneOff,
+    Monitor,
+    MonitorOff,
+    Settings,
+    MessageCircle,
     Users,
     Maximize2,
     Minimize2,
@@ -60,7 +60,7 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
     const [callDuration, setCallDuration] = useState(0)
     const [chatMessages, setChatMessages] = useState<Array<{ id: string; sender: string; message: string; timestamp: Date }>>([])
     const [messageInput, setMessageInput] = useState('')
-    
+
     const localVideoRef = useRef<HTMLVideoElement>(null)
     const remoteVideoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({})
     const videoCallService = useRef<VideoCallService | null>(null)
@@ -84,16 +84,75 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
         }
     }, [isCallConnected])
 
+    // Signaling Polling Logic
+    useEffect(() => {
+        if (!sessionId) return
+
+        let lastSignalId = 0
+        const pollInterval = setInterval(async () => {
+            try {
+                const response = await fetch(`/api/study-buddy/video-call/signal?sessionId=${sessionId}&lastSignalId=${lastSignalId}`)
+                if (response.ok) {
+                    const data = await response.json()
+
+                    if (data.signals && data.signals.length > 0) {
+                        for (const signal of data.signals) {
+                            lastSignalId = Math.max(lastSignalId, parseInt(signal.id))
+                            await handleIncomingSignal(signal)
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Signaling poll error:', error)
+            }
+        }, 2000) // Poll every 2 seconds
+
+        return () => clearInterval(pollInterval)
+    }, [sessionId])
+
+    const handleIncomingSignal = async (signal: any) => {
+        if (!videoCallService.current) return
+
+        const { type, data } = signal
+        // data structure from API is { offer, answer, candidate } inside the 'data' JSON string we passed
+        // but wait, the API returns { id, type, data: JSON.parse(signal.data) }
+
+        // signal.data is already parsed JSON from the API route response in formattedSignals
+        const payload = signal.data
+
+        try {
+            switch (type) {
+                case 'offer':
+                    if (payload.offer) {
+                        await videoCallService.current.handleOffer(payload.offer)
+                    }
+                    break
+                case 'answer':
+                    if (payload.answer) {
+                        await videoCallService.current.handleAnswer(payload.answer)
+                    }
+                    break
+                case 'ice-candidate':
+                    if (payload.candidate) {
+                        await videoCallService.current.handleIceCandidate(payload.candidate)
+                    }
+                    break
+            }
+        } catch (error) {
+            console.error('Error handling signal:', error)
+        }
+    }
+
     const initializeVideoCall = async () => {
         try {
             videoCallService.current = new VideoCallService()
-            
+
             // Set up event handlers before starting call
             setupEventHandlers()
-            
+
             // Start the call which initializes everything
             const localStream = await videoCallService.current.startCall(sessionId, isInitiator)
-            
+
             if (localVideoRef.current) {
                 localVideoRef.current.srcObject = localStream
             }
@@ -118,8 +177,8 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
             if (remoteParticipant && remoteVideoRefs.current[remoteParticipant.id]) {
                 remoteVideoRefs.current[remoteParticipant.id]!.srcObject = remoteStream
             }
-            
-            setParticipants(prev => prev.map(p => 
+
+            setParticipants(prev => prev.map(p =>
                 p.id !== currentUserId ? { ...p, stream: remoteStream, isPeerConnected: true } : p
             ))
         })
@@ -127,7 +186,7 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
         // Handle connection state changes
         videoCallService.current.onConnectionStateChange((state) => {
             console.log('Connection state:', state)
-            
+
             if (state === 'connected') {
                 toast.success('Successfully connected to study buddy!')
             } else if (state === 'disconnected' || state === 'failed') {
@@ -182,12 +241,12 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
         try {
             if (!isScreenSharing && videoCallService.current) {
                 const screenStream = await videoCallService.current.shareScreen()
-                
+
                 if (screenStream && localVideoRef.current) {
                     localVideoRef.current.srcObject = screenStream
                     setIsScreenSharing(true)
                     toast.success('Screen sharing started')
-                    
+
                     // Handle screen share end
                     screenStream.getVideoTracks()[0].onended = () => {
                         stopScreenShare()
@@ -210,7 +269,7 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
                 if (localStream) {
                     localVideoRef.current.srcObject = localStream
                 }
-                
+
                 setIsScreenSharing(false)
                 toast.success('Screen sharing stopped')
             }
@@ -223,14 +282,14 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
     const handleEndCall = async () => {
         try {
             await cleanup()
-            
+
             // Notify other participants through API
             await fetch('/api/study-buddy/video-call/end', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ sessionId })
             })
-            
+
             onEndCall()
             toast.success('Call ended successfully')
         } catch (error) {
@@ -271,7 +330,7 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
             })
 
             videoCallService.current.sendMessage(messageData)
-            
+
             // Add to local chat
             setChatMessages(prev => [...prev, {
                 id: Date.now().toString(),
@@ -341,7 +400,7 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
                         Duration: {formatDuration(callDuration)}
                     </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                     <span className="text-muted-foreground text-sm">
                         {participants.filter(p => p.isPeerConnected).length + 1} participants
@@ -360,11 +419,10 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
 
             {/* Video Grid */}
             <div className="flex-1 relative overflow-hidden">
-                <div className={`grid gap-2 p-4 h-full ${
-                    participants.length === 1 ? 'grid-cols-2' : 
-                    participants.length <= 4 ? 'grid-cols-2 grid-rows-2' : 
-                    'grid-cols-3 grid-rows-2'
-                }`}>
+                <div className={`grid gap-2 p-4 h-full ${participants.length === 1 ? 'grid-cols-2' :
+                        participants.length <= 4 ? 'grid-cols-2 grid-rows-2' :
+                            'grid-cols-3 grid-rows-2'
+                    }`}>
                     {/* Local Video */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
@@ -411,7 +469,7 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
                                 {!participant.isVideoEnabled && ' (Camera Off)'}
                                 {!participant.isAudioEnabled && ' (Muted)'}
                             </div>
-                            
+
                             {!participant.isPeerConnected && (
                                 <div className="absolute inset-0 bg-gray-700 flex items-center justify-center">
                                     <div className="text-center">
@@ -420,14 +478,14 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
                                     </div>
                                 </div>
                             )}
-                            
+
                             {participant.isPeerConnected && !participant.isVideoEnabled && (
                                 <div className="absolute inset-0 bg-gray-700 flex items-center justify-center">
                                     <div className="text-center">
                                         <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
                                             {participant.profileImage ? (
-                                                <img 
-                                                    src={participant.profileImage} 
+                                                <img
+                                                    src={participant.profileImage}
                                                     alt={participant.name}
                                                     className="w-full h-full rounded-full object-cover"
                                                 />
@@ -463,7 +521,7 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
                                     ×
                                 </button>
                             </div>
-                            
+
                             {/* Messages */}
                             <div className="flex-1 overflow-y-auto mb-4 space-y-2">
                                 {chatMessages.length === 0 ? (
@@ -474,20 +532,19 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
                                     chatMessages.map((msg) => (
                                         <div
                                             key={msg.id}
-                                            className={`p-3 rounded-lg ${
-                                                msg.sender === 'You'
+                                            className={`p-3 rounded-lg ${msg.sender === 'You'
                                                     ? 'bg-blue-600 ml-auto'
                                                     : 'bg-gray-700'
-                                            } max-w-[85%]`}
+                                                } max-w-[85%]`}
                                         >
                                             <div className="flex items-center justify-between mb-1">
                                                 <span className="text-xs font-semibold text-foreground">
                                                     {msg.sender}
                                                 </span>
                                                 <span className="text-xs text-muted-foreground">
-                                                    {msg.timestamp.toLocaleTimeString([], { 
-                                                        hour: '2-digit', 
-                                                        minute: '2-digit' 
+                                                    {msg.timestamp.toLocaleTimeString([], {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
                                                     })}
                                                 </span>
                                             </div>
@@ -499,7 +556,7 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
                                 )}
                                 <div ref={chatEndRef} />
                             </div>
-                            
+
                             {/* Input */}
                             <div className="flex gap-2">
                                 <input
@@ -530,11 +587,10 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={toggleAudio}
-                        className={`p-3 rounded-full transition-colors ${
-                            isAudioEnabled 
-                                ? 'bg-gray-600 hover:bg-background0 text-foreground' 
+                        className={`p-3 rounded-full transition-colors ${isAudioEnabled
+                                ? 'bg-gray-600 hover:bg-background0 text-foreground'
                                 : 'bg-red-500 hover:bg-red-600 text-foreground'
-                        }`}
+                            }`}
                     >
                         {isAudioEnabled ? <Mic size={20} /> : <MicOff size={20} />}
                     </motion.button>
@@ -543,11 +599,10 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={toggleVideo}
-                        className={`p-3 rounded-full transition-colors ${
-                            isVideoEnabled 
-                                ? 'bg-gray-600 hover:bg-background0 text-foreground' 
+                        className={`p-3 rounded-full transition-colors ${isVideoEnabled
+                                ? 'bg-gray-600 hover:bg-background0 text-foreground'
                                 : 'bg-red-500 hover:bg-red-600 text-foreground'
-                        }`}
+                            }`}
                     >
                         {isVideoEnabled ? <Video size={20} /> : <VideoOff size={20} />}
                     </motion.button>
@@ -556,11 +611,10 @@ export const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={toggleScreenShare}
-                        className={`p-3 rounded-full transition-colors ${
-                            isScreenSharing 
-                                ? 'bg-blue-500 hover:bg-blue-600 text-foreground' 
+                        className={`p-3 rounded-full transition-colors ${isScreenSharing
+                                ? 'bg-blue-500 hover:bg-blue-600 text-foreground'
                                 : 'bg-gray-600 hover:bg-background0 text-foreground'
-                        }`}
+                            }`}
                     >
                         {isScreenSharing ? <MonitorOff size={20} /> : <Monitor size={20} />}
                     </motion.button>

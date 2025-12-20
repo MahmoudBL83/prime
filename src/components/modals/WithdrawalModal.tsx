@@ -44,7 +44,7 @@ export default function WithdrawalModal({ isOpen, onClose, availableBalance, isA
 
         setIsProcessing(true)
         try {
-            const response = await fetch('/api/withdrawals', {
+            const response = await fetch('/api/creator/payouts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -58,7 +58,7 @@ export default function WithdrawalModal({ isOpen, onClose, availableBalance, isA
 
             if (response.ok) {
                 toast.success(
-                    isArabic 
+                    isArabic
                         ? 'تم تقديم طلب السحب بنجاح! سيتم معالجته خلال 3-5 أيام عمل.'
                         : 'Withdrawal request submitted! Processing within 3-5 business days.'
                 )
@@ -104,7 +104,7 @@ export default function WithdrawalModal({ isOpen, onClose, availableBalance, isA
                             >
                                 <X className="w-6 h-6" />
                             </button>
-                            
+
                             <div className="flex items-center gap-3">
                                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
                                     <DollarSign className="w-6 h-6 text-white" />
@@ -200,7 +200,7 @@ export default function WithdrawalModal({ isOpen, onClose, availableBalance, isA
                             <div className="space-y-3">
                                 <div>
                                     <label className="block text-sm font-semibold text-foreground mb-2">
-                                        {method === 'PAYPAL' 
+                                        {method === 'PAYPAL'
                                             ? (isArabic ? 'بريد PayPal' : 'PayPal Email')
                                             : (isArabic ? 'اسم الحساب' : 'Account Name')}
                                     </label>
@@ -215,7 +215,7 @@ export default function WithdrawalModal({ isOpen, onClose, availableBalance, isA
                                     <>
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {method === 'WALLET' 
+                                                {method === 'WALLET'
                                                     ? (isArabic ? 'رقم المحفظة' : 'Wallet Number')
                                                     : (isArabic ? 'رقم الحساب/IBAN' : 'Account Number/IBAN')}
                                             </label>
@@ -246,7 +246,7 @@ export default function WithdrawalModal({ isOpen, onClose, availableBalance, isA
                             <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex gap-3">
                                 <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                                 <div className="text-sm text-blue-400">
-                                    {isArabic 
+                                    {isArabic
                                         ? 'سيتم معالجة السحب خلال 3-5 أيام عمل. قد تطبق رسوم معالجة.'
                                         : 'Withdrawals are processed within 3-5 business days. Processing fees may apply.'}
                                 </div>

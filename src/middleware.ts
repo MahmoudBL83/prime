@@ -8,7 +8,7 @@ const intlMiddleware = createIntlMiddleware(routing);
 export default withAuth(
     function middleware(req) {
         const pathname = req.nextUrl.pathname;
-        
+
         // Skip middleware for API routes entirely
         if (pathname.startsWith('/api')) {
             return null;
@@ -18,7 +18,7 @@ export default withAuth(
         if (pathname === '/admin/login') {
             return null;
         }
-        
+
         // Skip internationalization for admin routes - they don't use locale
         if (!pathname.startsWith('/admin')) {
             const intlResponse = intlMiddleware(req);
@@ -34,9 +34,9 @@ export default withAuth(
             '/auth',
             '/verify',
         ];
-        
+
         // Check if current path is public
-        const isPublicRoute = publicRoutes.some(route => 
+        const isPublicRoute = publicRoutes.some(route =>
             pathname.includes(route) || pathname === '/' || pathname.match(/^\/(en|ar)?\/?$/)
         );
 
@@ -93,7 +93,7 @@ export default withAuth(
                 // The page itself will handle signing out non-admins and redirecting admins
                 return null;
             }
-            
+
             // Protect other admin routes
             if (!isAuth) {
                 return NextResponse.redirect(new URL('/admin/login', req.url));
@@ -115,8 +115,23 @@ export default withAuth(
             );
         }
 
-        if (req.nextUrl.pathname.includes('/creator') && token && (token as any).role !== "CREATOR") {
-            return NextResponse.redirect(new URL(`/${locale}/dashboard`, req.url));
+        if (req.nextUrl.pathname.includes('/creator')) {
+            // Must have CREATOR role
+            if (token && (token as any).role !== "CREATOR") {
+                return NextResponse.redirect(new URL(`/${locale}/dashboard`, req.url));
+            }
+
+            // Check KYC Status
+            const kycStatus = (token as any).kycStatus;
+            const isVerified = kycStatus === 'VERIFIED';
+
+            // Allow access to specific onboarding/application pages regardless of status
+            const isAhocPage = pathname.includes('/creator/onboarding') || pathname.includes('/creator/apply');
+
+            // If not verified and trying to access restricted pages, redirect to application status page
+            if (!isVerified && !isAhocPage) {
+                return NextResponse.redirect(new URL(`/${locale}/creator/apply`, req.url));
+            }
         }
     },
     {

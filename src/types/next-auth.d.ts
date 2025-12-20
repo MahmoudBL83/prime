@@ -16,6 +16,7 @@ declare module "next-auth" {
             image?: string
             isCreator?: boolean
             applicationStatus?: string | null
+            kycStatus?: string | null
         }
     }
 
@@ -32,6 +33,7 @@ declare module "next-auth" {
         image?: string
         isCreator?: boolean
         applicationStatus?: string | null
+        kycStatus?: string | null
     }
 }
 
@@ -46,5 +48,6 @@ declare module "next-auth/jwt" {
         subscriptionStatus?: 'NONE' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED'
         isCreator?: boolean
         applicationStatus?: string | null
+        kycStatus?: string | null
     }
 }

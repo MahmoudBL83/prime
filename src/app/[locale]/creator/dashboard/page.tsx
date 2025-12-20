@@ -11,7 +11,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { CreatorSidebar, CreatorHeader } from '@/components/creator'
 import { CreatorSidebarMobile } from '@/components/creator/CreatorSidebar'
-import { 
+import {
     Upload,
     Video,
     BarChart3,
@@ -33,10 +33,10 @@ import {
 } from 'lucide-react'
 
 // Apple-style stat card
-const StatCard = ({ 
-    title, 
-    value, 
-    icon: Icon, 
+const StatCard = ({
+    title,
+    value,
+    icon: Icon,
     trend
 }: {
     title: string
@@ -110,10 +110,10 @@ export default function CreatorDashboard() {
                             avgCompletionRate: result.data.courses.completionRates?.length > 0
                                 ? Math.round(
                                     result.data.courses.completionRates.reduce(
-                                        (sum: number, course: any) => sum + parseFloat(course.completionRate || 0), 
+                                        (sum: number, course: any) => sum + parseFloat(course.completionRate || 0),
                                         0
                                     ) / result.data.courses.completionRates.length
-                                  )
+                                )
                                 : 0,
                             totalRevenue: result.data.revenue.total || 0,
                             growth: {
@@ -130,10 +130,11 @@ export default function CreatorDashboard() {
                                     title: course.title,
                                     enrollments: course.enrollments,
                                     thumbnail: course.thumbnail || '/images/course-placeholder.svg',
-                                    publishedAt: new Date().toLocaleDateString(),
+                                    publishedAt: new Date(course.publishedAt).toLocaleDateString(),
                                     completionRate: completionData ? parseFloat(completionData.completionRate) : 0,
                                     rating: course.rating || 0,
-                                    reviews: course.reviews || 0
+                                    reviews: course.reviews || 0,
+                                    revenue: course.revenue || 0
                                 }
                             }),
                             recentActivity: [
@@ -183,63 +184,60 @@ export default function CreatorDashboard() {
                     <div className="max-w-7xl mx-auto">
                         {/* Application Status Banner */}
                         {session?.user?.applicationStatus && session.user.applicationStatus !== 'APPROVED' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={`mb-4 sm:mb-6 md:mb-8 rounded-xl sm:rounded-2xl border p-4 sm:p-6 ${
-                            session.user.applicationStatus === 'PENDING' 
-                                ? 'bg-blue-500/10 border-blue-500/20 dark:bg-blue-500/5 dark:border-blue-500/10' 
-                                : session.user.applicationStatus === 'UNDER_REVIEW'
-                                ? 'bg-yellow-500/10 border-yellow-500/20 dark:bg-yellow-500/5 dark:border-yellow-500/10'
-                                : session.user.applicationStatus === 'REJECTED'
-                                ? 'bg-red-500/10 border-red-500/20 dark:bg-red-500/5 dark:border-red-500/10'
-                                : 'bg-orange-500/10 border-orange-500/20 dark:bg-orange-500/5 dark:border-orange-500/10'
-                        }`}
-                    >
-                        <div className="flex items-start gap-3 sm:gap-4">
-                            <div className={`p-1.5 sm:p-2 rounded-full flex-shrink-0 ${
-                                session.user.applicationStatus === 'PENDING'
-                                    ? 'bg-blue-500/20 dark:bg-blue-500/10'
-                                    : session.user.applicationStatus === 'UNDER_REVIEW'
-                                    ? 'bg-yellow-500/20 dark:bg-yellow-500/10'
-                                    : session.user.applicationStatus === 'REJECTED'
-                                    ? 'bg-red-500/20 dark:bg-red-500/10'
-                                    : 'bg-orange-500/20 dark:bg-orange-500/10'
-                            }`}>
-                                <AlertCircle className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                                    session.user.applicationStatus === 'PENDING'
-                                        ? 'text-blue-500'
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className={`mb-4 sm:mb-6 md:mb-8 rounded-xl sm:rounded-2xl border p-4 sm:p-6 ${session.user.applicationStatus === 'PENDING'
+                                        ? 'bg-blue-500/10 border-blue-500/20 dark:bg-blue-500/5 dark:border-blue-500/10'
                                         : session.user.applicationStatus === 'UNDER_REVIEW'
-                                        ? 'text-yellow-500'
-                                        : session.user.applicationStatus === 'REJECTED'
-                                        ? 'text-red-500'
-                                        : 'text-orange-500'
-                                }`} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold mb-1 text-sm sm:text-base text-foreground dark:text-white">
-                                    {session.user.applicationStatus === 'PENDING' && 'Application Pending'}
-                                    {session.user.applicationStatus === 'UNDER_REVIEW' && 'Under Review'}
-                                    {session.user.applicationStatus === 'REJECTED' && 'Application Rejected'}
-                                    {session.user.applicationStatus === 'RESUBMIT_REQUIRED' && 'Resubmission Required'}
-                                </h3>
-                                <p className="text-xs sm:text-sm text-muted-foreground dark:text-white/60 mb-3">
-                                    {session.user.applicationStatus === 'PENDING' && 'Your application is being reviewed by our team.'}
-                                    {session.user.applicationStatus === 'UNDER_REVIEW' && 'We\'ll contact you within 24-48 hours.'}
-                                    {session.user.applicationStatus === 'REJECTED' && 'Please review the feedback and reapply.'}
-                                    {session.user.applicationStatus === 'RESUBMIT_REQUIRED' && 'Please update your application based on feedback.'}
-                                </p>
-                                <Button
-                                    onClick={() => router.push(`/${locale}/creator/apply`)}
-                                    variant="outline"
-                                    size="sm"
-                                    className="rounded-full"
-                                >
-                                    View Application
-                                </Button>
-                            </div>
-                        </div>
-                        </motion.div>
+                                            ? 'bg-yellow-500/10 border-yellow-500/20 dark:bg-yellow-500/5 dark:border-yellow-500/10'
+                                            : session.user.applicationStatus === 'REJECTED'
+                                                ? 'bg-red-500/10 border-red-500/20 dark:bg-red-500/5 dark:border-red-500/10'
+                                                : 'bg-orange-500/10 border-orange-500/20 dark:bg-orange-500/5 dark:border-orange-500/10'
+                                    }`}
+                            >
+                                <div className="flex items-start gap-3 sm:gap-4">
+                                    <div className={`p-1.5 sm:p-2 rounded-full flex-shrink-0 ${session.user.applicationStatus === 'PENDING'
+                                            ? 'bg-blue-500/20 dark:bg-blue-500/10'
+                                            : session.user.applicationStatus === 'UNDER_REVIEW'
+                                                ? 'bg-yellow-500/20 dark:bg-yellow-500/10'
+                                                : session.user.applicationStatus === 'REJECTED'
+                                                    ? 'bg-red-500/20 dark:bg-red-500/10'
+                                                    : 'bg-orange-500/20 dark:bg-orange-500/10'
+                                        }`}>
+                                        <AlertCircle className={`w-4 h-4 sm:w-5 sm:h-5 ${session.user.applicationStatus === 'PENDING'
+                                                ? 'text-blue-500'
+                                                : session.user.applicationStatus === 'UNDER_REVIEW'
+                                                    ? 'text-yellow-500'
+                                                    : session.user.applicationStatus === 'REJECTED'
+                                                        ? 'text-red-500'
+                                                        : 'text-orange-500'
+                                            }`} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-semibold mb-1 text-sm sm:text-base text-foreground dark:text-white">
+                                            {session.user.applicationStatus === 'PENDING' && 'Application Pending'}
+                                            {session.user.applicationStatus === 'UNDER_REVIEW' && 'Under Review'}
+                                            {session.user.applicationStatus === 'REJECTED' && 'Application Rejected'}
+                                            {session.user.applicationStatus === 'RESUBMIT_REQUIRED' && 'Resubmission Required'}
+                                        </h3>
+                                        <p className="text-xs sm:text-sm text-muted-foreground dark:text-white/60 mb-3">
+                                            {session.user.applicationStatus === 'PENDING' && 'Your application is being reviewed by our team.'}
+                                            {session.user.applicationStatus === 'UNDER_REVIEW' && 'We\'ll contact you within 24-48 hours.'}
+                                            {session.user.applicationStatus === 'REJECTED' && 'Please review the feedback and reapply.'}
+                                            {session.user.applicationStatus === 'RESUBMIT_REQUIRED' && 'Please update your application based on feedback.'}
+                                        </p>
+                                        <Button
+                                            onClick={() => router.push(`/${locale}/creator/apply`)}
+                                            variant="outline"
+                                            size="sm"
+                                            className="rounded-full"
+                                        >
+                                            View Application
+                                        </Button>
+                                    </div>
+                                </div>
+                            </motion.div>
                         )}
 
                         {/* Welcome Section */}
@@ -258,18 +256,18 @@ export default function CreatorDashboard() {
                                 title="Total Students"
                                 value={loading ? '...' : analytics?.totalStudents || 0}
                                 icon={Users}
-                                trend={!loading && analytics?.growth ? { 
-                                    value: `+${analytics.growth.students}%`, 
-                                    positive: analytics.growth.students > 0 
+                                trend={!loading && analytics?.growth ? {
+                                    value: `+${analytics.growth.students}%`,
+                                    positive: analytics.growth.students > 0
                                 } : undefined}
                             />
                             <StatCard
                                 title="Enrollments"
                                 value={loading ? '...' : analytics?.totalEnrollments || 0}
                                 icon={Eye}
-                                trend={!loading && analytics?.growth ? { 
-                                    value: `+${analytics.growth.enrollments}%`, 
-                                    positive: analytics.growth.enrollments > 0 
+                                trend={!loading && analytics?.growth ? {
+                                    value: `+${analytics.growth.enrollments}%`,
+                                    positive: analytics.growth.enrollments > 0
                                 } : undefined}
                             />
                             <StatCard
@@ -281,9 +279,9 @@ export default function CreatorDashboard() {
                                 title="Revenue"
                                 value={loading ? '...' : `$${analytics?.totalRevenue || 0}`}
                                 icon={DollarSign}
-                                trend={!loading && analytics?.growth ? { 
-                                    value: `+${analytics.growth.revenue}%`, 
-                                    positive: analytics.growth.revenue > 0 
+                                trend={!loading && analytics?.growth ? {
+                                    value: `+${analytics.growth.revenue}%`,
+                                    positive: analytics.growth.revenue > 0
                                 } : undefined}
                             />
                         </div>
@@ -295,7 +293,7 @@ export default function CreatorDashboard() {
                                 <div className="bg-white dark:bg-black border border-border dark:border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
                                     <div className="flex items-center justify-between mb-4 sm:mb-6">
                                         <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground dark:text-white">Top Courses</h3>
-                                        <button 
+                                        <button
                                             onClick={() => router.push(`/${locale}/creator/courses`)}
                                             className="text-sm text-[#0a84ff] hover:underline"
                                         >
@@ -305,7 +303,7 @@ export default function CreatorDashboard() {
 
                                     {loading ? (
                                         <div className="space-y-4">
-                                            {[1,2,3].map(i => (
+                                            {[1, 2, 3].map(i => (
                                                 <div key={i} className="h-20 bg-muted dark:bg-white/5 rounded-xl animate-pulse" />
                                             ))}
                                         </div>
@@ -399,7 +397,7 @@ export default function CreatorDashboard() {
                                     <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground dark:text-white">Recent Activity</h3>
                                     {loading ? (
                                         <div className="space-y-3">
-                                            {[1,2,3].map(i => (
+                                            {[1, 2, 3].map(i => (
                                                 <div key={i} className="h-12 bg-muted dark:bg-white/5 rounded-lg animate-pulse" />
                                             ))}
                                         </div>
@@ -407,9 +405,8 @@ export default function CreatorDashboard() {
                                         <div className="space-y-2 sm:space-y-3">
                                             {analytics.recentActivity.slice(0, 5).map((activity, index) => (
                                                 <div key={index} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 hover:bg-muted dark:hover:bg-white/5 rounded-lg transition-colors">
-                                                    <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mt-1.5 sm:mt-2 flex-shrink-0 ${
-                                                        activity.type === 'enrollment' ? 'bg-[#0a84ff]' : 'bg-yellow-500'
-                                                    }`} />
+                                                    <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mt-1.5 sm:mt-2 flex-shrink-0 ${activity.type === 'enrollment' ? 'bg-[#0a84ff]' : 'bg-yellow-500'
+                                                        }`} />
                                                     <div className="flex-1 min-w-0">
                                                         <p className="text-xs sm:text-sm mb-0.5 sm:mb-1 line-clamp-2 text-foreground dark:text-white">
                                                             {activity.message}
@@ -432,7 +429,7 @@ export default function CreatorDashboard() {
                     </div>
                 </main>
             </div>
-            
+
             {/* Mobile Navigation */}
             <CreatorSidebarMobile />
         </div>

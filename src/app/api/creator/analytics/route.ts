@@ -198,7 +198,7 @@ export async function GET(request: NextRequest) {
                     courseTitle: course.title,
                     enrollments: totalEnrollments,
                     completions: completedEnrollments,
-                    completionRate: totalEnrollments > 0 
+                    completionRate: totalEnrollments > 0
                         ? (completedEnrollments / totalEnrollments * 100).toFixed(1)
                         : '0'
                 }
@@ -461,7 +461,8 @@ export async function GET(request: NextRequest) {
                         enrollments: course._count.enrollments,
                         reviews: course._count.reviews,
                         rating: course.rating,
-                        revenue: 0 // Calculate from enrollments if course has price
+                        publishedAt: course.publishedAt?.toISOString() || course.createdAt.toISOString(),
+                        revenue: (course.price || 0) * course._count.enrollments
                     })),
                     completionRates: courseCompletionData
                 },

@@ -183,7 +183,6 @@ model Creator {
   payouts                Payout[]
   videoAssets            VideoAsset[]
   videoPlaylists         VideoPlaylist[]
-  withdrawals            Withdrawal[]
   coachingTokens         CoachingToken[]
   coachingSessions       CoachingSession[]
 
@@ -2521,25 +2520,7 @@ model PlatformSettings {
   updatedAt          DateTime @updatedAt
 }
 
-model Withdrawal {
-  id             String           @id @default(cuid())
-  instructorId   String
-  amount         Float
-  method         String
-  accountDetails String
-  status         WithdrawalStatus @default(PENDING)
-  requestedAt    DateTime         @default(now())
-  processedAt    DateTime?
-  completedAt    DateTime?
-  notes          String?
-  transactionId  String?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  instructor     Creator          @relation(fields: [instructorId], references: [id], onDelete: Cascade)
 
-  @@index([instructorId])
-  @@index([status])
-}
 
 model Cohort {
   id                  String               @id @default(cuid())

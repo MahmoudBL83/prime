@@ -102,19 +102,20 @@ export const authOptions: NextAuthOptions = {
                 token.birthDate = (user as any).birthDate ? new Date((user as any).birthDate).toISOString() : null
                 token.country = (user as any).country ?? null
             }
-            
+
             // Always check creator status (on sign-in and subsequent requests)
             if (token.id) {
                 try {
                     const { prisma } = await import("@/lib/prisma")
-                    
+
                     // Check if user has creator profile
                     const creator = await prisma.creator.findUnique({
                         where: { userId: token.id as string },
-                        select: { id: true }
+                        select: { id: true, kycStatus: true }
                     })
                     token.isCreator = !!creator
-                    
+                    token.kycStatus = creator?.kycStatus || null
+
                     // Check creator application status
                     const application = await prisma.creatorApplication.findUnique({
                         where: { userId: token.id as string },
@@ -125,7 +126,7 @@ export const authOptions: NextAuthOptions = {
                     console.error("Error checking creator status:", error)
                 }
             }
-            
+
             return token
         },
         async session({ session, token }) {
@@ -139,6 +140,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.country = token.country as string | null
                 session.user.isCreator = token.isCreator as boolean
                 session.user.applicationStatus = token.applicationStatus as string | null
+                session.user.kycStatus = token.kycStatus as string | null
             }
             return session
         },

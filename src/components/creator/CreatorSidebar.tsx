@@ -35,7 +35,7 @@ const sidebarItems: SidebarItem[] = [
     { id: 'cohorts', icon: Users, labelEn: 'Cohorts', labelAr: 'المجموعات التعليمية', href: '/creator/cohorts' },
     { id: 'live', icon: Radio, labelEn: 'Live Sessions', labelAr: 'الجلسات المباشرة', href: '/creator/live' },
     { id: 'community', icon: MessageSquare, labelEn: 'Community', labelAr: 'المجتمع', href: '/creator/community' },
-    { id: 'earn', icon: DollarSign, labelEn: 'Earnings', labelAr: 'الأرباح', href: '/creator/earn' },
+    { id: 'earn', icon: DollarSign, labelEn: 'Earnings', labelAr: 'الأرباح', href: '/creator/earnings' },
     { id: 'rewards', icon: Gift, labelEn: 'Rewards', labelAr: 'المكافآت', href: '/creator/rewards' },
 ]
 
@@ -54,7 +54,7 @@ export function CreatorSidebar({ className = '' }: CreatorSidebarProps) {
     const pathname = usePathname()
     const locale = params.locale as string
     const isArabic = locale === 'ar'
-    
+
     const [navigating, setNavigating] = useState<string | null>(null)
 
     const isActive = (href: string) => {
@@ -76,11 +76,10 @@ export function CreatorSidebar({ className = '' }: CreatorSidebarProps) {
                         key={item.id}
                         onClick={() => handleNavigation(item)}
                         disabled={navigating === item.id}
-                        className={`w-full flex items-center gap-2 xl:gap-3 px-3 xl:px-4 py-2.5 xl:py-3 rounded-lg transition-all text-sm xl:text-base ${
-                            isActive(item.href)
+                        className={`w-full flex items-center gap-2 xl:gap-3 px-3 xl:px-4 py-2.5 xl:py-3 rounded-lg transition-all text-sm xl:text-base ${isActive(item.href)
                                 ? 'bg-accent text-foreground font-semibold'
                                 : 'text-muted-foreground hover:bg-accent/50'
-                        }`}
+                            }`}
                     >
                         <item.icon className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" />
                         <span className="truncate">{isArabic ? item.labelAr : item.labelEn}</span>
@@ -97,11 +96,10 @@ export function CreatorSidebar({ className = '' }: CreatorSidebarProps) {
                         key={item.id}
                         onClick={() => handleNavigation(item)}
                         disabled={navigating === item.id}
-                        className={`w-full flex items-center gap-2 xl:gap-3 px-3 xl:px-4 py-2.5 xl:py-3 rounded-lg transition-all text-sm xl:text-base ${
-                            isActive(item.href)
+                        className={`w-full flex items-center gap-2 xl:gap-3 px-3 xl:px-4 py-2.5 xl:py-3 rounded-lg transition-all text-sm xl:text-base ${isActive(item.href)
                                 ? 'bg-accent text-foreground font-semibold'
                                 : 'text-muted-foreground hover:bg-accent/50'
-                        }`}
+                            }`}
                     >
                         <item.icon className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" />
                         <span className="truncate">{isArabic ? item.labelAr : item.labelEn}</span>
@@ -121,7 +119,7 @@ export function CreatorSidebarMobile({ className = '' }: CreatorSidebarProps) {
     const params = useParams()
     const pathname = usePathname()
     const locale = params.locale as string
-    
+
     const [navigating, setNavigating] = useState<string | null>(null)
 
     const isActive = (href: string) => {
@@ -145,11 +143,10 @@ export function CreatorSidebarMobile({ className = '' }: CreatorSidebarProps) {
                         key={item.id}
                         onClick={() => handleNavigation(item)}
                         disabled={navigating === item.id}
-                        className={`flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all min-w-[60px] sm:min-w-[70px] ${
-                            isActive(item.href)
+                        className={`flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all min-w-[60px] sm:min-w-[70px] ${isActive(item.href)
                                 ? 'text-purple-500 bg-purple-500/10'
                                 : 'text-muted-foreground hover:text-foreground'
-                        }`}
+                            }`}
                     >
                         {navigating === item.id ? (
                             <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" />

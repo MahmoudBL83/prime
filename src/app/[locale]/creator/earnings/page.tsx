@@ -63,10 +63,6 @@ export default function CreatorEarningsPage() {
         channelRevenue: 0,
         liveSessionRevenue: 0
     });
-    const [withdrawalAmount, setWithdrawalAmount] = useState<number>(0);
-    const [withdrawalMethod, setWithdrawalMethod] = useState<string>('BANK_TRANSFER');
-    const [accountDetailsInput, setAccountDetailsInput] = useState<string>('');
-    const [isSubmittingWithdrawal, setIsSubmittingWithdrawal] = useState(false);
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -116,25 +112,7 @@ export default function CreatorEarningsPage() {
         }
     };
 
-    const requestWithdrawal = async (amount: number, method: string, accountDetails: any) => {
-        try {
-            const res = await fetch('/api/creator/payouts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount, method, accountDetails })
-            })
-            const json = await res.json()
-            if (!res.ok) throw new Error(json?.error || 'Failed to request payout')
 
-            // Refresh data
-            await loadEarningsData()
-            setShowWithdrawalModal(false)
-            alert('Withdrawal request submitted')
-        } catch (err: any) {
-            console.error(err)
-            alert(err?.message || 'Request failed')
-        }
-    }
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-EG', {
