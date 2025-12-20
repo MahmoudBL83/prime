@@ -132,10 +132,10 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <motion.div 
+                <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    className="w-12 h-12 border-3 border-purple-300/30 border-t-purple-400 rounded-full"
+                    className="w-12 h-12 border-3 border-white/30 border-t-[#0a84ff] rounded-full"
                 />
             </div>
         )
@@ -145,14 +145,14 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
         return (
             <div className="bg-white/5 backdrop-blur-sm border border-border rounded-2xl p-8">
                 <div className="flex flex-col items-center justify-center text-center">
-                    <div className="w-16 h-16 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-full flex items-center justify-center mb-4">
-                        <User className="w-8 h-8 text-purple-400" />
+                    <div className="w-16 h-16 bg-[#0a84ff]/20 rounded-full flex items-center justify-center mb-4">
+                        <User className="w-8 h-8 text-[#0a84ff]" />
                     </div>
                     <h3 className="text-xl font-semibold text-foreground mb-2">No more matches available</h3>
                     <p className="text-muted-foreground mb-6">Check back later for new study buddies!</p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-foreground rounded-xl hover:shadow-lg transition-all font-semibold"
+                        className="px-6 py-3 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-xl hover:shadow-lg transition-all font-semibold"
                     >
                         Refresh Matches
                     </button>
@@ -180,7 +180,7 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                             zIndex: 10 - index,
                         }}
                     >
-                        <div className="flex items-center justify-center h-full text-purple-300/50">
+                        <div className="flex items-center justify-center h-full text-gray-500/50">
                             <User className="w-16 h-16" />
                         </div>
                     </motion.div>
@@ -192,7 +192,7 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                 ref={cardRef}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="absolute bg-gradient-to-br from-gray-900/95 via-purple-900/10 to-gray-900/95 backdrop-blur-xl border border-purple-400/30 rounded-3xl shadow-2xl shadow-purple-500/10 cursor-grab active:cursor-grabbing transition-shadow duration-300 hover:shadow-purple-500/20"
+                className="absolute bg-black/90 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl cursor-grab active:cursor-grabbing transition-shadow duration-300 hover:border-white/20"
                 style={{
                     width: '100%',
                     height: '520px',
@@ -207,10 +207,10 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                 onTouchMove={handleDragMove}
                 onTouchEnd={handleDragEnd}
             >
-                {/* Gradient Overlays for Visual Interest */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-500/10 via-pink-500/5 to-transparent rounded-full blur-3xl pointer-events-none"></div>
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-500/10 via-cyan-500/5 to-transparent rounded-full blur-3xl pointer-events-none"></div>
-                
+                {/* Subtle Background Accent */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-[#0a84ff]/5 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#0a84ff]/5 rounded-full blur-3xl pointer-events-none"></div>
+
                 <div className="relative z-10 h-full flex flex-col p-6">
                     {/* Header Section - Profile Info */}
                     <div className="flex items-start justify-between mb-6">
@@ -220,10 +220,10 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                                     <img
                                         src={currentMatch.profileImage}
                                         alt={currentMatch.name}
-                                        className="w-20 h-20 rounded-2xl object-cover border-2 border-purple-400/50 shadow-xl ring-4 ring-purple-500/20"
+                                        className="w-20 h-20 rounded-2xl object-cover border-2 border-white/20 shadow-xl ring-4 ring-[#0a84ff]/20"
                                     />
                                 ) : (
-                                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 via-pink-500 to-blue-600 flex items-center justify-center shadow-xl ring-4 ring-purple-500/20">
+                                    <div className="w-20 h-20 rounded-2xl bg-[#0a84ff] flex items-center justify-center shadow-xl ring-4 ring-[#0a84ff]/20">
                                         <span className="text-foreground text-3xl font-bold">
                                             {currentMatch.name.charAt(0)}
                                         </span>
@@ -238,15 +238,15 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                                     <p className="text-base text-muted-foreground mb-2">{currentMatch.arabicName}</p>
                                 )}
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-1.5 bg-purple-500/20 px-3 py-1 rounded-full border border-purple-400/30">
+                                    <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full border border-white/20">
                                         <Zap className="w-3.5 h-3.5 text-yellow-400" />
                                         <span className="text-xs text-gray-200 font-medium capitalize">
                                             {currentMatch.skillLevel?.toLowerCase() || 'Learning'}
                                         </span>
                                     </div>
                                     {currentMatch.learningMode && (
-                                        <div className="flex items-center gap-1.5 bg-blue-500/20 px-3 py-1 rounded-full border border-blue-400/30">
-                                            <Users className="w-3.5 h-3.5 text-blue-400" />
+                                        <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full border border-white/20">
+                                            <Users className="w-3.5 h-3.5 text-[#0a84ff]" />
                                             <span className="text-xs text-gray-200 font-medium capitalize">
                                                 {currentMatch.learningMode}
                                             </span>
@@ -255,11 +255,11 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Compatibility Score Badge */}
                         <div className="text-center">
-                            <div className="bg-gradient-to-br from-purple-500/30 to-pink-500/30 backdrop-blur-sm rounded-2xl p-4 border border-purple-400/40 shadow-lg">
-                                <div className="text-3xl font-black bg-gradient-to-r from-purple-300 via-pink-300 to-blue-300 bg-clip-text text-transparent mb-1">
+                            <div className="bg-[#0a84ff]/20 backdrop-blur-sm rounded-2xl p-4 border border-[#0a84ff]/40 shadow-lg">
+                                <div className="text-3xl font-black text-[#0a84ff] mb-1">
                                     {currentMatch.compatibilityScore}%
                                 </div>
                                 <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">Match</div>
@@ -271,7 +271,7 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                     <div className="flex-1 space-y-4 overflow-y-auto pr-2" style={{ maxHeight: '340px' }}>
                         {/* Match Reasons Highlight */}
                         {currentMatch.reasonsForMatch && currentMatch.reasonsForMatch.length > 0 && (
-                            <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 backdrop-blur-sm border border-yellow-400/20 rounded-2xl p-4">
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4">
                                 <div className="flex items-center gap-2 mb-3">
                                     <Sparkles className="w-5 h-5 text-yellow-400" />
                                     <h4 className="font-bold text-base text-foreground">Why You'll Click</h4>
@@ -279,7 +279,7 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                                 <div className="space-y-2">
                                     {currentMatch.reasonsForMatch.slice(0, 3).map((reason, index) => (
                                         <div key={index} className="flex items-start gap-2.5">
-                                            <div className="w-2 h-2 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full mt-1.5 flex-shrink-0" />
+                                            <div className="w-2 h-2 bg-[#0a84ff] rounded-full mt-1.5 flex-shrink-0" />
                                             <span className="text-sm text-gray-200 leading-relaxed">{reason}</span>
                                         </div>
                                     ))}
@@ -291,74 +291,74 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                         {currentMatch.compatibilityBreakdown && (
                             <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-border">
                                 <div className="flex items-center gap-2 mb-3">
-                                    <Brain className="w-5 h-5 text-purple-400" />
+                                    <Brain className="w-5 h-5 text-[#0a84ff]" />
                                     <h4 className="font-bold text-base text-foreground">Compatibility Details</h4>
                                 </div>
                                 <div className="space-y-2.5">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <Star className="w-4 h-4 text-purple-400" />
+                                            <Star className="w-4 h-4 text-[#0a84ff]" />
                                             <span className="text-sm text-muted-foreground">Interests</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <div className="w-20 h-1.5 bg-card rounded-full overflow-hidden">
-                                                <div 
-                                                    className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full"
+                                                <div
+                                                    className="h-full bg-[#0a84ff] rounded-full"
                                                     style={{ width: `${currentMatch.compatibilityBreakdown.interestsScore}%` }}
                                                 />
                                             </div>
-                                            <span className="text-sm text-purple-300 font-semibold w-10 text-right">
+                                            <span className="text-sm text-[#0a84ff] font-semibold w-10 text-right">
                                                 {currentMatch.compatibilityBreakdown.interestsScore}%
                                             </span>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <Target className="w-4 h-4 text-blue-400" />
+                                            <Target className="w-4 h-4 text-[#0a84ff]" />
                                             <span className="text-sm text-muted-foreground">Goals</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <div className="w-20 h-1.5 bg-card rounded-full overflow-hidden">
-                                                <div 
-                                                    className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full"
+                                                <div
+                                                    className="h-full bg-[#0a84ff] rounded-full"
                                                     style={{ width: `${currentMatch.compatibilityBreakdown.goalsScore}%` }}
                                                 />
                                             </div>
-                                            <span className="text-sm text-blue-300 font-semibold w-10 text-right">
+                                            <span className="text-sm text-[#0a84ff] font-semibold w-10 text-right">
                                                 {currentMatch.compatibilityBreakdown.goalsScore}%
                                             </span>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <MessageCircle className="w-4 h-4 text-green-400" />
+                                            <MessageCircle className="w-4 h-4 text-[#0a84ff]" />
                                             <span className="text-sm text-muted-foreground">Communication</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <div className="w-20 h-1.5 bg-card rounded-full overflow-hidden">
-                                                <div 
-                                                    className="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full"
+                                                <div
+                                                    className="h-full bg-[#0a84ff] rounded-full"
                                                     style={{ width: `${currentMatch.compatibilityBreakdown.communicationScore}%` }}
                                                 />
                                             </div>
-                                            <span className="text-sm text-green-300 font-semibold w-10 text-right">
+                                            <span className="text-sm text-[#0a84ff] font-semibold w-10 text-right">
                                                 {currentMatch.compatibilityBreakdown.communicationScore}%
                                             </span>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <Clock className="w-4 h-4 text-cyan-400" />
+                                            <Clock className="w-4 h-4 text-[#0a84ff]" />
                                             <span className="text-sm text-muted-foreground">Schedule</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <div className="w-20 h-1.5 bg-card rounded-full overflow-hidden">
-                                                <div 
-                                                    className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full"
+                                                <div
+                                                    className="h-full bg-[#0a84ff] rounded-full"
                                                     style={{ width: `${currentMatch.compatibilityBreakdown.scheduleScore}%` }}
                                                 />
                                             </div>
-                                            <span className="text-sm text-cyan-300 font-semibold w-10 text-right">
+                                            <span className="text-sm text-[#0a84ff] font-semibold w-10 text-right">
                                                 {currentMatch.compatibilityBreakdown.scheduleScore}%
                                             </span>
                                         </div>
@@ -369,9 +369,9 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
 
                         {/* Shared Interests & Goals - Side by Side */}
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-purple-500/10 backdrop-blur-sm border border-purple-400/20 rounded-2xl p-3">
+                            <div className="bg-[#0a84ff]/10 backdrop-blur-sm border border-[#0a84ff]/20 rounded-2xl p-3">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Book className="w-4 h-4 text-purple-400" />
+                                    <Book className="w-4 h-4 text-[#0a84ff]" />
                                     <h4 className="font-semibold text-sm text-foreground">Interests</h4>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
@@ -379,7 +379,7 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                                         currentMatch.sharedInterests.slice(0, 3).map((interest) => (
                                             <span
                                                 key={interest}
-                                                className="px-2 py-1 bg-purple-500/30 text-purple-200 text-xs rounded-lg font-medium"
+                                                className="px-2 py-1 bg-[#0a84ff]/30 text-white text-xs rounded-lg font-medium"
                                             >
                                                 {interest}
                                             </span>
@@ -390,9 +390,9 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                                 </div>
                             </div>
 
-                            <div className="bg-blue-500/10 backdrop-blur-sm border border-blue-400/20 rounded-2xl p-3">
+                            <div className="bg-[#0a84ff]/10 backdrop-blur-sm border border-[#0a84ff]/20 rounded-2xl p-3">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Target className="w-4 h-4 text-blue-400" />
+                                    <Target className="w-4 h-4 text-[#0a84ff]" />
                                     <h4 className="font-semibold text-sm text-foreground">Goals</h4>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
@@ -400,7 +400,7 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                                         currentMatch.sharedGoals.slice(0, 3).map((goal) => (
                                             <span
                                                 key={goal}
-                                                className="px-2 py-1 bg-blue-500/30 text-blue-200 text-xs rounded-lg font-medium"
+                                                className="px-2 py-1 bg-[#0a84ff]/30 text-white text-xs rounded-lg font-medium"
                                             >
                                                 {goal}
                                             </span>
@@ -422,7 +422,7 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleSwipe('pass')}
                     disabled={isAnimating}
-                    className="group relative p-5 bg-gradient-to-br from-red-500 to-red-600 text-foreground rounded-full shadow-2xl shadow-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-red-500/50"
+                    className="group relative p-5 bg-white/10 hover:bg-red-500/20 border border-white/20 hover:border-red-500/50 text-white rounded-full shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                 >
                     <X className="w-7 h-7" />
                     <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900/90 text-foreground text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
@@ -435,7 +435,7 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                     className="px-4 py-2 bg-white/10 backdrop-blur-sm border border-border rounded-full"
                 >
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                        <div className="w-2 h-2 bg-[#0a84ff] rounded-full animate-pulse"></div>
                         <span className="font-medium">{potentialMatches.length - currentIndex} remaining</span>
                     </div>
                 </motion.div>
@@ -445,7 +445,7 @@ export function SwipeInterface({ potentialMatches, onSwipe, onMatch, isLoading =
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleSwipe('like')}
                     disabled={isAnimating}
-                    className="group relative p-5 bg-gradient-to-br from-green-500 to-green-600 text-foreground rounded-full shadow-2xl shadow-green-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-green-500/50"
+                    className="group relative p-5 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-full shadow-2xl shadow-[#0a84ff]/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-[#0a84ff]/50"
                 >
                     <Heart className="w-7 h-7" />
                     <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900/90 text-foreground text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">

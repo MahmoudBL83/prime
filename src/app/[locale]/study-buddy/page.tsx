@@ -76,210 +76,6 @@ interface StudyBuddyMatchWithDetails {
     }
 }
 
-// Mock data for demo purposes
-const MOCK_POTENTIAL_MATCHES: StudyBuddy[] = [
-    {
-        id: 'user1',
-        name: 'Ahmed Hassan',
-        arabicName: 'أحمد حسن',
-        interests: ['Technology', 'Business', 'Design'],
-        goals: ['Career Change into Tech', 'Entrepreneurship'],
-        skillLevel: 'Intermediate',
-        learningMode: 'Interactive with group',
-        profileImage: null,
-        compatibilityScore: 92,
-        compatibilityBreakdown: {
-            interestsScore: 95,
-            goalsScore: 90,
-            skillLevelScore: 85,
-            communicationScore: 95,
-            learningStyleScore: 90,
-            scheduleScore: 92,
-            subjectScore: 88,
-            preferencesScore: 94
-        },
-        sharedInterests: ['Technology', 'Business'],
-        sharedGoals: ['Career Change into Tech'],
-        reasonsForMatch: [
-            'Both interested in Technology & Business',
-            'Similar skill levels',
-            'Prefer group learning'
-        ]
-    },
-    {
-        id: 'user2',
-        name: 'Sarah Mohamed',
-        arabicName: 'سارة محمد',
-        interests: ['Languages', 'Education', 'Health'],
-        goals: ['English for Tourism Sector', 'Professional Skill Development'],
-        skillLevel: 'Beginner',
-        learningMode: 'Self-paced',
-        profileImage: null,
-        compatibilityScore: 85,
-        compatibilityBreakdown: {
-            interestsScore: 80,
-            goalsScore: 85,
-            skillLevelScore: 90,
-            communicationScore: 85,
-            learningStyleScore: 82,
-            scheduleScore: 88,
-            subjectScore: 84,
-            preferencesScore: 86
-        },
-        sharedInterests: ['Education'],
-        sharedGoals: ['Professional Skill Development'],
-        reasonsForMatch: [
-            'Both focused on professional development',
-            'Similar learning pace',
-            'Complementary study schedules'
-        ]
-    },
-    {
-        id: 'user3',
-        name: 'Omar Khalil',
-        arabicName: 'عمر خليل',
-        interests: ['Technology', 'Design', 'Languages'],
-        goals: ['Career Change into Tech', 'Freelancing & Remote Work'],
-        skillLevel: 'Advanced',
-        learningMode: 'Mixed',
-        profileImage: null,
-        compatibilityScore: 88,
-        compatibilityBreakdown: {
-            interestsScore: 92,
-            goalsScore: 88,
-            skillLevelScore: 80,
-            communicationScore: 90,
-            learningStyleScore: 85,
-            scheduleScore: 90,
-            subjectScore: 87,
-            preferencesScore: 89
-        },
-        sharedInterests: ['Technology', 'Design'],
-        sharedGoals: ['Career Change into Tech', 'Freelancing & Remote Work'],
-        reasonsForMatch: [
-            'Strong overlap in tech & design interests',
-            'Both pursuing freelance careers',
-            'Flexible learning approaches'
-        ]
-    },
-    {
-        id: 'user4',
-        name: 'Fatima Ali',
-        arabicName: 'فاطمة علي',
-        interests: ['Business', 'Education', 'Health'],
-        goals: ['Entrepreneurship & Startups', 'Professional Skill Development'],
-        skillLevel: 'Intermediate',
-        learningMode: 'Interactive with group',
-        profileImage: null,
-        compatibilityScore: 81,
-        compatibilityBreakdown: {
-            interestsScore: 78,
-            goalsScore: 85,
-            skillLevelScore: 85,
-            communicationScore: 80,
-            learningStyleScore: 82,
-            scheduleScore: 78,
-            subjectScore: 80,
-            preferencesScore: 81
-        },
-        sharedInterests: ['Business', 'Education'],
-        sharedGoals: ['Entrepreneurship & Startups', 'Professional Skill Development'],
-        reasonsForMatch: [
-            'Shared entrepreneurial goals',
-            'Both value collaborative learning',
-            'Similar educational backgrounds'
-        ]
-    },
-    {
-        id: 'user5',
-        name: 'Youssef Ibrahim',
-        arabicName: 'يوسف إبراهيم',
-        interests: ['Technology', 'Business', 'Languages'],
-        goals: ['Thanaweya Amma Preparation', 'University Entrance Prep'],
-        skillLevel: 'Beginner',
-        learningMode: 'Self-paced',
-        profileImage: null,
-        compatibilityScore: 76,
-        compatibilityBreakdown: {
-            interestsScore: 75,
-            goalsScore: 80,
-            skillLevelScore: 90,
-            communicationScore: 70,
-            learningStyleScore: 72,
-            scheduleScore: 75,
-            subjectScore: 74,
-            preferencesScore: 76
-        },
-        sharedInterests: ['Technology', 'Business'],
-        sharedGoals: ['University Entrance Prep'],
-        reasonsForMatch: [
-            'Both preparing for university',
-            'Similar beginner level',
-            'Self-motivated learners'
-        ]
-    }
-]
-
-const MOCK_EXISTING_MATCHES: StudyBuddyMatchWithDetails[] = [
-    {
-        id: 'match1',
-        status: 'accepted',
-        sharedSubjects: ['JavaScript', 'React', 'Node.js'],
-        sharedGoals: ['Career Change into Tech', 'Freelancing & Remote Work'],
-        chatRoomId: 'chat1',
-        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date().toISOString(),
-        otherUser: {
-            id: 'user6',
-            name: 'Mona Saeed',
-            arabicName: 'منى سعيد',
-            profileImage: null,
-            interests: ['Technology', 'Design', 'Business'],
-            goals: ['Career Change into Tech', 'Freelancing & Remote Work'],
-            skillLevel: 'Intermediate',
-            learningMode: 'Mixed'
-        }
-    },
-    {
-        id: 'match2',
-        status: 'accepted',
-        sharedSubjects: ['German A1', 'German Culture', 'Integration'],
-        sharedGoals: ['English for Tourism Sector', 'Professional Skill Development'],
-        chatRoomId: 'chat2',
-        createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date().toISOString(),
-        otherUser: {
-            id: 'user7',
-            name: 'Karim Nasser',
-            arabicName: 'كريم ناصر',
-            profileImage: null,
-            interests: ['Languages', 'Education'],
-            goals: ['Professional Skill Development'],
-            skillLevel: 'Beginner',
-            learningMode: 'Interactive with group'
-        }
-    },
-    {
-        id: 'match3',
-        status: 'pending',
-        sharedSubjects: ['Marketing', 'Business Strategy'],
-        sharedGoals: ['Entrepreneurship & Startups'],
-        chatRoomId: null,
-        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date().toISOString(),
-        otherUser: {
-            id: 'user8',
-            name: 'Layla Ahmed',
-            arabicName: 'ليلى أحمد',
-            profileImage: null,
-            interests: ['Business', 'Technology'],
-            goals: ['Entrepreneurship & Startups'],
-            skillLevel: 'Advanced',
-            learningMode: 'Self-paced'
-        }
-    }
-]
-
 export default function StudyBuddyPage() {
     const locale = useLocale()
     const router = useRouter()
@@ -301,19 +97,12 @@ export default function StudyBuddyPage() {
 
     useEffect(() => {
         loadUserProfile()
-        // Initialize with mock data for demo (comment out API calls to keep mock data)
-        if (potentialMatches.length === 0) {
-            setPotentialMatches(MOCK_POTENTIAL_MATCHES)
+        // Fetch real data from database API
+        if (activeTab === 'discover') {
+            fetchPotentialMatches()
+        } else if (activeTab === 'matches') {
+            fetchExistingMatches()
         }
-        if (existingMatches.length === 0) {
-            setExistingMatches(MOCK_EXISTING_MATCHES)
-        }
-        // Uncomment below to fetch real data from API instead of using mock data
-        // if (activeTab === 'discover') {
-        //     fetchPotentialMatches()
-        // } else if (activeTab === 'matches') {
-        //     fetchExistingMatches()
-        // }
     }, [activeTab])
 
     const loadUserProfile = async () => {
@@ -355,13 +144,13 @@ export default function StudyBuddyPage() {
         try {
             const response = await fetch('/api/study-buddy/match?limit=20')
             const data = await response.json()
-            
+
             if (response.ok) {
                 setPotentialMatches(data.matches || [])
-                
+
                 // Clear any previous profile incomplete state
                 setProfileIncomplete(null)
-                
+
                 // Show helpful message if no matches found
                 if (!data.matches || data.matches.length === 0) {
                     if (data.totalAvailable === 0) {
@@ -546,7 +335,7 @@ export default function StudyBuddyPage() {
                             <div className="lg:col-span-2">
                                 {/* Quick Stats Row */}
                                 <div className="grid grid-cols-3 gap-4 mb-6">
-                                    <motion.div 
+                                    <motion.div
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.1 }}
@@ -563,7 +352,7 @@ export default function StudyBuddyPage() {
                                         </div>
                                     </motion.div>
 
-                                    <motion.div 
+                                    <motion.div
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.2 }}
@@ -576,7 +365,7 @@ export default function StudyBuddyPage() {
                                             <div>
                                                 <div className="text-2xl font-bold text-white">
                                                     {Math.round(
-                                                        potentialMatches.length > 0 
+                                                        potentialMatches.length > 0
                                                             ? potentialMatches.reduce((sum, match) => sum + match.compatibilityScore, 0) / potentialMatches.length
                                                             : 0
                                                     )}%
@@ -586,7 +375,7 @@ export default function StudyBuddyPage() {
                                         </div>
                                     </motion.div>
 
-                                    <motion.div 
+                                    <motion.div
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.3 }}
@@ -622,7 +411,7 @@ export default function StudyBuddyPage() {
                                 </motion.div>
 
                                 {/* How It Works - Compact Version */}
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.5 }}
@@ -665,7 +454,7 @@ export default function StudyBuddyPage() {
                             </div>
 
                             {/* Right Column - Insights Sidebar (1/3 width) */}
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.4 }}
@@ -674,7 +463,7 @@ export default function StudyBuddyPage() {
                                 <MatchingInsights
                                     totalMatches={potentialMatches.length}
                                     averageCompatibility={Math.round(
-                                        potentialMatches.length > 0 
+                                        potentialMatches.length > 0
                                             ? potentialMatches.reduce((sum, match) => sum + match.compatibilityScore, 0) / potentialMatches.length
                                             : 0
                                     )}
@@ -698,7 +487,7 @@ export default function StudyBuddyPage() {
                 ) : (
                     <div className="space-y-6">
                         {/* Matches Tab Stats Header */}
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="grid grid-cols-2 lg:grid-cols-4 gap-4"
@@ -770,7 +559,7 @@ export default function StudyBuddyPage() {
                                 <p className="text-gray-300 mb-6">
                                     Start swiping on the Discover tab to find your perfect study buddy!
                                 </p>
-                                <Button 
+                                <Button
                                     onClick={() => setActiveTab('discover')}
                                     className="bg-[#0a84ff] hover:bg-[#0a84ff]/90"
                                 >
@@ -794,15 +583,15 @@ export default function StudyBuddyPage() {
                                         >
                                             {/* Glow Effect */}
                                             <div className="absolute -inset-1 bg-[#0a84ff] rounded-3xl opacity-0 group-hover:opacity-20 blur-xl transition-all duration-500"></div>
-                                            
+
                                             <Card className="relative bg-black/40 backdrop-blur-xl border-2 border-white/10 group-hover:border-[#0a84ff]/50 rounded-3xl p-6 overflow-hidden transition-all duration-300 shadow-2xl group-hover:shadow-[#0a84ff]/20">
                                                 {/* Animated Background Gradient */}
                                                 <div className="absolute inset-0 bg-gradient-to-br from-[#0a84ff]/0 via-[#0a84ff]/5 to-[#0a84ff]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                                
+
                                                 {/* Decorative Orbs */}
                                                 <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0a84ff]/10 rounded-full blur-3xl group-hover:bg-[#0a84ff]/20 transition-all duration-500"></div>
                                                 <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[#0a84ff]/10 rounded-full blur-3xl group-hover:bg-[#0a84ff]/20 transition-all duration-500"></div>
-                                                
+
                                                 <div className="relative z-10">
                                                     {/* Header Section */}
                                                     <div className="flex items-start gap-5 mb-6">
@@ -824,7 +613,7 @@ export default function StudyBuddyPage() {
                                                                     </div>
                                                                 )}
                                                             </div>
-                                                            
+
                                                             {/* Online Status Indicator */}
                                                             {isActive && (
                                                                 <div className="absolute -bottom-1 -right-1">
@@ -851,15 +640,14 @@ export default function StudyBuddyPage() {
                                                                     })}
                                                                 </span>
                                                             </div>
-                                                            
+
                                                             {/* Status and Tags Row */}
                                                             <div className="flex flex-wrap gap-2">
                                                                 <Badge
-                                                                    className={`${
-                                                                        isActive
-                                                                            ? 'bg-green-500/20 text-green-300 border-green-400/40'
-                                                                            : 'bg-gray-500/20 text-gray-300 border-gray-400/40'
-                                                                    } backdrop-blur-sm font-semibold`}
+                                                                    className={`${isActive
+                                                                        ? 'bg-green-500/20 text-green-300 border-green-400/40'
+                                                                        : 'bg-gray-500/20 text-gray-300 border-gray-400/40'
+                                                                        } backdrop-blur-sm font-semibold`}
                                                                 >
                                                                     {isActive ? (
                                                                         <>
@@ -873,7 +661,7 @@ export default function StudyBuddyPage() {
                                                                         </>
                                                                     )}
                                                                 </Badge>
-                                                                
+
                                                                 {match.chatRoomId && (
                                                                     <Badge className="bg-blue-500/20 text-blue-300 border-blue-400/40 backdrop-blur-sm">
                                                                         <MessageCircle className="w-3 h-3 mr-1" />
@@ -917,7 +705,7 @@ export default function StudyBuddyPage() {
                                                                     </div>
                                                                 </div>
                                                             )}
-                                                            
+
                                                             {match.sharedGoals && match.sharedGoals.length > 0 && (
                                                                 <div className="bg-purple-500/10 backdrop-blur-sm border border-purple-400/20 rounded-2xl p-4 group-hover:bg-purple-500/15 transition-colors duration-300">
                                                                     <div className="flex items-center gap-2 mb-3">
@@ -964,7 +752,7 @@ export default function StudyBuddyPage() {
                                                                 <span>Open Workspace</span>
                                                                 <Star className="w-4 h-4 ml-auto animate-pulse" />
                                                             </motion.button>
-                                                            
+
                                                             <div className="grid grid-cols-3 gap-2">
                                                                 <motion.button
                                                                     whileHover={{ scale: 1.05, y: -2 }}
@@ -975,7 +763,7 @@ export default function StudyBuddyPage() {
                                                                     <MessageCircle className="w-4 h-4" />
                                                                     <span className="text-sm">Chat</span>
                                                                 </motion.button>
-                                                                
+
                                                                 <motion.button
                                                                     whileHover={{ scale: 1.05, y: -2 }}
                                                                     whileTap={{ scale: 0.95 }}
@@ -985,7 +773,7 @@ export default function StudyBuddyPage() {
                                                                     <Video className="w-4 h-4" />
                                                                     <span className="text-sm">Video</span>
                                                                 </motion.button>
-                                                                
+
                                                                 <motion.button
                                                                     whileHover={{ scale: 1.05, y: -2 }}
                                                                     whileTap={{ scale: 0.95 }}
@@ -998,7 +786,7 @@ export default function StudyBuddyPage() {
                                                             </div>
                                                         </div>
                                                     )}
-                                                    
+
                                                     {/* Pending State */}
                                                     {!isActive && match.status === 'pending' && (
                                                         <div className="bg-yellow-500/10 backdrop-blur-sm border border-yellow-400/30 rounded-xl p-4 text-center">
