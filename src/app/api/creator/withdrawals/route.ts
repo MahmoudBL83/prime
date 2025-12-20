@@ -28,8 +28,8 @@ export async function GET(request: Request) {
         }
 
         // Get withdrawals
-        const withdrawals = await prisma.withdrawal.findMany({
-            where: { instructorId: creator.id },
+        const withdrawals = await prisma.creatorPayout.findMany({
+            where: { creatorId: creator.id },
             orderBy: { requestedAt: 'desc' },
             take: 20
         })
@@ -127,8 +127,8 @@ export async function POST(request: Request) {
 
         // Calculate available balance
         const totalEarnings = creator.earnings.reduce((sum, e) => sum + e.amount, 0)
-        const withdrawals = await prisma.withdrawal.findMany({
-            where: { instructorId: creator.id }
+        const withdrawals = await prisma.creatorPayout.findMany({
+            where: { creatorId: creator.id }
         })
         const withdrawnAmount = withdrawals
             .filter(w => w.status === 'COMPLETED')
@@ -154,9 +154,9 @@ export async function POST(request: Request) {
         }
 
         // Create withdrawal request
-        const withdrawal = await prisma.withdrawal.create({
+        const withdrawal = await prisma.creatorPayout.create({
             data: {
-                instructorId: creator.id,
+                creatorId: creator.id,
                 amount,
                 method: method.toUpperCase(),
                 accountDetails,
