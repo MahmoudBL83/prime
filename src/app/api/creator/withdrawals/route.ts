@@ -78,7 +78,7 @@ export async function GET(request: Request) {
                 status: w.status,
                 requestedAt: w.requestedAt.toISOString(),
                 processedAt: w.processedAt?.toISOString(),
-                completedAt: w.completedAt?.toISOString(),
+                completedAt: w.processedAt?.toISOString(),
                 notes: w.notes
             })),
             minimumWithdrawal: 50, // EUR
