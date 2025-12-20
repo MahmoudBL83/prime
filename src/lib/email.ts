@@ -1,12 +1,13 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-if (!process.env.RESEND_API_KEY) {
-  console.warn('⚠️  RESEND_API_KEY not found. Email notifications will not work.');
-}
-
-// Only initialize Resend client if API key is available
-// This prevents build-time errors when RESEND_API_KEY is not set
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+// Configure the email transporter using Gmail SMTP
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER, // Your Gmail address
+    pass: process.env.GMAIL_APP_PASSWORD, // Your Gmail App Password
+  },
+});
 
 interface EmailOptions {
   to: string | string[];
@@ -16,26 +17,21 @@ interface EmailOptions {
 }
 
 export async function sendEmail({ to, subject, html, from }: EmailOptions) {
-  // If Resend client is not initialized, skip sending email
-  if (!resend) {
-    console.warn('Email service not configured. Skipping email send.');
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    console.warn('⚠️ GMAIL credentials not found. Email notifications will not work.');
     return null;
   }
 
   try {
-    const { data, error } = await resend.emails.send({
-      from: from || process.env.EMAIL_FROM || 'Prime Learning <noreply@prime-learning.com>',
-      to: Array.isArray(to) ? to : [to],
+    const info = await transporter.sendMail({
+      from: from || process.env.EMAIL_FROM || `"Prime Learning" <${process.env.GMAIL_USER}>`,
+      to: Array.isArray(to) ? to.join(', ') : to,
       subject,
       html,
     });
 
-    if (error) {
-      console.error('Email send error:', error);
-      throw new Error(error.message);
-    }
-
-    return data;
+    console.log('Message sent: %s', info.messageId);
+    return info;
   } catch (error: any) {
     console.error('Failed to send email:', error);
     throw error;
@@ -378,75 +374,7 @@ export const EmailTemplates = {
       `
     };
   },
-};
 
-// Helper function to send subscription welcome email
-export async function sendSubscriptionWelcomeEmail(data: {
-  userEmail: string;
-  userName: string;
-  subscriptionType: string;
-  coursesCount: number;
-  locale: string;
-}) {
-  const template = EmailTemplates.subscriptionWelcome(data);
-  return sendEmail({
-    to: data.userEmail,
-    ...template,
-  });
-}
-
-// Helper function to send payment receipt
-export async function sendPaymentReceiptEmail(data: {
-  userEmail: string;
-  userName: string;
-  amount: number;
-  currency: string;
-  subscriptionType: string;
-  billingCycle: string;
-  invoiceUrl?: string;
-  nextBillingDate: string;
-  locale: string;
-}) {
-  const template = EmailTemplates.paymentReceipt(data);
-  return sendEmail({
-    to: data.userEmail,
-    ...template,
-  });
-}
-
-// Helper function to send study buddy match notification
-export async function sendStudyBuddyMatchEmail(data: {
-  userEmail: string;
-  userName: string;
-  buddyName: string;
-  sharedInterests: string[];
-  locale: string;
-}) {
-  const template = EmailTemplates.studyBuddyMatch(data);
-  return sendEmail({
-    to: data.userEmail,
-    ...template,
-  });
-}
-
-// Helper function to send course completion email
-export async function sendCourseCompletionEmail(data: {
-  userEmail: string;
-  userName: string;
-  courseName: string;
-  certificateUrl?: string;
-  completionDate: string;
-  locale: string;
-}) {
-  const template = EmailTemplates.courseCompletion(data);
-  return sendEmail({
-    to: data.userEmail,
-    ...template,
-  });
-}
-
-// Add to EmailTemplates object
-Object.assign(EmailTemplates, {
   // Email Verification
   emailVerification: (data: {
     userName: string;
@@ -535,7 +463,72 @@ Object.assign(EmailTemplates, {
       `
     };
   }
-});
+};
+
+// Helper function to send subscription welcome email
+export async function sendSubscriptionWelcomeEmail(data: {
+  userEmail: string;
+  userName: string;
+  subscriptionType: string;
+  coursesCount: number;
+  locale: string;
+}) {
+  const template = EmailTemplates.subscriptionWelcome(data);
+  return sendEmail({
+    to: data.userEmail,
+    ...template,
+  });
+}
+
+// Helper function to send payment receipt
+export async function sendPaymentReceiptEmail(data: {
+  userEmail: string;
+  userName: string;
+  amount: number;
+  currency: string;
+  subscriptionType: string;
+  billingCycle: string;
+  invoiceUrl?: string;
+  nextBillingDate: string;
+  locale: string;
+}) {
+  const template = EmailTemplates.paymentReceipt(data);
+  return sendEmail({
+    to: data.userEmail,
+    ...template,
+  });
+}
+
+// Helper function to send study buddy match notification
+export async function sendStudyBuddyMatchEmail(data: {
+  userEmail: string;
+  userName: string;
+  buddyName: string;
+  sharedInterests: string[];
+  locale: string;
+}) {
+  const template = EmailTemplates.studyBuddyMatch(data);
+  return sendEmail({
+    to: data.userEmail,
+    ...template,
+  });
+}
+
+// Helper function to send course completion email
+export async function sendCourseCompletionEmail(data: {
+  userEmail: string;
+  userName: string;
+  courseName: string;
+  certificateUrl?: string;
+  completionDate: string;
+  locale: string;
+}) {
+  const template = EmailTemplates.courseCompletion(data);
+  return sendEmail({
+    to: data.userEmail,
+    ...template,
+  });
+}
 
 // Helper function to send email verification
 export async function sendEmailVerificationEmail(data: {
@@ -544,7 +537,6 @@ export async function sendEmailVerificationEmail(data: {
   verificationLink: string;
   locale: string;
 }) {
-  // @ts-ignore - Dynamic property assignment
   const template = EmailTemplates.emailVerification(data);
   return sendEmail({
     to: data.userEmail,
@@ -559,7 +551,6 @@ export async function sendPasswordResetEmail(data: {
   resetLink: string;
   locale: string;
 }) {
-  // @ts-ignore - Dynamic property assignment
   const template = EmailTemplates.passwordReset(data);
   return sendEmail({
     to: data.userEmail,
