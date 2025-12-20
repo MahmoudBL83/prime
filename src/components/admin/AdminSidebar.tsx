@@ -2,6 +2,8 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { useSession, signOut } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 import {
     LayoutDashboard,
@@ -23,7 +25,8 @@ import {
     Wallet,
     History,
     Gavel,
-    Megaphone
+    Megaphone,
+    LucideIcon
 } from 'lucide-react'
 
 interface NavigationItem {
