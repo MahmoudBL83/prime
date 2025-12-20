@@ -153,7 +153,7 @@ const navigation: NavigationItem[] = [
     },
     {
         name: 'Withdrawals',
-        href: '/admin/withdrawals',
+        href: '/admin/payouts',
         icon: Wallet,
         badge: null
     },
