@@ -23,11 +23,13 @@ interface SearchResult {
     type: 'course' | 'creator' | 'live' | 'resource'
     title: string
     titleAr?: string
-    description?: string
+    titleDe?: string
+    description?: string;
     thumbnail?: string
     creator?: {
         name: string
         arabicName?: string
+        nameDe?: string
         profileImage?: string
     }
     [key: string]: any
@@ -315,8 +317,8 @@ export default function GlobalSearch({ placeholder, className }: GlobalSearchPro
                                                 </div>
                                                 {result.creator && (
                                                     <p className="text-sm text-gray-400 truncate">
-                                                        {isArabic && result.creator.arabicName
-                                                            ? result.creator.arabicName
+                                                        {isGerman && result.creator.nameDe
+                                                            ? result.creator.nameDe
                                                             : result.creator.name}
                                                     </p>
                                                 )}

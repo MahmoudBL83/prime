@@ -32,7 +32,7 @@ export default function NewDiscussionForm({
     lang = 'en'
 }: NewDiscussionFormProps) {
     const { data: session } = useSession()
-    const isArabic = lang === 'de'
+    const isGerman = lang === 'de'
 
     const [title, setTitle] = useState('')
     const [content, setContent] = useState('')
@@ -55,21 +55,21 @@ export default function NewDiscussionForm({
         e.preventDefault()
 
         if (!session) {
-            toast.error(isArabic ? 'يجب تسجيل الدخول' : 'Please sign in')
+            toast.error(isGerman ? 'Bitte melden Sie sich an' : 'Please sign in')
             return
         }
 
         // Validation
         if (title.trim().length < 10 || title.trim().length > 200) {
-            toast.error(isArabic 
-                ? 'العنوان يجب أن يكون بين 10 و 200 حرف'
+            toast.error(isGerman
+                ? 'Der Titel muss zwischen 10 und 200 Zeichen lang sein'
                 : 'Title must be between 10 and 200 characters')
             return
         }
 
         if (content.trim().length < 20) {
-            toast.error(isArabic 
-                ? 'المحتوى يجب أن يكون 20 حرف على الأقل'
+            toast.error(isGerman
+                ? 'Der Inhalt muss mindestens 20 Zeichen lang sein'
                 : 'Content must be at least 20 characters')
             return
         }
@@ -88,7 +88,7 @@ export default function NewDiscussionForm({
             })
 
             if (response.ok) {
-                toast.success(isArabic ? 'تم إنشاء المناقشة!' : 'Discussion created!')
+                toast.success(isGerman ? 'Diskussion erstellt!' : 'Discussion created!')
                 onSuccess()
                 onClose()
             } else {
@@ -97,20 +97,20 @@ export default function NewDiscussionForm({
             }
         } catch (error: any) {
             console.error('Submit error:', error)
-            toast.error(error.message || (isArabic ? 'فشل إنشاء المناقشة' : 'Failed to create discussion'))
+            toast.error(error.message || (isGerman ? 'Fehler beim Erstellen der Diskussion' : 'Failed to create discussion'))
         } finally {
             setSubmitting(false)
         }
     }
 
     return (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" dir={isArabic ? 'rtl' : 'ltr'}>
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-card border border-border rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-border">
                     <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
                         <MessageSquare className="w-6 h-6 text-purple-400" />
-                        {isArabic ? 'مناقشة جديدة' : 'New Discussion'}
+                        {isGerman ? 'Neue Diskussion' : 'New Discussion'}
                     </h2>
                     <button
                         onClick={onClose}
@@ -125,39 +125,39 @@ export default function NewDiscussionForm({
                     {/* Title */}
                     <div>
                         <label className="block text-sm font-semibold text-muted-foreground mb-2">
-                            {isArabic ? 'العنوان' : 'Title'} <span className="text-red-400">*</span>
+                            {isGerman ? 'Titel' : 'Title'} <span className="text-red-400">*</span>
                         </label>
                         <input
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            placeholder={isArabic 
-                                ? 'اطرح سؤالاً أو ابدأ نقاشاً...'
+                            placeholder={isGerman
+                                ? 'Stellen Sie eine Frage oder starten Sie eine Diskussion...'
                                 : 'Ask a question or start a discussion...'}
                             className="w-full bg-gray-900/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
                             maxLength={200}
                         />
                         <p className="text-xs text-muted-foreground mt-1">
-                            {title.length}/200 {isArabic ? 'حرف' : 'characters'}
+                            {title.length}/200 {isGerman ? 'Zeichen' : 'characters'}
                         </p>
                     </div>
 
                     {/* Content */}
                     <div>
                         <label className="block text-sm font-semibold text-muted-foreground mb-2">
-                            {isArabic ? 'التفاصيل' : 'Details'} <span className="text-red-400">*</span>
+                            {isGerman ? 'Details' : 'Details'} <span className="text-red-400">*</span>
                         </label>
                         <textarea
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
-                            placeholder={isArabic
-                                ? 'اشرح سؤالك أو نقطتك بالتفصيل...'
+                            placeholder={isGerman
+                                ? 'Erklären Sie Ihre Frage oder Ihren Punkt im Detail...'
                                 : 'Explain your question or point in detail...'}
                             rows={8}
                             className="w-full bg-gray-900/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                         />
                         <p className="text-xs text-muted-foreground mt-1">
-                            {content.length} {isArabic ? 'حرف' : 'characters'} ({isArabic ? 'الحد الأدنى 20' : 'minimum 20'})
+                            {content.length} {isGerman ? 'Zeichen' : 'characters'} ({isGerman ? 'Minimum 20' : 'minimum 20'})
                         </p>
                     </div>
 
@@ -165,9 +165,9 @@ export default function NewDiscussionForm({
                     <div>
                         <label className="block text-sm font-semibold text-muted-foreground mb-2">
                             <Tag className="w-4 h-4 inline mr-1" />
-                            {isArabic ? 'الوسوم' : 'Tags'}
+                            {isGerman ? 'Tags' : 'Tags'}
                             <span className="text-muted-foreground font-normal ml-2">
-                                ({isArabic ? 'اختياري، حتى 5 وسوم' : 'Optional, up to 5 tags'})
+                                ({isGerman ? 'Optional, bis zu 5 Tags' : 'Optional, up to 5 tags'})
                             </span>
                         </label>
                         <div className="flex gap-2">
@@ -181,7 +181,7 @@ export default function NewDiscussionForm({
                                         handleAddTag()
                                     }
                                 }}
-                                placeholder={isArabic ? 'أضف وسم...' : 'Add a tag...'}
+                                placeholder={isGerman ? 'Einen Tag hinzufügen...' : 'Add a tag...'}
                                 className="flex-1 bg-gray-900/50 border border-border rounded-lg px-4 py-2 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 disabled={tags.length >= 5}
                             />
@@ -191,7 +191,7 @@ export default function NewDiscussionForm({
                                 disabled={!tagInput.trim() || tags.length >= 5}
                                 className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-foreground rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isArabic ? 'إضافة' : 'Add'}
+                                {isGerman ? 'Hinzufügen' : 'Add'}
                             </button>
                         </div>
                         {tags.length > 0 && (
@@ -221,11 +221,11 @@ export default function NewDiscussionForm({
                             <BookOpen className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
                             <div>
                                 <p className="text-sm font-semibold text-purple-300">
-                                    {isArabic ? 'مرتبط بالدرس' : 'Related to Lesson'}
+                                    {isGerman ? 'Bezug zur Lektion' : 'Related to Lesson'}
                                 </p>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    {isArabic 
-                                        ? 'ستظهر هذه المناقشة في صفحة الدرس'
+                                    {isGerman
+                                        ? 'Diese Diskussion wird auf der Lektionsseite angezeigt'
                                         : 'This discussion will appear on the lesson page'}
                                 </p>
                             </div>
@@ -239,7 +239,7 @@ export default function NewDiscussionForm({
                             onClick={onClose}
                             className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-foreground rounded-lg font-semibold transition"
                         >
-                            {isArabic ? 'إلغاء' : 'Cancel'}
+                            {isGerman ? 'Abbrechen' : 'Cancel'}
                         </button>
                         <button
                             type="submit"
@@ -249,12 +249,12 @@ export default function NewDiscussionForm({
                             {submitting ? (
                                 <>
                                     <Loader className="w-5 h-5 animate-spin" />
-                                    {isArabic ? 'جاري النشر...' : 'Posting...'}
+                                    {isGerman ? 'Wird gepostet...' : 'Posting...'}
                                 </>
                             ) : (
                                 <>
                                     <MessageSquare className="w-5 h-5" />
-                                    {isArabic ? 'نشر المناقشة' : 'Post Discussion'}
+                                    {isGerman ? 'Diskussion posten' : 'Post Discussion'}
                                 </>
                             )}
                         </button>

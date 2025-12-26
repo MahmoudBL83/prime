@@ -56,7 +56,7 @@ interface Discussion {
     lesson?: {
         id: string
         title: string
-        titleAr: string
+        titleDe?: string
     }
 }
 
@@ -72,7 +72,7 @@ export default function DiscussionThread({
     lang = 'en'
 }: DiscussionThreadProps) {
     const { data: session } = useSession()
-    const isArabic = lang === 'de'
+    const isGerman = lang === 'de'
 
     const [discussion, setDiscussion] = useState<Discussion | null>(null)
     const [replies, setReplies] = useState<Reply[]>([])
@@ -104,7 +104,7 @@ export default function DiscussionThread({
 
     const handleBookmark = async () => {
         if (!session) {
-            toast.error(isArabic ? 'يجب تسجيل الدخول' : 'Please sign in')
+            toast.error(isGerman ? 'Bitte melden Sie sich an' : 'Please sign in')
             return
         }
 
@@ -116,12 +116,12 @@ export default function DiscussionThread({
             if (response.ok) {
                 setIsBookmarked(!isBookmarked)
                 toast.success(isBookmarked
-                    ? (isArabic ? 'تم إلغاء الحفظ' : 'Bookmark removed')
-                    : (isArabic ? 'تم الحفظ' : 'Bookmarked!'))
+                    ? (isGerman ? 'Lesezeichen entfernt' : 'Bookmark removed')
+                    : (isGerman ? 'Lesezeichen gesetzt!' : 'Bookmarked!'))
             }
         } catch (error) {
             console.error('Bookmark error:', error)
-            toast.error(isArabic ? 'فشل الحفظ' : 'Failed to bookmark')
+            toast.error(isGerman ? 'Fehler beim Speichern des Lesezeichens' : 'Failed to bookmark')
         }
     }
 
@@ -145,7 +145,7 @@ export default function DiscussionThread({
             }
         } catch (error) {
             console.error('Fetch error:', error)
-            toast.error(isArabic ? 'فشل تحميل المناقشة' : 'Failed to load discussion')
+            toast.error(isGerman ? 'Laden der Diskussion fehlgeschlagen' : 'Failed to load discussion')
         } finally {
             setLoading(false)
         }
@@ -153,7 +153,7 @@ export default function DiscussionThread({
 
     const handleVoteDiscussion = async (hasVoted: boolean) => {
         if (!session) {
-            toast.error(isArabic ? 'يجب تسجيل الدخول' : 'Please sign in')
+            toast.error(isGerman ? 'Bitte melden Sie sich an' : 'Please sign in')
             return
         }
 
@@ -180,7 +180,7 @@ export default function DiscussionThread({
 
     const handleVoteReply = async (replyId: string, hasVoted: boolean) => {
         if (!session) {
-            toast.error(isArabic ? 'يجب تسجيل الدخول' : 'Please sign in')
+            toast.error(isGerman ? 'Bitte melden Sie sich an' : 'Please sign in')
             return
         }
 
@@ -214,12 +214,12 @@ export default function DiscussionThread({
         e.preventDefault()
 
         if (!session) {
-            toast.error(isArabic ? 'يجب تسجيل الدخول' : 'Please sign in')
+            toast.error(isGerman ? 'Bitte melden Sie sich an' : 'Please sign in')
             return
         }
 
         if (replyText.trim().length < 10) {
-            toast.error(isArabic ? 'الرد يجب أن يكون 10 أحرف على الأقل' : 'Reply must be at least 10 characters')
+            toast.error(isGerman ? 'Die Antwort muss mindestens 10 Zeichen lang sein' : 'Reply must be at least 10 characters')
             return
         }
 
@@ -239,13 +239,13 @@ export default function DiscussionThread({
                 setReplies([...replies, data.data])
                 setReplyText('')
                 setReplyingTo(null)
-                toast.success(isArabic ? 'تم إضافة الرد' : 'Reply posted!')
+                toast.success(isGerman ? 'Antwort gepostet!' : 'Reply posted!')
             } else {
                 throw new Error('Failed to post reply')
             }
         } catch (error) {
             console.error('Submit error:', error)
-            toast.error(isArabic ? 'فشل إضافة الرد' : 'Failed to post reply')
+            toast.error(isGerman ? 'Fehler beim Posten der Antwort' : 'Failed to post reply')
         } finally {
             setSubmitting(false)
         }
@@ -294,13 +294,13 @@ export default function DiscussionThread({
                                 {reply.isBestAnswer && (
                                     <span className="flex items-center gap-1 px-2 py-0.5 bg-yellow-500/20 text-yellow-300 text-xs rounded-full font-bold">
                                         <Award className="w-3 h-3 fill-yellow-400" />
-                                        {isArabic ? '⭐ أفضل إجابة' : '⭐ Best Answer'}
+                                        {isGerman ? '⭐ Beste Antwort' : '⭐ Best Answer'}
                                     </span>
                                 )}
                                 {reply.isInstructorReply && (
                                     <span className="flex items-center gap-1 px-2 py-0.5 bg-purple-500/20 text-purple-300 text-xs rounded-full">
                                         <Award className="w-3 h-3" />
-                                        {isArabic ? 'مدرس' : 'Instructor'}
+                                        {isGerman ? 'Lehrer' : 'Instructor'}
                                     </span>
                                 )}
                                 {reply.isPinned && !reply.isBestAnswer && (
@@ -321,12 +321,11 @@ export default function DiscussionThread({
                                     className="flex items-center gap-1 text-muted-foreground hover:text-purple-400 transition"
                                 >
                                     <Reply className="w-4 h-4" />
-                                    {isArabic ? 'رد' : 'Reply'}
+                                    {isGerman ? 'Antworten' : 'Reply'}
                                 </button>
                                 {/* Mark as Best Answer */}
                                 {session?.user && discussion && (
-                                    session.user.id === discussion.author.id ||
-                                    session.user.id === discussion.lesson?.id
+                                    session.user.id === discussion.author.id
                                 ) && !reply.isBestAnswer && (
                                         <button
                                             onClick={async () => {
@@ -337,17 +336,17 @@ export default function DiscussionThread({
                                                         body: JSON.stringify({ replyId: reply.id })
                                                     })
                                                     if (response.ok) {
-                                                        toast.success(isArabic ? 'تم تحديد أفضل إجابة!' : 'Best answer marked!')
+                                                        toast.success(isGerman ? 'Beste Antwort markiert!' : 'Best answer marked!')
                                                         fetchDiscussionAndReplies()
                                                     }
                                                 } catch (error) {
-                                                    toast.error(isArabic ? 'فشل تحديد أفضل إجابة' : 'Failed to mark best answer')
+                                                    toast.error(isGerman ? 'Markieren der besten Antwort fehlgeschlagen' : 'Failed to mark best answer')
                                                 }
                                             }}
                                             className="flex items-center gap-1 text-muted-foreground hover:text-yellow-400 transition"
                                         >
                                             <Award className="w-4 h-4" />
-                                            {isArabic ? 'أفضل إجابة' : 'Best Answer'}
+                                            {isGerman ? 'Beste Antwort' : 'Best Answer'}
                                         </button>
                                     )}
                             </div>
@@ -368,7 +367,7 @@ export default function DiscussionThread({
     }
 
     return (
-        <div className="space-y-6" dir={isArabic ? 'rtl' : 'ltr'}>
+        <div className="space-y-6">
             {/* Main Discussion */}
             <div className="bg-gray-800/40 backdrop-blur-xl border border-border/50 rounded-xl p-8">
                 <div className="flex gap-6">
@@ -380,7 +379,7 @@ export default function DiscussionThread({
                         >
                             <ThumbsUp className="w-6 h-6 text-muted-foreground hover:text-purple-400 transition" />
                             <span className="text-xl font-bold text-foreground">{discussion.upvotes}</span>
-                            <span className="text-sm text-muted-foreground">{isArabic ? 'تصويت' : 'votes'}</span>
+                            <span className="text-sm text-muted-foreground">{isGerman ? 'Stimmen' : 'votes'}</span>
                         </button>
 
                         {/* Bookmark */}
@@ -389,8 +388,8 @@ export default function DiscussionThread({
                                 onClick={handleBookmark}
                                 className="flex items-center justify-center p-3 rounded-lg bg-gray-900/50 hover:bg-background transition"
                                 title={isBookmarked
-                                    ? (isArabic ? 'إلغاء الحفظ' : 'Remove bookmark')
-                                    : (isArabic ? 'حفظ' : 'Bookmark')}
+                                    ? (isGerman ? 'Lesezeichen entfernen' : 'Remove bookmark')
+                                    : (isGerman ? 'Lesezeichen' : 'Bookmark')}
                             >
                                 {isBookmarked ? (
                                     <BookmarkCheck className="w-6 h-6 text-yellow-400" />
@@ -432,7 +431,7 @@ export default function DiscussionThread({
                                 <>
                                     <span>•</span>
                                     <span className="text-purple-400">
-                                        {isArabic ? discussion.lesson.titleAr : discussion.lesson.title}
+                                        {isGerman && discussion.lesson.titleDe ? discussion.lesson.titleDe : discussion.lesson.title}
                                     </span>
                                 </>
                             )}
@@ -464,13 +463,13 @@ export default function DiscussionThread({
             <div className="bg-gray-800/40 backdrop-blur-xl border border-border/50 rounded-xl p-6">
                 <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
                     <MessageSquare className="w-5 h-5 text-purple-400" />
-                    {isArabic ? 'إضافة رد' : 'Add Reply'}
+                    {isGerman ? 'Antwort hinzufügen' : 'Add Reply'}
                 </h3>
                 <form onSubmit={handleSubmitReply} className="space-y-4">
                     {replyingTo && (
                         <div className="flex items-center justify-between bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
                             <span className="text-sm text-purple-300">
-                                {isArabic ? 'الرد على تعليق' : 'Replying to a comment'}
+                                {isGerman ? 'Auf einen Kommentar antworten' : 'Replying to a comment'}
                             </span>
                             <button
                                 type="button"
@@ -484,7 +483,7 @@ export default function DiscussionThread({
                     <textarea
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
-                        placeholder={isArabic ? 'اكتب ردك هنا...' : 'Write your reply here...'}
+                        placeholder={isGerman ? 'Schreiben Sie hier Ihre Antwort...' : 'Write your reply here...'}
                         rows={4}
                         className="w-full bg-gray-900/50 border border-border rounded-lg p-4 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                     />
@@ -499,7 +498,7 @@ export default function DiscussionThread({
                             ) : (
                                 <MessageSquare className="w-5 h-5" />
                             )}
-                            {isArabic ? 'نشر الرد' : 'Post Reply'}
+                            {isGerman ? 'Antwort posten' : 'Post Reply'}
                         </button>
                     </div>
                 </form>
@@ -508,7 +507,7 @@ export default function DiscussionThread({
             {/* Replies */}
             <div>
                 <h3 className="text-2xl font-semibold text-foreground mb-4">
-                    {replies.length} {isArabic ? 'رد' : 'Replies'}
+                    {replies.length} {isGerman ? 'Antworten' : 'Replies'}
                 </h3>
                 <div className="space-y-4">
                     {topLevelReplies.map(reply => (

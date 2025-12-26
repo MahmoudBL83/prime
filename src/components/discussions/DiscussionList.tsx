@@ -43,7 +43,7 @@ interface Discussion {
     lesson?: {
         id: string
         title: string
-        titleAr: string
+        titleDe?: string
     }
     replies: any[]
     _count: {
@@ -65,7 +65,7 @@ export default function DiscussionList({
     lang = 'en'
 }: DiscussionListProps) {
     const { data: session } = useSession()
-    const isArabic = lang === 'de'
+    const isGerman = lang === 'de'
 
     const [discussions, setDiscussions] = useState<Discussion[]>([])
     const [loading, setLoading] = useState(true)
@@ -108,7 +108,7 @@ export default function DiscussionList({
             }
 
             const response = await fetch(`/api/courses/${courseId}/discussions?${params}`)
-            
+
             if (response.ok) {
                 const data = await response.json()
                 setDiscussions(data.data.discussions)
@@ -118,7 +118,7 @@ export default function DiscussionList({
             }
         } catch (error) {
             console.error('Fetch discussions error:', error)
-            toast.error(isArabic ? 'فشل تحميل المناقشات' : 'Failed to load discussions')
+            toast.error(isGerman ? 'Laden der Diskussionen fehlgeschlagen' : 'Failed to load discussions')
         } finally {
             setLoading(false)
         }
@@ -126,7 +126,7 @@ export default function DiscussionList({
 
     const handleVote = async (discussionId: string, hasVoted: boolean) => {
         if (!session) {
-            toast.error(isArabic ? 'يجب تسجيل الدخول للتصويت' : 'Please sign in to vote')
+            toast.error(isGerman ? 'Bitte melden Sie sich an, um abzustimmen' : 'Please sign in to vote')
             return
         }
 
@@ -154,13 +154,13 @@ export default function DiscussionList({
             }
         } catch (error) {
             console.error('Vote error:', error)
-            toast.error(isArabic ? 'فشل التصويت' : 'Failed to vote')
+            toast.error(isGerman ? 'Abstimmung fehlgeschlagen' : 'Failed to vote')
         }
     }
 
     const handleBookmark = async (discussionId: string) => {
         if (!session) {
-            toast.error(isArabic ? 'يجب تسجيل الدخول للحفظ' : 'Please sign in to bookmark')
+            toast.error(isGerman ? 'Bitte melden Sie sich an, um ein Lesezeichen zu setzen' : 'Please sign in to bookmark')
             return
         }
 
@@ -177,17 +177,17 @@ export default function DiscussionList({
                     const newSet = new Set(prev)
                     if (isBookmarked) {
                         newSet.delete(discussionId)
-                        toast.success(isArabic ? 'تم إلغاء الحفظ' : 'Bookmark removed')
+                        toast.success(isGerman ? 'Lesezeichen entfernt' : 'Bookmark removed')
                     } else {
                         newSet.add(discussionId)
-                        toast.success(isArabic ? 'تم الحفظ' : 'Bookmarked!')
+                        toast.success(isGerman ? 'Lesezeichen gesetzt!' : 'Bookmarked!')
                     }
                     return newSet
                 })
             }
         } catch (error) {
             console.error('Bookmark error:', error)
-            toast.error(isArabic ? 'فشل الحفظ' : 'Failed to bookmark')
+            toast.error(isGerman ? 'Fehler beim Speichern des Lesezeichens' : 'Failed to bookmark')
         }
     }
 
@@ -205,17 +205,17 @@ export default function DiscussionList({
     }
 
     return (
-        <div className="space-y-6" dir={isArabic ? 'rtl' : 'ltr'}>
+        <div className="space-y-6">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
                         <MessageSquare className="w-6 h-6 text-purple-400" />
-                        {isArabic ? 'المناقشات' : 'Discussions'}
+                        {isGerman ? 'Diskussionen' : 'Discussions'}
                     </h2>
                     <p className="text-muted-foreground text-sm mt-1">
-                        {isArabic 
-                            ? 'اطرح أسئلتك وشارك أفكارك مع المتعلمين الآخرين'
+                        {isGerman
+                            ? 'Stellen Sie Fragen und teilen Sie Ideen mit anderen Lernenden'
                             : 'Ask questions and share ideas with other learners'}
                     </p>
                 </div>
@@ -225,7 +225,7 @@ export default function DiscussionList({
                     className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-foreground px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:shadow-purple-500/50"
                 >
                     <Plus className="w-5 h-5" />
-                    {isArabic ? 'مناقشة جديدة' : 'New Discussion'}
+                    {isGerman ? 'Neue Diskussion' : 'New Discussion'}
                 </button>
             </div>
 
@@ -239,7 +239,7 @@ export default function DiscussionList({
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder={isArabic ? 'ابحث في المناقشات...' : 'Search discussions...'}
+                            placeholder={isGerman ? 'Diskussionen durchsuchen...' : 'Search discussions...'}
                             className="w-full bg-gray-900/50 border border-border rounded-lg pl-10 pr-4 py-2 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
                     </div>
@@ -248,47 +248,43 @@ export default function DiscussionList({
                     <div className="flex gap-2">
                         <button
                             onClick={() => setSortBy('recent')}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
-                                sortBy === 'recent'
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${sortBy === 'recent'
                                     ? 'bg-purple-500 text-foreground'
                                     : 'bg-gray-700/50 text-muted-foreground hover:bg-gray-700'
-                            }`}
+                                }`}
                         >
                             <Clock className="w-4 h-4" />
-                            {isArabic ? 'الأحدث' : 'Recent'}
+                            {isGerman ? 'Neu' : 'Recent'}
                         </button>
                         <button
                             onClick={() => setSortBy('popular')}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
-                                sortBy === 'popular'
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${sortBy === 'popular'
                                     ? 'bg-purple-500 text-foreground'
                                     : 'bg-gray-700/50 text-muted-foreground hover:bg-gray-700'
-                            }`}
+                                }`}
                         >
                             <TrendingUp className="w-4 h-4" />
-                            {isArabic ? 'الأكثر شعبية' : 'Popular'}
+                            {isGerman ? 'Beliebt' : 'Popular'}
                         </button>
                         <button
                             onClick={() => setSortBy('unanswered')}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
-                                sortBy === 'unanswered'
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${sortBy === 'unanswered'
                                     ? 'bg-purple-500 text-foreground'
                                     : 'bg-gray-700/50 text-muted-foreground hover:bg-gray-700'
-                            }`}
+                                }`}
                         >
                             <HelpCircle className="w-4 h-4" />
-                            {isArabic ? 'بدون إجابة' : 'Unanswered'}
+                            {isGerman ? 'Unbeantwortet' : 'Unanswered'}
                         </button>
                         <button
                             onClick={() => setSortBy('most-replied')}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
-                                sortBy === 'most-replied'
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${sortBy === 'most-replied'
                                     ? 'bg-purple-500 text-foreground'
                                     : 'bg-gray-700/50 text-muted-foreground hover:bg-gray-700'
-                            }`}
+                                }`}
                         >
                             <MessageCircle className="w-4 h-4" />
-                            {isArabic ? 'الأكثر تعليقاً' : 'Most Replied'}
+                            {isGerman ? 'Meiste Antworten' : 'Most Replied'}
                         </button>
                     </div>
                 </div>
@@ -299,11 +295,11 @@ export default function DiscussionList({
                 <div className="bg-gray-800/40 backdrop-blur-xl border border-border/50 rounded-xl p-12 text-center">
                     <MessageCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-xl font-semibold text-foreground mb-2">
-                        {isArabic ? 'لا توجد مناقشات بعد' : 'No discussions yet'}
+                        {isGerman ? 'Noch keine Diskussionen' : 'No discussions yet'}
                     </h3>
                     <p className="text-muted-foreground mb-6">
-                        {isArabic 
-                            ? 'كن أول من يبدأ مناقشة!'
+                        {isGerman
+                            ? 'Beginnen Sie als Erster eine Diskussion!'
                             : 'Be the first to start a discussion!'}
                     </p>
                     <button
@@ -311,7 +307,7 @@ export default function DiscussionList({
                         className="inline-flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-foreground px-6 py-3 rounded-lg font-semibold transition"
                     >
                         <Plus className="w-5 h-5" />
-                        {isArabic ? 'إنشاء مناقشة' : 'Create Discussion'}
+                        {isGerman ? 'Diskussion erstellen' : 'Create Discussion'}
                     </button>
                 </div>
             ) : (
@@ -335,7 +331,7 @@ export default function DiscussionList({
                                     >
                                         <ThumbsUp className="w-5 h-5 text-muted-foreground group-hover:text-purple-400 transition" />
                                         <span className="text-sm font-bold text-foreground">{discussion.upvotes}</span>
-                                        <span className="text-xs text-muted-foreground">{isArabic ? 'تصويت' : 'votes'}</span>
+                                        <span className="text-xs text-muted-foreground">{isGerman ? 'Stimmen' : 'votes'}</span>
                                     </button>
 
                                     {/* Bookmark Button */}
@@ -346,9 +342,9 @@ export default function DiscussionList({
                                                 handleBookmark(discussion.id)
                                             }}
                                             className="flex items-center justify-center min-w-[60px] bg-gray-900/50 rounded-lg p-3 hover:bg-background transition"
-                                            title={bookmarkedIds.has(discussion.id) 
-                                                ? (isArabic ? 'إلغاء الحفظ' : 'Remove bookmark')
-                                                : (isArabic ? 'حفظ' : 'Bookmark')}
+                                            title={bookmarkedIds.has(discussion.id)
+                                                ? (isGerman ? 'Lesezeichen entfernen' : 'Remove bookmark')
+                                                : (isGerman ? 'Lesezeichen' : 'Bookmark')}
                                         >
                                             {bookmarkedIds.has(discussion.id) ? (
                                                 <BookmarkCheck className="w-5 h-5 text-yellow-400" />
@@ -400,7 +396,7 @@ export default function DiscussionList({
                                             <>
                                                 <span>•</span>
                                                 <span className="text-purple-400">
-                                                    {isArabic ? discussion.lesson.titleAr : discussion.lesson.title}
+                                                    {isGerman && discussion.lesson.titleDe ? discussion.lesson.titleDe : discussion.lesson.title}
                                                 </span>
                                             </>
                                         )}
@@ -409,7 +405,7 @@ export default function DiscussionList({
 
                                         <div className="flex items-center gap-1">
                                             <MessageSquare className="w-4 h-4" />
-                                            <span>{discussion._count.replies} {isArabic ? 'رد' : 'replies'}</span>
+                                            <span>{discussion._count.replies} {isGerman ? 'Antworten' : 'replies'}</span>
                                         </div>
                                     </div>
 
@@ -441,17 +437,17 @@ export default function DiscussionList({
                         disabled={page === 1}
                         className="px-4 py-2 bg-card text-foreground rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                     >
-                        {isArabic ? 'السابق' : 'Previous'}
+                        {isGerman ? 'Zurück' : 'Previous'}
                     </button>
                     <span className="text-muted-foreground">
-                        {isArabic ? `صفحة ${page} من ${totalPages}` : `Page ${page} of ${totalPages}`}
+                        {isGerman ? `Seite ${page} von ${totalPages}` : `Page ${page} of ${totalPages}`}
                     </span>
                     <button
                         onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                         disabled={page === totalPages}
                         className="px-4 py-2 bg-card text-foreground rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                     >
-                        {isArabic ? 'التالي' : 'Next'}
+                        {isGerman ? 'Weiter' : 'Next'}
                     </button>
                 </div>
             )}
