@@ -68,9 +68,9 @@ function buildWhere(search?: string | null, status?: string | null) {
     if (search) {
         andFilters.push({
             OR: [
-                { name: { contains: search, mode: 'insensitive' } },
-                { creator: { user: { name: { contains: search, mode: 'insensitive' } } } },
-                { creator: { user: { email: { contains: search, mode: 'insensitive' } } } }
+                { name: { contains: search } },
+                { creator: { user: { name: { contains: search } } } },
+                { creator: { user: { email: { contains: search } } } }
             ]
         })
     }

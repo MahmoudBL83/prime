@@ -28,11 +28,11 @@ export async function GET(request: NextRequest) {
         const where: any = {}
 
         if (action) {
-            where.action = { contains: action, mode: 'insensitive' }
+            where.action = { contains: action }
         }
 
         if (module) {
-            where.module = { equals: module, mode: 'insensitive' }
+            where.module = { equals: module }
         }
 
         if (adminId) {
@@ -53,9 +53,9 @@ export async function GET(request: NextRequest) {
 
         if (search) {
             where.OR = [
-                { action: { contains: search, mode: 'insensitive' } },
-                { details: { contains: search, mode: 'insensitive' } },
-                { module: { contains: search, mode: 'insensitive' } }
+                { action: { contains: search } },
+                { details: { contains: search } },
+                { module: { contains: search } }
             ]
         }
 

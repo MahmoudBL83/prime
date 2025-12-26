@@ -42,8 +42,8 @@ export async function GET(request: NextRequest) {
     // Search filter (title or description)
     if (search) {
       where.OR = [
-        { course: { title: { contains: search, mode: 'insensitive' } } },
-        { description: { contains: search, mode: 'insensitive' } },
+        { course: { title: { contains: search } } },
+        { description: { contains: search } },
       ];
     }
 

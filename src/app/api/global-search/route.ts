@@ -37,10 +37,10 @@ export async function GET(request: NextRequest) {
                 where: {
                     status: 'PUBLISHED',
                     OR: [
-                        { title: { contains: searchQuery, mode: 'insensitive' } },
-                        { titleAr: { contains: searchQuery, mode: 'insensitive' } },
-                        { description: { contains: searchQuery, mode: 'insensitive' } },
-                        { category: { contains: searchQuery, mode: 'insensitive' } },
+                        { title: { contains: searchQuery } },
+                        { titleAr: { contains: searchQuery } },
+                        { description: { contains: searchQuery } },
+                        { category: { contains: searchQuery } },
                     ]
                 },
                 include: {
@@ -84,9 +84,9 @@ export async function GET(request: NextRequest) {
                 where: {
                     kycStatus: 'VERIFIED',
                     OR: [
-                        { user: { name: { contains: searchQuery, mode: 'insensitive' } } },
-                        { user: { arabicName: { contains: searchQuery, mode: 'insensitive' } } },
-                        { expertise: { contains: searchQuery, mode: 'insensitive' } },
+                        { user: { name: { contains: searchQuery } } },
+                        { user: { arabicName: { contains: searchQuery } } },
+                        { expertise: { contains: searchQuery } },
                     ]
                 },
                 include: {
@@ -122,9 +122,9 @@ export async function GET(request: NextRequest) {
                 where: {
                     status: { in: ['SCHEDULED', 'LIVE'] },
                     OR: [
-                        { title: { contains: searchQuery, mode: 'insensitive' } },
-                        { titleAr: { contains: searchQuery, mode: 'insensitive' } },
-                        { description: { contains: searchQuery, mode: 'insensitive' } },
+                        { title: { contains: searchQuery } },
+                        { titleAr: { contains: searchQuery } },
+                        { description: { contains: searchQuery } },
                     ]
                 },
                 include: {
@@ -170,9 +170,9 @@ export async function GET(request: NextRequest) {
                 where: {
                     publishedAt: { lte: new Date() },
                     OR: [
-                        { title: { contains: searchQuery, mode: 'insensitive' } },
-                        { titleAr: { contains: searchQuery, mode: 'insensitive' } },
-                        { content: { contains: searchQuery, mode: 'insensitive' } },
+                        { title: { contains: searchQuery } },
+                        { titleAr: { contains: searchQuery } },
+                        { content: { contains: searchQuery } },
                     ]
                 },
                 include: {
@@ -211,10 +211,10 @@ export async function GET(request: NextRequest) {
         }
 
         // Calculate total count
-        results.totalCount = 
-            results.courses.length + 
-            results.creators.length + 
-            results.liveSessions.length + 
+        results.totalCount =
+            results.courses.length +
+            results.creators.length +
+            results.liveSessions.length +
             results.resources.length
 
         return NextResponse.json(results)

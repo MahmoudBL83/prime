@@ -84,12 +84,12 @@ export async function GET(request: NextRequest) {
         // Search in title and description
         if (search) {
             where.OR = [
-                { title: { contains: search, mode: 'insensitive' } },
-                { titleAr: { contains: search, mode: 'insensitive' } },
-                { titleDe: { contains: search, mode: 'insensitive' } },
-                { description: { contains: search, mode: 'insensitive' } },
-                { descriptionAr: { contains: search, mode: 'insensitive' } },
-                { descriptionDe: { contains: search, mode: 'insensitive' } }
+                { title: { contains: search } },
+                { titleAr: { contains: search } },
+                { titleDe: { contains: search } },
+                { description: { contains: search } },
+                { descriptionAr: { contains: search } },
+                { descriptionDe: { contains: search } }
             ];
         }
 

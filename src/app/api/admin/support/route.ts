@@ -134,10 +134,10 @@ export async function GET(request: NextRequest) {
         }
         if (search) {
             where.OR = [
-                { subject: { contains: search, mode: 'insensitive' } },
-                { description: { contains: search, mode: 'insensitive' } },
-                { user: { name: { contains: search, mode: 'insensitive' } } },
-                { user: { email: { contains: search, mode: 'insensitive' } } }
+                { subject: { contains: search } },
+                { description: { contains: search } },
+                { user: { name: { contains: search } } },
+                { user: { email: { contains: search } } }
             ]
         }
 

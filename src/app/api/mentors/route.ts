@@ -16,15 +16,15 @@ export async function GET(req: NextRequest) {
 
         if (search) {
             where.OR = [
-                { user: { name: { contains: search, mode: 'insensitive' } } },
-                { user: { arabicName: { contains: search, mode: 'insensitive' } } },
-                { expertise: { contains: search, mode: 'insensitive' } },
+                { user: { name: { contains: search } } },
+                { user: { arabicName: { contains: search } } },
+                { expertise: { contains: search } },
             ]
         }
 
         if (specialty) {
             // Filter by expertise/specialty if provided
-            where.expertise = { contains: specialty, mode: 'insensitive' }
+            where.expertise = { contains: specialty }
         }
 
         // Fetch mentors (creators) with user information and stats

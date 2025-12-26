@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
 
         if (search) {
             where.OR = [
-                { reason: { contains: search, mode: 'insensitive' } },
-                { targetId: { contains: search, mode: 'insensitive' } },
+                { reason: { contains: search } },
+                { targetId: { contains: search } },
             ]
         }
 

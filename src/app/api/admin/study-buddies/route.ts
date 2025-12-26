@@ -143,17 +143,17 @@ export async function GET(request: NextRequest) {
             const normalized = statusFilter.toLowerCase()
             if (normalized === 'reported') {
                 where.OR = [
-                    { status: { contains: 'block', mode: 'insensitive' } },
-                    { status: { contains: 'report', mode: 'insensitive' } }
+                    { status: { contains: 'block' } },
+                    { status: { contains: 'report' } }
                 ]
             } else {
-                where.status = { equals: statusFilter, mode: 'insensitive' }
+                where.status = { equals: statusFilter }
             }
         }
         if (search) {
             where.OR = [
-                { user1: { name: { contains: search, mode: 'insensitive' } } },
-                { user2: { name: { contains: search, mode: 'insensitive' } } }
+                { user1: { name: { contains: search } } },
+                { user2: { name: { contains: search } } }
             ]
         }
 

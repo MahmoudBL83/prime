@@ -22,9 +22,9 @@ export async function GET(req: NextRequest) {
 
         if (search) {
             where.OR = [
-                { user: { name: { contains: search, mode: 'insensitive' } } },
-                { user: { arabicName: { contains: search, mode: 'insensitive' } } },
-                { expertise: { contains: search, mode: 'insensitive' } }
+                { user: { name: { contains: search } } },
+                { user: { arabicName: { contains: search } } },
+                { expertise: { contains: search } }
             ]
         }
 
