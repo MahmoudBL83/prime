@@ -160,7 +160,7 @@ export default function UdemyStyleCoursePage() {
     const [course, setCourse] = useState<Course | null>(null)
     const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null)
     const [loading, setLoading] = useState(true)
-    const [lang, setLang] = useState<'en' | 'ar'>('ar')
+    const [lang, setLang] = useState<'en' | 'de'>('en')
     const [videoProgress, setVideoProgress] = useState(0)
     const [sidebarOpen, setSidebarOpen] = useState(true)
     const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set())
