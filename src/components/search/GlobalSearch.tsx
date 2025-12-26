@@ -50,7 +50,7 @@ export default function GlobalSearch({ placeholder, className }: GlobalSearchPro
     const router = useRouter()
     const params = useParams()
     const locale = (params.locale as string) || 'en'
-    const isArabic = locale === 'ar'
+    const isGerman = locale === 'de'
 
     const [isOpen, setIsOpen] = useState(false)
     const [query, setQuery] = useState('')
@@ -172,21 +172,21 @@ export default function GlobalSearch({ placeholder, className }: GlobalSearchPro
     }
 
     const getTypeLabel = (type: string) => {
-        const labels: Record<string, { en: string, ar: string }> = {
-            course: { en: 'Course', ar: 'دورة' },
-            creator: { en: 'Creator', ar: 'منشئ' },
-            live: { en: 'Live Session', ar: 'جلسة مباشرة' },
-            resource: { en: 'Resource', ar: 'مورد' }
+        const labels: Record<string, { en: string, de: string }> = {
+            course: { en: 'Course', de: 'Kurs' },
+            creator: { en: 'Creator', de: 'Mentor' },
+            live: { en: 'Live Session', de: 'Live-Sitzung' },
+            resource: { en: 'Resource', de: 'Ressource' }
         }
-        return isArabic ? labels[type]?.ar : labels[type]?.en
+        return isGerman ? labels[type]?.de : labels[type]?.en
     }
 
     const tabs = [
-        { key: 'all', label: isArabic ? 'الكل' : 'All' },
-        { key: 'courses', label: isArabic ? 'الدورات' : 'Courses' },
-        { key: 'creators', label: isArabic ? 'المنشئون' : 'Creators' },
-        { key: 'live', label: isArabic ? 'مباشر' : 'Live' },
-        { key: 'resources', label: isArabic ? 'الموارد' : 'Resources' },
+        { key: 'all', label: isGerman ? 'Alle' : 'All' },
+        { key: 'courses', label: isGerman ? 'Kurse' : 'Courses' },
+        { key: 'creators', label: isGerman ? 'Mentoren' : 'Creators' },
+        { key: 'live', label: isGerman ? 'Live' : 'Live' },
+        { key: 'resources', label: isGerman ? 'Ressourcen' : 'Resources' },
     ]
 
     const allResults = results ? [
@@ -208,7 +208,7 @@ export default function GlobalSearch({ placeholder, className }: GlobalSearchPro
             >
                 <Search className="w-4 h-4" />
                 <span className="hidden sm:inline text-sm">
-                    {placeholder || (isArabic ? 'بحث...' : 'Search...')}
+                    {placeholder || (isGerman ? 'Suchen...' : 'Search...')}
                 </span>
                 <kbd className="hidden sm:flex items-center gap-1 px-2 py-0.5 bg-gray-700 rounded text-xs">
                     <span>⌘</span>
@@ -228,7 +228,7 @@ export default function GlobalSearch({ placeholder, className }: GlobalSearchPro
                                 type="text"
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
-                                placeholder={isArabic ? 'ابحث عن الدورات والمعلمين والجلسات...' : 'Search courses, instructors, sessions...'}
+                                placeholder={isGerman ? 'Suchen Sie nach Kursen, Mentoren, Sitzungen...' : 'Search courses, instructors, sessions...'}
                                 className="flex-1 bg-transparent border-none outline-none text-white placeholder-gray-500"
                                 autoFocus
                             />
@@ -245,8 +245,8 @@ export default function GlobalSearch({ placeholder, className }: GlobalSearchPro
                                     key={tab.key}
                                     onClick={() => setActiveTab(tab.key as any)}
                                     className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${activeTab === tab.key
-                                            ? 'bg-purple-600 text-white'
-                                            : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                                        ? 'bg-purple-600 text-white'
+                                        : 'text-gray-400 hover:text-white hover:bg-gray-800'
                                         }`}
                                 >
                                     {tab.label}
@@ -260,7 +260,7 @@ export default function GlobalSearch({ placeholder, className }: GlobalSearchPro
                             {!query && recentSearches.length > 0 && (
                                 <div className="p-4">
                                     <p className="text-xs text-gray-500 uppercase mb-2">
-                                        {isArabic ? 'عمليات البحث الأخيرة' : 'Recent Searches'}
+                                        {isGerman ? 'Letzte Suchen' : 'Recent Searches'}
                                     </p>
                                     <div className="space-y-1">
                                         {recentSearches.map((search, i) => (
@@ -307,7 +307,7 @@ export default function GlobalSearch({ placeholder, className }: GlobalSearchPro
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-white font-medium truncate">
-                                                        {isArabic && result.titleAr ? result.titleAr : result.title || result.name}
+                                                        {isGerman && result.titleDe ? result.titleDe : result.title || result.name}
                                                     </span>
                                                     <Badge variant="outline" className="text-xs">
                                                         {getTypeLabel(result.type)}
@@ -336,9 +336,9 @@ export default function GlobalSearch({ placeholder, className }: GlobalSearchPro
                             {query && query.length >= 2 && !loading && allResults.length === 0 && (
                                 <div className="p-8 text-center text-gray-500">
                                     <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                    <p>{isArabic ? 'لم يتم العثور على نتائج' : 'No results found'}</p>
+                                    <p>{isGerman ? 'Keine Ergebnisse gefunden' : 'No results found'}</p>
                                     <p className="text-sm mt-1">
-                                        {isArabic ? 'حاول البحث بكلمات مختلفة' : 'Try searching with different keywords'}
+                                        {isGerman ? 'Versuchen Sie es mit anderen Suchbegriffen' : 'Try searching with different keywords'}
                                     </p>
                                 </div>
                             )}
@@ -348,11 +348,11 @@ export default function GlobalSearch({ placeholder, className }: GlobalSearchPro
                         <div className="px-4 py-2 border-t border-gray-800 text-xs text-gray-500 flex items-center gap-4">
                             <span className="flex items-center gap-1">
                                 <kbd className="px-1.5 py-0.5 bg-gray-800 rounded">↵</kbd>
-                                {isArabic ? 'للتحديد' : 'to select'}
+                                {isGerman ? 'auswählen' : 'to select'}
                             </span>
                             <span className="flex items-center gap-1">
                                 <kbd className="px-1.5 py-0.5 bg-gray-800 rounded">esc</kbd>
-                                {isArabic ? 'للإغلاق' : 'to close'}
+                                {isGerman ? 'schließen' : 'to close'}
                             </span>
                         </div>
                     </div>

@@ -41,7 +41,7 @@ export function ProfessionalCourseCard({
     userSubscriptionStatus,
     onClick,
     onPreview,
-    lang = 'ar'
+    lang = 'en'
 }: ProfessionalCourseCardProps) {
     const t = useTranslations('courses');
     const tCommon = useTranslations('common');

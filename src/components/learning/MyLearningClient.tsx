@@ -123,8 +123,8 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                 break;
             case 'title':
                 filtered = [...filtered].sort((a, b) =>
-                    locale === 'ar' && a.titleAr && b.titleAr
-                        ? a.titleAr.localeCompare(b.titleAr, 'ar')
+                    locale === 'de' && a.titleDe && b.titleDe
+                        ? a.titleDe.localeCompare(b.titleDe, 'de')
                         : a.title.localeCompare(b.title)
                 );
                 break;
@@ -166,15 +166,15 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
     };
 
     const getContinueWatchingText = (course: CourseData) => {
-        if (course.progress >= 100) return locale === 'ar' ? 'مراجعة' : 'Review';
-        if (course.progress === 0) return locale === 'ar' ? 'ابدأ الآن' : 'Start Now';
+        if (course.progress >= 100) return locale === 'de' ? 'Wiederholen' : 'Review';
+        if (course.progress === 0) return locale === 'de' ? 'Jetzt starten' : 'Start Now';
         if (course.lastWatchedLesson) {
-            const lessonTitle = locale === 'ar' && course.lastWatchedLesson.titleAr
-                ? course.lastWatchedLesson.titleAr
+            const lessonTitle = locale === 'de' && course.lastWatchedLesson.titleDe
+                ? course.lastWatchedLesson.titleDe
                 : course.lastWatchedLesson.title;
-            return locale === 'ar' ? `تابع: ${lessonTitle}` : `Continue: ${lessonTitle}`;
+            return locale === 'de' ? `Weiter: ${lessonTitle}` : `Continue: ${lessonTitle}`;
         }
-        return locale === 'ar' ? 'تابع التعلم' : 'Continue Learning';
+        return locale === 'de' ? 'Lernen fortsetzen' : 'Continue Learning';
     };
 
     return (
@@ -184,11 +184,11 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center">
                         <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-                            {locale === 'ar' ? `مرحباً ${userName}` : `Welcome back, ${userName}`}
+                            {locale === 'de' ? `Willkommen zurück, ${userName}` : `Welcome back, ${userName}`}
                         </h1>
                         <p className="text-xl text-purple-100 mb-8">
-                            {locale === 'ar' 
-                                ? 'تابع رحلة التعلم الخاصة بك'
+                            {locale === 'de'
+                                ? 'Setze deine Lernreise fort'
                                 : 'Continue your learning journey'}
                         </p>
 
@@ -197,31 +197,31 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-border">
                                 <div className="text-3xl font-bold text-foreground">{stats.total}</div>
                                 <div className="text-sm text-purple-100">
-                                    {locale === 'ar' ? 'الكورسات' : 'Courses'}
+                                    {locale === 'de' ? 'Kurse' : 'Courses'}
                                 </div>
                             </div>
                             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-border">
                                 <div className="text-3xl font-bold text-yellow-300">{stats.inProgress}</div>
                                 <div className="text-sm text-purple-100">
-                                    {locale === 'ar' ? 'قيد التقدم' : 'In Progress'}
+                                    {locale === 'de' ? 'In Bearbeitung' : 'In Progress'}
                                 </div>
                             </div>
                             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-border">
                                 <div className="text-3xl font-bold text-green-300">{stats.completed}</div>
                                 <div className="text-sm text-purple-100">
-                                    {locale === 'ar' ? 'مكتملة' : 'Completed'}
+                                    {locale === 'de' ? 'Abgeschlossen' : 'Completed'}
                                 </div>
                             </div>
                             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-border">
                                 <div className="text-3xl font-bold text-blue-300">{stats.totalHours}</div>
                                 <div className="text-sm text-purple-100">
-                                    {locale === 'ar' ? 'ساعات محتوى' : 'Hours Content'}
+                                    {locale === 'de' ? 'Stunden Inhalt' : 'Hours Content'}
                                 </div>
                             </div>
                             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-border">
                                 <div className="text-3xl font-bold text-purple-300">{stats.watchedHours}</div>
                                 <div className="text-sm text-purple-100">
-                                    {locale === 'ar' ? 'ساعات مشاهدة' : 'Hours Watched'}
+                                    {locale === 'de' ? 'Gesehene Stunden' : 'Hours Watched'}
                                 </div>
                             </div>
                         </div>
@@ -238,7 +238,7 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                             <Input
                                 type="text"
-                                placeholder={locale === 'ar' ? 'ابحث في كورساتك...' : 'Search your courses...'}
+                                placeholder={locale === 'de' ? 'In deinen Kursen suchen...' : 'Search your courses...'}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="pl-12 bg-gray-900/50 border-border text-foreground placeholder:text-muted-foreground rounded-xl h-12"
@@ -260,11 +260,11 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                                             : 'bg-gray-900/50 border-border text-muted-foreground hover:bg-card hover:text-foreground'
                                     )}
                                 >
-                                    {locale === 'ar'
-                                        ? filter === 'all' ? 'الكل'
-                                            : filter === 'in-progress' ? 'قيد التقدم'
-                                                : filter === 'completed' ? 'مكتملة'
-                                                    : 'لم تبدأ'
+                                    {locale === 'de'
+                                        ? filter === 'all' ? 'Alle'
+                                            : filter === 'in-progress' ? 'In Bearbeitung'
+                                                : filter === 'completed' ? 'Abgeschlossen'
+                                                    : 'Nicht gestartet'
                                         : filter === 'all' ? 'All'
                                             : filter === 'in-progress' ? 'In Progress'
                                                 : filter === 'completed' ? 'Completed'
@@ -279,10 +279,10 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                             onChange={(e) => setSortType(e.target.value as SortType)}
                             className="bg-gray-900/50 border border-border text-foreground rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-colors"
                         >
-                            <option value="recent">{locale === 'ar' ? 'الأحدث' : 'Recent'}</option>
-                            <option value="progress">{locale === 'ar' ? 'التقدم' : 'Progress'}</option>
-                            <option value="title">{locale === 'ar' ? 'العنوان' : 'Title'}</option>
-                            <option value="enrolled">{locale === 'ar' ? 'تاريخ التسجيل' : 'Enrolled Date'}</option>
+                            <option value="recent">{locale === 'de' ? 'Neueste' : 'Recent'}</option>
+                            <option value="progress">{locale === 'de' ? 'Fortschritt' : 'Progress'}</option>
+                            <option value="title">{locale === 'de' ? 'Titel' : 'Title'}</option>
+                            <option value="enrolled">{locale === 'de' ? 'Einschreibungsdatum' : 'Enrolled Date'}</option>
                         </select>
                     </div>
                 </div>
@@ -294,17 +294,17 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                     <div className="text-center py-20">
                         <BookOpen className="w-20 h-20 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-2xl font-semibold text-muted-foreground mb-2">
-                            {locale === 'ar' ? 'لا توجد كورسات' : 'No courses found'}
+                            {locale === 'de' ? 'Keine Kurse gefunden' : 'No courses found'}
                         </h3>
                         <p className="text-muted-foreground mb-6">
-                            {locale === 'ar' 
-                                ? 'ابدأ رحلة التعلم الخاصة بك من كتالوج الكورسات'
+                            {locale === 'de'
+                                ? 'Beginne deine Lernreise in unserem Kurskatalog'
                                 : 'Start your learning journey from our course catalog'}
                         </p>
                         <Link href="/courses">
                             <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
                                 <BookOpen className="w-4 h-4 mr-2" />
-                                {locale === 'ar' ? 'تصفح الكورسات' : 'Browse Courses'}
+                                {locale === 'de' ? 'Kurse durchsuchen' : 'Browse Courses'}
                             </Button>
                         </Link>
                     </div>
@@ -320,7 +320,7 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                                     {course.thumbnail ? (
                                         <img
                                             src={course.thumbnail}
-                                            alt={locale === 'ar' && course.titleAr ? course.titleAr : course.title}
+                                            alt={locale === 'de' && course.titleDe ? course.titleDe : course.title}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                         />
                                     ) : (
@@ -333,7 +333,7 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                                     {course.progress === 100 ? (
                                         <div className="absolute top-3 right-3 bg-green-500 text-foreground px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
                                             <CheckCircle2 className="w-3 h-3" />
-                                            {locale === 'ar' ? 'مكتمل' : 'Completed'}
+                                            {locale === 'de' ? 'Abgeschlossen' : 'Completed'}
                                         </div>
                                     ) : course.progress > 0 ? (
                                         <div className="absolute top-3 right-3 bg-purple-600 text-foreground px-3 py-1 rounded-full text-xs font-semibold">
@@ -341,7 +341,7 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                                         </div>
                                     ) : (
                                         <div className="absolute top-3 right-3 bg-gray-700 text-foreground px-3 py-1 rounded-full text-xs font-semibold">
-                                            {locale === 'ar' ? 'جديد' : 'New'}
+                                            {locale === 'de' ? 'Neu' : 'New'}
                                         </div>
                                     )}
 
@@ -367,7 +367,7 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
 
                                     {/* Title */}
                                     <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2 group-hover:text-purple-300 transition-colors">
-                                        {locale === 'ar' && course.titleAr ? course.titleAr : course.title}
+                                        {locale === 'de' && course.titleDe ? course.titleDe : course.title}
                                     </h3>
 
                                     {/* Instructor */}
@@ -376,8 +376,8 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                                             {course.instructor.name.charAt(0).toUpperCase()}
                                         </div>
                                         <span className="text-sm text-muted-foreground">
-                                            {locale === 'ar' && course.instructor.arabicName 
-                                                ? course.instructor.arabicName 
+                                            {locale === 'de' && course.instructor.instructorNameDe
+                                                ? course.instructor.instructorNameDe
                                                 : course.instructor.name}
                                         </span>
                                     </div>
@@ -386,7 +386,7 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                                     <div className="mb-4">
                                         <div className="flex justify-between items-center mb-2">
                                             <span className="text-xs text-muted-foreground">
-                                                {locale === 'ar' ? 'التقدم' : 'Progress'}
+                                                {locale === 'de' ? 'Fortschritt' : 'Progress'}
                                             </span>
                                             <span className={cn('text-xs font-semibold', getProgressColor(course.progress))}>
                                                 {Math.round(course.progress)}%
@@ -394,7 +394,7 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                                         </div>
                                         <Progress value={course.progress} className="h-2" />
                                         <div className="flex justify-between items-center mt-1 text-xs text-muted-foreground">
-                                            <span>{course.completedLessons} / {course.totalLessons} {locale === 'ar' ? 'دروس' : 'lessons'}</span>
+                                            <span>{course.completedLessons} / {course.totalLessons} {locale === 'de' ? 'Lektionen' : 'lessons'}</span>
                                             <span>{formatDuration(course.watchedDuration)} / {formatDuration(course.totalDuration)}</span>
                                         </div>
                                     </div>
@@ -417,7 +417,7 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                                             <Calendar className="w-3.5 h-3.5" />
                                             <span>
                                                 {new Date(course.lastAccessed || course.enrolledAt).toLocaleDateString(
-                                                    locale === 'ar' ? 'ar-EG' : 'en-US',
+                                                    locale === 'de' ? 'de-DE' : 'en-US',
                                                     { month: 'short', day: 'numeric' }
                                                 )}
                                             </span>
@@ -456,8 +456,8 @@ export default function MyLearningClient({ courses, userName }: MyLearningClient
                 {/* Results Count */}
                 {filteredCourses.length > 0 && (
                     <div className="text-center mt-8 text-muted-foreground text-sm">
-                        {locale === 'ar' 
-                            ? `عرض ${filteredCourses.length} من ${courses.length} كورس`
+                        {locale === 'de'
+                            ? `Zeige ${filteredCourses.length} von ${courses.length} Kursen`
                             : `Showing ${filteredCourses.length} of ${courses.length} courses`}
                     </div>
                 )}

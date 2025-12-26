@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
             where: { id: lessonId },
             data: {
                 transcript: captionResult.fullText,
-                transcriptAr: language === 'ar' ? captionResult.fullText : lesson.transcriptAr
+                transcriptDe: language === 'de' ? captionResult.fullText : lesson.transcriptDe
             }
         })
 
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
                 id: true,
                 title: true,
                 transcript: true,
-                transcriptAr: true,
+                transcriptDe: true,
                 resources: true
             }
         })
@@ -174,7 +174,7 @@ export async function GET(request: NextRequest) {
             lessonId: lesson.id,
             title: lesson.title,
             transcript: lesson.transcript,
-            transcriptAr: lesson.transcriptAr,
+            transcriptDe: lesson.transcriptDe,
             captions: resources.captions || null,
             hasCaptions: !!lesson.transcript || !!resources.captions
         })
@@ -196,7 +196,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { lessonId, transcript, transcriptAr, segments } = body
+        const { lessonId, transcript, transcriptDe, segments } = body
 
         if (!lessonId) {
             return NextResponse.json(
@@ -229,7 +229,7 @@ export async function PUT(request: NextRequest) {
         // Update transcript
         const updateData: any = {}
         if (transcript !== undefined) updateData.transcript = transcript
-        if (transcriptAr !== undefined) updateData.transcriptAr = transcriptAr
+        if (transcriptDe !== undefined) updateData.transcriptDe = transcriptDe
 
         // Update segments in resources if provided
         if (segments) {
@@ -253,7 +253,7 @@ export async function PUT(request: NextRequest) {
             lesson: {
                 id: updatedLesson.id,
                 transcript: updatedLesson.transcript,
-                transcriptAr: updatedLesson.transcriptAr
+                transcriptDe: updatedLesson.transcriptDe
             },
             message: 'Captions updated successfully'
         })

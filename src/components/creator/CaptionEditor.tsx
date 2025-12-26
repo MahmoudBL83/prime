@@ -40,7 +40,7 @@ export default function CaptionEditor({
     const [generating, setGenerating] = useState(false)
     const [saving, setSaving] = useState(false)
     const [transcript, setTranscript] = useState('')
-    const [transcriptAr, setTranscriptAr] = useState('')
+    const [transcriptDe, setTranscriptDe] = useState('')
     const [segments, setSegments] = useState<CaptionSegment[]>([])
     const [hasCaptions, setHasCaptions] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
@@ -60,7 +60,7 @@ export default function CaptionEditor({
             if (response.ok) {
                 const data = await response.json()
                 setTranscript(data.transcript || '')
-                setTranscriptAr(data.transcriptAr || '')
+                setTranscriptDe(data.transcriptDe || '')
                 setHasCaptions(data.hasCaptions)
                 if (data.captions?.segments) {
                     setSegments(data.captions.segments)
@@ -82,15 +82,15 @@ export default function CaptionEditor({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     lessonId,
-                    language: selectedLanguage === 'ar' ? 'ar' : 'auto',
+                    language: selectedLanguage === 'de' ? 'de' : 'auto',
                     regenerate
                 })
             })
 
             if (response.ok) {
                 const data = await response.json()
-                if (selectedLanguage === 'ar') {
-                    setTranscriptAr(data.captions.fullText)
+                if (selectedLanguage === 'de') {
+                    setTranscriptDe(data.captions.fullText)
                 } else {
                     setTranscript(data.captions.fullText)
                 }
@@ -119,7 +119,7 @@ export default function CaptionEditor({
                 body: JSON.stringify({
                     lessonId,
                     transcript,
-                    transcriptAr,
+                    transcriptDe,
                     segments: editedSegments
                 })
             })
@@ -187,13 +187,13 @@ export default function CaptionEditor({
                             English
                         </button>
                         <button
-                            onClick={() => setSelectedLanguage('ar')}
-                            className={`px-3 py-1 rounded text-sm ${selectedLanguage === 'ar'
+                            onClick={() => setSelectedLanguage('de')}
+                            className={`px-3 py-1 rounded text-sm ${selectedLanguage === 'de'
                                 ? 'bg-purple-600 text-white'
                                 : 'text-gray-400 hover:text-white'
                                 }`}
                         >
-                            العربية
+                            Deutsch
                         </button>
                     </div>
 
@@ -243,7 +243,7 @@ export default function CaptionEditor({
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <label className="text-sm font-medium text-gray-300">
-                                    Full Transcript ({selectedLanguage === 'ar' ? 'Arabic' : 'English'})
+                                    Full Transcript ({selectedLanguage === 'de' ? 'German' : 'English'})
                                 </label>
                                 {!isEditing ? (
                                     <Button
@@ -281,21 +281,19 @@ export default function CaptionEditor({
 
                             {isEditing ? (
                                 <textarea
-                                    value={selectedLanguage === 'ar' ? transcriptAr : transcript}
+                                    value={selectedLanguage === 'de' ? transcriptDe : transcript}
                                     onChange={(e) =>
-                                        selectedLanguage === 'ar'
-                                            ? setTranscriptAr(e.target.value)
+                                        selectedLanguage === 'de'
+                                            ? setTranscriptDe(e.target.value)
                                             : setTranscript(e.target.value)
                                     }
-                                    dir={selectedLanguage === 'ar' ? 'rtl' : 'ltr'}
                                     className="w-full h-40 p-3 bg-gray-900 border border-gray-600 rounded-lg text-white resize-y focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 />
                             ) : (
                                 <div
                                     className="p-3 bg-gray-900/50 rounded-lg text-gray-300 whitespace-pre-wrap max-h-40 overflow-y-auto"
-                                    dir={selectedLanguage === 'ar' ? 'rtl' : 'ltr'}
                                 >
-                                    {selectedLanguage === 'ar' ? transcriptAr : transcript}
+                                    {selectedLanguage === 'de' ? transcriptDe : transcript}
                                 </div>
                             )}
                         </div>

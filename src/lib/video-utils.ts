@@ -36,12 +36,11 @@ export const VIDEO_CONSTANTS = {
         playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2],
     },
 
-    // Arabic-specific settings
-    ARABIC_PLAYER_CONFIG: {
-        language: 'ar',
-        textDirection: 'rtl',
+    // Default localization settings (German fallback)
+    GERMAN_PLAYER_CONFIG: {
+        language: 'de',
+        textDirection: 'ltr',
         keyboardShortcuts: {
-            // Arabic keyboard shortcuts
             space: 'togglePlay',
             arrowLeft: 'seekBackward',
             arrowRight: 'seekForward',
@@ -160,7 +159,7 @@ export function validateVideoFile(file: File): { valid: boolean; error?: string 
     if (!VIDEO_CONSTANTS.SUPPORTED_FORMATS.includes(file.type)) {
         return {
             valid: false,
-            error: `نوع الملف غير مدعوم. الأنواع المدعومة: ${VIDEO_CONSTANTS.SUPPORTED_FORMATS.join(', ')}`,
+            error: `File type not supported. Supported types: ${VIDEO_CONSTANTS.SUPPORTED_FORMATS.join(', ')}`,
         };
     }
 
@@ -169,7 +168,7 @@ export function validateVideoFile(file: File): { valid: boolean; error?: string 
         const maxSizeMB = VIDEO_CONSTANTS.MAX_FILE_SIZE / (1024 * 1024);
         return {
             valid: false,
-            error: `حجم الملف كبير جداً. الحد الأقصى ${maxSizeMB}MB`,
+            error: `File size too large. Maximum limit is ${maxSizeMB}MB`,
         };
     }
 
@@ -215,8 +214,8 @@ export function extractVideoMetadata(file: File): Promise<{
  * Format file size for display
  */
 export function formatFileSize(bytes: number): string {
-    const sizes = ['بايت', 'كيلوبايت', 'ميجابايت', 'جيجابايت'];
-    if (bytes === 0) return '0 بايت';
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 Bytes';
 
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     const size = (bytes / Math.pow(1024, i)).toFixed(1);

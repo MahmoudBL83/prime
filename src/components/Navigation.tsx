@@ -86,7 +86,7 @@ export function Navigation() {
     return (
         <>
             {/* Apple TV Navigation - Clean & Minimal */}
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-background dark:bg-black border-b border-border dark:border-white/10" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+            <nav className="fixed top-0 left-0 right-0 z-50 bg-background dark:bg-black border-b border-border dark:border-white/10" dir="ltr">
                 <div className="max-w-screen-2xl mx-auto px-8">
                     <div className="flex items-center justify-between h-[52px]">
                         {/* Left: Logo */}
@@ -104,7 +104,7 @@ export function Navigation() {
                         </div>
 
                         {/* Center: Navigation Links */}
-                        <div className={`hidden lg:flex items-center absolute left-1/2 transform -translate-x-1/2 ${locale === 'ar' ? 'space-x-reverse space-x-8' : 'space-x-8'}`}>
+                        <div className="hidden lg:flex items-center absolute left-1/2 transform -translate-x-1/2 space-x-8">
                             {navigationItems.slice(0, 3).map((item) => {
                                 const active = isActive(item.path);
                                 return (
@@ -122,12 +122,12 @@ export function Navigation() {
                         </div>
 
                         {/* Right: Search, Language, Messaging & Account */}
-                        <div className={`flex items-center ${locale === 'ar' ? 'space-x-reverse space-x-4' : 'space-x-4'}`}>
+                        <div className="flex items-center space-x-4">
 
                             {/* Global Search */}
                             <div className="hidden md:block">
                                 <GlobalSearch
-                                    placeholder={locale === 'ar' ? 'بحث...' : 'Search...'}
+                                    placeholder={locale === 'de' ? 'Suchen...' : 'Search...'}
                                 />
                             </div>
 
