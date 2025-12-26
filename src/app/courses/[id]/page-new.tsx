@@ -275,7 +275,7 @@ export default function CourseDetailPage() {
                         creator: course.creator
                     }}
                     onClose={() => setShowSubscriptionGate(false)}
-                    lang="ar"
+                    lang="en"
                 />
             )}
         </>
