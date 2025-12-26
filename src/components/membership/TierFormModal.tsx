@@ -353,38 +353,38 @@ export default function TierFormModal({
                             </label>
                         </div>
                     </div>
-                </div>
 
-                {/* Footer */}
-                <div className="flex items-center justify-end gap-3 p-6 border-t border-border bg-gray-900/50">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="px-6 py-2 text-muted-foreground hover:text-foreground transition-colors"
-                        disabled={loading}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-foreground rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                        {loading ? (
-                            <>
-                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                Saving...
-                            </>
-                        ) : (
-                            <>
-                                <Check className="w-4 h-4" />
-                                {mode === 'create' ? 'Create Tier' : 'Save Changes'}
-                            </>
-                        )}
-                    </button>
-                </div>
-            </form>
-        </motion.div>
-        </div >
+                    {/* Footer */}
+                    <div className="flex items-center justify-end gap-3 p-6 border-t border-border bg-gray-900/50">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-6 py-2 text-muted-foreground hover:text-foreground transition-colors"
+                            disabled={loading}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-foreground rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                            {loading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Check className="w-4 h-4" />
+                                    {mode === 'create' ? 'Create Tier' : 'Save Changes'}
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </form>
+            </motion.div>
+        </div>
     )
 }
+
