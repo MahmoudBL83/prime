@@ -43,7 +43,7 @@ export async function GET(
 
     // Get locale from query params
     const { searchParams } = new URL(request.url);
-    const locale = (searchParams.get('locale') || 'en') as 'en' | 'ar';
+    const locale = (searchParams.get('locale') || 'en') as 'en' | 'de';
 
     // Increment download count
     await incrementDownloadCount(certificate.id);
@@ -52,12 +52,12 @@ export async function GET(
     const pdfBlob = await generateCertificatePDF({
       certificateNumber: certificate.certificateNumber,
       studentName: certificate.user.name || certificate.user.arabicName || 'Student',
-      courseName: locale === 'ar' && certificate.course.titleAr
-        ? certificate.course.titleAr
+      courseName: locale === 'de' && certificate.course.titleDe
+        ? certificate.course.titleDe
         : certificate.course.title,
       instructorName: certificate.course.creator.user.name ||
-                     certificate.course.creator.user.arabicName ||
-                     'Instructor',
+        certificate.course.creator.user.arabicName ||
+        'Instructor',
       completionDate: new Date(certificate.completionDate),
       issueDate: new Date(certificate.issueDate),
       grade: certificate.grade || undefined,

@@ -47,15 +47,15 @@ export const EmailTemplates = {
     coursesCount: number;
     locale: string;
   }) => {
-    const isArabic = data.locale === 'ar';
+    const isGerman = data.locale === 'de';
 
     return {
-      subject: isArabic
-        ? `🎉 مرحباً بك في Prime Learning!`
+      subject: isGerman
+        ? `🎉 Willkommen bei Prime Learning!`
         : `🎉 Welcome to Prime Learning!`,
       html: `
         <!DOCTYPE html>
-        <html dir="${isArabic ? 'rtl' : 'ltr'}">
+        <html lang="${isGerman ? 'de' : 'en'}">
         <head>
           <meta charset="UTF-8">
           <style>
@@ -72,48 +72,48 @@ export const EmailTemplates = {
         </head>
         <body>
           <div class="header">
-            <h1>${isArabic ? '🎓 مرحباً بك في Prime Learning' : '🎓 Welcome to Prime Learning'}</h1>
+            <h1>${isGerman ? '🎓 Willkommen bei Prime Learning' : '🎓 Welcome to Prime Learning'}</h1>
           </div>
           
           <div class="content">
-            <h2>${isArabic ? `أهلاً ${data.userName}!` : `Hi ${data.userName}!`}</h2>
+            <h2>${isGerman ? `Hallo ${data.userName}!` : `Hi ${data.userName}!`}</h2>
             
-            <p>${isArabic
-          ? `شكراً لاشتراكك في ${data.subscriptionType}. نحن متحمسون لمساعدتك في رحلتك التعليمية!`
+            <p>${isGerman
+          ? `Vielen Dank für das Abonnieren von ${data.subscriptionType}. Wir freuen uns, Sie auf Ihrem Lernweg zu begleiten!`
           : `Thank you for subscribing to ${data.subscriptionType}. We're excited to help you on your learning journey!`}
             </p>
             
             <div class="highlight">
-              <h3>${isArabic ? '🎉 اشتراكك نشط الآن!' : '🎉 Your subscription is now active!'}</h3>
+              <h3>${isGerman ? '🎉 Ihr Abonnement ist jetzt aktiv!' : '🎉 Your subscription is now active!'}</h3>
               <p style="margin: 10px 0; font-size: 18px;">
-                <strong>${isArabic ? 'لديك وصول فوري إلى' : 'You now have instant access to'} ${data.coursesCount} ${isArabic ? 'دورة تدريبية!' : 'courses!'}</strong>
+                <strong>${isGerman ? 'Sie haben ab sofort Zugriff auf' : 'You now have instant access to'} ${data.coursesCount} ${isGerman ? 'Kurse!' : 'courses!'}</strong>
               </p>
             </div>
             
-            <h3>${isArabic ? 'ماذا بعد؟' : 'What\'s Next?'}</h3>
+            <h3>${isGerman ? 'Was kommt als Nächstes?' : 'What\'s Next?'}</h3>
             
-            <div class="feature">${isArabic ? 'تصفح مكتبة الدورات الضخمة' : 'Browse our massive course library'}</div>
-            <div class="feature">${isArabic ? 'ابدأ أول درس لك اليوم' : 'Start your first lesson today'}</div>
-            <div class="feature">${isArabic ? 'ابحث عن Study Buddy للتعلم معه' : 'Find a Study Buddy to learn with'}</div>
-            <div class="feature">${isArabic ? 'تتبع تقدمك واكسب الشارات' : 'Track your progress and earn badges'}</div>
-            <div class="feature">${isArabic ? 'انضم إلى قنوات المنشئين المفضلين لديك' : 'Join your favorite creator channels'}</div>
+            <div class="feature">${isGerman ? 'Durchsuchen Sie unsere umfangreiche Kursbibliothek' : 'Browse our massive course library'}</div>
+            <div class="feature">${isGerman ? 'Starten Sie heute Ihre erste Lektion' : 'Start your first lesson today'}</div>
+            <div class="feature">${isGerman ? 'Finden Sie einen Lernpartner' : 'Find a Study Buddy to learn with'}</div>
+            <div class="feature">${isGerman ? 'Verfolgen Sie Ihren Fortschritt und verdienen Sie Abzeichen' : 'Track your progress and earn badges'}</div>
+            <div class="feature">${isGerman ? 'Treten Sie Kanälen Ihrer Lieblingsautoren bei' : 'Join your favorite creator channels'}</div>
             
             <div style="text-align: center;">
               <a href="${process.env.NEXT_PUBLIC_APP_URL}/${data.locale}/dashboard/my-learning" class="cta-button">
-                ${isArabic ? '🚀 ابدأ التعلم الآن' : '🚀 Start Learning Now'}
+                ${isGerman ? '🚀 Jetzt mit dem Lernen beginnen' : '🚀 Start Learning Now'}
               </a>
             </div>
             
             <p style="margin-top: 30px; color: #6B7280; font-size: 14px;">
-              ${isArabic
-          ? 'هل تحتاج إلى مساعدة؟ فريق الدعم لدينا متاح على مدار الساعة طوال أيام الأسبوع.'
+              ${isGerman
+          ? 'Brauchen Sie Hilfe? Unser Support-Team ist rund um die Uhr für Sie da.'
           : 'Need help? Our support team is available 24/7.'}
             </p>
           </div>
           
           <div class="footer">
-            <p>${isArabic ? 'تم إرسال هذا البريد من' : 'This email was sent from'} Prime Learning</p>
-            <p>${isArabic ? 'إذا لم تقم بالتسجيل، يرجى تجاهل هذا البريد.' : 'If you didn\'t sign up, please ignore this email.'}</p>
+            <p>${isGerman ? 'Diese E-Mail wurde gesendet von' : 'This email was sent from'} Prime Learning</p>
+            <p>${isGerman ? 'Wenn Sie sich nicht angemeldet haben, ignorieren Sie bitte diese E-Mail.' : 'If you didn\'t sign up, please ignore this email.'}</p>
           </div>
         </body>
         </html>
@@ -132,15 +132,15 @@ export const EmailTemplates = {
     nextBillingDate: string;
     locale: string;
   }) => {
-    const isArabic = data.locale === 'ar';
+    const isGerman = data.locale === 'de';
 
     return {
-      subject: isArabic
-        ? `إيصال الدفع - ${data.subscriptionType}`
+      subject: isGerman
+        ? `Zahlungsbeleg - ${data.subscriptionType}`
         : `Payment Receipt - ${data.subscriptionType}`,
       html: `
         <!DOCTYPE html>
-        <html dir="${isArabic ? 'rtl' : 'ltr'}">
+        <html lang="${isGerman ? 'de' : 'en'}">
         <head>
           <meta charset="UTF-8">
           <style>
@@ -157,36 +157,36 @@ export const EmailTemplates = {
         </head>
         <body>
           <div class="header">
-            <h1>${isArabic ? '✅ تم الدفع بنجاح' : '✅ Payment Successful'}</h1>
+            <h1>${isGerman ? '✅ Zahlung erfolgreich' : '✅ Payment Successful'}</h1>
           </div>
           
           <div class="content">
-            <p>${isArabic ? `عزيزي ${data.userName}،` : `Dear ${data.userName},`}</p>
+            <p>${isGerman ? `Sehr geehrte(r) ${data.userName},` : `Dear ${data.userName},`}</p>
             
-            <p>${isArabic
-          ? 'شكراً لدفعك. تم معالجة اشتراكك بنجاح.'
+            <p>${isGerman
+          ? 'Vielen Dank für Ihre Zahlung. Ihr Abonnement wurde erfolgreich bearbeitet.'
           : 'Thank you for your payment. Your subscription has been successfully processed.'}</p>
             
             <div class="receipt-box">
-              <h3 style="margin-top: 0;">${isArabic ? 'تفاصيل الدفع' : 'Payment Details'}</h3>
+              <h3 style="margin-top: 0;">${isGerman ? 'Zahlungsdetails' : 'Payment Details'}</h3>
               
               <div class="receipt-row">
-                <span>${isArabic ? 'الاشتراك:' : 'Subscription:'}</span>
+                <span>${isGerman ? 'Abonnement:' : 'Subscription:'}</span>
                 <span><strong>${data.subscriptionType}</strong></span>
               </div>
               
               <div class="receipt-row">
-                <span>${isArabic ? 'دورة الفوترة:' : 'Billing Cycle:'}</span>
-                <span>${data.billingCycle === 'yearly' ? (isArabic ? 'سنوي' : 'Annual') : (isArabic ? 'شهري' : 'Monthly')}</span>
+                <span>${isGerman ? 'Abrechnungszyklus:' : 'Billing Cycle:'}</span>
+                <span>${data.billingCycle === 'yearly' ? (isGerman ? 'Jährlich' : 'Annual') : (isGerman ? 'Monatlich' : 'Monthly')}</span>
               </div>
               
               <div class="receipt-row">
-                <span>${isArabic ? 'المبلغ المدفوع:' : 'Amount Paid:'}</span>
+                <span>${isGerman ? 'Gezahlter Betrag:' : 'Amount Paid:'}</span>
                 <span><strong>${data.amount} ${data.currency}</strong></span>
               </div>
               
               <div class="receipt-row">
-                <span>${isArabic ? 'الفوترة التالية:' : 'Next Billing:'}</span>
+                <span>${isGerman ? 'Nächste Abrechnung:' : 'Next Billing:'}</span>
                 <span>${data.nextBillingDate}</span>
               </div>
             </div>
@@ -194,20 +194,20 @@ export const EmailTemplates = {
             ${data.invoiceUrl ? `
               <div style="text-align: center;">
                 <a href="${data.invoiceUrl}" class="cta-button">
-                  ${isArabic ? '📄 تحميل الفاتورة' : '📄 Download Invoice'}
+                  ${isGerman ? '📄 تحميل الفاتورة' : '📄 Download Invoice'}
                 </a>
               </div>
             ` : ''}
             
             <p style="margin-top: 30px; color: #6B7280; font-size: 14px;">
-              ${isArabic
+              ${isGerman
           ? 'ستظهر هذه المعاملة في كشف حسابك البنكي باسم "Prime Learning".'
           : 'This transaction will appear on your bank statement as "Prime Learning".'}
             </p>
           </div>
           
           <div class="footer">
-            <p>${isArabic ? 'أسئلة؟ اتصل بنا على' : 'Questions? Contact us at'} support@prime-learning.com</p>
+            <p>${isGerman ? 'أسئلة؟ اتصل بنا على' : 'Questions? Contact us at'} support@prime-learning.com</p>
           </div>
         </body>
         </html>
@@ -222,15 +222,15 @@ export const EmailTemplates = {
     sharedInterests: string[];
     locale: string;
   }) => {
-    const isArabic = data.locale === 'ar';
+    const isGerman = data.locale === 'de';
 
     return {
-      subject: isArabic
-        ? `🎉 لديك Study Buddy جديد!`
+      subject: isGerman
+        ? `🎉 Du hast einen neuen Lernpartner!`
         : `🎉 You have a new Study Buddy!`,
       html: `
         <!DOCTYPE html>
-        <html dir="${isArabic ? 'rtl' : 'ltr'}">
+        <html lang="${isGerman ? 'de' : 'en'}">
         <head>
           <meta charset="UTF-8">
           <style>
@@ -247,42 +247,42 @@ export const EmailTemplates = {
         </head>
         <body>
           <div class="header">
-            <h1>${isArabic ? '🤝 لديك رفيق جديد!' : '🤝 You Have a New Match!'}</h1>
+            <h1>${isGerman ? '🤝 Du hast einen neuen Match!' : '🤝 You Have a New Match!'}</h1>
           </div>
           
           <div class="content">
-            <p>${isArabic ? `مرحباً ${data.userName}!` : `Hi ${data.userName}!`}</p>
+            <p>${isGerman ? `Hallo ${data.userName}!` : `Hi ${data.userName}!`}</p>
             
-            <p>${isArabic
-          ? `رائع! لقد تم مطابقتك مع ${data.buddyName}. أنتما تشتركان في اهتمامات تعليمية مشابهة!`
+            <p>${isGerman
+          ? `Gute Neuigkeiten! Du wurdest mit ${data.buddyName} gematcht. Ihr teilt ähnliche Lerninteressen!`
           : `Great news! You've been matched with ${data.buddyName}. You both share similar learning interests!`}
             </p>
             
             <div class="buddy-card">
               <h2 style="margin: 0; color: #6D28D9;">👤 ${data.buddyName}</h2>
-              <p style="margin: 15px 0 5px; font-size: 14px; color: #6B7280;">${isArabic ? 'الاهتمامات المشتركة:' : 'Shared Interests:'}</p>
+              <p style="margin: 15px 0 5px; font-size: 14px; color: #6B7280;">${isGerman ? 'Gemeinsame Interessen:' : 'Shared Interests:'}</p>
               <div class="interests">
                 ${data.sharedInterests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
               </div>
             </div>
             
-            <h3>${isArabic ? 'ابدأ التعلم معاً:' : 'Start Learning Together:'}</h3>
+            <h3>${isGerman ? 'ابدأ التعلم معاً:' : 'Start Learning Together:'}</h3>
             <ul>
-              <li>${isArabic ? 'ابدأ محادثة وتعرف على بعضكما' : 'Start a chat and get to know each other'}</li>
-              <li>${isArabic ? 'جدولة جلسات دراسة منتظمة' : 'Schedule regular study sessions'}</li>
-              <li>${isArabic ? 'شارك الموارد والملاحظات' : 'Share resources and notes'}</li>
-              <li>${isArabic ? 'حفز بعضكما البعض' : 'Motivate each other'}</li>
+              <li>${isGerman ? 'ابدأ محادثة وتعرف على بعضكما' : 'Start a chat and get to know each other'}</li>
+              <li>${isGerman ? 'جدولة جلسات دراسة منتظمة' : 'Schedule regular study sessions'}</li>
+              <li>${isGerman ? 'شارك الموارد والملاحظات' : 'Share resources and notes'}</li>
+              <li>${isGerman ? 'حفز بعضكما البعض' : 'Motivate each other'}</li>
             </ul>
             
             <div style="text-align: center;">
               <a href="${process.env.NEXT_PUBLIC_APP_URL}/${data.locale}/study-buddy" class="cta-button">
-                ${isArabic ? '💬 ابدأ المحادثة' : '💬 Start Chatting'}
+                ${isGerman ? '💬 ابدأ المحادثة' : '💬 Start Chatting'}
               </a>
             </div>
           </div>
           
           <div class="footer">
-            <p>${isArabic ? 'التعلم أفضل مع الأصدقاء!' : 'Learning is better with friends!'} 🎓</p>
+            <p>${isGerman ? 'التعلم أفضل مع الأصدقاء!' : 'Learning is better with friends!'} 🎓</p>
           </div>
         </body>
         </html>
@@ -298,15 +298,15 @@ export const EmailTemplates = {
     completionDate: string;
     locale: string;
   }) => {
-    const isArabic = data.locale === 'ar';
+    const isGerman = data.locale === 'de';
 
     return {
-      subject: isArabic
-        ? `🎓 تهانينا! لقد أكملت ${data.courseName}`
+      subject: isGerman
+        ? `🎓 Herzlichen Glückwunsch! Du hast ${data.courseName} abgeschlossen`
         : `🎓 Congratulations! You completed ${data.courseName}`,
       html: `
         <!DOCTYPE html>
-        <html dir="${isArabic ? 'rtl' : 'ltr'}">
+        <html lang="${isGerman ? 'de' : 'en'}">
         <head>
           <meta charset="UTF-8">
           <style>
@@ -321,53 +321,53 @@ export const EmailTemplates = {
         </head>
         <body>
           <div class="header">
-            <h1>🎉 ${isArabic ? 'تهانينا!' : 'Congratulations!'} 🎉</h1>
+            <h1>🎉 ${isGerman ? 'تهانينا!' : 'Congratulations!'} 🎉</h1>
           </div>
           
           <div class="content">
-            <p style="font-size: 18px;">${isArabic ? `عزيزي ${data.userName}،` : `Dear ${data.userName},`}</p>
+            <p style="font-size: 18px;">${isGerman ? `عزيزي ${data.userName}،` : `Dear ${data.userName},`}</p>
             
             <div class="achievement-box">
-              <h2 style="margin: 0; color: #92400E; font-size: 24px;">${isArabic ? '🏆 إنجاز رائع!' : '🏆 Amazing Achievement!'}</h2>
+              <h2 style="margin: 0; color: #92400E; font-size: 24px;">${isGerman ? '🏆 إنجاز رائع!' : '🏆 Amazing Achievement!'}</h2>
               <p style="margin: 20px 0; font-size: 16px; color: #78350F;">
-                ${isArabic ? 'لقد أكملت بنجاح:' : 'You\'ve successfully completed:'}
+                ${isGerman ? 'لقد أكملت بنجاح:' : 'You\'ve successfully completed:'}
               </p>
               <h3 style="margin: 10px 0; color: #92400E;">"${data.courseName}"</h3>
               <p style="margin: 15px 0; font-size: 14px; color: #A16207;">
-                ${isArabic ? `تاريخ الإكمال: ${data.completionDate}` : `Completion Date: ${data.completionDate}`}
+                ${isGerman ? `تاريخ الإكمال: ${data.completionDate}` : `Completion Date: ${data.completionDate}`}
               </p>
             </div>
             
             ${data.certificateUrl ? `
               <div style="text-align: center;">
-                <p>${isArabic ? 'شهادتك جاهزة!' : 'Your certificate is ready!'}</p>
+                <p>${isGerman ? 'شهادتك جاهزة!' : 'Your certificate is ready!'}</p>
                 <a href="${data.certificateUrl}" class="cta-button">
-                  ${isArabic ? '📜 تحميل الشهادة' : '📜 Download Certificate'}
+                  ${isGerman ? '📜 تحميل الشهادة' : '📜 Download Certificate'}
                 </a>
               </div>
             ` : ''}
             
-            <h3>${isArabic ? 'ماذا بعد؟' : 'What\'s Next?'}</h3>
+            <h3>${isGerman ? 'ماذا بعد؟' : 'What\'s Next?'}</h3>
             <ul>
-              <li>${isArabic ? 'شارك إنجازك على وسائل التواصل الاجتماعي' : 'Share your achievement on social media'}</li>
-              <li>${isArabic ? 'استكشف دورات أكثر تقدماً' : 'Explore more advanced courses'}</li>
-              <li>${isArabic ? 'ساعد الآخرين من خلال الإجابة على أسئلتهم' : 'Help others by answering their questions'}</li>
-              <li>${isArabic ? 'طبق ما تعلمته في مشاريع حقيقية' : 'Apply what you learned in real projects'}</li>
+              <li>${isGerman ? 'شارك إنجازك على وسائل التواصل الاجتماعي' : 'Share your achievement on social media'}</li>
+              <li>${isGerman ? 'استكشف دورات أكثر تقدماً' : 'Explore more advanced courses'}</li>
+              <li>${isGerman ? 'ساعد الآخرين من خلال الإجابة على أسئلتهم' : 'Help others by answering their questions'}</li>
+              <li>${isGerman ? 'طبق ما تعلمته في مشاريع حقيقية' : 'Apply what you learned in real projects'}</li>
             </ul>
             
             <div style="text-align: center; margin-top: 30px;">
               <a href="${process.env.NEXT_PUBLIC_APP_URL}/${data.locale}/courses" class="cta-button">
-                ${isArabic ? '🚀 استكشف المزيد من الدورات' : '🚀 Explore More Courses'}
+                ${isGerman ? '🚀 استكشف المزيد من الدورات' : '🚀 Explore More Courses'}
               </a>
             </div>
             
             <p style="margin-top: 30px; text-align: center; color: #6B7280;">
-              ${isArabic ? 'نحن فخورون بإنجازاتك!' : 'We\'re proud of your achievements!'} 🌟
+              ${isGerman ? 'نحن فخورون بإنجازاتك!' : 'We\'re proud of your achievements!'} 🌟
             </p>
           </div>
           
           <div class="footer">
-            <p>${isArabic ? 'استمر في التعلم والنمو!' : 'Keep learning and growing!'} 🎓</p>
+            <p>${isGerman ? 'استمر في التعلم والنمو!' : 'Keep learning and growing!'} 🎓</p>
           </div>
         </body>
         </html>
@@ -381,12 +381,12 @@ export const EmailTemplates = {
     verificationLink: string;
     locale: string;
   }) => {
-    const isArabic = data.locale === 'ar';
+    const isGerman = data.locale === 'de';
     return {
-      subject: isArabic ? 'تأكيد البريد الإلكتروني' : 'Verify your email address',
+      subject: isGerman ? 'E-Mail bestätigen' : 'Verify your email address',
       html: `
         <!DOCTYPE html>
-        <html dir="${isArabic ? 'rtl' : 'ltr'}">
+        <html lang="${isGerman ? 'de' : 'en'}">
         <head>
           <meta charset="UTF-8">
           <style>
@@ -400,15 +400,15 @@ export const EmailTemplates = {
         </head>
         <body>
           <div class="header">
-            <h1>${isArabic ? 'تأكيد البريد الإلكتروني' : 'Verify Email Address'}</h1>
+            <h1>${isGerman ? 'تأكيد البريد الإلكتروني' : 'Verify Email Address'}</h1>
           </div>
           <div class="content">
-            <p>${isArabic ? `مرحباً ${data.userName}،` : `Hi ${data.userName},`}</p>
-            <p>${isArabic ? 'يرجى النقر على الرابط أدناه لتفعيل حسابك:' : 'Please click the button below to verify your email address:'}</p>
+            <p>${isGerman ? `مرحباً ${data.userName}،` : `Hi ${data.userName},`}</p>
+            <p>${isGerman ? 'يرجى النقر على الرابط أدناه لتفعيل حسابك:' : 'Please click the button below to verify your email address:'}</p>
             <div style="text-align: center;">
-              <a href="${data.verificationLink}" class="cta-button">${isArabic ? 'تفعيل الحساب' : 'Verify Email'}</a>
+              <a href="${data.verificationLink}" class="cta-button">${isGerman ? 'تفعيل الحساب' : 'Verify Email'}</a>
             </div>
-            <p>${isArabic ? 'إذا لم تطلب هذا، يمكنك تجاهل هذا البريد.' : 'If you did not request this, please ignore this email.'}</p>
+            <p>${isGerman ? 'إذا لم تطلب هذا، يمكنك تجاهل هذا البريد.' : 'If you did not request this, please ignore this email.'}</p>
           </div>
           <div class="footer">
             <p>Prime Learning</p>
@@ -425,12 +425,12 @@ export const EmailTemplates = {
     resetLink: string;
     locale: string;
   }) => {
-    const isArabic = data.locale === 'ar';
+    const isGerman = data.locale === 'de';
     return {
-      subject: isArabic ? 'إعادة تعيين كلمة المرور' : 'Reset your password',
+      subject: isGerman ? 'Passwort zurücksetzen' : 'Reset your password',
       html: `
         <!DOCTYPE html>
-        <html dir="${isArabic ? 'rtl' : 'ltr'}">
+        <html lang="${isGerman ? 'de' : 'en'}">
         <head>
           <meta charset="UTF-8">
           <style>
@@ -444,16 +444,16 @@ export const EmailTemplates = {
         </head>
         <body>
           <div class="header">
-            <h1>${isArabic ? 'إعادة تعيين كلمة المرور' : 'Reset Password'}</h1>
+            <h1>${isGerman ? 'إعادة تعيين كلمة المرور' : 'Reset Password'}</h1>
           </div>
           <div class="content">
-            <p>${isArabic ? `مرحباً ${data.userName}،` : `Hi ${data.userName},`}</p>
-            <p>${isArabic ? 'لقد تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بك. انقر أدناه للمتابعة:' : 'We received a request to reset your password. Click below to proceed:'}</p>
+            <p>${isGerman ? `مرحباً ${data.userName}،` : `Hi ${data.userName},`}</p>
+            <p>${isGerman ? 'لقد تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بك. انقر أدناه للمتابعة:' : 'We received a request to reset your password. Click below to proceed:'}</p>
             <div style="text-align: center;">
-              <a href="${data.resetLink}" class="cta-button">${isArabic ? 'إعادة تعيين كلمة المرور' : 'Reset Password'}</a>
+              <a href="${data.resetLink}" class="cta-button">${isGerman ? 'إعادة تعيين كلمة المرور' : 'Reset Password'}</a>
             </div>
-            <p>${isArabic ? 'سينتهي هذا الرابط خلال ساعة واحدة.' : 'This link will expire in 1 hour.'}</p>
-            <p>${isArabic ? 'إذا لم تطلب هذا، يرجى تأمين حسابك.' : 'If you did not request this, please secure your account.'}</p>
+            <p>${isGerman ? 'سينتهي هذا الرابط خلال ساعة واحدة.' : 'This link will expire in 1 hour.'}</p>
+            <p>${isGerman ? 'إذا لم تطلب هذا، يرجى تأمين حسابك.' : 'If you did not request this, please secure your account.'}</p>
           </div>
           <div class="footer">
             <p>Prime Learning</p>

@@ -23,17 +23,13 @@ export function OpenGraph({
     const currentLocale = useLocale();
     const locale = propLocale || currentLocale;
 
-    const defaultTitle = locale === 'ar'
-        ? 'برايم - منصة التعلم الرقمي المصرية'
-        : locale === 'de'
-            ? 'Prime - Ägyptische digitale Lernplattform'
-            : 'Prime - Egyptian Digital Learning Platform';
+    const defaultTitle = locale === 'de'
+        ? 'Prime - Ägyptische digitale Lernplattform'
+        : 'Prime - Egyptian Digital Learning Platform';
 
-    const defaultDescription = locale === 'ar'
-        ? 'منصة تعليمية شاملة للطلاب والمتعلمين في مصر'
-        : locale === 'de'
-            ? 'Umfassende Bildungsplattform für Studenten und Lernende in Ägypten'
-            : 'Comprehensive educational platform for students and learners in Egypt';
+    const defaultDescription = locale === 'de'
+        ? 'Umfassende Bildungsplattform für Studenten und Lernende in Ägypten'
+        : 'Comprehensive educational platform for students and learners in Egypt';
 
     const finalTitle = title || defaultTitle;
     const finalDescription = description || defaultDescription;
@@ -47,7 +43,7 @@ export function OpenGraph({
             <meta property="og:type" content={type} />
             <meta property="og:site_name" content={finalSiteName} />
             {url && <meta property="og:url" content={url} />}
-            <meta property="og:locale" content={locale === 'ar' ? 'ar_EG' : locale === 'de' ? 'de_DE' : 'en_US'} />
+            <meta property="og:locale" content={locale === 'de' ? 'de_DE' : 'en_US'} />
 
             {/* Twitter Card */}
             <meta name="twitter:card" content="summary_large_image" />

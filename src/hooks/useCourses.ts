@@ -6,9 +6,11 @@ import { useLocaleSafe } from './useTranslationsSafe';
 interface Course {
     id: string;
     title: string;
-    titleAr: string;
+    titleAr?: string;
+    titleDe?: string;
     description: string;
-    descriptionAr: string;
+    descriptionAr?: string;
+    descriptionDe?: string;
     category: string;
     skillLevel: string;
     thumbnailUrl: string | null;
@@ -101,26 +103,23 @@ export function courseToContentItem(course: Course) {
 
     // Get title based on current locale
     const getTitle = () => {
-        if (locale === 'ar') {
-            return course.titleAr || course.title;
+        if (locale === 'de' && course.titleDe) {
+            return course.titleDe;
         }
-        return course.title || course.titleAr;
+        return course.title;
     };
 
     // Get description based on current locale
     const getDescription = () => {
-        if (locale === 'ar') {
-            return course.descriptionAr || course.description;
+        if (locale === 'de' && course.descriptionDe) {
+            return course.descriptionDe;
         }
-        return course.description || course.descriptionAr;
+        return course.description;
     };
 
     // Get instructor name based on current locale
     const getInstructorName = () => {
-        if (locale === 'ar') {
-            return course.creator.user.arabicName || course.creator.user.name;
-        }
-        return course.creator.user.name || course.creator.user.arabicName;
+        return course.creator.user.name;
     };
 
     // Get background image based on course category and ID

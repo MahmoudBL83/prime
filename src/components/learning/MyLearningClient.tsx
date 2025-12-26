@@ -35,8 +35,10 @@ interface CourseData {
     id: string;
     title: string;
     titleAr?: string;
+    titleDe?: string;
     description?: string;
     descriptionAr?: string;
+    descriptionDe?: string;
     thumbnail?: string;
     level: string;
     category: string;
@@ -53,12 +55,14 @@ interface CourseData {
     instructor: {
         name: string;
         arabicName?: string;
+        instructorNameDe?: string;
         image?: string;
     };
     lastWatchedLesson?: {
         id: string;
         title: string;
         titleAr?: string;
+        titleDe?: string;
         position: number;
     } | null;
     reviewsCount: number;
