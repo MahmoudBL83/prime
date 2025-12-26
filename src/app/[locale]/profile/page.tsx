@@ -137,33 +137,34 @@ export default function ProfilePage() {
   const [loadingCreatorPosts, setLoadingCreatorPosts] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
 
-  const isRTL = locale === 'ar';
+  const isGerman = locale === 'de';
+  const isRTL = false; // RTL disabled - platform only supports German and English
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const tabs = [
-    { id: 'overview', label: isRTL ? 'نظرة عامة' : 'Overview', icon: User },
-    { id: 'learning', label: isRTL ? 'التعلم' : 'Learning', icon: BookOpen },
-    { id: 'study-buddy', label: isRTL ? 'شريك الدراسة' : 'Study Buddy', icon: Users },
-    { id: 'subscriptions', label: isRTL ? 'الاشتراكات' : 'Subscriptions', icon: CreditCard },
-    { id: 'certificates', label: isRTL ? 'الشهادات' : 'Certificates', icon: Award },
-    ...(profile?.role === 'CREATOR' ? [{ id: 'creator', label: isRTL ? 'الإبداع' : 'Creator', icon: Briefcase }] : []),
-    { id: 'settings', label: isRTL ? 'الإعدادات' : 'Settings', icon: Settings },
-    { id: 'security', label: isRTL ? 'الأمان' : 'Security', icon: Shield },
+    { id: 'overview', label: isGerman ? 'Übersicht' : 'Overview', icon: User },
+    { id: 'learning', label: isGerman ? 'Lernen' : 'Learning', icon: BookOpen },
+    { id: 'study-buddy', label: isGerman ? 'Lernpartner' : 'Study Buddy', icon: Users },
+    { id: 'subscriptions', label: isGerman ? 'Abonnements' : 'Subscriptions', icon: CreditCard },
+    { id: 'certificates', label: isGerman ? 'Zertifikate' : 'Certificates', icon: Award },
+    ...(profile?.role === 'CREATOR' ? [{ id: 'creator', label: isGerman ? 'Ersteller' : 'Creator', icon: Briefcase }] : []),
+    { id: 'settings', label: isGerman ? 'Einstellungen' : 'Settings', icon: Settings },
+    { id: 'security', label: isGerman ? 'Sicherheit' : 'Security', icon: Shield },
   ];
 
   const skillLevels = [
-    { value: 'Beginner', label: isRTL ? 'مبتدئ' : 'Beginner' },
-    { value: 'Intermediate', label: isRTL ? 'متوسط' : 'Intermediate' },
-    { value: 'Advanced', label: isRTL ? 'متقدم' : 'Advanced' },
+    { value: 'Beginner', label: isGerman ? 'Anfänger' : 'Beginner' },
+    { value: 'Intermediate', label: isGerman ? 'Fortgeschritten' : 'Intermediate' },
+    { value: 'Advanced', label: isGerman ? 'Profi' : 'Advanced' },
   ];
 
   const learningModes = [
-    { value: 'Self-paced', label: isRTL ? 'بالوتيرة الخاصة' : 'Self-paced' },
-    { value: 'Structured', label: isRTL ? 'منظم' : 'Structured' },
-    { value: 'Interactive', label: isRTL ? 'تفاعلي' : 'Interactive' },
+    { value: 'Self-paced', label: isGerman ? 'Selbstgesteuert' : 'Self-paced' },
+    { value: 'Structured', label: isGerman ? 'Strukturiert' : 'Structured' },
+    { value: 'Interactive', label: isGerman ? 'Interaktiv' : 'Interactive' },
   ];
 
   useEffect(() => {
@@ -234,11 +235,11 @@ export default function ProfilePage() {
       if (response.ok) {
         setNotificationModal(false);
         // Show success message
-        alert(isRTL ? 'تم حفظ إعدادات الإشعارات بنجاح' : 'Notification settings saved successfully');
+        alert(isGerman ? 'Benachrichtigungseinstellungen erfolgreich gespeichert' : 'Notification settings saved successfully');
       }
     } catch (error) {
       console.error('Error saving notification settings:', error);
-      alert(isRTL ? 'فشل حفظ إعدادات الإشعارات' : 'Failed to save notification settings');
+      alert(isGerman ? 'Speichern der Benachrichtigungseinstellungen fehlgeschlagen' : 'Failed to save notification settings');
     }
   };
 
@@ -265,7 +266,7 @@ export default function ProfilePage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', {
+    return new Date(dateString).toLocaleDateString(isGerman ? 'de-DE' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -278,13 +279,13 @@ export default function ProfilePage() {
         return (
           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-400 border border-green-500/30">
             <Zap className="w-4 h-4 mr-1" />
-            {isRTL ? 'نشط' : 'Active'}
+            {isGerman ? 'Aktiv' : 'Active'}
           </span>
         );
       case 'NONE':
         return (
           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30">
-            {isRTL ? 'مجاني' : 'Free'}
+            {isGerman ? 'Kostenlos' : 'Free'}
           </span>
         );
       default:
@@ -307,7 +308,7 @@ export default function ProfilePage() {
               }`}
           />
           <p className={`text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {isRTL ? 'جاري تحميل الملف الشخصي...' : 'Loading profile...'}
+            {isGerman ? 'Profil wird geladen...' : 'Loading profile...'}
           </p>
         </div>
       </div>
@@ -320,7 +321,7 @@ export default function ProfilePage() {
         <div className="text-center">
           <User className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
           <p className={`text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {isRTL ? 'لم يتم العثور على الملف الشخصي' : 'Profile not found'}
+            {isGerman ? 'Profil nicht gefunden' : 'Profile not found'}
           </p>
         </div>
       </div>
@@ -356,30 +357,25 @@ export default function ProfilePage() {
               <div>
                 <h1 className={`text-3xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {profile.name}
-                  {profile.arabicName && (
-                    <span className={`block text-xl mt-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                      {profile.arabicName}
-                    </span>
-                  )}
                 </h1>
 
                 <div className="flex flex-wrap items-center gap-3 mb-3">
                   {getSubscriptionBadge(profile.subscriptionStatus)}
 
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                    {profile.role === 'CREATOR' ? (isRTL ? '👨‍🏫 مدرس' : '👨‍🏫 Instructor') : (isRTL ? '🎓 طالب' : '🎓 Student')}
+                    {profile.role === 'CREATOR' ? (isGerman ? '👨‍🏫 Lehrer' : '👨‍🏫 Instructor') : (isGerman ? '🎓 Schüler' : '🎓 Student')}
                   </span>
 
                   {profile.emailVerified && (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-400 border border-green-500/30">
                       <CheckCircle className="w-4 h-4 mr-1" />
-                      {isRTL ? 'مُتحقق' : 'Verified'}
+                      {isGerman ? 'Verifiziert' : 'Verified'}
                     </span>
                   )}
                 </div>
 
                 <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                  {isRTL ? 'عضو منذ' : 'Member since'} {formatDate(profile.createdAt)}
+                  {isGerman ? 'Mitglied seit' : 'Member since'} {formatDate(profile.createdAt)}
                 </p>
               </div>
             </div>
@@ -394,7 +390,7 @@ export default function ProfilePage() {
                 }`}
             >
               <Edit3 className="w-5 h-5" />
-              <span>{isRTL ? 'تعديل الملف الشخصي' : 'Edit Profile'}</span>
+              <span>{isGerman ? 'Profil bearbeiten' : 'Edit Profile'}</span>
             </motion.button>
           </div>
         </motion.div>
@@ -448,13 +444,13 @@ export default function ProfilePage() {
                   }`}>
                   <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     <User className={`w-6 h-6 mr-2 ${isDark ? 'text-[#0a84ff]' : 'text-[#0a84ff]'}`} />
-                    {isRTL ? 'المعلومات الشخصية' : 'Personal Information'}
+                    {isGerman ? 'Persönliche Informationen' : 'Personal Information'}
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {isRTL ? 'الاسم' : 'Name'}
+                        {isGerman ? 'Name' : 'Name'}
                       </label>
                       <div className={`flex items-center space-x-3 p-3 border rounded-lg ${isDark
                         ? 'bg-white/5 border-white/10'
@@ -467,7 +463,7 @@ export default function ProfilePage() {
 
                     <div>
                       <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {isRTL ? 'البريد الإلكتروني' : 'Email'}
+                        {isGerman ? 'E-Mail' : 'Email'}
                       </label>
                       <div className={`flex items-center space-x-3 p-3 border rounded-lg ${isDark
                         ? 'bg-white/5 border-white/10'
@@ -481,7 +477,7 @@ export default function ProfilePage() {
                     {profile.phone && (
                       <div>
                         <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                          {isRTL ? 'رقم الهاتف' : 'Phone'}
+                          {isGerman ? 'Telefon' : 'Phone'}
                         </label>
                         <div className={`flex items-center space-x-3 p-3 border rounded-lg ${isDark
                           ? 'bg-white/5 border-white/10'
@@ -495,7 +491,7 @@ export default function ProfilePage() {
 
                     <div>
                       <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {isRTL ? 'المستوى' : 'Skill Level'}
+                        {isGerman ? 'Fähigkeitsstufe' : 'Skill Level'}
                       </label>
                       <div className={`flex items-center space-x-3 p-3 border rounded-lg ${isDark
                         ? 'bg-white/5 border-white/10'
@@ -514,7 +510,7 @@ export default function ProfilePage() {
                     <div>
                       <label className={`block text-sm font-medium mb-3 flex items-center ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                         <Star className={`w-5 h-5 mr-2 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
-                        {isRTL ? 'الاهتمامات' : 'Interests'}
+                        {isGerman ? 'Interessen' : 'Interests'}
                       </label>
                       <div className="flex flex-wrap gap-2">
                         {profile.interests.map((interest, index) => (
@@ -534,7 +530,7 @@ export default function ProfilePage() {
                     <div>
                       <label className={`block text-sm font-medium mb-3 flex items-center ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                         <Target className={`w-5 h-5 mr-2 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
-                        {isRTL ? 'الأهداف' : 'Goals'}
+                        {isGerman ? 'Ziele' : 'Goals'}
                       </label>
                       <div className="flex flex-wrap gap-2">
                         {profile.goals.map((goal, index) => (
@@ -562,7 +558,7 @@ export default function ProfilePage() {
                 }`}>
                 <h3 className={`text-xl font-bold mb-6 flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   <BookOpen className={`w-6 h-6 mr-2 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
-                  {isRTL ? 'رحلة التعلم' : 'Learning Journey'}
+                  {isGerman ? 'Lernreise' : 'Learning Journey'}
                 </h3>
 
                 {profile.enrollments.length > 0 ? (
@@ -600,13 +596,13 @@ export default function ProfilePage() {
                         </div>
 
                         <div className={`text-xs space-y-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                          <p>{isRTL ? 'تسجيل في:' : 'Enrolled:'} {formatDate(enrollment.enrolledAt)}</p>
+                          <p>{isGerman ? 'Eingeschrieben:' : 'Enrolled:'} {formatDate(enrollment.enrolledAt)}</p>
                           {enrollment.lastAccessed && (
-                            <p>{isRTL ? 'آخر دخول:' : 'Last accessed:'} {formatDate(enrollment.lastAccessed)}</p>
+                            <p>{isGerman ? 'Letzter Zugriff:' : 'Last accessed:'} {formatDate(enrollment.lastAccessed)}</p>
                           )}
                           {enrollment.completedAt && (
                             <p className={isDark ? 'text-green-400' : 'text-green-600'}>
-                              {isRTL ? 'اكتمل في:' : 'Completed:'} {formatDate(enrollment.completedAt)}
+                              {isGerman ? 'Abgeschlossen:' : 'Completed:'} {formatDate(enrollment.completedAt)}
                             </p>
                           )}
                         </div>

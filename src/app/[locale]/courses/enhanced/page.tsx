@@ -71,7 +71,7 @@ export default function EnhancedCoursesPage() {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
-    const [lang, setLang] = useState<'en' | 'ar'>('ar')
+    const [lang, setLang] = useState<'en' | 'de'>('en')
     const [showFilters, setShowFilters] = useState(false)
 
     useEffect(() => {
@@ -181,27 +181,27 @@ export default function EnhancedCoursesPage() {
             continueLearning: 'Continue Learning',
             myProgress: 'My Progress',
         },
-        ar: {
-            title: 'كتالوج الدورات',
-            subtitle: 'اكتشف دورات تناسب اهتماماتك',
-            search: 'ابحث في الدورات...',
-            category: 'الفئة',
-            skillLevel: 'المستوى',
-            sortBy: 'ترتيب حسب',
-            clearFilters: 'مسح الفلاتر',
-            showFilters: 'إظهار الفلاتر',
-            hideFilters: 'إخفاء الفلاتر',
-            gridView: 'عرض الشبكة',
-            listView: 'عرض القائمة',
-            noCourses: 'لم يتم العثور على دورات تطابق معاييرك.',
-            tryDifferent: 'حاول تعديل الفلاتر أو مصطلح البحث.',
-            newest: 'الأحدث',
-            popular: 'الأكثر شعبية',
-            rating: 'الأعلى تقييماً',
-            duration: 'المدة',
-            coursesFound: 'دورة تم العثور عليها',
-            continueLearning: 'استكمال التعلم',
-            myProgress: 'تقدمي',
+        de: {
+            title: 'Kurskatalog',
+            subtitle: 'Entdecken Sie Kurse, die Ihren Interessen entsprechen',
+            search: 'Kurse suchen...',
+            category: 'Kategorie',
+            skillLevel: 'Fähigkeitsstufe',
+            sortBy: 'Sortieren nach',
+            clearFilters: 'Filter löschen',
+            showFilters: 'Filter anzeigen',
+            hideFilters: 'Filter ausblenden',
+            gridView: 'Rasteransicht',
+            listView: 'Listenansicht',
+            noCourses: 'Keine Kurse gefunden, die Ihren Kriterien entsprechen.',
+            tryDifferent: 'Versuchen Sie, Ihre Filter oder Suchbegriffe anzupassen.',
+            newest: 'Neueste',
+            popular: 'Beliebteste',
+            rating: 'Höchste Bewertung',
+            duration: 'Dauer',
+            coursesFound: 'Kurse gefunden',
+            continueLearning: 'Lernen fortsetzen',
+            myProgress: 'Mein Fortschritt',
         },
     }
 
@@ -212,13 +212,13 @@ export default function EnhancedCoursesPage() {
             <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">
-                        {lang === 'ar' ? 'مطلوب تسجيل الدخول' : 'Sign In Required'}
+                        {lang === 'de' ? 'Anmeldung erforderlich' : 'Sign In Required'}
                     </h2>
                     <p className="text-[var(--muted-foreground)] mb-6">
-                        {lang === 'ar' ? 'يرجى تسجيل الدخول لعرض الدورات' : 'Please sign in to view courses'}
+                        {lang === 'de' ? 'Bitte melden Sie sich an, um Kurse anzuzeigen' : 'Please sign in to view courses'}
                     </p>
                     <Button onClick={() => router.push('/auth/login')}>
-                        {lang === 'ar' ? 'تسجيل الدخول' : 'Sign In'}
+                        {lang === 'de' ? 'Anmelden' : 'Sign In'}
                     </Button>
                 </div>
             </div>
@@ -230,7 +230,7 @@ export default function EnhancedCoursesPage() {
     const inProgressCourses = myCourses.filter(course => course.userProgress && course.userProgress > 0 && course.userProgress < 100)
 
     return (
-        <div className="min-h-screen bg-[var(--background)]" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+        <div className="min-h-screen bg-[var(--background)]">
             {/* Header */}
             <div className="bg-[var(--card)] border-b border-[var(--border)]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -265,10 +265,10 @@ export default function EnhancedCoursesPage() {
                             </div>
 
                             <button
-                                onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+                                onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
                                 className="px-4 py-2 border border-[var(--border)] rounded-md text-sm text-[var(--foreground)] hover:bg-[var(--secondary)] transition-colors"
                             >
-                                {lang === 'en' ? 'العربية' : 'English'}
+                                {lang === 'en' ? 'Deutsch' : 'English'}
                             </button>
                         </div>
                     </div>
@@ -297,7 +297,7 @@ export default function EnhancedCoursesPage() {
                                         />
                                         <div className="flex-1 min-w-0">
                                             <h3 className="font-semibold text-[var(--foreground)] text-sm truncate">
-                                                {lang === 'ar' ? course.titleAr : course.title}
+                                                {lang === 'de' ? course.titleAr : course.title}
                                             </h3>
                                             <p className="text-xs text-[var(--muted-foreground)] mb-2">
                                                 {course.userProgress}% {currentT.myProgress}
@@ -323,14 +323,13 @@ export default function EnhancedCoursesPage() {
                     {/* Main search bar */}
                     <form onSubmit={handleSearch} className="mb-6">
                         <div className="relative">
-                            <Search className={`absolute ${lang === 'ar' ? 'right-3' : 'left-3'} top-1/2 transform -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]`} />
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]" />
                             <input
                                 type="text"
                                 placeholder={currentT.search}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className={`w-full border border-[var(--border)] rounded-lg ${lang === 'ar' ? 'pr-12 pl-4' : 'pl-12 pr-4'} py-3 bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-                                dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                                className="w-full border border-[var(--border)] rounded-lg pl-12 pr-4 py-3 bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
                         </div>
                     </form>
@@ -371,10 +370,10 @@ export default function EnhancedCoursesPage() {
                                     onChange={(e) => setSelectedCategory(e.target.value)}
                                     className="w-full border border-[var(--border)] rounded-lg px-3 py-2 bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                    <option value="">{lang === 'ar' ? 'الكل' : 'All'}</option>
+                                    <option value="">{lang === 'de' ? 'Alle' : 'All'}</option>
                                     {CATEGORIES.map((category) => (
                                         <option key={category.id} value={category.id}>
-                                            {category.icon} {lang === 'ar' ? category.nameAr : category.name}
+                                            {category.icon} {lang === 'de' ? category.nameAr : category.name}
                                         </option>
                                     ))}
                                 </select>
@@ -390,10 +389,10 @@ export default function EnhancedCoursesPage() {
                                     onChange={(e) => setSelectedSkillLevel(e.target.value)}
                                     className="w-full border border-[var(--border)] rounded-lg px-3 py-2 bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                    <option value="">{lang === 'ar' ? 'الكل' : 'All'}</option>
+                                    <option value="">{lang === 'de' ? 'Alle' : 'All'}</option>
                                     {SKILL_LEVELS.map((level) => (
                                         <option key={level.id} value={level.id}>
-                                            {lang === 'ar' ? level.nameAr : level.name}
+                                            {lang === 'de' ? level.nameAr : level.name}
                                         </option>
                                     ))}
                                 </select>
@@ -506,7 +505,7 @@ export default function EnhancedCoursesPage() {
                                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                         disabled={currentPage === 1}
                                     >
-                                        {lang === 'ar' ? 'السابق' : 'Previous'}
+                                        {lang === 'de' ? 'Zurück' : 'Previous'}
                                     </Button>
 
                                     <div className="flex items-center space-x-1">
@@ -540,7 +539,7 @@ export default function EnhancedCoursesPage() {
                                         onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                         disabled={currentPage === totalPages}
                                     >
-                                        {lang === 'ar' ? 'التالي' : 'Next'}
+                                        {lang === 'de' ? 'Weiter' : 'Next'}
                                     </Button>
                                 </div>
                             </div>

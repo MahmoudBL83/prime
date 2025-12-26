@@ -23,7 +23,7 @@ interface VideoPreviewModalProps {
         }
     };
     userSubscriptionStatus?: 'NONE' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
-    lang?: 'ar' | 'en';
+    lang?: 'de' | 'en';
 }
 
 export function VideoPreviewModal({
@@ -31,7 +31,7 @@ export function VideoPreviewModal({
     onClose,
     course,
     userSubscriptionStatus = 'NONE',
-    lang = 'ar'
+    lang = 'en'
 }: VideoPreviewModalProps) {
     const { data: session } = useSession();
     const { openAuthModal } = useAuthModal();
@@ -127,15 +127,15 @@ export function VideoPreviewModal({
             createAccount: 'Create Account',
             loginPrompt: 'Sign in to get a longer preview',
         },
-        ar: {
-            freePreview: 'معاينة مجانية',
-            subscribeToWatch: 'اشترك لمشاهدة الدورة كاملة',
-            previewTimeRemaining: 'الوقت المتبقي للمعاينة',
-            fullAccess: 'احصل على وصول غير محدود لهذه الدورة و150+ دورة أخرى',
-            subscribe: 'اشترك الآن',
-            signIn: 'سجل دخولك للمتابعة',
-            createAccount: 'إنشاء حساب',
-            loginPrompt: 'سجل دخولك للحصول على معاينة أطول',
+        de: {
+            freePreview: 'Gratis Vorschau',
+            subscribeToWatch: 'Abonnieren um den kompletten Kurs zu sehen',
+            previewTimeRemaining: 'Verbleibende Vorschauzeit',
+            fullAccess: 'Erhalten Sie unbegrenzten Zugang zu diesem Kurs und 150+ weiteren',
+            subscribe: 'Jetzt abonnieren',
+            signIn: 'Anmelden um fortzufahren',
+            createAccount: 'Konto erstellen',
+            loginPrompt: 'Anmelden für eine längere Vorschau',
         }
     };
 
@@ -314,10 +314,10 @@ export function VideoPreviewModal({
                             <div className="flex items-start justify-between">
                                 <div>
                                     <h2 className="text-xl font-bold text-foreground mb-2">
-                                        {lang === 'ar' ? course.titleAr : course.title}
+                                        {lang === 'de' ? course.title : course.title}
                                     </h2>
                                     <p className="text-muted-foreground">
-                                        {lang === 'ar' ? 'بواسطة' : 'by'} {course.creator.user.arabicName || course.creator.user.name}
+                                        {lang === 'de' ? 'von' : 'by'} {course.creator.user.name}
                                     </p>
                                 </div>
 

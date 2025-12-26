@@ -37,7 +37,7 @@ export default withAuth(
 
         // Check if current path is public
         const isPublicRoute = publicRoutes.some(route =>
-            pathname.includes(route) || pathname === '/' || pathname.match(/^\/(en|ar)?\/?$/)
+            pathname.includes(route) || pathname === '/' || pathname.match(/^\/(en|de)?\/?$/)
         );
 
         // Then handle authentication
@@ -146,7 +146,7 @@ export default withAuth(
 export const config = {
     matcher: [
         '/((?!api|_next|_vercel|.*\\..*).*)',
-        '/(ar|en|de)/:path*',
+        '/(en|de)/:path*',
         '/courses/:path*',
         '/dashboard',
         '/admin/:path*',

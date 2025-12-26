@@ -24,7 +24,7 @@ interface QuizComponentProps {
     questions: QuizQuestion[]
     lessonId: string
     onComplete: (score: number, passed: boolean) => void
-    lang: 'en' | 'ar'
+    lang: 'en' | 'de'
     passingScore?: number
 }
 

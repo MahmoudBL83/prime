@@ -319,7 +319,7 @@ export default function CourseBuilderPage() {
     const generateTranscripts = async (lessonId: string) => {
         try {
             toast.loading('Generating transcript...', { id: `transcript-${lessonId}` })
-            
+
             const response = await fetch('/api/creator/courses/generate-transcript', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -341,7 +341,7 @@ export default function CourseBuilderPage() {
     const generateCaptions = async (lessonId: string) => {
         try {
             toast.loading('Generating captions...', { id: `captions-${lessonId}` })
-            
+
             const response = await fetch('/api/creator/courses/generate-captions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -410,7 +410,7 @@ export default function CourseBuilderPage() {
             if (response.ok) {
                 const data = await response.json()
                 toast.success(
-                    courseData.category === 'CATEGORY_A' 
+                    courseData.category === 'CATEGORY_A'
                         ? 'Course submitted for review! You\'ll be notified within 10 days.'
                         : 'Course published to your channel!'
                 )
@@ -478,21 +478,19 @@ export default function CourseBuilderPage() {
                             <React.Fragment key={step.id}>
                                 <button
                                     onClick={() => setActiveStep(step.id)}
-                                    className={`flex flex-col items-center gap-2 transition-all ${
-                                        activeStep === step.id
+                                    className={`flex flex-col items-center gap-2 transition-all ${activeStep === step.id
                                             ? 'opacity-100'
                                             : activeStep > step.id
-                                            ? 'opacity-80'
-                                            : 'opacity-50'
-                                    }`}
+                                                ? 'opacity-80'
+                                                : 'opacity-50'
+                                        }`}
                                 >
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
-                                        activeStep === step.id
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${activeStep === step.id
                                             ? 'bg-gradient-to-r from-purple-500 to-pink-600 border-purple-500'
                                             : activeStep > step.id
-                                            ? 'bg-green-500 border-green-500'
-                                            : 'bg-gray-700 border-gray-600'
-                                    }`}>
+                                                ? 'bg-green-500 border-green-500'
+                                                : 'bg-gray-700 border-gray-600'
+                                        }`}>
                                         {activeStep > step.id ? (
                                             <CheckCircle className="w-6 h-6 text-white" />
                                         ) : (
@@ -507,9 +505,8 @@ export default function CourseBuilderPage() {
                                     </div>
                                 </button>
                                 {index < steps.length - 1 && (
-                                    <div className={`flex-1 h-1 mx-4 rounded transition-all ${
-                                        activeStep > step.id ? 'bg-green-500' : 'bg-gray-700'
-                                    }`}></div>
+                                    <div className={`flex-1 h-1 mx-4 rounded transition-all ${activeStep > step.id ? 'bg-green-500' : 'bg-gray-700'
+                                        }`}></div>
                                 )}
                             </React.Fragment>
                         ))}
@@ -540,11 +537,10 @@ export default function CourseBuilderPage() {
                                                 <button
                                                     key={key}
                                                     onClick={() => handleInputChange('category', key as CourseCategory)}
-                                                    className={`p-6 rounded-xl border-2 transition-all text-left ${
-                                                        isSelected
+                                                    className={`p-6 rounded-xl border-2 transition-all text-left ${isSelected
                                                             ? `border-${info.color}-500 bg-${info.color}-500/10`
                                                             : 'border-gray-700 hover:border-gray-600 bg-gray-800/40'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     <div className="flex items-start gap-3 mb-3">
                                                         <Icon className={`w-6 h-6 text-${info.color}-400`} />
@@ -649,7 +645,7 @@ export default function CourseBuilderPage() {
                                             className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500"
                                         >
                                             <option value="en">English</option>
-                                            <option value="ar">العربية</option>
+                                            <option value="de">Deutsch</option>
                                             <option value="fr">Français</option>
                                         </select>
                                     </div>
@@ -825,7 +821,7 @@ export default function CourseBuilderPage() {
                                                         placeholder={isArabic ? 'عنوان الدرس' : 'Lesson title'}
                                                         className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
                                                     />
-                                                    
+
                                                     {lesson.type === 'VIDEO' && (
                                                         <div>
                                                             {!lesson.videoUrl ? (
@@ -976,12 +972,12 @@ export default function CourseBuilderPage() {
                                 <div className="bg-gray-700/30 border border-gray-600 rounded-xl p-6">
                                     <h4 className="font-semibold text-white mb-2">Estimated Revenue</h4>
                                     <p className="text-3xl font-bold text-green-400 mb-1">
-                                        {courseData.category === 'CATEGORY_C' 
+                                        {courseData.category === 'CATEGORY_C'
                                             ? `${Math.round(courseData.price * 0.8)} EGP`
                                             : 'Usage-Based'}
                                     </p>
                                     <p className="text-xs text-gray-400">
-                                        {courseData.category === 'CATEGORY_C' 
+                                        {courseData.category === 'CATEGORY_C'
                                             ? 'Per subscriber/month (after fees)'
                                             : 'Based on watch time & engagement'}
                                     </p>
@@ -992,7 +988,7 @@ export default function CourseBuilderPage() {
                                         {courseData.category === 'CATEGORY_C' ? '20%' : 'Share-Based'}
                                     </p>
                                     <p className="text-xs text-gray-400">
-                                        {courseData.category === 'CATEGORY_C' 
+                                        {courseData.category === 'CATEGORY_C'
                                             ? '+ payment processing fees'
                                             : 'Fair engagement-weighted split'}
                                     </p>
@@ -1107,7 +1103,7 @@ export default function CourseBuilderPage() {
                         >
                             {isArabic ? 'السابق' : 'Previous'}
                         </Button>
-                        
+
                         {activeStep < 4 ? (
                             <Button
                                 onClick={() => setActiveStep(Math.min(4, activeStep + 1))}
@@ -1130,7 +1126,7 @@ export default function CourseBuilderPage() {
                                 ) : (
                                     <>
                                         <CheckCircle className="w-4 h-4 mr-2" />
-                                        {courseData.category === 'CATEGORY_A' 
+                                        {courseData.category === 'CATEGORY_A'
                                             ? (isArabic ? 'إرسال للمراجعة' : 'Submit for Review')
                                             : (isArabic ? 'نشر الدورة' : 'Publish Course')}
                                     </>

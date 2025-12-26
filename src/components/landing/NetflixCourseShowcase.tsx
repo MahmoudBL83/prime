@@ -64,14 +64,14 @@ function getRandomCourseImage(courseId: string): string {
         'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&h=1200&fit=crop',
         'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&h=1200&fit=crop',
     ]
-    
+
     const hash = courseId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
     return educationalImages[hash % educationalImages.length]
 }
 
-function CourseCard({ course, lang, onClick, interactions }: { 
-    course: Course; 
-    lang: string; 
+function CourseCard({ course, lang, onClick, interactions }: {
+    course: Course;
+    lang: string;
     onClick: () => void;
     interactions?: { liked: boolean; inMyList: boolean };
 }) {
@@ -102,13 +102,13 @@ function CourseCard({ course, lang, onClick, interactions }: {
             // Show login prompt
             return
         }
-        
+
         setActionLoading('list')
         try {
             const response = await fetch(`/api/courses/${course.id}/my-list`, {
                 method: isInMyList ? 'DELETE' : 'POST',
             })
-            
+
             if (response.ok) {
                 setIsInMyList(!isInMyList)
             }
@@ -125,7 +125,7 @@ function CourseCard({ course, lang, onClick, interactions }: {
             // Show login prompt
             return
         }
-        
+
         setActionLoading('like')
         try {
             const response = await fetch(`/api/courses/${course.id}/like`, {
@@ -133,7 +133,7 @@ function CourseCard({ course, lang, onClick, interactions }: {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ liked: !isLiked })
             })
-            
+
             if (response.ok) {
                 setIsLiked(!isLiked)
             }
@@ -160,21 +160,20 @@ function CourseCard({ course, lang, onClick, interactions }: {
             }}
             transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
         >
-            <div className={`relative rounded-lg overflow-hidden transition-all duration-300 ${
-                isHovered 
-                    ? 'shadow-2xl shadow-[#00d9c0]/30 ring-4 ring-[#00d9c0]/40' 
-                    : 'shadow-xl'
-            }`}>
+            <div className={`relative rounded-lg overflow-hidden transition-all duration-300 ${isHovered
+                ? 'shadow-2xl shadow-[#00d9c0]/30 ring-4 ring-[#00d9c0]/40'
+                : 'shadow-xl'
+                }`}>
                 <div className="relative overflow-hidden bg-background" style={{ height: '420px' }}>
                     <img
                         src={course.thumbnail || courseImage}
-                        alt={lang === 'ar' ? (course.titleAr || course.title) : course.title}
+                        alt={lang === 'de' ? (course.titleAr || course.title) : course.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                             e.currentTarget.src = courseImage
                         }}
                     />
-                    
+
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: isHovered ? 0.95 : 0 }}
@@ -197,11 +196,10 @@ function CourseCard({ course, lang, onClick, interactions }: {
                                     initial={{ scale: 0, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
                                     transition={{ delay: 0.1, duration: 0.3, type: "spring" }}
-                                    className={`w-9 h-9 rounded-full ${
-                                        isDark 
-                                            ? 'bg-gray-900/90 hover:bg-gray-800 border-white/30 hover:border-white/60' 
-                                            : 'bg-white/90 hover:bg-white border-gray-300 hover:border-gray-400'
-                                    } flex items-center justify-center backdrop-blur-md border transition-all`}
+                                    className={`w-9 h-9 rounded-full ${isDark
+                                        ? 'bg-gray-900/90 hover:bg-gray-800 border-white/30 hover:border-white/60'
+                                        : 'bg-white/90 hover:bg-white border-gray-300 hover:border-gray-400'
+                                        } flex items-center justify-center backdrop-blur-md border transition-all`}
                                     onClick={(e) => {
                                         e.stopPropagation()
                                         setIsHovered(false)
@@ -219,7 +217,7 @@ function CourseCard({ course, lang, onClick, interactions }: {
                                     className="text-white font-bold text-2xl leading-tight drop-shadow-2xl line-clamp-2"
                                     style={{ textShadow: '0 4px 12px rgba(0,0,0,0.8)' }}
                                 >
-                                    {lang === 'ar' ? (course.titleAr || course.title) : course.title}
+                                    {lang === 'de' ? (course.titleAr || course.title) : course.title}
                                 </motion.h2>
 
                                 <motion.div
@@ -230,24 +228,24 @@ function CourseCard({ course, lang, onClick, interactions }: {
                                 >
                                     {course.duration && (
                                         <span className="font-semibold">
-                                            {typeof course.duration === 'number' 
+                                            {typeof course.duration === 'number'
                                                 ? `${Math.floor(course.duration / 60)}h ${course.duration % 60}m`
                                                 : course.duration
                                             }
                                         </span>
                                     )}
-                                    
+
                                     {course.duration && course.category && <span className="text-gray-400">•</span>}
-                                    
+
                                     {course.category && (
-                                        <span className="font-semibold">{lang === 'ar' ? course.categoryAr : course.category}</span>
+                                        <span className="font-semibold">{lang === 'de' ? course.categoryAr : course.category}</span>
                                     )}
-                                    
+
                                     {course.skillLevel && course.category && <span className="text-gray-400">•</span>}
-                                    
+
                                     {course.skillLevel && SKILL_LEVELS.find(level => level.id === course.skillLevel) && (
                                         <span className="font-semibold capitalize">
-                                            {lang === 'ar'
+                                            {lang === 'de'
                                                 ? SKILL_LEVELS.find(level => level.id === course.skillLevel)?.nameAr
                                                 : SKILL_LEVELS.find(level => level.id === course.skillLevel)?.name
                                             }
@@ -290,7 +288,7 @@ function CourseCard({ course, lang, onClick, interactions }: {
                                                 )}
                                             </div>
                                             <span className="text-base font-bold text-white pr-2">
-                                                {isLoading ? (lang === 'ar' ? 'جاري التحميل...' : 'Loading...') : (lang === 'ar' ? 'مشاهدة' : 'Watch Now')}
+                                                {isLoading ? (lang === 'de' ? 'Lädt...' : 'Loading...') : (lang === 'de' ? 'Jetzt ansehen' : 'Watch Now')}
                                             </span>
                                         </button>
 
@@ -298,9 +296,8 @@ function CourseCard({ course, lang, onClick, interactions }: {
                                         <button
                                             onClick={handleMyList}
                                             disabled={actionLoading === 'list'}
-                                            className={`w-11 h-11 hover:bg-white/10 rounded-full flex items-center justify-center transition-all ${
-                                                isInMyList ? 'bg-white/20' : ''
-                                            } disabled:opacity-50`}
+                                            className={`w-11 h-11 hover:bg-white/10 rounded-full flex items-center justify-center transition-all ${isInMyList ? 'bg-white/20' : ''
+                                                } disabled:opacity-50`}
                                             title={isInMyList ? 'Remove from My List' : 'Add to My List'}
                                         >
                                             {actionLoading === 'list' ? (
@@ -316,16 +313,15 @@ function CourseCard({ course, lang, onClick, interactions }: {
                                         <button
                                             onClick={handleLike}
                                             disabled={actionLoading === 'like'}
-                                            className={`w-11 h-11 hover:bg-white/10 rounded-full flex items-center justify-center transition-all mr-2 ${
-                                                isLiked ? 'bg-white/20' : ''
-                                            } disabled:opacity-50`}
+                                            className={`w-11 h-11 hover:bg-white/10 rounded-full flex items-center justify-center transition-all mr-2 ${isLiked ? 'bg-white/20' : ''
+                                                } disabled:opacity-50`}
                                             title={isLiked ? 'Unlike' : 'Like'}
                                         >
                                             {actionLoading === 'like' ? (
                                                 <Loader2 className="w-5 h-5 text-white animate-spin" />
                                             ) : (
-                                                <Heart 
-                                                    className={`w-5 h-5 ${isLiked ? 'text-red-500 fill-red-500' : 'text-white'}`} 
+                                                <Heart
+                                                    className={`w-5 h-5 ${isLiked ? 'text-red-500 fill-red-500' : 'text-white'}`}
                                                 />
                                             )}
                                         </button>

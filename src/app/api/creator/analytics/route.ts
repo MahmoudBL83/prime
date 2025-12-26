@@ -154,11 +154,11 @@ export async function GET(request: NextRequest) {
 
         // Monthly revenue trend (last 12 months)
         const monthlyRevenue = await prisma.$queryRaw<Array<{ period: string, total: number }>>`
-            SELECT period, SUM(amount) as total
-            FROM CreatorEarnings
-            WHERE creatorId = ${creator.id}
-            GROUP BY period
-            ORDER BY period DESC
+            SELECT \`period\`, SUM(\`amount\`) as total
+            FROM \`CreatorEarnings\`
+            WHERE \`creatorId\` = ${creator.id}
+            GROUP BY \`period\`
+            ORDER BY \`period\` DESC
             LIMIT 12
         `
 

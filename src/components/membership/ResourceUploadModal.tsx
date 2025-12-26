@@ -31,9 +31,7 @@ export default function ResourceUploadModal({
     onSuccess
 }: ResourceUploadModalProps) {
     const [title, setTitle] = useState('')
-    const [titleAr, setTitleAr] = useState('')
     const [description, setDescription] = useState('')
-    const [descriptionAr, setDescriptionAr] = useState('')
     const [type, setType] = useState('PDF')
     const [file, setFile] = useState<File | null>(null)
     const [loading, setLoading] = useState(false)
@@ -98,9 +96,7 @@ export default function ResourceUploadModal({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title,
-                    titleAr: titleAr || null,
                     description: description || null,
-                    descriptionAr: descriptionAr || null,
                     type,
                     fileUrl,
                     fileName: file.name,
@@ -128,9 +124,7 @@ export default function ResourceUploadModal({
 
     const handleClose = () => {
         setTitle('')
-        setTitleAr('')
         setDescription('')
-        setDescriptionAr('')
         setType('PDF')
         setFile(null)
         setUploadProgress(0)
@@ -198,18 +192,15 @@ export default function ResourceUploadModal({
                                             key={resType.value}
                                             onClick={() => setType(resType.value)}
                                             disabled={loading}
-                                            className={`p-4 rounded-xl border-2 transition-all ${
-                                                type === resType.value
+                                            className={`p-4 rounded-xl border-2 transition-all ${type === resType.value
                                                     ? 'border-purple-500 bg-purple-500/10'
                                                     : 'border-border hover:border-gray-600 bg-gray-800/50'
-                                            }`}
+                                                }`}
                                         >
-                                            <TypeIcon className={`w-6 h-6 mx-auto mb-2 ${
-                                                type === resType.value ? 'text-purple-400' : 'text-muted-foreground'
-                                            }`} />
-                                            <span className={`text-xs font-medium ${
-                                                type === resType.value ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
+                                            <TypeIcon className={`w-6 h-6 mx-auto mb-2 ${type === resType.value ? 'text-purple-400' : 'text-muted-foreground'
+                                                }`} />
+                                            <span className={`text-xs font-medium ${type === resType.value ? 'text-foreground' : 'text-muted-foreground'
+                                                }`}>
                                                 {resType.label}
                                             </span>
                                         </button>
@@ -234,11 +225,10 @@ export default function ResourceUploadModal({
                                 />
                                 <label
                                     htmlFor="file-upload"
-                                    className={`flex items-center justify-center gap-3 px-6 py-8 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
-                                        file
+                                    className={`flex items-center justify-center gap-3 px-6 py-8 border-2 border-dashed rounded-xl cursor-pointer transition-all ${file
                                             ? 'border-green-500 bg-green-500/10'
                                             : 'border-border hover:border-gray-600 bg-gray-800/50'
-                                    } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     {file ? (
                                         <>
@@ -300,23 +290,6 @@ export default function ResourceUploadModal({
                             />
                         </div>
 
-                        {/* Arabic Title */}
-                        <div>
-                            <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                Arabic Title (Optional)
-                            </label>
-                            <input
-                                type="text"
-                                value={titleAr}
-                                onChange={(e) => setTitleAr(e.target.value)}
-                                placeholder="العنوان بالعربية..."
-                                dir="rtl"
-                                disabled={loading}
-                                className="w-full px-4 py-3 bg-card border border-border rounded-xl text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                maxLength={200}
-                            />
-                        </div>
-
                         {/* Description */}
                         <div>
                             <label className="block text-sm font-medium text-muted-foreground mb-2">
@@ -326,23 +299,6 @@ export default function ResourceUploadModal({
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Brief description of the resource..."
-                                disabled={loading}
-                                rows={3}
-                                className="w-full px-4 py-3 bg-card border border-border rounded-xl text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-                                maxLength={500}
-                            />
-                        </div>
-
-                        {/* Arabic Description */}
-                        <div>
-                            <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                Arabic Description (Optional)
-                            </label>
-                            <textarea
-                                value={descriptionAr}
-                                onChange={(e) => setDescriptionAr(e.target.value)}
-                                placeholder="الوصف بالعربية..."
-                                dir="rtl"
                                 disabled={loading}
                                 rows={3}
                                 className="w-full px-4 py-3 bg-card border border-border rounded-xl text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"

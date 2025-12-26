@@ -33,7 +33,7 @@ interface CourseNavigationProps {
     currentLessonId?: string
     onLessonSelect: (lessonId: string) => void
     onLessonComplete: (lessonId: string) => void
-    lang?: 'en' | 'ar'
+    lang?: 'en' | 'de'
 }
 
 export default function CourseNavigation({
@@ -147,15 +147,14 @@ export default function CourseNavigation({
     }
 
     const progress = calculateProgress()
-    const isRTL = lang === 'ar'
 
     return (
-        <div className={`bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 ${isRTL ? 'rtl' : 'ltr'}`}>
+        <div className="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4">
             {/* Course Progress */}
             <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold text-[var(--foreground)]">
-                        {isRTL ? 'تقدم الدورة' : 'Course Progress'}
+                        Course Progress
                     </h3>
                     <span className="text-sm font-medium text-[var(--accent)]">{progress}%</span>
                 </div>
@@ -179,7 +178,7 @@ export default function CourseNavigation({
                             <div className="flex items-center space-x-3">
                                 <button
                                     className="text-[var(--foreground)] hover:text-[var(--accent)] transition-colors"
-                                    aria-label={expandedModules.has(module.id) ? (isRTL ? 'طي' : 'Collapse') : (isRTL ? 'توسيع' : 'Expand')}
+                                    aria-label={expandedModules.has(module.id) ? 'Collapse' : 'Expand'}
                                 >
                                     <svg
                                         className={`w-4 h-4 transition-transform duration-200 ${expandedModules.has(module.id) ? 'rotate-90' : ''}`}
@@ -192,11 +191,11 @@ export default function CourseNavigation({
                                 </button>
                                 <div>
                                     <h4 className="font-medium text-[var(--foreground)]">
-                                        {isRTL ? module.titleAr : module.title}
+                                        {module.title}
                                     </h4>
                                     {module.description && (
                                         <p className="text-sm text-[var(--muted-foreground)] mt-1">
-                                            {isRTL ? module.descriptionAr : module.description}
+                                            {module.description}
                                         </p>
                                     )}
                                 </div>
@@ -224,8 +223,8 @@ export default function CourseNavigation({
                                         <div
                                             key={lesson.id}
                                             className={`p-3 cursor-pointer transition-colors ${isCurrent
-                                                    ? 'bg-[var(--accent)]/10 border-l-4 border-[var(--accent)]'
-                                                    : 'hover:bg-[var(--secondary)]/50'
+                                                ? 'bg-[var(--accent)]/10 border-l-4 border-[var(--accent)]'
+                                                : 'hover:bg-[var(--secondary)]/50'
                                                 }`}
                                             onClick={() => onLessonSelect(lesson.id)}
                                         >
@@ -233,10 +232,10 @@ export default function CourseNavigation({
                                                 <div className="flex items-center space-x-3 flex-1">
                                                     {/* Lesson Number */}
                                                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${isCompleted
-                                                            ? 'bg-green-600 text-foreground'
-                                                            : isCurrent
-                                                                ? 'bg-[var(--accent)] text-foreground'
-                                                                : 'bg-[var(--muted)] text-[var(--muted-foreground)]'
+                                                        ? 'bg-green-600 text-foreground'
+                                                        : isCurrent
+                                                            ? 'bg-[var(--accent)] text-foreground'
+                                                            : 'bg-[var(--muted)] text-[var(--muted-foreground)]'
                                                         }`}>
                                                         {lesson.order + 1}
                                                     </span>
@@ -245,11 +244,11 @@ export default function CourseNavigation({
                                                     <div className="flex-1 min-w-0">
                                                         <h5 className={`font-medium truncate ${isCurrent ? 'text-[var(--accent)]' : 'text-[var(--foreground)]'
                                                             }`}>
-                                                            {isRTL ? lesson.titleAr : lesson.title}
+                                                            {lesson.title}
                                                         </h5>
                                                         {(lesson.description || lesson.descriptionAr) && (
                                                             <p className="text-sm text-[var(--muted-foreground)] truncate mt-1">
-                                                                {isRTL ? lesson.descriptionAr : lesson.description}
+                                                                {lesson.description}
                                                             </p>
                                                         )}
                                                     </div>
@@ -266,10 +265,10 @@ export default function CourseNavigation({
                                                         onClick={(e) => handleLessonComplete(lesson.id, e)}
                                                         disabled={isUpdating}
                                                         className={`p-1 rounded transition-colors ${isUpdating
-                                                                ? 'opacity-50 cursor-not-allowed'
-                                                                : 'hover:bg-[var(--secondary)]'
+                                                            ? 'opacity-50 cursor-not-allowed'
+                                                            : 'hover:bg-[var(--secondary)]'
                                                             }`}
-                                                        aria-label={isCompleted ? (isRTL ? 'إلغاء الإكمال' : 'Mark incomplete') : (isRTL ? 'مكتمل' : 'Mark complete')}
+                                                        aria-label={isCompleted ? 'Mark incomplete' : 'Mark complete'}
                                                     >
                                                         {isUpdating ? (
                                                             <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -309,10 +308,10 @@ export default function CourseNavigation({
                         </svg>
                         <div>
                             <h4 className="font-medium text-green-800">
-                                {isRTL ? 'تهانينا! لقد أكملت الدورة' : 'Congratulations! Course Completed'}
+                                Congratulations! Course Completed
                             </h4>
                             <p className="text-sm text-green-600">
-                                {isRTL ? 'لقد أكملت جميع الدروس في هذه الدورة' : 'You have completed all lessons in this course'}
+                                You have completed all lessons in this course
                             </p>
                         </div>
                     </div>

@@ -159,7 +159,7 @@ export default function OnboardingPage() {
     const router = useRouter()
     const [currentStep, setCurrentStep] = useState(1)
     const [isLoading, setIsLoading] = useState(false)
-    const [lang, setLang] = useState<'en' | 'ar'>('ar')
+    const [lang, setLang] = useState<'en' | 'de'>('en')
 
     const { register, handleSubmit: handleOnboardingSubmit, watch, setValue, formState: { errors } } = useForm<OnboardingForm>({
         resolver: zodResolver(onboardingSchema),
@@ -248,10 +248,10 @@ export default function OnboardingPage() {
                 relationship: formValues.relationship,
                 locale: lang,
             })
-            toast.success(lang === 'ar' ? 'تم إرسال دعوة الوصي' : 'Guardian invitation sent')
+            toast.success(lang === 'de' ? 'Erziehungsberechtigten-Einladung gesendet' : 'Guardian invitation sent')
             resetGuardian()
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : (lang === 'ar' ? 'حدث خطأ، حاول مجدداً' : 'Something went wrong'))
+            toast.error(error instanceof Error ? error.message : (lang === 'de' ? 'Etwas ist schiefgelaufen' : 'Something went wrong'))
         } finally {
             setGuardianSubmitting(false)
         }
@@ -259,17 +259,17 @@ export default function OnboardingPage() {
 
     const handleGuardianVerification = async () => {
         if (!guardianVerificationCode) {
-            toast.error(lang === 'ar' ? 'ادخل رمز التحقق' : 'Enter the verification code')
+            toast.error(lang === 'de' ? 'Verifizierungscode eingeben' : 'Enter the verification code')
             return
         }
 
         setGuardianVerifying(true)
         try {
             await verifyGuardian(guardianVerificationCode.trim())
-            toast.success(lang === 'ar' ? 'تم تأكيد الوصي' : 'Guardian verified successfully')
+            toast.success(lang === 'de' ? 'Erziehungsberechtigter verifiziert' : 'Guardian verified successfully')
             setGuardianVerificationCode('')
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : (lang === 'ar' ? 'تعذر التحقق' : 'Verification failed'))
+            toast.error(error instanceof Error ? error.message : (lang === 'de' ? 'Verifizierung fehlgeschlagen' : 'Verification failed'))
         } finally {
             setGuardianVerifying(false)
         }
@@ -346,7 +346,7 @@ export default function OnboardingPage() {
             if (response.ok) {
                 const result = await response.json()
                 console.log('✅ Success response:', result)
-                toast.success(lang === 'ar' ? 'تم إكمال التسجيل بنجاح!' : 'Onboarding completed successfully!')
+                toast.success(lang === 'de' ? 'Registrierung erfolgreich abgeschlossen!' : 'Onboarding completed successfully!')
                 router.push('/dashboard')
             } else {
                 let errorMessage = 'Unknown error'
@@ -367,7 +367,7 @@ export default function OnboardingPage() {
             console.log('💥 Error type:', typeof error)
             console.log('💥 Error name:', error instanceof Error ? error.name : 'Unknown')
             console.log('💥 Error message:', error instanceof Error ? error.message : 'Unknown error')
-            toast.error(lang === 'ar' ? 'خطأ في الشبكة' : 'Network error')
+            toast.error(lang === 'de' ? 'Netzwerkfehler' : 'Network error')
         } finally {
             setIsLoading(false)
             console.log('🏁 Onboarding submission finished')
@@ -399,40 +399,39 @@ export default function OnboardingPage() {
                                 <User className="w-10 h-10" style={{ color: 'var(--accent)' }} />
                             </div>
                             <h3 className="text-2xl font-light text-foreground mb-2">
-                                {lang === 'ar' ? 'مرحباً بك في برايم' : 'Welcome to Prime'}
+                                {lang === 'de' ? 'Willkommen bei Prime' : 'Welcome to Prime'}
                             </h3>
                             <p className="text-muted-foreground">
-                                {lang === 'ar' ? 'دعنا نعرف المزيد عنك' : "Let's get to know you better"}
+                                {lang === 'de' ? 'Lassen Sie uns Sie besser kennenlernen' : "Let's get to know you better"}
                             </p>
                         </div>
 
                         <div className="space-y-6">
                             <div>
                                 <label className="block text-sm font-medium text-muted-foreground mb-3">
-                                    {lang === 'ar' ? 'الاسم بالعربية (اختياري)' : 'Arabic Name (Optional)'}
+                                    {lang === 'de' ? 'Arabischer Name (Optional)' : 'Arabic Name (Optional)'}
                                 </label>
                                 <div className="relative">
                                     <input
                                         {...register('arabicName')}
                                         type="text"
-                                        placeholder={lang === 'ar' ? 'أحمد محمد' : 'Ahmed Mohamed'}
+                                        placeholder={lang === 'de' ? 'أحمد محمد' : 'Ahmed Mohamed'}
                                         className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
                                         style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
-                                        dir={lang === 'ar' ? 'rtl' : 'ltr'}
                                     />
                                 </div>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-muted-foreground mb-3">
-                                    {lang === 'ar' ? 'رقم الهاتف (اختياري)' : 'Phone Number (Optional)'}
+                                    {lang === 'de' ? 'Telefonnummer (Optional)' : 'Phone Number (Optional)'}
                                 </label>
                                 <div className="relative">
                                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                                     <input
                                         {...register('phone')}
                                         type="tel"
-                                        placeholder={lang === 'ar' ? '+20 1XX XXX XXXX' : '+20 1XX XXX XXXX'}
+                                        placeholder={lang === 'de' ? '+20 1XX XXX XXXX' : '+20 1XX XXX XXXX'}
                                         className="w-full bg-card border border-border rounded-lg pl-10 pr-4 py-3 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
                                         style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
                                         dir="ltr"
@@ -443,11 +442,11 @@ export default function OnboardingPage() {
                             <div className="flex justify-center">
                                 <button
                                     type="button"
-                                    onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+                                    onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
                                     className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-muted-foreground hover:bg-gray-700 transition-colors"
                                 >
                                     <Globe className="w-4 h-4" />
-                                    {lang === 'en' ? 'العربية' : 'English'}
+                                    {lang === 'en' ? 'Deutsch' : 'English'}
                                 </button>
                             </div>
                         </div>
@@ -462,16 +461,16 @@ export default function OnboardingPage() {
                                 <Target className="w-10 h-10 text-blue-600" />
                             </div>
                             <h3 className="text-2xl font-light text-foreground mb-2">
-                                {lang === 'ar' ? 'ما هي اهتماماتك وأهدافك؟' : 'What are your interests and goals?'}
+                                {lang === 'de' ? 'Was sind Ihre Interessen und Ziele?' : 'What are your interests and goals?'}
                             </h3>
                             <p className="text-muted-foreground">
-                                {lang === 'ar' ? 'اختر ما يناسب شغفك' : 'Choose what matches your passion'}
+                                {lang === 'de' ? 'Wählen Sie, was zu Ihrer Leidenschaft passt' : 'Choose what matches your passion'}
                             </p>
                         </div>
 
                         <div>
                             <h4 className="text-lg font-medium text-foreground mb-4">
-                                {lang === 'ar' ? 'اهتماماتك' : 'Your Interests'}
+                                {lang === 'de' ? 'Ihre Interessen' : 'Your Interests'}
                             </h4>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {INTERESTS.map((interest) => (
@@ -488,7 +487,7 @@ export default function OnboardingPage() {
                                     >
                                         <span className="text-2xl">{interest.icon}</span>
                                         <span className="text-sm font-medium text-center">
-                                            {lang === 'ar' ? interest.nameAr : interest.nameEn}
+                                            {lang === 'de' ? interest.nameAr : interest.nameEn}
                                         </span>
                                     </motion.button>
                                 ))}
@@ -500,7 +499,7 @@ export default function OnboardingPage() {
 
                         <div>
                             <h4 className="text-lg font-medium text-foreground mb-4">
-                                {lang === 'ar' ? 'أهدافك التعليمية' : 'Your Learning Goals'}
+                                {lang === 'de' ? 'Ihre Lernziele' : 'Your Learning Goals'}
                             </h4>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {LEARNING_GOALS.map((goal) => (
@@ -517,7 +516,7 @@ export default function OnboardingPage() {
                                     >
                                         <span className="text-2xl">{goal.icon}</span>
                                         <span className="text-sm font-medium text-center">
-                                            {lang === 'ar' ? goal.nameAr : goal.nameEn}
+                                            {lang === 'de' ? goal.nameAr : goal.nameEn}
                                         </span>
                                     </motion.button>
                                 ))}
@@ -537,16 +536,16 @@ export default function OnboardingPage() {
                                 <BookOpen className="w-10 h-10 text-purple-600" />
                             </div>
                             <h3 className="text-2xl font-light text-foreground mb-2">
-                                {lang === 'ar' ? 'كيف تفضل أن تتعلم؟' : 'How do you prefer to learn?'}
+                                {lang === 'de' ? 'Wie lernen Sie am liebsten?' : 'How do you prefer to learn?'}
                             </h3>
                             <p className="text-muted-foreground">
-                                {lang === 'ar' ? 'اختر أسلوب التعلم المثالي لك' : 'Choose your ideal learning style'}
+                                {lang === 'de' ? 'Wählen Sie Ihren idealen Lernstil' : 'Choose your ideal learning style'}
                             </p>
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-muted-foreground mb-4">
-                                {lang === 'ar' ? 'ما هو مستوى مهاراتك الحالي؟' : 'What is your current skill level?'}
+                                {lang === 'de' ? 'Was ist Ihr aktuelles Kompetenzniveau?' : 'What is your current skill level?'}
                             </label>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {['Beginner', 'Intermediate', 'Advanced'].map((level) => (
@@ -565,7 +564,7 @@ export default function OnboardingPage() {
                                             {level === 'Beginner' ? '🌱' : level === 'Intermediate' ? '🌿' : '🌳'}
                                         </div>
                                         <div className="font-medium">
-                                            {lang === 'ar' ?
+                                            {lang === 'de' ?
                                                 level === 'Beginner' ? 'مبتدئ' :
                                                     level === 'Intermediate' ? 'متوسط' : 'متقدم'
                                                 : level}
@@ -577,7 +576,7 @@ export default function OnboardingPage() {
 
                         <div>
                             <label className="block text-sm font-medium text-muted-foreground mb-4">
-                                {lang === 'ar' ? 'ما هو نمط التعلم المفضل لديك؟' : 'What is your preferred learning mode?'}
+                                {lang === 'de' ? 'Was ist Ihr bevorzugter Lernmodus?' : 'What is your preferred learning mode?'}
                             </label>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {['Self-paced', 'Interactive with group', 'Mixed'].map((mode) => (
@@ -596,9 +595,9 @@ export default function OnboardingPage() {
                                             {mode === 'Self-paced' ? '🎧' : mode === 'Interactive with group' ? '👥' : '🔄'}
                                         </div>
                                         <div className="font-medium">
-                                            {lang === 'ar' ?
-                                                mode === 'Self-paced' ? 'التعلم الذاتي' :
-                                                    mode === 'Interactive with group' ? 'تفاعلي مع مجموعة' : 'مختلط'
+                                            {lang === 'de' ?
+                                                mode === 'Self-paced' ? 'Selbstgesteuert' :
+                                                    mode === 'Interactive with group' ? 'Interaktiv mit Gruppe' : 'Gemischt'
                                                 : mode}
                                         </div>
                                     </motion.button>
@@ -616,10 +615,10 @@ export default function OnboardingPage() {
                                 <Users className="w-10 h-10 text-green-600" />
                             </div>
                             <h3 className="text-2xl font-light text-foreground mb-2">
-                                {lang === 'ar' ? 'رفيق الدراسة' : 'Study Buddy'}
+                                {lang === 'de' ? 'Lernpartner' : 'Study Buddy'}
                             </h3>
                             <p className="text-muted-foreground">
-                                {lang === 'ar' ? 'تواصل مع متعلمين آخرين وادرسوا معاً' : 'Connect with other learners and study together'}
+                                {lang === 'de' ? 'Verbinden Sie sich mit anderen Lernenden und lernen Sie gemeinsam' : 'Connect with other learners and study together'}
                             </p>
                         </div>
 
@@ -633,11 +632,11 @@ export default function OnboardingPage() {
                                     className="w-5 h-5 text-green-600 bg-gray-700 border-gray-600 rounded focus:ring-green-500 focus:ring-2"
                                 />
                                 <label htmlFor="studyBuddyOptIn" className="text-foreground font-medium cursor-pointer">
-                                    {lang === 'ar' ? 'أريد العثور على رفيق دراسة' : 'I want to find a study buddy'}
+                                    {lang === 'de' ? 'Ich möchte einen Lernpartner finden' : 'I want to find a study buddy'}
                                 </label>
                             </div>
                             <p className="text-muted-foreground text-sm mt-2 ml-9">
-                                {lang === 'ar' ? 'تواصل مع متعلمين يشاركونك نفس الاهتمامات والأهداف' : 'Connect with learners who share your interests and goals'}
+                                {lang === 'de' ? 'Verbinden Sie sich mit Lernenden, die Ihre Interessen und Ziele teilen' : 'Connect with learners who share your interests and goals'}
                             </p>
                         </div>
 
@@ -646,23 +645,23 @@ export default function OnboardingPage() {
                             <div className="space-y-6">
                                 <div>
                                     <label className="block text-sm font-medium text-muted-foreground mb-3">
-                                        {lang === 'ar' ? 'متى تكون متاحًا للدراسة؟' : 'When are you available for studying?'}
+                                        {lang === 'de' ? 'Wann sind Sie zum Lernen verfügbar?' : 'When are you available for studying?'}
                                     </label>
                                     <select
                                         {...register('studyBuddyPreferences.availability')}
                                         className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all"
                                     >
-                                        <option value="mornings">{lang === 'ar' ? 'الصباح' : 'Mornings'}</option>
-                                        <option value="afternoons">{lang === 'ar' ? 'بعد الظهر' : 'Afternoons'}</option>
-                                        <option value="evenings">{lang === 'ar' ? 'المساء' : 'Evenings'}</option>
-                                        <option value="weekends">{lang === 'ar' ? 'عطلات نهاية الأسبوع' : 'Weekends'}</option>
-                                        <option value="flexible">{lang === 'ar' ? 'مرن' : 'Flexible'}</option>
+                                        <option value="mornings">{lang === 'de' ? 'Morgens' : 'Mornings'}</option>
+                                        <option value="afternoons">{lang === 'de' ? 'Nachmittags' : 'Afternoons'}</option>
+                                        <option value="evenings">{lang === 'de' ? 'Abends' : 'Evenings'}</option>
+                                        <option value="weekends">{lang === 'de' ? 'Wochenenden' : 'Weekends'}</option>
+                                        <option value="flexible">{lang === 'de' ? 'Flexibel' : 'Flexible'}</option>
                                     </select>
                                 </div>
 
                                 <div>
                                     <label className="block text-sm font-medium text-muted-foreground mb-3">
-                                        {lang === 'ar' ? 'ما المواد التي تفضل الدراسة فيها؟' : 'What subjects do you prefer to study?'}
+                                        {lang === 'de' ? 'Welche Fächer lernen Sie am liebsten?' : 'What subjects do you prefer to study?'}
                                     </label>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                         {watchedValues.interests?.map((interest) => {
@@ -681,7 +680,7 @@ export default function OnboardingPage() {
                                                 >
                                                     <span className="text-xl">{interestData?.icon}</span>
                                                     <span className="text-xs font-medium text-center">
-                                                        {lang === 'ar' ? interestData?.nameAr : interestData?.nameEn}
+                                                        {lang === 'de' ? interestData?.nameAr : interestData?.nameEn}
                                                     </span>
                                                 </motion.button>
                                             )
@@ -691,7 +690,7 @@ export default function OnboardingPage() {
 
                                 <div>
                                     <label className="block text-sm font-medium text-muted-foreground mb-3">
-                                        {lang === 'ar' ? 'كيف تفضل التواصل؟' : 'How do you prefer to collaborate?'}
+                                        {lang === 'de' ? 'Wie arbeiten Sie bevorzugt zusammen?' : 'How do you prefer to collaborate?'}
                                     </label>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                         {['Chat only', 'Video calls', 'In-person', 'Mixed'].map((style) => (
@@ -710,7 +709,7 @@ export default function OnboardingPage() {
                                                     {style === 'Chat only' ? '💬' : style === 'Video calls' ? '📹' : style === 'In-person' ? '🤝' : '🔄'}
                                                 </div>
                                                 <div className="text-sm font-medium text-center">
-                                                    {lang === 'ar' ?
+                                                    {lang === 'de' ?
                                                         style === 'Chat only' ? 'دردشة فقط' :
                                                             style === 'Video calls' ? 'مكالمات فيديو' :
                                                                 style === 'In-person' ? 'لقاء شخصي' : 'مختلط'
@@ -733,10 +732,10 @@ export default function OnboardingPage() {
                                 <Award className="w-10 h-10 text-yellow-600" />
                             </div>
                             <h3 className="text-2xl font-light text-foreground mb-2">
-                                {lang === 'ar' ? 'راجع ملفك الشخصي' : 'Review your profile'}
+                                {lang === 'de' ? 'Überprüfen Sie Ihr Profil' : 'Review your profile'}
                             </h3>
                             <p className="text-muted-foreground">
-                                {lang === 'ar' ? 'تأكد من أن كل شيء صحيح' : 'Make sure everything looks correct'}
+                                {lang === 'de' ? 'Stellen Sie sicher, dass alles korrekt ist' : 'Make sure everything looks correct'}
                             </p>
                         </div>
 
@@ -744,26 +743,26 @@ export default function OnboardingPage() {
                             <div className="bg-gray-800/50 backdrop-blur-sm border border-border rounded-xl p-6">
                                 <h4 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
                                     <User className="w-5 h-5 text-blue-400" />
-                                    {lang === 'ar' ? 'المعلومات الأساسية' : 'Basic Info'}
+                                    {lang === 'de' ? 'Grundlegende Informationen' : 'Basic Info'}
                                 </h4>
                                 <div className="space-y-3 text-sm">
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">{lang === 'ar' ? 'الاسم:' : 'Name:'}</span>
+                                        <span className="text-muted-foreground">{lang === 'de' ? 'Name:' : 'Name:'}</span>
                                         <span className="text-foreground">{session?.user?.name}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">{lang === 'ar' ? 'البريد:' : 'Email:'}</span>
+                                        <span className="text-muted-foreground">{lang === 'de' ? 'E-Mail:' : 'Email:'}</span>
                                         <span className="text-foreground">{session?.user?.email}</span>
                                     </div>
                                     {watchedValues.arabicName && (
                                         <div className="flex justify-between">
-                                            <span className="text-muted-foreground">{lang === 'ar' ? 'الاسم العربي:' : 'Arabic Name:'}</span>
+                                            <span className="text-muted-foreground">{lang === 'de' ? 'Arabischer Name:' : 'Arabic Name:'}</span>
                                             <span className="text-foreground">{watchedValues.arabicName}</span>
                                         </div>
                                     )}
                                     {watchedValues.phone && (
                                         <div className="flex justify-between">
-                                            <span className="text-muted-foreground">{lang === 'ar' ? 'الهاتف:' : 'Phone:'}</span>
+                                            <span className="text-muted-foreground">{lang === 'de' ? 'Telefon:' : 'Phone:'}</span>
                                             <span className="text-foreground">{watchedValues.phone}</span>
                                         </div>
                                     )}
@@ -773,30 +772,30 @@ export default function OnboardingPage() {
                             <div className="bg-gray-800/50 backdrop-blur-sm border border-border rounded-xl p-6">
                                 <h4 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
                                     <Target className="w-5 h-5 text-green-400" />
-                                    {lang === 'ar' ? 'الاهتمامات والأهداف' : 'Interests & Goals'}
+                                    {lang === 'de' ? 'Interessen & Ziele' : 'Interests & Goals'}
                                 </h4>
                                 <div className="space-y-4">
                                     <div>
-                                        <div className="text-muted-foreground text-sm mb-2">{lang === 'ar' ? 'الاهتمامات:' : 'Interests:'}</div>
+                                        <div className="text-muted-foreground text-sm mb-2">{lang === 'de' ? 'Interessen:' : 'Interests:'}</div>
                                         <div className="flex flex-wrap gap-2">
                                             {watchedValues.interests?.map((interest) => {
                                                 const interestData = INTERESTS.find(i => i.id === interest)
                                                 return (
                                                     <span key={interest} className="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full text-xs font-medium">
-                                                        {lang === 'ar' ? interestData?.nameAr : interestData?.nameEn}
+                                                        {lang === 'de' ? interestData?.nameAr : interestData?.nameEn}
                                                     </span>
                                                 )
                                             })}
                                         </div>
                                     </div>
                                     <div>
-                                        <div className="text-muted-foreground text-sm mb-2">{lang === 'ar' ? 'الأهداف:' : 'Goals:'}</div>
+                                        <div className="text-muted-foreground text-sm mb-2">{lang === 'de' ? 'Ziele:' : 'Goals:'}</div>
                                         <div className="flex flex-wrap gap-2">
                                             {watchedValues.goals?.map((goal) => {
                                                 const goalData = LEARNING_GOALS.find(g => g.id === goal)
                                                 return (
                                                     <span key={goal} className="bg-green-600/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium">
-                                                        {lang === 'ar' ? goalData?.nameAr : goalData?.nameEn}
+                                                        {lang === 'de' ? goalData?.nameAr : goalData?.nameEn}
                                                     </span>
                                                 )
                                             })}
@@ -808,34 +807,34 @@ export default function OnboardingPage() {
                             <div className="bg-gray-800/50 backdrop-blur-sm border border-border rounded-xl p-6">
                                 <h4 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
                                     <Users className="w-5 h-5 text-purple-400" />
-                                    {lang === 'ar' ? 'تفضيلات الدراسة' : 'Study Preferences'}
+                                    {lang === 'de' ? 'Lernpräferenzen' : 'Study Preferences'}
                                 </h4>
                                 <div className="space-y-3 text-sm">
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">{lang === 'ar' ? 'المستوى:' : 'Level:'}</span>
+                                        <span className="text-muted-foreground">{lang === 'de' ? 'Niveau:' : 'Level:'}</span>
                                         <span className="text-foreground">{watchedValues.skillLevel}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">{lang === 'ar' ? 'الأسلوب:' : 'Mode:'}</span>
+                                        <span className="text-muted-foreground">{lang === 'de' ? 'Modus:' : 'Mode:'}</span>
                                         <span className="text-foreground">{watchedValues.learningMode}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">{lang === 'ar' ? 'رفيق الدراسة:' : 'Study Buddy:'}</span>
+                                        <span className="text-muted-foreground">{lang === 'de' ? 'Lernpartner:' : 'Study Buddy:'}</span>
                                         <span className="text-foreground">
                                             {watchedValues.studyBuddyOptIn
-                                                ? (lang === 'ar' ? 'نعم' : 'Yes')
-                                                : (lang === 'ar' ? 'لا' : 'No')
+                                                ? (lang === 'de' ? 'Ja' : 'Yes')
+                                                : (lang === 'de' ? 'Nein' : 'No')
                                             }
                                         </span>
                                     </div>
                                     {watchedValues.studyBuddyOptIn && (
                                         <>
                                             <div className="flex justify-between">
-                                                <span className="text-muted-foreground">{lang === 'ar' ? 'المتوفرية:' : 'Availability:'}</span>
+                                                <span className="text-muted-foreground">{lang === 'de' ? 'Verfügbarkeit:' : 'Availability:'}</span>
                                                 <span className="text-foreground">{watchedValues.studyBuddyPreferences?.availability}</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-muted-foreground">{lang === 'ar' ? 'التعاون:' : 'Collaboration:'}</span>
+                                                <span className="text-muted-foreground">{lang === 'de' ? 'Zusammenarbeit:' : 'Collaboration:'}</span>
                                                 <span className="text-foreground">{watchedValues.studyBuddyPreferences?.collaborationStyle}</span>
                                             </div>
                                         </>
@@ -867,19 +866,19 @@ export default function OnboardingPage() {
                                     <div className="space-y-2">
                                         <h4 className="text-xl font-semibold text-foreground">
                                             {guardianVerified
-                                                ? (lang === 'ar' ? 'تم التحقق من الوصي' : 'Guardian Verified')
+                                                ? (lang === 'de' ? 'تم التحقق من الوصي' : 'Guardian Verified')
                                                 : guardianRequired
-                                                    ? (lang === 'ar' ? 'مطلوب موافقة الوصي' : 'Guardian approval required')
-                                                    : (lang === 'ar' ? 'لا حاجة لوصي' : 'No guardian required')}
+                                                    ? (lang === 'de' ? 'مطلوب موافقة الوصي' : 'Guardian approval required')
+                                                    : (lang === 'de' ? 'لا حاجة لوصي' : 'No guardian required')}
                                         </h4>
                                         <p className="text-muted-foreground">
                                             {guardianVerified
-                                                ? (lang === 'ar' ? 'يمكنك الآن الوصول الكامل لجميع الميزات.' : 'Full access unlocked for your account.')
+                                                ? (lang === 'de' ? 'يمكنك الآن الوصول الكامل لجميع الميزات.' : 'Full access unlocked for your account.')
                                                 : guardianRequired
-                                                    ? (lang === 'ar'
+                                                    ? (lang === 'de'
                                                         ? 'لأن عمرك أقل من 18 سنة، نحتاج إلى موافقة الوصي لإكمال الحساب.'
                                                         : 'Because you are under 18, we need a guardian to approve your account.')
-                                                    : (lang === 'ar' ? 'يمكنك إكمال التسجيل بدون خطوات إضافية.' : 'You can complete onboarding without extra steps.')}
+                                                    : (lang === 'de' ? 'يمكنك إكمال التسجيل بدون خطوات إضافية.' : 'You can complete onboarding without extra steps.')}
                                         </p>
                                         {statusError && (
                                             <p className="text-sm text-red-400">
@@ -894,18 +893,17 @@ export default function OnboardingPage() {
                                         <div className="border border-border rounded-2xl p-6 bg-card">
                                             <h5 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                                                 <UserCheck className="w-5 h-5" />
-                                                {lang === 'ar' ? 'تفاصيل الوصي' : 'Guardian details'}
+                                                {lang === 'de' ? 'تفاصيل الوصي' : 'Guardian details'}
                                             </h5>
                                             <div className="space-y-4">
                                                 <div>
                                                     <label className="block text-sm text-muted-foreground mb-1">
-                                                        {lang === 'ar' ? 'اسم الوصي' : 'Guardian Name'}
+                                                        {lang === 'de' ? 'اسم الوصي' : 'Guardian Name'}
                                                     </label>
                                                     <input
                                                         type="text"
                                                         {...guardianRegister('name')}
                                                         className="w-full bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2"
-                                                        dir={lang === 'ar' ? 'rtl' : 'ltr'}
                                                     />
                                                     {guardianErrors.name && (
                                                         <p className="text-sm text-red-400 mt-1">{guardianErrors.name.message}</p>
@@ -913,7 +911,7 @@ export default function OnboardingPage() {
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm text-muted-foreground mb-1">
-                                                        {lang === 'ar' ? 'البريد الإلكتروني للوصي' : 'Guardian Email'}
+                                                        {lang === 'de' ? 'البريد الإلكتروني للوصي' : 'Guardian Email'}
                                                     </label>
                                                     <input
                                                         type="email"
@@ -928,7 +926,7 @@ export default function OnboardingPage() {
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                     <div>
                                                         <label className="block text-sm text-muted-foreground mb-1">
-                                                            {lang === 'ar' ? 'رقم الهاتف' : 'Phone'}
+                                                            {lang === 'de' ? 'رقم الهاتف' : 'Phone'}
                                                         </label>
                                                         <input
                                                             type="tel"
@@ -939,13 +937,12 @@ export default function OnboardingPage() {
                                                     </div>
                                                     <div>
                                                         <label className="block text-sm text-muted-foreground mb-1">
-                                                            {lang === 'ar' ? 'صلة القرابة' : 'Relationship'}
+                                                            {lang === 'de' ? 'صلة القرابة' : 'Relationship'}
                                                         </label>
                                                         <input
                                                             type="text"
                                                             {...guardianRegister('relationship')}
                                                             className="w-full bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2"
-                                                            dir={lang === 'ar' ? 'rtl' : 'ltr'}
                                                         />
                                                     </div>
                                                 </div>
@@ -961,17 +958,17 @@ export default function OnboardingPage() {
                                                         <ShieldCheck className="w-5 h-5" />
                                                     )}
                                                     {guardianSubmitting
-                                                        ? (lang === 'ar' ? 'جاري الإرسال...' : 'Sending...')
-                                                        : (lang === 'ar' ? 'إرسال دعوة للوصي' : 'Send guardian invitation')}
+                                                        ? (lang === 'de' ? 'جاري الإرسال...' : 'Sending...')
+                                                        : (lang === 'de' ? 'إرسال دعوة للوصي' : 'Send guardian invitation')}
                                                 </button>
                                             </div>
                                         </div>
                                         <div className="border border-border rounded-2xl p-6 bg-card flex flex-col gap-4">
                                             <h5 className="text-lg font-semibold text-foreground">
-                                                {lang === 'ar' ? 'رمز التحقق من الوصي' : 'Guardian verification code'}
+                                                {lang === 'de' ? 'رمز التحقق من الوصي' : 'Guardian verification code'}
                                             </h5>
                                             <p className="text-sm text-muted-foreground">
-                                                {lang === 'ar'
+                                                {lang === 'de'
                                                     ? 'اطلب من الوصي إدخال الرمز الذي وصله عبر البريد الإلكتروني.'
                                                     : 'Ask your guardian to share the code they received by email.'}
                                             </p>
@@ -994,13 +991,13 @@ export default function OnboardingPage() {
                                                     <CheckCircle className="w-5 h-5" />
                                                 )}
                                                 {guardianVerifying
-                                                    ? (lang === 'ar' ? 'يتم التحقق...' : 'Verifying...')
-                                                    : (lang === 'ar' ? 'تأكيد الرمز' : 'Verify code')}
+                                                    ? (lang === 'de' ? 'يتم التحقق...' : 'Verifying...')
+                                                    : (lang === 'de' ? 'تأكيد الرمز' : 'Verify code')}
                                             </button>
                                             {onboardingStatus?.guardianLink?.expiresAt && (
                                                 <div className="text-xs text-muted-foreground text-center">
-                                                    {lang === 'ar' ? 'تنتهي صلاحية الرمز في' : 'Code expires on'}{' '}
-                                                    {new Date(onboardingStatus.guardianLink.expiresAt).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-EG')}
+                                                    {lang === 'de' ? 'تنتهي صلاحية الرمز في' : 'Code expires on'}{' '}
+                                                    {new Date(onboardingStatus.guardianLink.expiresAt).toLocaleDateString(lang === 'de' ? 'ar-EG' : 'en-EG')}
                                                 </div>
                                             )}
                                         </div>
@@ -1008,7 +1005,7 @@ export default function OnboardingPage() {
                                 ) : (
                                     <div className="text-center text-muted-foreground">
                                         <p>
-                                            {lang === 'ar'
+                                            {lang === 'de'
                                                 ? 'لا حاجة لخطوات إضافية. اضغط إكمال لإنهاء التسجيل.'
                                                 : 'No additional verification required. Click complete to finish onboarding.'}
                                         </p>
@@ -1074,11 +1071,11 @@ export default function OnboardingPage() {
                                 <span className="text-foreground font-bold text-lg">ب</span>
                             </div>
                             <h1 className="text-2xl font-bold text-foreground">
-                                {lang === 'ar' ? 'إكمال التسجيل' : 'Complete Your Profile'}
+                                {lang === 'de' ? 'إكمال التسجيل' : 'Complete Your Profile'}
                             </h1>
                         </div>
                         <div className="text-sm text-muted-foreground">
-                            {lang === 'ar' ? 'خطوة' : 'Step'} {currentStep} {lang === 'ar' ? 'من' : 'of'} {STEPS.length}
+                            {lang === 'de' ? 'خطوة' : 'Step'} {currentStep} {lang === 'de' ? 'من' : 'of'} {STEPS.length}
                         </div>
                     </div>
                 </div>
@@ -1136,11 +1133,11 @@ export default function OnboardingPage() {
                                             {STEPS[currentStep - 1].icon}
                                         </div>
                                         <h2 className="text-3xl font-light text-foreground">
-                                            {lang === 'ar' ? STEPS[currentStep - 1].titleAr : STEPS[currentStep - 1].title}
+                                            {lang === 'de' ? STEPS[currentStep - 1].titleAr : STEPS[currentStep - 1].title}
                                         </h2>
                                     </div>
                                     <p className="text-muted-foreground text-lg">
-                                        {lang === 'ar' ? STEPS[currentStep - 1].descriptionAr : STEPS[currentStep - 1].description}
+                                        {lang === 'de' ? STEPS[currentStep - 1].descriptionAr : STEPS[currentStep - 1].description}
                                     </p>
                                 </div>
 
@@ -1159,7 +1156,7 @@ export default function OnboardingPage() {
                                 whileTap={{ scale: 0.98 }}
                             >
                                 <ChevronLeft className="w-5 h-5" />
-                                {lang === 'ar' ? 'السابق' : 'Previous'}
+                                {lang === 'de' ? 'السابق' : 'Previous'}
                             </motion.button>
 
                             <div className="flex gap-3">
@@ -1172,7 +1169,7 @@ export default function OnboardingPage() {
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                     >
-                                        {lang === 'ar' ? 'التالي' : 'Next'}
+                                        {lang === 'de' ? 'التالي' : 'Next'}
                                         <ChevronRight className="w-5 h-5" />
                                     </motion.button>
                                 ) : (
@@ -1186,12 +1183,12 @@ export default function OnboardingPage() {
                                         {isLoading ? (
                                             <>
                                                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                                {lang === 'ar' ? 'جاري الحفظ...' : 'Saving...'}
+                                                {lang === 'de' ? 'جاري الحفظ...' : 'Saving...'}
                                             </>
                                         ) : (
                                             <>
                                                 <CheckCircle className="w-5 h-5" />
-                                                {lang === 'ar' ? 'إكمال التسجيل' : 'Complete Onboarding'}
+                                                {lang === 'de' ? 'إكمال التسجيل' : 'Complete Onboarding'}
                                             </>
                                         )}
                                     </motion.button>

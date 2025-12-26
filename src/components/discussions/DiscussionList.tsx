@@ -65,7 +65,7 @@ export default function DiscussionList({
     lang = 'en'
 }: DiscussionListProps) {
     const { data: session } = useSession()
-    const isArabic = lang === 'ar'
+    const isArabic = lang === 'de'
 
     const [discussions, setDiscussions] = useState<Discussion[]>([])
     const [loading, setLoading] = useState(true)

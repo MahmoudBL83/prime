@@ -12,7 +12,7 @@ function VerifyEmailContent() {
     const searchParams = useSearchParams()
     const token = searchParams.get('token')
     const locale = useLocale()
-    const isRTL = locale === 'ar'
+    const isRTL = false // RTL disabled - platform only supports German and English
 
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
     const [message, setMessage] = useState('')

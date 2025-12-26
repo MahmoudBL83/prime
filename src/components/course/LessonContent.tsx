@@ -38,7 +38,7 @@ interface LessonContentProps {
     transcript?: string
     transcriptAr?: string
     relatedLessons?: RelatedLesson[]
-    lang?: 'en' | 'ar'
+    lang?: 'en' | 'de'
     onRelatedLessonClick?: (lessonId: string) => void
 }
 
@@ -59,9 +59,52 @@ export default function LessonContent({
     const [activeTab, setActiveTab] = useState<'overview' | 'resources' | 'transcript' | 'related'>('overview')
     const [showFullTranscript, setShowFullTranscript] = useState(false)
 
-    const isRTL = lang === 'ar'
-    const currentTitle = isRTL ? titleAr : title
-    const currentDescription = isRTL ? descriptionAr : description
+    // Translation helper
+    const t = {
+        en: {
+            overview: 'Overview',
+            resources: 'Resources',
+            transcript: 'Transcript',
+            related: 'Related',
+            learningObjectives: 'Learning Objectives',
+            views: 'Views',
+            duration: 'Duration',
+            students: 'Students',
+            discussionPractice: 'Discussion & Practice',
+            comingSoon: 'Coming soon: Participate in discussions and complete interactive exercises',
+            lessonResources: 'Lesson Resources',
+            download: 'Download',
+            videoTranscript: 'Video Transcript',
+            showLess: 'Show Less',
+            readMore: 'Read More',
+            transcriptNote: 'Note: Transcript may not be 100% accurate. Auto-generated.',
+            relatedLessons: 'Related Lessons',
+            lesson: 'Lesson'
+        },
+        de: {
+            overview: 'Übersicht',
+            resources: 'Ressourcen',
+            transcript: 'Transkript',
+            related: 'Ähnlich',
+            learningObjectives: 'Lernziele',
+            views: 'Aufrufe',
+            duration: 'Dauer',
+            students: 'Studenten',
+            discussionPractice: 'Diskussion & Übung',
+            comingSoon: 'In Kürze: Nehmen Sie an Diskussionen teil und absolvieren Sie interaktive Übungen',
+            lessonResources: 'Lektionsressourcen',
+            download: 'Herunterladen',
+            videoTranscript: 'Video-Transkript',
+            showLess: 'Weniger anzeigen',
+            readMore: 'Mehr lesen',
+            transcriptNote: 'Hinweis: Das Transkript ist möglicherweise nicht 100% genau. Automatisch generiert.',
+            relatedLessons: 'Ähnliche Lektionen',
+            lesson: 'Lektion'
+        }
+    }
+    const currentT = t[lang]
+    const currentTitle = title
+    const currentDescription = description
 
     const getResourceIcon = (type: string) => {
         switch (type) {
@@ -133,11 +176,11 @@ export default function LessonContent({
         return text.substring(0, maxLength) + '...'
     }
 
-    const currentTranscript = isRTL ? transcriptAr : transcript
+    const currentTranscript = transcript
     const truncatedTranscript = currentTranscript ? truncateText(currentTranscript, 300) : ''
 
     return (
-        <div className={`bg-[var(--card)] border border-[var(--border)] rounded-lg p-6 ${isRTL ? 'rtl' : 'ltr'}`}>
+        <div className="bg-[var(--card)] border border-[var(--border)] rounded-lg p-6">
             {/* Lesson Title */}
             <h2 className="text-2xl font-bold mb-4 text-[var(--foreground)]">
                 {currentTitle}
@@ -156,43 +199,43 @@ export default function LessonContent({
                     <button
                         onClick={() => setActiveTab('overview')}
                         className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'overview'
-                                ? 'border-[var(--accent)] text-[var(--accent)]'
-                                : 'border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--border)]'
+                            ? 'border-[var(--accent)] text-[var(--accent)]'
+                            : 'border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--border)]'
                             }`}
                     >
-                        {isRTL ? 'نظرة عامة' : 'Overview'}
+                        {currentT.overview}
                     </button>
                     {resources.length > 0 && (
                         <button
                             onClick={() => setActiveTab('resources')}
                             className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'resources'
-                                    ? 'border-[var(--accent)] text-[var(--accent)]'
-                                    : 'border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--border)]'
+                                ? 'border-[var(--accent)] text-[var(--accent)]'
+                                : 'border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--border)]'
                                 }`}
                         >
-                            {isRTL ? 'الموارد' : 'Resources'} ({resources.length})
+                            {currentT.resources} ({resources.length})
                         </button>
                     )}
                     {currentTranscript && (
                         <button
                             onClick={() => setActiveTab('transcript')}
                             className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'transcript'
-                                    ? 'border-[var(--accent)] text-[var(--accent)]'
-                                    : 'border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--border)]'
+                                ? 'border-[var(--accent)] text-[var(--accent)]'
+                                : 'border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--border)]'
                                 }`}
                         >
-                            {isRTL ? 'النص' : 'Transcript'}
+                            {currentT.transcript}
                         </button>
                     )}
                     {relatedLessons.length > 0 && (
                         <button
                             onClick={() => setActiveTab('related')}
                             className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'related'
-                                    ? 'border-[var(--accent)] text-[var(--accent)]'
-                                    : 'border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--border)]'
+                                ? 'border-[var(--accent)] text-[var(--accent)]'
+                                : 'border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--border)]'
                                 }`}
                         >
-                            {isRTL ? 'دروس ذات صلة' : 'Related'}
+                            {currentT.related}
                         </button>
                     )}
                 </nav>
@@ -206,7 +249,7 @@ export default function LessonContent({
                         {objectives.length > 0 && (
                             <div>
                                 <h3 className="text-lg font-semibold mb-3 text-[var(--foreground)]">
-                                    {isRTL ? 'أهداف التعلم' : 'Learning Objectives'}
+                                    {currentT.learningObjectives}
                                 </h3>
                                 <div className="space-y-2">
                                     {objectives.map((objective) => (
@@ -217,7 +260,7 @@ export default function LessonContent({
                                                 </svg>
                                             </div>
                                             <p className="text-[var(--foreground)]">
-                                                {isRTL ? objective.textAr : objective.text}
+                                                {objective.text}
                                             </p>
                                         </div>
                                     ))}
@@ -237,7 +280,7 @@ export default function LessonContent({
                                     </div>
                                     <div>
                                         <p className="text-sm text-[var(--muted-foreground)]">
-                                            {isRTL ? 'المشاهدات' : 'Views'}
+                                            {currentT.views}
                                         </p>
                                         <p className="text-lg font-semibold text-[var(--foreground)]">
                                             1,234
@@ -255,7 +298,7 @@ export default function LessonContent({
                                     </div>
                                     <div>
                                         <p className="text-sm text-[var(--muted-foreground)]">
-                                            {isRTL ? 'المدة' : 'Duration'}
+                                            {currentT.duration}
                                         </p>
                                         <p className="text-lg font-semibold text-[var(--foreground)]">
                                             15:30
@@ -273,7 +316,7 @@ export default function LessonContent({
                                     </div>
                                     <div>
                                         <p className="text-sm text-[var(--muted-foreground)]">
-                                            {isRTL ? 'الطلاب' : 'Students'}
+                                            {currentT.students}
                                         </p>
                                         <p className="text-lg font-semibold text-[var(--foreground)]">
                                             856
@@ -289,13 +332,10 @@ export default function LessonContent({
                                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                             </svg>
                             <h4 className="text-lg font-medium text-[var(--foreground)] mb-2">
-                                {isRTL ? 'مناقشة وتمرين' : 'Discussion & Practice'}
+                                {currentT.discussionPractice}
                             </h4>
                             <p className="text-[var(--muted-foreground)]">
-                                {isRTL
-                                    ? 'قريبًا: ستتمكن من المشاركة في المناقشات وإكمال التمارين التفاعلية'
-                                    : 'Coming soon: Participate in discussions and complete interactive exercises'
-                                }
+                                {currentT.comingSoon}
                             </p>
                         </div>
                     </div>
@@ -304,7 +344,7 @@ export default function LessonContent({
                 {activeTab === 'resources' && (
                     <div className="space-y-4">
                         <h3 className="text-lg font-semibold mb-4 text-[var(--foreground)]">
-                            {isRTL ? 'موارد الدرس' : 'Lesson Resources'}
+                            {currentT.lessonResources}
                         </h3>
                         {resources.map((resource) => (
                             <div
@@ -315,11 +355,11 @@ export default function LessonContent({
                                     {getResourceIcon(resource.type)}
                                     <div>
                                         <h4 className="font-medium text-[var(--foreground)]">
-                                            {isRTL ? resource.titleAr : resource.title}
+                                            {resource.title}
                                         </h4>
                                         {(resource.description || resource.descriptionAr) && (
                                             <p className="text-sm text-[var(--muted-foreground)]">
-                                                {isRTL ? resource.descriptionAr : resource.description}
+                                                {resource.description}
                                             </p>
                                         )}
                                         {resource.size && (
@@ -335,7 +375,7 @@ export default function LessonContent({
                                     rel="noopener noreferrer"
                                     className="px-4 py-2 bg-[var(--accent)] text-[var(--accent-foreground)] rounded-lg hover:bg-[var(--primary)] transition-colors text-sm font-medium"
                                 >
-                                    {isRTL ? 'تحميل' : 'Download'}
+                                    {currentT.download}
                                 </a>
                             </div>
                         ))}
@@ -345,7 +385,7 @@ export default function LessonContent({
                 {activeTab === 'transcript' && currentTranscript && (
                     <div className="space-y-4">
                         <h3 className="text-lg font-semibold mb-4 text-[var(--foreground)]">
-                            {isRTL ? 'نص الفيديو' : 'Video Transcript'}
+                            {currentT.videoTranscript}
                         </h3>
                         <div className="bg-[var(--secondary)] rounded-lg p-4">
                             <p className="text-[var(--foreground)] leading-relaxed whitespace-pre-wrap">
@@ -357,8 +397,8 @@ export default function LessonContent({
                                     className="mt-4 text-[var(--accent)] hover:text-[var(--primary)] transition-colors font-medium"
                                 >
                                     {showFullTranscript
-                                        ? (isRTL ? 'عرض أقل' : 'Show Less')
-                                        : (isRTL ? 'قراءة المزيد' : 'Read More')
+                                        ? currentT.showLess
+                                        : currentT.readMore
                                     }
                                 </button>
                             )}
@@ -368,10 +408,7 @@ export default function LessonContent({
                                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                             </svg>
                             <span>
-                                {isRTL
-                                    ? 'ملاحظة: قد لا يكون النص دقيقًا بنسبة 100٪. تم إنشاؤه تلقائيًا.'
-                                    : 'Note: Transcript may not be 100% accurate. Auto-generated.'
-                                }
+                                {currentT.transcriptNote}
                             </span>
                         </div>
                     </div>
@@ -380,7 +417,7 @@ export default function LessonContent({
                 {activeTab === 'related' && (
                     <div className="space-y-4">
                         <h3 className="text-lg font-semibold mb-4 text-[var(--foreground)]">
-                            {isRTL ? 'دروس ذات صلة' : 'Related Lessons'}
+                            {currentT.relatedLessons}
                         </h3>
                         <div className="grid gap-4">
                             {relatedLessons.map((relatedLesson) => (
@@ -396,10 +433,10 @@ export default function LessonContent({
                                             </span>
                                             <div>
                                                 <h4 className="font-medium text-[var(--foreground)]">
-                                                    {isRTL ? relatedLesson.titleAr : relatedLesson.title}
+                                                    {relatedLesson.title}
                                                 </h4>
                                                 <p className="text-sm text-[var(--muted-foreground)]">
-                                                    {isRTL ? 'الدرس' : 'Lesson'} {relatedLesson.order + 1}
+                                                    {currentT.lesson} {relatedLesson.order + 1}
                                                 </p>
                                             </div>
                                         </div>

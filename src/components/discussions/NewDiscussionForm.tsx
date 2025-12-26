@@ -32,7 +32,7 @@ export default function NewDiscussionForm({
     lang = 'en'
 }: NewDiscussionFormProps) {
     const { data: session } = useSession()
-    const isArabic = lang === 'ar'
+    const isArabic = lang === 'de'
 
     const [title, setTitle] = useState('')
     const [content, setContent] = useState('')

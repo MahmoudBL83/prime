@@ -42,9 +42,7 @@ export default function CreateCourse() {
 
     // Form data
     const [title, setTitle] = useState('')
-    const [titleAr, setTitleAr] = useState('')
     const [description, setDescription] = useState('')
-    const [descriptionAr, setDescriptionAr] = useState('')
     const [category, setCategory] = useState('')
     const [skillLevel, setSkillLevel] = useState('Beginner')
     const [duration, setDuration] = useState(0)
@@ -87,7 +85,7 @@ export default function CreateCourse() {
             setThumbnail(file)
             const url = URL.createObjectURL(file)
             setThumbnailPreview(url)
-            
+
             // Simulate upload delay for better UX
             setTimeout(() => {
                 setUploadingThumbnail(false)
@@ -161,16 +159,14 @@ export default function CreateCourse() {
         try {
             const formData = new FormData()
             formData.append('title', title)
-            formData.append('titleAr', titleAr || title)
             formData.append('description', description)
-            formData.append('descriptionAr', descriptionAr || description)
             formData.append('category', category)
             formData.append('skillLevel', skillLevel)
             formData.append('duration', duration.toString())
             formData.append('language', language)
             formData.append('contentCategory', contentCategory)
             formData.append('price', price.toString())
-            
+
             if (thumbnail) {
                 formData.append('thumbnail', thumbnail)
             }
@@ -182,10 +178,10 @@ export default function CreateCourse() {
 
             if (response.ok) {
                 const data = await response.json()
-                
+
                 // Dismiss loading toast
                 toast.dismiss(loadingToast)
-                
+
                 // Show success with animation
                 setCreateSuccess(true)
                 toast.success(
@@ -199,7 +195,7 @@ export default function CreateCourse() {
                         }
                     }
                 )
-                
+
                 // Wait for animation before redirecting
                 setTimeout(() => {
                     router.push(`/${locale}/creator/courses/${data.courseId}/edit`)
@@ -317,22 +313,21 @@ export default function CreateCourse() {
 
             <div className="max-w-4xl mx-auto p-8">
                 {/* Enhanced Progress Steps */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="flex items-center justify-center mb-12"
                 >
                     <div className="flex items-center gap-4">
                         {/* Step 1 */}
-                        <motion.div 
+                        <motion.div
                             className={`flex items-center gap-3 ${step >= 1 ? 'text-purple-500' : 'text-muted-foreground'}`}
                             whileHover={{ scale: step > 1 ? 1.05 : 1 }}
                         >
-                            <div className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                                step >= 1 
-                                    ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50' 
-                                    : 'bg-muted text-muted-foreground'
-                            }`}>
+                            <div className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${step >= 1
+                                ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50'
+                                : 'bg-muted text-muted-foreground'
+                                }`}>
                                 {step > 1 ? (
                                     <CheckCircle className="w-6 h-6" />
                                 ) : (
@@ -354,7 +349,7 @@ export default function CreateCourse() {
 
                         {/* Connector 1 */}
                         <div className="relative w-20 h-1 rounded-full bg-muted overflow-hidden">
-                            <motion.div 
+                            <motion.div
                                 className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-600 to-pink-600"
                                 initial={{ width: '0%' }}
                                 animate={{ width: step >= 2 ? '100%' : '0%' }}
@@ -363,15 +358,14 @@ export default function CreateCourse() {
                         </div>
 
                         {/* Step 2 */}
-                        <motion.div 
+                        <motion.div
                             className={`flex items-center gap-3 ${step >= 2 ? 'text-purple-500' : 'text-muted-foreground'}`}
                             whileHover={{ scale: step > 2 ? 1.05 : 1 }}
                         >
-                            <div className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                                step >= 2 
-                                    ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50' 
-                                    : 'bg-muted text-muted-foreground'
-                            }`}>
+                            <div className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${step >= 2
+                                ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50'
+                                : 'bg-muted text-muted-foreground'
+                                }`}>
                                 {step > 2 ? (
                                     <CheckCircle className="w-6 h-6" />
                                 ) : (
@@ -393,7 +387,7 @@ export default function CreateCourse() {
 
                         {/* Connector 2 */}
                         <div className="relative w-20 h-1 rounded-full bg-muted overflow-hidden">
-                            <motion.div 
+                            <motion.div
                                 className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-600 to-pink-600"
                                 initial={{ width: '0%' }}
                                 animate={{ width: step >= 3 ? '100%' : '0%' }}
@@ -402,15 +396,14 @@ export default function CreateCourse() {
                         </div>
 
                         {/* Step 3 */}
-                        <motion.div 
+                        <motion.div
                             className={`flex items-center gap-3 ${step >= 3 ? 'text-purple-500' : 'text-muted-foreground'}`}
                             whileHover={{ scale: 1.05 }}
                         >
-                            <div className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                                step >= 3 
-                                    ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50' 
-                                    : 'bg-muted text-muted-foreground'
-                            }`}>
+                            <div className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${step >= 3
+                                ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50'
+                                : 'bg-muted text-muted-foreground'
+                                }`}>
                                 <span className="font-bold">3</span>
                                 {step === 3 && (
                                     <motion.div
@@ -428,7 +421,7 @@ export default function CreateCourse() {
                     </div>
                 </motion.div>
 
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-card/50 backdrop-blur-sm border border-border rounded-2xl p-8 shadow-xl"
@@ -457,22 +450,6 @@ export default function CreateCourse() {
                                 <p className="text-sm text-muted-foreground mt-1">
                                     {title.length}/100 {isArabic ? 'حرف' : 'characters'}
                                 </p>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-semibold mb-2">
-                                    {isArabic ? 'عنوان الدورة (بالعربية)' : 'Course Title (Arabic)'}
-                                </label>
-                                <input
-                                    type="text"
-                                    value={titleAr}
-                                    onChange={(e) => setTitleAr(e.target.value)}
-                                    placeholder={isArabic ? 'مثال: دورة تطوير الويب الشاملة' : 'e.g., دورة تطوير الويب الشاملة'}
-                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                                    maxLength={100}
-                                    disabled={loading}
-                                    autoComplete="off"
-                                />
                             </div>
 
                             <div>
@@ -538,7 +515,6 @@ export default function CreateCourse() {
                                     className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 >
                                     <option value="en">English</option>
-                                    <option value="ar">العربية</option>
                                     <option value="de">Deutsch</option>
                                 </select>
                             </div>
@@ -582,31 +558,14 @@ export default function CreateCourse() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold mb-2">
-                                    {isArabic ? 'وصف الدورة (بالعربية)' : 'Course Description (Arabic)'}
-                                </label>
-                                <textarea
-                                    value={descriptionAr}
-                                    onChange={(e) => setDescriptionAr(e.target.value)}
-                                    placeholder={isArabic ? 'وصف الدورة بالعربية...' : 'Course description in Arabic...'}
-                                    rows={6}
-                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all resize-none"
-                                    maxLength={1000}
-                                    disabled={loading}
-                                    autoComplete="off"
-                                />
-                            </div>
-
-                            <div>
                                 <label className="block text-sm font-semibold mb-3 flex items-center gap-2">
                                     <ImageIcon className="w-4 h-4 text-purple-500" />
                                     {isArabic ? 'صورة الدورة' : 'Course Thumbnail'}
                                 </label>
-                                <div className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
-                                    thumbnailPreview 
-                                        ? 'border-purple-500 bg-purple-50/5' 
-                                        : 'border-border hover:border-purple-500 hover:bg-accent/50'
-                                } cursor-pointer group`}>
+                                <div className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${thumbnailPreview
+                                    ? 'border-purple-500 bg-purple-50/5'
+                                    : 'border-border hover:border-purple-500 hover:bg-accent/50'
+                                    } cursor-pointer group`}>
                                     <input
                                         type="file"
                                         accept="image/*"

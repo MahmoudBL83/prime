@@ -38,13 +38,13 @@ interface CourseSubscriptionGateProps {
         }
     }
     onClose?: () => void
-    lang?: 'en' | 'ar'
+    lang?: 'en' | 'de'
 }
 
 export default function CourseSubscriptionGate({
     course,
     onClose,
-    lang = 'ar'
+    lang = 'de'
 }: CourseSubscriptionGateProps) {
     const { data: session } = useSession()
     const router = useRouter()

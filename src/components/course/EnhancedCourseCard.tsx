@@ -40,7 +40,7 @@ interface EnhancedCourseCardProps {
     onCourseClick?: (courseId: string) => void;
     onPreviewClick?: (courseId: string) => void;
     className?: string;
-    lang?: 'ar' | 'en';
+    lang?: 'de' | 'en';
 }
 
 const CATEGORIES = [
@@ -61,7 +61,7 @@ export function EnhancedCourseCard({
     onCourseClick,
     onPreviewClick,
     className,
-    lang = 'ar'
+    lang = 'en'
 }: EnhancedCourseCardProps) {
     const { data: session } = useSession();
     const [isHovered, setIsHovered] = useState(false);
@@ -74,7 +74,7 @@ export function EnhancedCourseCard({
         // Check if user is enrolled and has progress
         if (course.isEnrolled && course.userProgress && course.userProgress > 0) {
             return {
-                text: lang === 'ar' ? 'استكمال التعلم' : 'Continue Learning',
+                text: lang === 'de' ? 'Weiter lernen' : 'Continue Learning',
                 icon: <Play className="w-4 h-4" />,
                 variant: 'default' as const,
                 color: 'bg-green-600 hover:bg-green-700',
@@ -85,7 +85,7 @@ export function EnhancedCourseCard({
         // Check if user is enrolled but hasn't started
         if (course.isEnrolled) {
             return {
-                text: lang === 'ar' ? 'ابدأ التعلم' : 'Start Learning',
+                text: lang === 'de' ? 'Lernen starten' : 'Start Learning',
                 icon: <Play className="w-4 h-4" />,
                 variant: 'default' as const,
                 color: 'bg-blue-600 hover:bg-blue-700',
@@ -96,7 +96,7 @@ export function EnhancedCourseCard({
         // Check subscription status for non-enrolled users
         if (!session) {
             return {
-                text: lang === 'ar' ? 'معاينة الدورة' : 'Preview Course',
+                text: lang === 'de' ? 'Kurs ansehen' : 'Preview Course',
                 icon: <Eye className="w-4 h-4" />,
                 variant: 'outline' as const,
                 color: 'border-gray-600 text-muted-foreground hover:bg-card',
@@ -106,7 +106,7 @@ export function EnhancedCourseCard({
 
         if (userSubscriptionStatus === 'ACTIVE') {
             return {
-                text: lang === 'ar' ? 'ابدأ التعلم' : 'Start Learning',
+                text: lang === 'de' ? 'Lernen starten' : 'Start Learning',
                 icon: <Play className="w-4 h-4" />,
                 variant: 'default' as const,
                 color: 'bg-blue-600 hover:bg-blue-700',
@@ -116,7 +116,7 @@ export function EnhancedCourseCard({
 
         // Non-subscribed users
         return {
-            text: lang === 'ar' ? 'اشترك للوصول' : 'Subscribe to Access',
+            text: lang === 'de' ? 'Abonnieren' : 'Subscribe to Access',
             icon: <Crown className="w-4 h-4" />,
             variant: 'default' as const,
             color: 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700',
@@ -152,7 +152,7 @@ export function EnhancedCourseCard({
                 <div className="relative aspect-video overflow-hidden">
                     <img
                         src={course.thumbnail || '/images/placeholder-course.jpg'}
-                        alt={lang === 'ar' ? course.titleAr : course.title}
+                        alt={lang === 'de' ? course.titleAr : course.title}
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
 
@@ -179,7 +179,7 @@ export function EnhancedCourseCard({
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 10 }}
                             >
-                                {lang === 'ar' ? 'معاينة مجانية' : 'Free Preview'} {course.previewDuration && `${course.previewDuration}min`}
+                                {lang === 'de' ? 'Gratis Vorschau' : 'Free Preview'} {course.previewDuration && `${course.previewDuration}min`}
                             </motion.div>
                         </motion.div>
                     )}
@@ -205,13 +205,13 @@ export function EnhancedCourseCard({
                                 course.skillLevel === "Advanced" && "bg-red-600 text-foreground"
                             )}
                         >
-                            {lang === 'ar' ? skillLevelInfo?.nameAr : skillLevelInfo?.name}
+                            {lang === 'de' ? skillLevelInfo?.nameAr : skillLevelInfo?.name}
                         </Badge>
 
                         {course.isEnrolled && (
                             <Badge className="bg-blue-600 text-foreground text-xs">
                                 <CheckCircle className="w-3 h-3 mr-1" />
-                                {lang === 'ar' ? 'مُسجل' : 'Enrolled'}
+                                {lang === 'de' ? 'Eingeschrieben' : 'Enrolled'}
                             </Badge>
                         )}
                     </div>
@@ -228,17 +228,17 @@ export function EnhancedCourseCard({
                     {/* Category and Duration */}
                     <div className="flex items-center justify-between mb-3">
                         <Badge variant="outline" className="text-xs text-muted-foreground border-gray-600">
-                            {lang === 'ar' ? categoryInfo?.nameAr : categoryInfo?.name}
+                            {lang === 'de' ? categoryInfo?.nameAr : categoryInfo?.name}
                         </Badge>
                         <div className="flex items-center gap-1 text-muted-foreground text-xs">
                             <Clock className="w-3 h-3" />
-                            <span>{Math.round(course.duration / 60)}{lang === 'ar' ? 'س' : 'h'}</span>
+                            <span>{Math.round(course.duration / 60)}{lang === 'de' ? 'Std' : 'h'}</span>
                         </div>
                     </div>
 
                     {/* Course Title */}
                     <h3 className="font-bold text-lg text-foreground mb-2 line-clamp-2 leading-tight">
-                        {lang === 'ar' ? course.titleAr : course.title}
+                        {lang === 'de' ? course.titleAr : course.title}
                     </h3>
 
                     {/* Course Description */}
@@ -255,7 +255,7 @@ export function EnhancedCourseCard({
                                 </span>
                             </div>
                             <span className="text-muted-foreground font-medium truncate">
-                                {lang === 'ar' ? course.creator.user.arabicName || course.creator.user.name : course.creator.user.name}
+                                {lang === 'de' ? course.creator.user.arabicName || course.creator.user.name : course.creator.user.name}
                             </span>
                         </div>
 
@@ -284,10 +284,10 @@ export function EnhancedCourseCard({
                     {/* Progress indicator for continued learning */}
                     {course.userProgress && course.userProgress > 0 && (
                         <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                            <span>{course.userProgress}% {lang === 'ar' ? 'مكتمل' : 'complete'}</span>
+                            <span>{course.userProgress}% {lang === 'de' ? 'abgeschlossen' : 'complete'}</span>
                             {course.lastAccessed && (
                                 <span>
-                                    {lang === 'ar' ? 'آخر وصول:' : 'Last accessed:'} {new Date(course.lastAccessed).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US')}
+                                    {lang === 'de' ? 'Letzter Zugriff:' : 'Last accessed:'} {new Date(course.lastAccessed).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-US')}
                                 </span>
                             )}
                         </div>
@@ -300,7 +300,7 @@ export function EnhancedCourseCard({
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: isHovered ? 1 : 0 }}
                     transition={{ duration: 0.3 }}
-                    style={{ transformOrigin: lang === 'ar' ? 'right' : 'left' }}
+                    style={{ transformOrigin: lang === 'de' ? 'right' : 'left' }}
                 />
             </motion.div>
 

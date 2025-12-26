@@ -72,7 +72,7 @@ export default function DiscussionThread({
     lang = 'en'
 }: DiscussionThreadProps) {
     const { data: session } = useSession()
-    const isArabic = lang === 'ar'
+    const isArabic = lang === 'de'
 
     const [discussion, setDiscussion] = useState<Discussion | null>(null)
     const [replies, setReplies] = useState<Reply[]>([])
@@ -115,7 +115,7 @@ export default function DiscussionThread({
 
             if (response.ok) {
                 setIsBookmarked(!isBookmarked)
-                toast.success(isBookmarked 
+                toast.success(isBookmarked
                     ? (isArabic ? 'تم إلغاء الحفظ' : 'Bookmark removed')
                     : (isArabic ? 'تم الحفظ' : 'Bookmarked!'))
             }
@@ -128,7 +128,7 @@ export default function DiscussionThread({
     const fetchDiscussionAndReplies = async () => {
         try {
             setLoading(true)
-            
+
             // Fetch discussion details
             const discussionRes = await fetch(`/api/courses/${courseId}/discussions`)
             if (discussionRes.ok) {
@@ -325,31 +325,31 @@ export default function DiscussionThread({
                                 </button>
                                 {/* Mark as Best Answer */}
                                 {session?.user && discussion && (
-                                    session.user.id === discussion.author.id || 
+                                    session.user.id === discussion.author.id ||
                                     session.user.id === discussion.lesson?.id
                                 ) && !reply.isBestAnswer && (
-                                    <button
-                                        onClick={async () => {
-                                            try {
-                                                const response = await fetch(`/api/discussions/${discussionId}/best-answer`, {
-                                                    method: 'POST',
-                                                    headers: { 'Content-Type': 'application/json' },
-                                                    body: JSON.stringify({ replyId: reply.id })
-                                                })
-                                                if (response.ok) {
-                                                    toast.success(isArabic ? 'تم تحديد أفضل إجابة!' : 'Best answer marked!')
-                                                    fetchDiscussionAndReplies()
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    const response = await fetch(`/api/discussions/${discussionId}/best-answer`, {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ replyId: reply.id })
+                                                    })
+                                                    if (response.ok) {
+                                                        toast.success(isArabic ? 'تم تحديد أفضل إجابة!' : 'Best answer marked!')
+                                                        fetchDiscussionAndReplies()
+                                                    }
+                                                } catch (error) {
+                                                    toast.error(isArabic ? 'فشل تحديد أفضل إجابة' : 'Failed to mark best answer')
                                                 }
-                                            } catch (error) {
-                                                toast.error(isArabic ? 'فشل تحديد أفضل إجابة' : 'Failed to mark best answer')
-                                            }
-                                        }}
-                                        className="flex items-center gap-1 text-muted-foreground hover:text-yellow-400 transition"
-                                    >
-                                        <Award className="w-4 h-4" />
-                                        {isArabic ? 'أفضل إجابة' : 'Best Answer'}
-                                    </button>
-                                )}
+                                            }}
+                                            className="flex items-center gap-1 text-muted-foreground hover:text-yellow-400 transition"
+                                        >
+                                            <Award className="w-4 h-4" />
+                                            {isArabic ? 'أفضل إجابة' : 'Best Answer'}
+                                        </button>
+                                    )}
                             </div>
                         </div>
                     </div>
@@ -388,7 +388,7 @@ export default function DiscussionThread({
                             <button
                                 onClick={handleBookmark}
                                 className="flex items-center justify-center p-3 rounded-lg bg-gray-900/50 hover:bg-background transition"
-                                title={isBookmarked 
+                                title={isBookmarked
                                     ? (isArabic ? 'إلغاء الحفظ' : 'Remove bookmark')
                                     : (isArabic ? 'حفظ' : 'Bookmark')}
                             >

@@ -26,7 +26,7 @@ interface Assignment {
 
 interface AssignmentComponentProps {
     assignment: Assignment
-    lang: 'en' | 'ar'
+    lang: 'en' | 'de'
     onSubmit: (files: File[], text: string) => void
     submission?: {
         files: { name: string; url: string }[]

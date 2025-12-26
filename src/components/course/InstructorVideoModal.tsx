@@ -16,7 +16,7 @@ interface InstructorVideoModalProps {
         thumbnail?: string
     }
     userSubscriptionStatus?: 'NONE' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED'
-    lang?: 'en' | 'ar'
+    lang?: 'en' | 'de'
 }
 
 export function InstructorVideoModal({
@@ -129,9 +129,9 @@ export function InstructorVideoModal({
 
     const getCTAText = () => {
         if (userSubscriptionStatus === 'ACTIVE') {
-            return lang === 'ar' ? 'ابدأ التعلم' : 'Start Learning'
+            return lang === 'de' ? 'Lernen starten' : 'Start Learning'
         }
-        return lang === 'ar' ? 'اشترك للوصول' : 'Subscribe to Access'
+        return lang === 'de' ? 'Abonnieren' : 'Subscribe to Access'
     }
 
     if (!isOpen) return null
@@ -164,7 +164,7 @@ export function InstructorVideoModal({
                                 {course.instructorArabicName || course.instructor}
                             </h3>
                             <p className="text-muted-foreground mb-4">
-                                {lang === 'ar' ? 'مقدمة من المدرب' : 'Instructor Introduction'}
+                                {lang === 'de' ? 'Dozenten-Einführung' : 'Instructor Introduction'}
                             </p>
                             <div className="w-16 h-16 bg-background bg-opacity-20 rounded-full flex items-center justify-center mx-auto cursor-pointer hover:bg-opacity-30 transition-colors"
                                 onClick={togglePlay}>
@@ -234,17 +234,17 @@ export function InstructorVideoModal({
                 {/* Course Info and CTA */}
                 <div className="p-6 bg-background dark:bg-background">
                     <h2 className="text-2xl font-bold mb-2 text-foreground dark:text-foreground">
-                        {lang === 'ar' ? course.titleAr : course.title}
+                        {course.title}
                     </h2>
                     <p className="text-muted-foreground dark:text-muted-foreground mb-4">
-                        {lang === 'ar'
-                            ? `مدرب الدورة: ${course.instructorArabicName || course.instructor}`
+                        {lang === 'de'
+                            ? `Kursleiter: ${course.instructor}`
                             : `Instructor: ${course.instructor}`
                         }
                     </p>
                     <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-6">
-                        {lang === 'ar'
-                            ? 'هذا فيديو تعريفي من المدرب. للوصول إلى المحتوى الكامل، يرجى الاشتراك.'
+                        {lang === 'de'
+                            ? 'Dies ist ein Einführungsvideo des Dozenten. Für vollständigen Kurszugang abonnieren Sie bitte.'
                             : 'This is an introduction video from the instructor. For full course access, please subscribe.'
                         }
                     </p>

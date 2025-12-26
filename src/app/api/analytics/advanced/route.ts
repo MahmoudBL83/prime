@@ -155,10 +155,10 @@ export async function GET(request: NextRequest) {
                 })
 
                 const dailyRevenue = await prisma.$queryRaw`
-                    SELECT DATE(paid_at) as date, SUM(amount) as revenue, COUNT(*) as transactions
-                    FROM payment_transactions
-                    WHERE paid_at >= ${startDate} AND status = 'PAID'
-                    GROUP BY DATE(paid_at)
+                    SELECT DATE(\`paidAt\`) as date, SUM(\`amount\`) as revenue, COUNT(*) as transactions
+                    FROM \`PaymentTransaction\`
+                    WHERE \`paidAt\` >= ${startDate} AND \`status\` = 'PAID'
+                    GROUP BY DATE(\`paidAt\`)
                     ORDER BY date ASC
                 ` as any[]
 

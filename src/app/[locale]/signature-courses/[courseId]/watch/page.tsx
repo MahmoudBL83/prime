@@ -26,9 +26,9 @@ const IconComponents = {
 }
 
 // Dynamic Icon Component
-const DynamicIcon = ({ name, className, ...props }: { name: keyof typeof IconComponents; className?: string; [key: string]: any }) => {
+const DynamicIcon = ({ name, className, ...props }: { name: keyof typeof IconComponents; className?: string;[key: string]: any }) => {
   const IconComponent = IconComponents[name]
-  
+
   return (
     <Suspense fallback={<div className={className} />}>
       <IconComponent className={className} {...props} />
@@ -66,7 +66,7 @@ export default function WatchCoursePage() {
   const { data: session } = useSession();
   const locale = params?.locale as string || 'en';
   const courseId = params?.courseId as string;
-  const isRTL = locale === 'ar';
+  const isRTL = false; // RTL disabled - platform only supports German and English
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -125,7 +125,7 @@ export default function WatchCoursePage() {
       // In local/demo environments allow fetching with demo bypass
       if (typeof window !== 'undefined') {
         const host = window.location.hostname || '';
-        if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') ) {
+        if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.')) {
           url += '?demo=true';
         }
         // Also respect explicit query param in the browser URL
@@ -138,10 +138,10 @@ export default function WatchCoursePage() {
 
       const res = await fetch(url);
       console.log('Response status:', res.status);
-      
+
       const data = await res.json();
       console.log('Response data:', data);
-      
+
       if (res.ok) {
         setCourse(data.course);
         setCurrentEpisode(data.course.episodes[0]);
@@ -340,9 +340,9 @@ export default function WatchCoursePage() {
   // Auto-play countdown for next episode
   useEffect(() => {
     if (!duration || !currentTime || !course || !currentEpisode) return;
-    
+
     const timeLeft = duration - currentTime;
-    
+
     // Start countdown 15 seconds before end
     if (timeLeft <= 15 && timeLeft > 0 && playing) {
       setAutoPlayCountdown(Math.ceil(timeLeft));
@@ -425,18 +425,16 @@ export default function WatchCoursePage() {
         {/* Back Button - Top Left */}
         <button
           onClick={() => router.push(`/${locale}/signature-courses/${courseId}`)}
-          className={`absolute top-8 ${isRTL ? 'right-8' : 'left-8'} z-50 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full p-3 transition-all ${
-            showControls ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`absolute top-8 ${isRTL ? 'right-8' : 'left-8'} z-50 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full p-3 transition-all ${showControls ? 'opacity-100' : 'opacity-0'
+            }`}
         >
           <DynamicIcon name="ArrowLeft" className="w-6 h-6 text-white" />
         </button>
 
         {/* Course Info - Top Right */}
         <div
-          className={`absolute top-8 ${isRTL ? 'left-8' : 'right-8'} z-50 transition-all ${
-            showControls ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`absolute top-8 ${isRTL ? 'left-8' : 'right-8'} z-50 transition-all ${showControls ? 'opacity-100' : 'opacity-0'
+            }`}
         >
           <div className="bg-black/60 backdrop-blur-sm rounded-lg px-6 py-3">
             <h1 className="text-white font-bold text-lg">{course.title}</h1>
@@ -458,9 +456,8 @@ export default function WatchCoursePage() {
 
         {/* Bottom Controls */}
         <div
-          className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent pt-32 pb-8 px-8 transition-all ${
-            showControls ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent pt-32 pb-8 px-8 transition-all ${showControls ? 'opacity-100' : 'opacity-0'
+            }`}
         >
           {/* Progress Bar */}
           <div className="mb-6 relative">
@@ -473,7 +470,7 @@ export default function WatchCoursePage() {
                 {formatTime(hoverTime)}
               </div>
             )}
-            
+
             <input
               type="range"
               min="0"
@@ -582,9 +579,8 @@ export default function WatchCoursePage() {
                               setAudioTrack(lang);
                               setShowAudio(false);
                             }}
-                            className={`w-full text-left px-3 py-2 rounded hover:bg-white/10 text-sm flex items-center justify-between ${
-                              audioTrack === lang ? 'text-red-600 font-semibold' : ''
-                            }`}
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-white/10 text-sm flex items-center justify-between ${audioTrack === lang ? 'text-red-600 font-semibold' : ''
+                              }`}
                           >
                             <span>{lang}</span>
                             {audioTrack === lang && <span>✓</span>}
@@ -601,9 +597,8 @@ export default function WatchCoursePage() {
                               setSubtitle(sub);
                               setShowAudio(false);
                             }}
-                            className={`w-full text-left px-3 py-2 rounded hover:bg-white/10 text-sm flex items-center justify-between ${
-                              subtitle === sub ? 'text-red-600 font-semibold' : ''
-                            }`}
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-white/10 text-sm flex items-center justify-between ${subtitle === sub ? 'text-red-600 font-semibold' : ''
+                              }`}
                           >
                             <span>{sub}</span>
                             {subtitle === sub && <span>✓</span>}
@@ -646,9 +641,8 @@ export default function WatchCoursePage() {
                           <button
                             key={rate}
                             onClick={() => changePlaybackRate(rate)}
-                            className={`w-full text-left px-3 py-1 rounded hover:bg-white/10 text-sm ${
-                              playbackRate === rate ? 'text-red-600 font-semibold' : ''
-                            }`}
+                            className={`w-full text-left px-3 py-1 rounded hover:bg-white/10 text-sm ${playbackRate === rate ? 'text-red-600 font-semibold' : ''
+                              }`}
                           >
                             {rate === 1 ? 'Normal' : `${rate}x`}
                           </button>
@@ -661,9 +655,8 @@ export default function WatchCoursePage() {
                           <button
                             key={q}
                             onClick={() => setQuality(q)}
-                            className={`w-full text-left px-3 py-1 rounded hover:bg-white/10 text-sm ${
-                              quality === q ? 'text-red-600 font-semibold' : ''
-                            }`}
+                            className={`w-full text-left px-3 py-1 rounded hover:bg-white/10 text-sm ${quality === q ? 'text-red-600 font-semibold' : ''
+                              }`}
                           >
                             {q}
                           </button>
@@ -708,9 +701,8 @@ export default function WatchCoursePage() {
                   <div
                     key={episode.id}
                     onClick={() => selectEpisode(episode)}
-                    className={`cursor-pointer rounded-lg overflow-hidden transition-all hover:bg-white/10 ${
-                      currentEpisode.id === episode.id ? 'ring-2 ring-red-600' : ''
-                    }`}
+                    className={`cursor-pointer rounded-lg overflow-hidden transition-all hover:bg-white/10 ${currentEpisode.id === episode.id ? 'ring-2 ring-red-600' : ''
+                      }`}
                   >
                     <div className="flex gap-4 p-3">
                       <div className="relative w-32 h-20 flex-shrink-0 bg-gray-800 rounded overflow-hidden">
@@ -782,16 +774,16 @@ export default function WatchCoursePage() {
                 </h4>
               </div>
             </div>
-            
+
             <div className="relative mb-3">
               <div className="w-full h-1 bg-gray-700 rounded-full overflow-hidden">
-                <div 
+                <div
                   className="h-full bg-red-600 transition-all duration-1000 ease-linear"
                   style={{ width: `${((15 - autoPlayCountdown) / 15) * 100}%` }}
                 />
               </div>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <button
                 onClick={() => {

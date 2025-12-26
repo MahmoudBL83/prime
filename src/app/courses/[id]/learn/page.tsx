@@ -73,7 +73,7 @@ export default function CourseLearningPage() {
     const [course, setCourse] = useState<Course | null>(null)
     const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null)
     const [loading, setLoading] = useState(true)
-    const [lang, setLang] = useState<'en' | 'ar'>('ar')
+    const [lang, setLang] = useState<'en' | 'de'>('en')
     const [videoProgress, setVideoProgress] = useState(0)
 
     useEffect(() => {
@@ -171,7 +171,7 @@ export default function CourseLearningPage() {
 
         if (isCompleted) {
             toast.success(
-                lang === 'ar'
+                lang === 'de'
                     ? '✅ تم إكمال الدرس بنجاح!'
                     : '✅ Lesson completed successfully!',
                 { duration: 3000 }
@@ -202,17 +202,17 @@ export default function CourseLearningPage() {
             {
                 quality: '1080p',
                 url: currentLesson.videoUrl,
-                label: lang === 'ar' ? 'جودة عالية (1080p)' : 'High Quality (1080p)'
+                label: lang === 'de' ? 'جودة عالية (1080p)' : 'High Quality (1080p)'
             },
             {
                 quality: '720p',
                 url: currentLesson.videoUrl.replace('/1080p/', '/720p/'), // In real app, these would be different URLs
-                label: lang === 'ar' ? 'جودة متوسطة (720p)' : 'Medium Quality (720p)'
+                label: lang === 'de' ? 'جودة متوسطة (720p)' : 'Medium Quality (720p)'
             },
             {
                 quality: '480p',
                 url: currentLesson.videoUrl.replace('/1080p/', '/480p/'), // In real app, these would be different URLs
-                label: lang === 'ar' ? 'جودة منخفضة (480p)' : 'Low Quality (480p)'
+                label: lang === 'de' ? 'جودة منخفضة (480p)' : 'Low Quality (480p)'
             }
         ]
     }
@@ -224,13 +224,13 @@ export default function CourseLearningPage() {
         return [
             {
                 language: 'ar',
-                label: lang === 'ar' ? 'العربية' : 'Arabic',
+                label: lang === 'de' ? 'العربية' : 'Arabic',
                 url: `/api/courses/${params.id}/lessons/${currentLesson.id}/subtitles/ar.vtt`,
-                isDefault: lang === 'ar'
+                isDefault: lang === 'de'
             },
             {
                 language: 'en',
-                label: lang === 'ar' ? 'الإنجليزية' : 'English',
+                label: lang === 'de' ? 'الإنجليزية' : 'English',
                 url: `/api/courses/${params.id}/lessons/${currentLesson.id}/subtitles/en.vtt`,
                 isDefault: lang === 'en'
             }
@@ -260,7 +260,7 @@ export default function CourseLearningPage() {
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mx-auto mb-4"></div>
                     <p className="text-lg text-[var(--foreground)]">
-                        {lang === 'ar' ? 'جاري تحميل الدورة...' : 'Loading course...'}
+                        {lang === 'de' ? 'جاري تحميل الدورة...' : 'Loading course...'}
                     </p>
                 </div>
             </div>
@@ -275,16 +275,16 @@ export default function CourseLearningPage() {
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>
                     <h2 className="text-xl font-semibold text-[var(--foreground)] mb-2">
-                        {lang === 'ar' ? 'الدورة غير موجودة' : 'Course Not Found'}
+                        {lang === 'de' ? 'الدورة غير موجودة' : 'Course Not Found'}
                     </h2>
                     <p className="text-[var(--muted-foreground)] mb-4">
-                        {lang === 'ar' ? 'الدورة التي تبحث عنها غير متوفرة.' : 'The course you are looking for is not available.'}
+                        {lang === 'de' ? 'الدورة التي تبحث عنها غير متوفرة.' : 'The course you are looking for is not available.'}
                     </p>
                     <button
                         onClick={() => router.push('/courses')}
                         className="px-4 py-2 bg-[var(--accent)] text-[var(--accent-foreground)] rounded-lg hover:bg-[var(--primary)] transition-colors"
                     >
-                        {lang === 'ar' ? 'العودة إلى الدورات' : 'Back to Courses'}
+                        {lang === 'de' ? 'العودة إلى الدورات' : 'Back to Courses'}
                     </button>
                 </div>
             </div>
@@ -309,17 +309,17 @@ export default function CourseLearningPage() {
                                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
                                 </svg>
-                                <span>{lang === 'ar' ? 'العودة' : 'Back'}</span>
+                                <span>{lang === 'de' ? 'العودة' : 'Back'}</span>
                             </button>
                             <h1 className="text-xl font-bold text-[var(--foreground)]">
-                                {lang === 'ar' ? course.titleAr : course.title}
+                                {lang === 'de' ? course.titleAr : course.title}
                             </h1>
                         </div>
                         <button
-                            onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+                            onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
                             className="px-4 py-2 border border-[var(--border)] rounded-md text-sm text-[var(--foreground)] hover:bg-[var(--secondary)] transition-colors"
                         >
-                            {lang === 'en' ? 'العربية' : 'English'}
+                            {lang === 'en' ? 'Deutsch' : 'English'}
                         </button>
                     </div>
                 </div>

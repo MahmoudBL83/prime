@@ -16,52 +16,52 @@ export const runtime = 'edge'
 
 // Icon Components
 const IconComponents = {
-  Search: () => import('lucide-react').then(mod => ({ default: mod.Search })),
-  Filter: () => import('lucide-react').then(mod => ({ default: mod.Filter })),
-  SlidersHorizontal: () => import('lucide-react').then(mod => ({ default: mod.SlidersHorizontal })),
-  Grid: () => import('lucide-react').then(mod => ({ default: mod.Grid })),
-  List: () => import('lucide-react').then(mod => ({ default: mod.List })),
-  Star: () => import('lucide-react').then(mod => ({ default: mod.Star })),
-  BookOpen: () => import('lucide-react').then(mod => ({ default: mod.BookOpen })),
-  Users: () => import('lucide-react').then(mod => ({ default: mod.Users })),
-  CheckCircle: () => import('lucide-react').then(mod => ({ default: mod.CheckCircle })),
-  Play: () => import('lucide-react').then(mod => ({ default: mod.Play })),
+    Search: () => import('lucide-react').then(mod => ({ default: mod.Search })),
+    Filter: () => import('lucide-react').then(mod => ({ default: mod.Filter })),
+    SlidersHorizontal: () => import('lucide-react').then(mod => ({ default: mod.SlidersHorizontal })),
+    Grid: () => import('lucide-react').then(mod => ({ default: mod.Grid })),
+    List: () => import('lucide-react').then(mod => ({ default: mod.List })),
+    Star: () => import('lucide-react').then(mod => ({ default: mod.Star })),
+    BookOpen: () => import('lucide-react').then(mod => ({ default: mod.BookOpen })),
+    Users: () => import('lucide-react').then(mod => ({ default: mod.Users })),
+    CheckCircle: () => import('lucide-react').then(mod => ({ default: mod.CheckCircle })),
+    Play: () => import('lucide-react').then(mod => ({ default: mod.Play })),
 }
 
 // Dynamic Icon component
-const DynamicIcon = memo(({ 
-  name, 
-  className = "", 
-  ...props 
-}: { 
-  name: string
-  className?: string 
-  style?: Record<string, any>
-  [key: string]: any 
+const DynamicIcon = memo(({
+    name,
+    className = "",
+    ...props
+}: {
+    name: string
+    className?: string
+    style?: Record<string, any>
+    [key: string]: any
 }) => {
-  const [IconComponent, setIconComponent] = useState<React.ComponentType<any> | null>(null)
-  
-  useEffect(() => {
-    const loadIcon = async () => {
-      const iconLoader = IconComponents[name as keyof typeof IconComponents]
-      if (iconLoader) {
-        try {
-          const { default: Icon } = await iconLoader()
-          setIconComponent(() => Icon)
-        } catch (error) {
-          console.error(`Failed to load icon: ${name}`, error)
+    const [IconComponent, setIconComponent] = useState<React.ComponentType<any> | null>(null)
+
+    useEffect(() => {
+        const loadIcon = async () => {
+            const iconLoader = IconComponents[name as keyof typeof IconComponents]
+            if (iconLoader) {
+                try {
+                    const { default: Icon } = await iconLoader()
+                    setIconComponent(() => Icon)
+                } catch (error) {
+                    console.error(`Failed to load icon: ${name}`, error)
+                }
+            }
         }
-      }
+
+        loadIcon()
+    }, [name])
+
+    if (!IconComponent) {
+        return <div className={`inline-block ${className}`} style={{ width: '1em', height: '1em' }} />
     }
-    
-    loadIcon()
-  }, [name])
-  
-  if (!IconComponent) {
-    return <div className={`inline-block ${className}`} style={{ width: '1em', height: '1em' }} />
-  }
-  
-  return <IconComponent className={className} {...props} />
+
+    return <IconComponent className={className} {...props} />
 })
 
 DynamicIcon.displayName = 'DynamicIcon'
@@ -102,7 +102,7 @@ export default function MentorsPage() {
     const [selectedSpecialty, setSelectedSpecialty] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
-    const [lang, setLang] = useState<'en' | 'ar'>('ar')
+    const [lang, setLang] = useState<'en' | 'de'>('en')
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
     const [showFilters, setShowFilters] = useState(false)
 
@@ -127,10 +127,10 @@ export default function MentorsPage() {
                 setMentors(data.mentors)
                 setTotalPages(data.pagination.pages)
             } else {
-                toast.error(lang === 'ar' ? 'فشل في جلب المدربين' : 'Failed to fetch mentors')
+                toast.error(lang === 'de' ? 'فشل في جلب المدربين' : 'Failed to fetch mentors')
             }
         } catch (error) {
-            toast.error(lang === 'ar' ? 'فشل في جلب المدربين' : 'Failed to fetch mentors')
+            toast.error(lang === 'de' ? 'فشل في جلب المدربين' : 'Failed to fetch mentors')
         } finally {
             setLoading(false)
         }
@@ -174,26 +174,26 @@ export default function MentorsPage() {
             yearsExp: 'years experience',
             rating: 'Rating',
         },
-        ar: {
-            title: 'خبراء متخصصون',
-            subtitle: 'تعلم من أفضل خبراء الصناعة والمختصين',
-            search: 'ابحث في المدربين...',
-            specialty: 'التخصص',
-            clearFilters: 'مسح الفلاتر',
-            showFilters: 'إظهار الفلاتر',
-            hideFilters: 'إخفاء الفلاتر',
-            gridView: 'عرض الشبكة',
-            listView: 'عرض القائمة',
-            noMentors: 'لم يتم العثور على مدربين تطابق معاييرك.',
-            tryDifferent: 'حاول تعديل الفلاتر أو مصطلح البحث.',
-            courses: 'دورة',
-            students: 'طالب',
-            verified: 'خبير موثق',
-            mentor: 'مدرب',
-            allSpecialties: 'جميع التخصصات',
-            viewProfile: 'عرض الملف الشخصي',
-            yearsExp: 'سنة خبرة',
-            rating: 'التقييم',
+        de: {
+            title: 'Experten-Mentoren',
+            subtitle: 'Lernen Sie von den besten Branchenexperten und Fachleuten',
+            search: 'Mentoren suchen...',
+            specialty: 'Fachgebiet',
+            clearFilters: 'Filter löschen',
+            showFilters: 'Filter anzeigen',
+            hideFilters: 'Filter ausblenden',
+            gridView: 'Rasteransicht',
+            listView: 'Listenansicht',
+            noMentors: 'Keine Mentoren gefunden, die Ihren Kriterien entsprechen.',
+            tryDifferent: 'Versuchen Sie, Ihre Filter oder Suchbegriffe anzupassen.',
+            courses: 'Kurse',
+            students: 'Studenten',
+            verified: 'Verifizierter Experte',
+            mentor: 'Mentor',
+            allSpecialties: 'Alle Fachgebiete',
+            viewProfile: 'Profil ansehen',
+            yearsExp: 'Jahre Erfahrung',
+            rating: 'Bewertung',
         },
     }
 
@@ -204,13 +204,13 @@ export default function MentorsPage() {
             <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">
-                        {lang === 'ar' ? 'مطلوب تسجيل الدخول' : 'Sign In Required'}
+                        {lang === 'de' ? 'مطلوب تسجيل الدخول' : 'Sign In Required'}
                     </h2>
                     <p className="text-[var(--muted-foreground)] mb-6">
-                        {lang === 'ar' ? 'يرجى تسجيل الدخول لعرض المدربين' : 'Please sign in to view mentors'}
+                        {lang === 'de' ? 'يرجى تسجيل الدخول لعرض المدربين' : 'Please sign in to view mentors'}
                     </p>
                     <Button onClick={() => router.push('/auth/login')}>
-                        {lang === 'ar' ? 'تسجيل الدخول' : 'Sign In'}
+                        {lang === 'de' ? 'تسجيل الدخول' : 'Sign In'}
                     </Button>
                 </div>
             </div>
@@ -218,7 +218,7 @@ export default function MentorsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[var(--background)]" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+        <div className="min-h-screen bg-[var(--background)]">
             {/* Header */}
             <div className="bg-[var(--card)] border-b border-[var(--border)]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -256,9 +256,9 @@ export default function MentorsPage() {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+                                onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
                             >
-                                {lang === 'en' ? 'العربية' : 'English'}
+                                {lang === 'en' ? 'Deutsch' : 'English'}
                             </Button>
                         </div>
                     </div>
@@ -279,12 +279,11 @@ export default function MentorsPage() {
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="w-full pl-10 pr-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--ring)] text-[var(--foreground)]"
-                                    dir={lang === 'ar' ? 'rtl' : 'ltr'}
                                 />
                             </div>
                             <Button type="submit" size="lg" className="px-8">
                                 <DynamicIcon name="Search" className="w-4 h-4 mr-2" />
-                                {lang === 'ar' ? 'بحث' : 'Search'}
+                                {lang === 'de' ? 'بحث' : 'Search'}
                             </Button>
                         </div>
                     </form>
@@ -328,7 +327,7 @@ export default function MentorsPage() {
                                         <option value="">{currentT.allSpecialties}</option>
                                         {SPECIALTIES.map((specialty) => (
                                             <option key={specialty.id} value={specialty.id}>
-                                                {specialty.icon} {lang === 'ar' ? specialty.nameAr : specialty.name}
+                                                {specialty.icon} {lang === 'de' ? specialty.nameAr : specialty.name}
                                             </option>
                                         ))}
                                     </select>
@@ -342,7 +341,7 @@ export default function MentorsPage() {
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
                         <div className="text-lg text-[var(--muted-foreground)]">
-                            {lang === 'ar' ? 'جاري التحميل...' : 'Loading...'}
+                            {lang === 'de' ? 'جاري التحميل...' : 'Loading...'}
                         </div>
                     </div>
                 ) : mentors.length === 0 ? (
@@ -386,7 +385,7 @@ export default function MentorsPage() {
                                                 {mentor.user.profileImage ? (
                                                     <img
                                                         src={mentor.user.profileImage}
-                                                        alt={lang === 'ar' ? mentor.user.arabicName || mentor.user.name : mentor.user.name}
+                                                        alt={lang === 'de' ? mentor.user.arabicName || mentor.user.name : mentor.user.name}
                                                         className="w-full h-full object-cover"
                                                         onError={(e) => {
                                                             // Fallback to gradient with initials if image fails to load
@@ -406,9 +405,9 @@ export default function MentorsPage() {
                                                     className="fallback-content absolute inset-0 w-full h-full flex items-center justify-center"
                                                     style={{ display: mentor.user.profileImage ? 'none' : 'flex' }}
                                                 >
-                                                    <AvatarPlaceholder 
-                                                        name={mentor.user.name} 
-                                                        size={96} 
+                                                    <AvatarPlaceholder
+                                                        name={mentor.user.name}
+                                                        size={96}
                                                         className="rounded-full"
                                                     />
                                                 </div>
@@ -422,7 +421,7 @@ export default function MentorsPage() {
                                                             <DynamicIcon name="Play" className="w-8 h-8 text-foreground ml-1" />
                                                         </div>
                                                         <span className="text-foreground text-sm font-medium">
-                                                            {lang === 'ar' ? 'عرض الملف الشخصي' : 'View Profile'}
+                                                            {lang === 'de' ? 'عرض الملف الشخصي' : 'View Profile'}
                                                         </span>
                                                     </div>
                                                 </motion.div>
@@ -432,7 +431,7 @@ export default function MentorsPage() {
                                                     <div className="absolute top-4 right-4">
                                                         <div className="bg-green-500 text-foreground px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
                                                             <DynamicIcon name="CheckCircle" className="w-4 h-4" />
-                                                            {lang === 'ar' ? 'موثق' : 'Verified'}
+                                                            {lang === 'de' ? 'موثق' : 'Verified'}
                                                         </div>
                                                     </div>
                                                 )}
@@ -441,7 +440,7 @@ export default function MentorsPage() {
                                             {/* Mentor Info */}
                                             <div className="flex items-center justify-between mb-3">
                                                 <h3 className="text-xl font-semibold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
-                                                    {lang === 'ar' ? mentor.user.arabicName || mentor.user.name : mentor.user.name}
+                                                    {lang === 'de' ? mentor.user.arabicName || mentor.user.name : mentor.user.name}
                                                 </h3>
                                                 <div className="flex items-center gap-1">
                                                     <DynamicIcon name="Star" className="w-4 h-4 text-yellow-500 fill-current" />
@@ -464,7 +463,7 @@ export default function MentorsPage() {
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2 text-[var(--muted-foreground)] text-sm">
                                                     <DynamicIcon name="Users" className="w-4 h-4" />
-                                                    <span>{mentor.totalStudents.toLocaleString()} {lang === 'ar' ? 'متابع' : 'students'}</span>
+                                                    <span>{mentor.totalStudents.toLocaleString()} {lang === 'de' ? 'متابع' : 'students'}</span>
                                                 </div>
                                                 <Button
                                                     size="sm"
@@ -474,7 +473,7 @@ export default function MentorsPage() {
                                                         handleMentorClick(mentor.id)
                                                     }}
                                                 >
-                                                    {lang === 'ar' ? 'عرض الملف' : 'View Profile'}
+                                                    {lang === 'de' ? 'عرض الملف' : 'View Profile'}
                                                 </Button>
                                             </div>
                                         </>
@@ -488,7 +487,7 @@ export default function MentorsPage() {
                                                 <div className="flex-1">
                                                     <div className="flex items-center space-x-2 rtl:space-x-reverse mb-1">
                                                         <h3 className="font-semibold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
-                                                            {lang === 'ar' ? mentor.user.arabicName || mentor.user.name : mentor.user.name}
+                                                            {lang === 'de' ? mentor.user.arabicName || mentor.user.name : mentor.user.name}
                                                         </h3>
                                                         {mentor.verified && (
                                                             <DynamicIcon name="CheckCircle" className="w-4 h-4 text-green-500" />
@@ -530,7 +529,7 @@ export default function MentorsPage() {
                                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                         disabled={currentPage === 1}
                                     >
-                                        {lang === 'ar' ? 'السابق' : 'Previous'}
+                                        {lang === 'de' ? 'السابق' : 'Previous'}
                                     </Button>
 
                                     <div className="flex items-center space-x-1 rtl:space-x-reverse">
@@ -565,7 +564,7 @@ export default function MentorsPage() {
                                         onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                         disabled={currentPage === totalPages}
                                     >
-                                        {lang === 'ar' ? 'التالي' : 'Next'}
+                                        {lang === 'de' ? 'التالي' : 'Next'}
                                     </Button>
                                 </div>
                             </div>

@@ -48,7 +48,7 @@ export default function CreatorsPage() {
     const [selectedSpecialty, setSelectedSpecialty] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
-    const [lang, setLang] = useState<'en' | 'ar'>('en')
+    const [lang, setLang] = useState<'en' | 'de'>('en')
 
     useEffect(() => {
         fetchCreators()
@@ -110,19 +110,19 @@ export default function CreatorsPage() {
             creator: 'Creator',
             allSpecialties: 'All Specialties',
         },
-        ar: {
-            title: 'دليل المنشئين',
-            subtitle: 'اكتشف المنشئين الموهوبين ودوراتهم',
-            search: 'ابحث في المنشئين...',
-            specialty: 'التخصص',
-            clearFilters: 'مسح الفلاتر',
-            noCreators: 'لم يتم العثور على منشئين تطابق معاييرك.',
-            tryDifferent: 'حاول تعديل الفلاتر أو مصطلح البحث.',
-            courses: 'دورة',
-            students: 'طالب',
-            verified: 'موثق',
-            creator: 'منشئ',
-            allSpecialties: 'جميع التخصصات',
+        de: {
+            title: 'Verzeichnis der Ersteller',
+            subtitle: 'Entdecken Sie talentierte Ersteller und ihre Kurse',
+            search: 'Ersteller suchen...',
+            specialty: 'Spezialgebiet',
+            clearFilters: 'Filter löschen',
+            noCreators: 'Keine Ersteller gefunden, die Ihren Kriterien entsprechen.',
+            tryDifferent: 'Versuchen Sie, Ihre Filter oder Suchbegriffe anzupassen.',
+            courses: 'Kurse',
+            students: 'Studenten',
+            verified: 'Verifiziert',
+            creator: 'Ersteller',
+            allSpecialties: 'Alle Spezialgebiete',
         },
     }
 
@@ -151,10 +151,10 @@ export default function CreatorsPage() {
                             </p>
                         </div>
                         <button
-                            onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+                            onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
                             className="px-4 py-2 border rounded-md text-sm"
                         >
-                            {lang === 'en' ? 'العربية' : 'English'}
+                            {lang === 'en' ? 'Deutsch' : 'English'}
                         </button>
                     </div>
                 </div>
@@ -172,7 +172,6 @@ export default function CreatorsPage() {
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="w-full border rounded-md px-3 py-2"
-                                    dir={lang === 'ar' ? 'rtl' : 'ltr'}
                                 />
                             </div>
                             <button
@@ -297,7 +296,7 @@ export default function CreatorsPage() {
                                             }}
                                             className="w-full mt-4 px-4 py-2 bg-blue-500 text-foreground rounded-md hover:bg-blue-600 transition-colors text-sm"
                                         >
-                                            {lang === 'ar' ? 'عرض الملف الشخصي' : 'View Profile'}
+                                            {lang === 'de' ? 'عرض الملف الشخصي' : 'View Profile'}
                                         </button>
                                     </div>
                                 </div>
@@ -313,7 +312,7 @@ export default function CreatorsPage() {
                                         disabled={currentPage === 1}
                                         className="px-4 py-2 border rounded-md disabled:opacity-50"
                                     >
-                                        {lang === 'ar' ? 'السابق' : 'Previous'}
+                                        {lang === 'de' ? 'السابق' : 'Previous'}
                                     </button>
 
                                     <div className="flex items-center space-x-1">
@@ -349,7 +348,7 @@ export default function CreatorsPage() {
                                         disabled={currentPage === totalPages}
                                         className="px-4 py-2 border rounded-md disabled:opacity-50"
                                     >
-                                        {lang === 'ar' ? 'التالي' : 'Next'}
+                                        {lang === 'de' ? 'التالي' : 'Next'}
                                     </button>
                                 </div>
                             </div>

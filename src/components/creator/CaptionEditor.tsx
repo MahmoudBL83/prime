@@ -44,7 +44,7 @@ export default function CaptionEditor({
     const [segments, setSegments] = useState<CaptionSegment[]>([])
     const [hasCaptions, setHasCaptions] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
-    const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'ar'>('en')
+    const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'de'>('en')
     const [showSegments, setShowSegments] = useState(false)
     const [editedSegments, setEditedSegments] = useState<CaptionSegment[]>([])
 
@@ -180,8 +180,8 @@ export default function CaptionEditor({
                         <button
                             onClick={() => setSelectedLanguage('en')}
                             className={`px-3 py-1 rounded text-sm ${selectedLanguage === 'en'
-                                    ? 'bg-purple-600 text-white'
-                                    : 'text-gray-400 hover:text-white'
+                                ? 'bg-purple-600 text-white'
+                                : 'text-gray-400 hover:text-white'
                                 }`}
                         >
                             English
@@ -189,8 +189,8 @@ export default function CaptionEditor({
                         <button
                             onClick={() => setSelectedLanguage('ar')}
                             className={`px-3 py-1 rounded text-sm ${selectedLanguage === 'ar'
-                                    ? 'bg-purple-600 text-white'
-                                    : 'text-gray-400 hover:text-white'
+                                ? 'bg-purple-600 text-white'
+                                : 'text-gray-400 hover:text-white'
                                 }`}
                         >
                             العربية

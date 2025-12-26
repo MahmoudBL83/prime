@@ -8,7 +8,6 @@ import { toast } from 'react-hot-toast'
 interface Tier {
     id: string
     name: string
-    nameAr?: string
     icon?: string
     color?: string
 }
@@ -23,7 +22,6 @@ interface PollComposerModalProps {
 interface PollOption {
     id: string
     text: string
-    textAr?: string
 }
 
 export default function PollComposerModal({
@@ -35,10 +33,9 @@ export default function PollComposerModal({
     const [tiers, setTiers] = useState<Tier[]>([])
     const [selectedTiers, setSelectedTiers] = useState<string[]>([])
     const [question, setQuestion] = useState('')
-    const [questionAr, setQuestionAr] = useState('')
     const [options, setOptions] = useState<PollOption[]>([
-        { id: '1', text: '', textAr: '' },
-        { id: '2', text: '', textAr: '' }
+        { id: '1', text: '' },
+        { id: '2', text: '' }
     ])
     const [allowMultiple, setAllowMultiple] = useState(false)
     const [isAnonymous, setIsAnonymous] = useState(false)
@@ -54,10 +51,9 @@ export default function PollComposerModal({
             // Reset form
             setSelectedTiers([])
             setQuestion('')
-            setQuestionAr('')
             setOptions([
-                { id: '1', text: '', textAr: '' },
-                { id: '2', text: '', textAr: '' }
+                { id: '1', text: '' },
+                { id: '2', text: '' }
             ])
             setAllowMultiple(false)
             setIsAnonymous(false)
@@ -71,7 +67,7 @@ export default function PollComposerModal({
             setFetchingTiers(true)
             const response = await fetch(`/api/channels/${channelId}/tiers`)
             if (!response.ok) throw new Error('Failed to fetch tiers')
-            
+
             const data = await response.json()
             setTiers(data.tiers || [])
             setSelectedTiers(data.tiers.map((t: Tier) => t.id))
@@ -84,8 +80,8 @@ export default function PollComposerModal({
     }
 
     const handleTierToggle = (tierId: string) => {
-        setSelectedTiers(prev => 
-            prev.includes(tierId) 
+        setSelectedTiers(prev =>
+            prev.includes(tierId)
                 ? prev.filter(id => id !== tierId)
                 : [...prev, tierId]
         )
@@ -105,7 +101,7 @@ export default function PollComposerModal({
             return
         }
         const newId = (Math.max(...options.map(o => parseInt(o.id))) + 1).toString()
-        setOptions([...options, { id: newId, text: '', textAr: '' }])
+        setOptions([...options, { id: newId, text: '' }])
     }
 
     const removeOption = (id: string) => {
@@ -116,8 +112,8 @@ export default function PollComposerModal({
         setOptions(options.filter(opt => opt.id !== id))
     }
 
-    const updateOption = (id: string, field: 'text' | 'textAr', value: string) => {
-        setOptions(options.map(opt => 
+    const updateOption = (id: string, field: 'text', value: string) => {
+        setOptions(options.map(opt =>
             opt.id === id ? { ...opt, [field]: value } : opt
         ))
     }
@@ -136,13 +132,12 @@ export default function PollComposerModal({
 
         try {
             setLoading(true)
-            
+
             const response = await fetch(`/api/channels/${channelId}/polls`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     question,
-                    questionAr: questionAr || null,
                     options: filledOptions,
                     allowMultiple,
                     isAnonymous,
@@ -155,7 +150,7 @@ export default function PollComposerModal({
                 const error = await response.json()
                 throw new Error(error.error || 'Failed to create poll')
             }
-            
+
             toast.success('Poll created successfully!')
             onSuccess?.()
             onClose()
@@ -236,22 +231,6 @@ export default function PollComposerModal({
                                     </div>
                                 </div>
 
-                                {/* Arabic Question */}
-                                <div>
-                                    <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                        Arabic Question (Optional)
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={questionAr}
-                                        onChange={(e) => setQuestionAr(e.target.value)}
-                                        placeholder="السؤال بالعربية (اختياري)..."
-                                        dir="rtl"
-                                        className="w-full px-4 py-3 bg-card border border-border rounded-xl text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                        maxLength={200}
-                                    />
-                                </div>
-
                                 {/* Options */}
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
@@ -291,15 +270,6 @@ export default function PollComposerModal({
                                                         </button>
                                                     )}
                                                 </div>
-                                                <input
-                                                    type="text"
-                                                    value={option.textAr || ''}
-                                                    onChange={(e) => updateOption(option.id, 'textAr', e.target.value)}
-                                                    placeholder="الخيار بالعربية (اختياري)"
-                                                    dir="rtl"
-                                                    className="w-full px-4 py-2 bg-gray-800/50 border border-border/50 rounded-lg text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
-                                                    maxLength={100}
-                                                />
                                             </div>
                                         ))}
                                     </div>
@@ -402,11 +372,10 @@ export default function PollComposerModal({
                                             {tiers.map(tier => (
                                                 <label
                                                     key={tier.id}
-                                                    className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                                                        selectedTiers.includes(tier.id)
-                                                            ? 'border-purple-500 bg-purple-500/10'
-                                                            : 'border-border hover:border-gray-600 bg-gray-800/50'
-                                                    }`}
+                                                    className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedTiers.includes(tier.id)
+                                                        ? 'border-purple-500 bg-purple-500/10'
+                                                        : 'border-border hover:border-gray-600 bg-gray-800/50'
+                                                        }`}
                                                 >
                                                     <input
                                                         type="checkbox"

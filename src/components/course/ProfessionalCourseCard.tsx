@@ -33,7 +33,7 @@ interface ProfessionalCourseCardProps {
     userSubscriptionStatus?: 'NONE' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED'
     onClick?: () => void
     onPreview?: () => void
-    lang?: 'en' | 'ar'
+    lang?: 'en' | 'de'
 }
 
 export function ProfessionalCourseCard({
@@ -195,7 +195,7 @@ export function ProfessionalCourseCard({
                             {course.creator.user.profileImage ? (
                                 <img
                                     src={course.creator.user.profileImage}
-                                    alt={lang === 'ar' ? course.creator.user.arabicName || course.creator.user.name : course.creator.user.name}
+                                    alt={lang === 'de' ? course.creator.user.arabicName || course.creator.user.name : course.creator.user.name}
                                     className="w-full h-full object-cover"
                                 />
                             ) : (

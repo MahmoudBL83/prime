@@ -6,9 +6,7 @@ import { X, Plus, Check, Settings, Users, DollarSign, Lock, Unlock } from 'lucid
 
 interface TierFormData {
     name: string
-    nameAr?: string
     description?: string
-    descriptionAr?: string
     price: string
     currency: string
     billingCycle: string
@@ -40,9 +38,7 @@ export default function TierFormModal({
 }: TierFormModalProps) {
     const [formData, setFormData] = useState<TierFormData>({
         name: initialData?.name || '',
-        nameAr: initialData?.nameAr || '',
         description: initialData?.description || '',
-        descriptionAr: initialData?.descriptionAr || '',
         price: initialData?.price || '',
         currency: initialData?.currency || 'EGP',
         billingCycle: initialData?.billingCycle || 'MONTHLY',
@@ -128,65 +124,23 @@ export default function TierFormModal({
                                 Basic Information
                             </h3>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                        Tier Name (English) *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full px-4 py-2 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                        placeholder="e.g., Premium"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                        Tier Name (Arabic)
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.nameAr}
-                                        onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
-                                        className="w-full px-4 py-2 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                        placeholder="مثال: بريميوم"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                        Icon/Emoji
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.icon}
-                                        onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                                        className="w-full px-4 py-2 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                        placeholder="⭐"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                        Color
-                                    </label>
-                                    <input
-                                        type="color"
-                                        value={formData.color}
-                                        onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                                        className="w-full h-10 bg-card border border-border rounded-lg cursor-pointer"
-                                    />
-                                </div>
+                            <div>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                                    Tier Name *
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    className="w-full px-4 py-2 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    placeholder="e.g., Premium"
+                                    required
+                                />
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                    Description (English)
+                                    Description
                                 </label>
                                 <textarea
                                     value={formData.description}
@@ -197,225 +151,240 @@ export default function TierFormModal({
                                 />
                             </div>
 
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                    Description (Arabic)
+                                    Icon/Emoji
                                 </label>
-                                <textarea
-                                    value={formData.descriptionAr}
-                                    onChange={(e) => setFormData({ ...formData, descriptionAr: e.target.value })}
+                                <input
+                                    type="text"
+                                    value={formData.icon}
+                                    onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                                     className="w-full px-4 py-2 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    rows={2}
-                                    placeholder="اوصف ما هو مدرج في هذه الفئة..."
-                                    dir="rtl"
+                                    placeholder="⭐"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                                    Color
+                                </label>
+                                <input
+                                    type="color"
+                                    value={formData.color}
+                                    onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                                    className="w-full h-10 bg-card border border-border rounded-lg cursor-pointer"
                                 />
                             </div>
                         </div>
+                    </div>
 
-                        {/* Pricing */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                                <DollarSign className="w-5 h-5 text-green-400" />
-                                Pricing
-                            </h3>
+                    {/* Pricing */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                            <DollarSign className="w-5 h-5 text-green-400" />
+                            Pricing
+                        </h3>
 
-                            <div className="grid grid-cols-3 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                        Price *
-                                    </label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={formData.price}
-                                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                        className="w-full px-4 py-2 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                        placeholder="99.00"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                        Currency
-                                    </label>
-                                    <select
-                                        value={formData.currency}
-                                        onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                                        className="w-full px-4 py-2 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    >
-                                        <option value="EGP">EGP</option>
-                                        <option value="USD">USD</option>
-                                        <option value="EUR">EUR</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                        Billing Cycle
-                                    </label>
-                                    <select
-                                        value={formData.billingCycle}
-                                        onChange={(e) => setFormData({ ...formData, billingCycle: e.target.value })}
-                                        className="w-full px-4 py-2 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    >
-                                        <option value="MONTHLY">Monthly</option>
-                                        <option value="QUARTERLY">Quarterly</option>
-                                        <option value="YEARLY">Yearly</option>
-                                    </select>
-                                </div>
-                            </div>
-
+                        <div className="grid grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                    Max Members (Leave empty for unlimited)
+                                    Price *
                                 </label>
                                 <input
                                     type="number"
-                                    value={formData.maxMembers}
-                                    onChange={(e) => setFormData({ ...formData, maxMembers: e.target.value })}
+                                    step="0.01"
+                                    value={formData.price}
+                                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                     className="w-full px-4 py-2 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    placeholder="Unlimited"
+                                    placeholder="99.00"
+                                    required
                                 />
                             </div>
-                        </div>
 
-                        {/* Features */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                                <Check className="w-5 h-5 text-blue-400" />
-                                Features & Benefits
-                            </h3>
-
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={newFeature}
-                                    onChange={(e) => setNewFeature(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddFeature())}
-                                    className="flex-1 px-4 py-2 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    placeholder="Add a feature..."
-                                />
-                                <button
-                                    type="button"
-                                    onClick={handleAddFeature}
-                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-foreground rounded-lg transition-colors flex items-center gap-2"
+                            <div>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                                    Currency
+                                </label>
+                                <select
+                                    value={formData.currency}
+                                    onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                                    className="w-full px-4 py-2 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 >
-                                    <Plus className="w-4 h-4" />
-                                    Add
-                                </button>
+                                    <option value="EGP">EGP</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                </select>
                             </div>
 
-                            <div className="space-y-2">
-                                {formData.features.map((feature, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-center justify-between p-3 bg-card rounded-lg"
+                            <div>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                                    Billing Cycle
+                                </label>
+                                <select
+                                    value={formData.billingCycle}
+                                    onChange={(e) => setFormData({ ...formData, billingCycle: e.target.value })}
+                                    className="w-full px-4 py-2 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                >
+                                    <option value="MONTHLY">Monthly</option>
+                                    <option value="QUARTERLY">Quarterly</option>
+                                    <option value="YEARLY">Yearly</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-muted-foreground mb-2">
+                                Max Members (Leave empty for unlimited)
+                            </label>
+                            <input
+                                type="number"
+                                value={formData.maxMembers}
+                                onChange={(e) => setFormData({ ...formData, maxMembers: e.target.value })}
+                                className="w-full px-4 py-2 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                placeholder="Unlimited"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Features */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                            <Check className="w-5 h-5 text-blue-400" />
+                            Features & Benefits
+                        </h3>
+
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={newFeature}
+                                onChange={(e) => setNewFeature(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddFeature())}
+                                className="flex-1 px-4 py-2 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                placeholder="Add a feature..."
+                            />
+                            <button
+                                type="button"
+                                onClick={handleAddFeature}
+                                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-foreground rounded-lg transition-colors flex items-center gap-2"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Add
+                            </button>
+                        </div>
+
+                        <div className="space-y-2">
+                            {formData.features.map((feature, index) => (
+                                <div
+                                    key={index}
+                                    className="flex items-center justify-between p-3 bg-card rounded-lg"
+                                >
+                                    <span className="text-foreground">{feature}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveFeature(index)}
+                                        className="p-1 hover:bg-gray-700 rounded transition-colors"
                                     >
-                                        <span className="text-foreground">{feature}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveFeature(index)}
-                                            className="p-1 hover:bg-gray-700 rounded transition-colors"
-                                        >
-                                            <X className="w-4 h-4 text-muted-foreground" />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Access Permissions */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                                <Lock className="w-5 h-5 text-yellow-400" />
-                                Access Permissions
-                            </h3>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <label className="flex items-center gap-3 p-4 bg-card rounded-lg cursor-pointer hover:bg-gray-750 transition-colors">
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.hasDiscussionAccess}
-                                        onChange={(e) => setFormData({ ...formData, hasDiscussionAccess: e.target.checked })}
-                                        className="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
-                                    />
-                                    <span className="text-foreground">Discussion Access</span>
-                                </label>
-
-                                <label className="flex items-center gap-3 p-4 bg-card rounded-lg cursor-pointer hover:bg-gray-750 transition-colors">
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.hasLiveAccess}
-                                        onChange={(e) => setFormData({ ...formData, hasLiveAccess: e.target.checked })}
-                                        className="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
-                                    />
-                                    <span className="text-foreground">Live Sessions</span>
-                                </label>
-
-                                <label className="flex items-center gap-3 p-4 bg-card rounded-lg cursor-pointer hover:bg-gray-750 transition-colors">
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.hasResourceAccess}
-                                        onChange={(e) => setFormData({ ...formData, hasResourceAccess: e.target.checked })}
-                                        className="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
-                                    />
-                                    <span className="text-foreground">Resource Library</span>
-                                </label>
-
-                                <label className="flex items-center gap-3 p-4 bg-card rounded-lg cursor-pointer hover:bg-gray-750 transition-colors">
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.hasPollAccess}
-                                        onChange={(e) => setFormData({ ...formData, hasPollAccess: e.target.checked })}
-                                        className="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
-                                    />
-                                    <span className="text-foreground">Polls & Surveys</span>
-                                </label>
-
-                                <label className="flex items-center gap-3 p-4 bg-card rounded-lg cursor-pointer hover:bg-gray-750 transition-colors">
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.hasDirectMessaging}
-                                        onChange={(e) => setFormData({ ...formData, hasDirectMessaging: e.target.checked })}
-                                        className="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
-                                    />
-                                    <span className="text-foreground">Direct Messaging</span>
-                                </label>
-                            </div>
+                                        <X className="w-4 h-4 text-muted-foreground" />
+                                    </button>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Footer */}
-                    <div className="flex items-center justify-end gap-3 p-6 border-t border-border bg-gray-900/50">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-6 py-2 text-muted-foreground hover:text-foreground transition-colors"
-                            disabled={loading}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-foreground rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                        >
-                            {loading ? (
-                                <>
-                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Saving...
-                                </>
-                            ) : (
-                                <>
-                                    <Check className="w-4 h-4" />
-                                    {mode === 'create' ? 'Create Tier' : 'Save Changes'}
-                                </>
-                            )}
-                        </button>
+                    {/* Access Permissions */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                            <Lock className="w-5 h-5 text-yellow-400" />
+                            Access Permissions
+                        </h3>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <label className="flex items-center gap-3 p-4 bg-card rounded-lg cursor-pointer hover:bg-gray-750 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.hasDiscussionAccess}
+                                    onChange={(e) => setFormData({ ...formData, hasDiscussionAccess: e.target.checked })}
+                                    className="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                                />
+                                <span className="text-foreground">Discussion Access</span>
+                            </label>
+
+                            <label className="flex items-center gap-3 p-4 bg-card rounded-lg cursor-pointer hover:bg-gray-750 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.hasLiveAccess}
+                                    onChange={(e) => setFormData({ ...formData, hasLiveAccess: e.target.checked })}
+                                    className="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                                />
+                                <span className="text-foreground">Live Sessions</span>
+                            </label>
+
+                            <label className="flex items-center gap-3 p-4 bg-card rounded-lg cursor-pointer hover:bg-gray-750 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.hasResourceAccess}
+                                    onChange={(e) => setFormData({ ...formData, hasResourceAccess: e.target.checked })}
+                                    className="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                                />
+                                <span className="text-foreground">Resource Library</span>
+                            </label>
+
+                            <label className="flex items-center gap-3 p-4 bg-card rounded-lg cursor-pointer hover:bg-gray-750 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.hasPollAccess}
+                                    onChange={(e) => setFormData({ ...formData, hasPollAccess: e.target.checked })}
+                                    className="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                                />
+                                <span className="text-foreground">Polls & Surveys</span>
+                            </label>
+
+                            <label className="flex items-center gap-3 p-4 bg-card rounded-lg cursor-pointer hover:bg-gray-750 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.hasDirectMessaging}
+                                    onChange={(e) => setFormData({ ...formData, hasDirectMessaging: e.target.checked })}
+                                    className="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+                                />
+                                <span className="text-foreground">Direct Messaging</span>
+                            </label>
+                        </div>
                     </div>
-                </form>
-            </motion.div>
-        </div>
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-end gap-3 p-6 border-t border-border bg-gray-900/50">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-6 py-2 text-muted-foreground hover:text-foreground transition-colors"
+                        disabled={loading}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-foreground rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                        {loading ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Saving...
+                            </>
+                        ) : (
+                            <>
+                                <Check className="w-4 h-4" />
+                                {mode === 'create' ? 'Create Tier' : 'Save Changes'}
+                            </>
+                        )}
+                    </button>
+                </div>
+            </form>
+        </motion.div>
+        </div >
     )
 }

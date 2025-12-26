@@ -27,7 +27,7 @@ interface ReadingMaterial {
 
 interface ReadingMaterialProps {
     material: ReadingMaterial
-    lang: 'en' | 'ar'
+    lang: 'en' | 'de'
     onComplete: () => void
     isCompleted?: boolean
 }
@@ -125,7 +125,7 @@ export default function ReadingMaterialComponent({
                     <div
                         className="prose prose-lg max-w-none p-6 h-[calc(100vh-200px)] overflow-y-auto text-gray-800"
                         onScroll={handleScroll}
-                        style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}
+                        style={{ direction: lang === 'de' ? 'rtl' : 'ltr' }}
                     >
                         <div
                             className="text-gray-800"

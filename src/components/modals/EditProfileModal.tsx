@@ -16,7 +16,6 @@ interface EditProfileModalProps {
     currentProfile: {
         id?: string // Creator ID
         name: string
-        arabicName?: string
         bio?: string
         expertise?: string
         profileImage?: string | null
@@ -31,7 +30,6 @@ interface EditProfileModalProps {
 export default function EditProfileModal({ isOpen, onClose, currentProfile, isArabic = false }: EditProfileModalProps) {
     const [formData, setFormData] = useState({
         name: currentProfile.name || '',
-        arabicName: currentProfile.arabicName || '',
         bio: currentProfile.bio || '',
         expertise: currentProfile.expertise || '',
         monthlyPrice: currentProfile.monthlyPrice || 0, // No fake fallbacks
@@ -66,7 +64,6 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
         setCredentials(currentProfile.credentials || [])
         setFormData({
             name: currentProfile.name || '',
-            arabicName: currentProfile.arabicName || '',
             bio: currentProfile.bio || '',
             expertise: currentProfile.expertise || '',
             monthlyPrice: currentProfile.monthlyPrice || 0, // No fake fallbacks
@@ -115,12 +112,12 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                 const formData = new FormData()
                 formData.append('file', profileImage)
                 formData.append('type', 'profile')
-                
+
                 const uploadRes = await fetch('/api/upload', {
                     method: 'POST',
                     body: formData
                 })
-                
+
                 if (uploadRes.ok) {
                     const { url } = await uploadRes.json()
                     uploadedProfileImage = url
@@ -131,12 +128,12 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                 const formData = new FormData()
                 formData.append('file', coverImage)
                 formData.append('type', 'cover')
-                
+
                 const uploadRes = await fetch('/api/upload', {
                     method: 'POST',
                     body: formData
                 })
-                
+
                 if (uploadRes.ok) {
                     const { url } = await uploadRes.json()
                     uploadedCoverImage = url
@@ -199,7 +196,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                             >
                                 <X className="w-6 h-6" />
                             </button>
-                            
+
                             <h2 className="text-2xl font-black text-foreground">
                                 {isArabic ? 'تعديل الملف الشخصي' : 'Edit Profile'}
                             </h2>
@@ -211,41 +208,37 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                             <div className="flex gap-2 mt-4">
                                 <button
                                     onClick={() => setActiveTab('basic')}
-                                    className={`px-4 py-2 rounded-full font-semibold transition-all ${
-                                        activeTab === 'basic'
+                                    className={`px-4 py-2 rounded-full font-semibold transition-all ${activeTab === 'basic'
                                             ? 'bg-purple-500 text-white'
                                             : 'bg-card text-muted-foreground hover:text-foreground'
-                                    }`}
+                                        }`}
                                 >
                                     {isArabic ? 'الأساسي' : 'Basic Info'}
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('pricing')}
-                                    className={`px-4 py-2 rounded-full font-semibold transition-all ${
-                                        activeTab === 'pricing'
+                                    className={`px-4 py-2 rounded-full font-semibold transition-all ${activeTab === 'pricing'
                                             ? 'bg-purple-500 text-white'
                                             : 'bg-card text-muted-foreground hover:text-foreground'
-                                    }`}
+                                        }`}
                                 >
                                     {isArabic ? 'الأسعار' : 'Pricing'}
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('social')}
-                                    className={`px-4 py-2 rounded-full font-semibold transition-all ${
-                                        activeTab === 'social'
+                                    className={`px-4 py-2 rounded-full font-semibold transition-all ${activeTab === 'social'
                                             ? 'bg-purple-500 text-white'
                                             : 'bg-card text-muted-foreground hover:text-foreground'
-                                    }`}
+                                        }`}
                                 >
                                     {isArabic ? 'الروابط' : 'Social Links'}
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('credentials')}
-                                    className={`px-4 py-2 rounded-full font-semibold transition-all flex items-center gap-2 ${
-                                        activeTab === 'credentials'
+                                    className={`px-4 py-2 rounded-full font-semibold transition-all flex items-center gap-2 ${activeTab === 'credentials'
                                             ? 'bg-purple-500 text-white'
                                             : 'bg-card text-muted-foreground hover:text-foreground'
-                                    }`}
+                                        }`}
                                 >
                                     <Award className="w-4 h-4" />
                                     {isArabic ? 'الشهادات' : 'Credentials'}
@@ -351,19 +344,6 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                                         />
                                     </div>
 
-                                    {/* Arabic Name */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'الاسم بالعربية' : 'Arabic Name'}
-                                        </label>
-                                        <Input
-                                            value={formData.arabicName}
-                                            onChange={(e) => setFormData({ ...formData, arabicName: e.target.value })}
-                                            placeholder="جون دو"
-                                            dir="rtl"
-                                        />
-                                    </div>
-
                                     {/* Expertise */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
@@ -384,8 +364,8 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                                         <textarea
                                             value={formData.bio}
                                             onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                                            placeholder={isArabic 
-                                                ? 'اكتب نبذة عنك...' 
+                                            placeholder={isArabic
+                                                ? 'اكتب نبذة عنك...'
                                                 : 'Tell subscribers about yourself...'}
                                             rows={4}
                                             className="w-full px-4 py-3 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -401,7 +381,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                             {activeTab === 'pricing' && (
                                 <div className="space-y-6">
                                     <p className="text-muted-foreground text-sm">
-                                        {isArabic 
+                                        {isArabic
                                             ? 'حدد سعر الاشتراك الشهري'
                                             : 'Set your monthly subscription price'}
                                     </p>
@@ -448,7 +428,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                             {activeTab === 'social' && (
                                 <div className="space-y-4">
                                     <p className="text-muted-foreground text-sm">
-                                        {isArabic 
+                                        {isArabic
                                             ? 'أضف روابط حساباتك على وسائل التواصل الاجتماعي'
                                             : 'Add your social media links'}
                                     </p>
@@ -461,8 +441,8 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                                         </label>
                                         <Input
                                             value={formData.socialLinks.twitter}
-                                            onChange={(e) => setFormData({ 
-                                                ...formData, 
+                                            onChange={(e) => setFormData({
+                                                ...formData,
                                                 socialLinks: { ...formData.socialLinks, twitter: e.target.value }
                                             })}
                                             placeholder="https://twitter.com/username"
@@ -477,8 +457,8 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                                         </label>
                                         <Input
                                             value={formData.socialLinks.instagram}
-                                            onChange={(e) => setFormData({ 
-                                                ...formData, 
+                                            onChange={(e) => setFormData({
+                                                ...formData,
                                                 socialLinks: { ...formData.socialLinks, instagram: e.target.value }
                                             })}
                                             placeholder="https://instagram.com/username"
@@ -493,8 +473,8 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                                         </label>
                                         <Input
                                             value={formData.socialLinks.linkedin}
-                                            onChange={(e) => setFormData({ 
-                                                ...formData, 
+                                            onChange={(e) => setFormData({
+                                                ...formData,
                                                 socialLinks: { ...formData.socialLinks, linkedin: e.target.value }
                                             })}
                                             placeholder="https://linkedin.com/in/username"
@@ -509,8 +489,8 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                                         </label>
                                         <Input
                                             value={formData.socialLinks.youtube}
-                                            onChange={(e) => setFormData({ 
-                                                ...formData, 
+                                            onChange={(e) => setFormData({
+                                                ...formData,
                                                 socialLinks: { ...formData.socialLinks, youtube: e.target.value }
                                             })}
                                             placeholder="https://youtube.com/@username"
@@ -525,8 +505,8 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                                         </label>
                                         <Input
                                             value={formData.socialLinks.website}
-                                            onChange={(e) => setFormData({ 
-                                                ...formData, 
+                                            onChange={(e) => setFormData({
+                                                ...formData,
                                                 socialLinks: { ...formData.socialLinks, website: e.target.value }
                                             })}
                                             placeholder="https://yourwebsite.com"
@@ -550,7 +530,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, isAr
                                 <div className="text-center py-12">
                                     <Award className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                                     <p className="text-muted-foreground">
-                                        {isArabic 
+                                        {isArabic
                                             ? 'يرجى حفظ الملف الشخصي أولاً لإدارة الشهادات'
                                             : 'Please save profile first to manage credentials'}
                                     </p>

@@ -5,7 +5,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -2719,7 +2719,7 @@ model UserBan {
   banType       BanType
   duration      BanDuration?
   reason        String
-  evidence      String[]
+  evidence      Json?
   bannedBy      String
   bannedAt      DateTime     @default(now())
   expiresAt     DateTime?
@@ -2742,7 +2742,7 @@ model Appeal {
   userId        String
   banId         String
   reason        String
-  evidence      String[]
+  evidence      Json?
   status        AppealStatus    @default(PENDING)
   priority      AppealPriority  @default(MEDIUM)
   submittedAt   DateTime        @default(now())
@@ -2797,7 +2797,7 @@ model EmailTemplate {
   subjectAr    String?
   bodyEn       String
   bodyAr       String?
-  variables    String[]
+  variables    Json?
   triggerType  TriggerType
   eventTrigger String?
   schedule     String?
@@ -2841,7 +2841,7 @@ model ScholarshipCampaign {
   startDate       DateTime
   endDate         DateTime
   criteria        Json?
-  requirements    String[]
+  requirements    Json?
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
   createdBy       String?
@@ -2962,7 +2962,7 @@ model FlaggedChannel {
   reviewedBy     String?
   violations     Json?
   metrics        Json?
-  automatedFlags String[]
+  automatedFlags Json?
   manualReviews  Int            @default(0)
   warningsIssued Int            @default(0)
   actionNotes    String?
@@ -3664,8 +3664,8 @@ model FeatureFlag {
   description    String?
   enabled        Boolean  @default(false)
   rolloutPercent Int      @default(100)
-  targetRoles    String[] @default([])
-  targetUsers    String[] @default([])
+  targetRoles    Json?
+  targetUsers    Json?
   environment    String   @default("production")
   metadata       Json?
   createdBy      String

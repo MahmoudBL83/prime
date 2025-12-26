@@ -75,7 +75,7 @@ const categories: Category[] = [
 export function CategoriesSection() {
   const router = useRouter();
   const { locale } = useTranslationsSafe('common');
-  const isRtl = locale === 'ar';
+  const isRtl = false; // RTL disabled - platform only supports German and English
 
   const handleCategoryClick = (categoryKey: string) => {
     router.push(`/${locale}/courses?category=${categoryKey}`);
@@ -89,7 +89,7 @@ export function CategoriesSection() {
         <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-700"></div>
       </div>
-      
+
       <div className="relative max-w-7xl mx-auto">
         {/* Enhanced Section Header */}
         <div className="text-center mb-16">
@@ -105,8 +105,8 @@ export function CategoriesSection() {
               {isRtl ? 'استكشف الفئات' : 'Explore Categories'}
             </span>
           </motion.div>
-          
-          <motion.h2 
+
+          <motion.h2
             className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -121,16 +121,16 @@ export function CategoriesSection() {
               {isRtl ? 'الفئة' : 'Category'}
             </span>
           </motion.h2>
-          
-          <motion.p 
+
+          <motion.p
             className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            {isRtl 
-              ? 'استكشف آلاف الدورات في مختلف المجالات واختر ما يناسب شغفك وأهدافك المهنية' 
+            {isRtl
+              ? 'استكشف آلاف الدورات في مختلف المجالات واختر ما يناسب شغفك وأهدافك المهنية'
               : 'Explore thousands of courses across different fields and choose what suits your passion and professional goals'
             }
           </motion.p>
@@ -150,8 +150,8 @@ export function CategoriesSection() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.05 }}
-              whileHover={{ 
-                scale: 1.08, 
+              whileHover={{
+                scale: 1.08,
                 zIndex: 10,
                 boxShadow: `0 0 40px ${category.color}40`
               }}
@@ -160,28 +160,28 @@ export function CategoriesSection() {
               {/* Poster-style background */}
               <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
                 {/* Gradient overlay matching category color */}
-                <div 
+                <div
                   className="absolute inset-0 opacity-40 group-hover:opacity-60 transition-opacity duration-500"
                   style={{
                     background: `linear-gradient(135deg, ${category.color}20 0%, ${category.color}40 50%, ${category.color}20 100%)`
                   }}
                 ></div>
-                
+
                 {/* Dark gradient for text readability */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500" />
-                
+
                 {/* Animated glow effect */}
-                <div 
+                <div
                   className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur-2xl"
                   style={{ background: category.color }}
                 ></div>
-                
+
                 {/* Center icon */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="transform group-hover:scale-125 transition-transform duration-500">
-                    <span 
+                    <span
                       className="text-8xl opacity-90 group-hover:opacity-100"
-                      style={{ 
+                      style={{
                         filter: `drop-shadow(0 0 20px ${category.color}80)`,
                         textShadow: `0 0 30px ${category.color}`
                       }}
@@ -190,29 +190,29 @@ export function CategoriesSection() {
                     </span>
                   </div>
                 </div>
-                
+
                 {/* Bottom content section */}
                 <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
                   {/* Category Name */}
-                  <h3 
+                  <h3
                     className="text-lg font-bold mb-2 transition-all duration-300 group-hover:text-foreground"
                     style={{ color: category.color }}
                   >
                     {isRtl ? category.nameAr : category.name}
                   </h3>
-                  
+
                   {/* Course Count */}
                   {category.courseCount !== undefined && (
                     <p className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                       {category.courseCount} {isRtl ? 'دورة' : 'courses'}
                     </p>
                   )}
-                  
+
                   {/* Hover details - View button */}
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-3">
-                    <div 
+                    <div
                       className="w-full py-2.5 rounded-lg text-foreground text-sm font-bold text-center backdrop-blur-sm transition-all duration-300"
-                      style={{ 
+                      style={{
                         background: `linear-gradient(135deg, ${category.color}80, ${category.color}60)`,
                         boxShadow: `0 4px 12px ${category.color}40`
                       }}
@@ -227,7 +227,7 @@ export function CategoriesSection() {
         </div>
 
         {/* Enhanced View All Button */}
-        <motion.div 
+        <motion.div
           className="text-center mt-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -239,10 +239,10 @@ export function CategoriesSection() {
             className="inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-foreground rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 shadow-2xl shadow-purple-500/30 border-0"
           >
             {isRtl ? 'عرض جميع الدورات' : 'View All Courses'}
-            <svg 
-              className={`w-5 h-5 ${isRtl ? 'rotate-180' : ''}`} 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              className={`w-5 h-5 ${isRtl ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />

@@ -19,28 +19,24 @@ export async function generateMetadata({
     params: Promise<{ locale: string }>
 }): Promise<Metadata> {
     const { locale } = await params;
-    const title = locale === 'ar'
-        ? "برايم"
-        : "Prime";
+    const title = "Prime";
 
     const icons = {
         icon: '/images/logo.jpg',
         apple: '/images/logo.jpg',
     };
 
-    const description = locale === 'ar'
-        ? "منصة تعليمية شاملة للطلاب والمتعلمين في مصر"
+    const description = locale === 'de'
+        ? "Umfassende Bildungsplattform für Studenten und Lernende in Ägypten"
         : "Comprehensive educational platform for students and learners in Egypt";
 
     return {
         title,
         description,
         icons,
-        keywords: locale === 'ar'
-            ? "تعليم, دورات, برمجة, تصميم, مصر, منصة تعليمية"
-            : locale === 'de'
-                ? "Bildung, Kurse, Programmierung, Design, Ägypten, Lernplattform"
-                : "education, courses, programming, design, Egypt, learning platform",
+        keywords: locale === 'de'
+            ? "Bildung, Kurse, Programmierung, Design, Ägypten, Lernplattform"
+            : "education, courses, programming, design, Egypt, learning platform",
         authors: [{ name: "Prime Egypt" }],
         creator: "Prime Egypt",
         publisher: "Prime Egypt",
@@ -55,7 +51,7 @@ export async function generateMetadata({
             description,
             url: `https://prime-egypt.com/${locale}`,
             siteName: title,
-            locale: locale === 'ar' ? 'ar_EG' : locale === 'de' ? 'de_DE' : 'en_US',
+            locale: locale === 'de' ? 'de_DE' : 'en_US',
             type: 'website',
         },
         twitter: {
@@ -66,7 +62,6 @@ export async function generateMetadata({
         alternates: {
             canonical: `https://prime-egypt.com/${locale}`,
             languages: {
-                'ar-EG': 'https://prime-egypt.com/ar',
                 'en-US': 'https://prime-egypt.com/en',
                 'de-DE': 'https://prime-egypt.com/de',
             },
@@ -88,11 +83,9 @@ export default async function RootLayout({
     }
 
     const messages = await getMessages({ locale });
-    const isRTL = locale === 'ar';
-
     return (
         <NextIntlClientProvider messages={messages} locale={locale}>
-            <div data-locale={locale} dir={isRTL ? 'rtl' : 'ltr'}>
+            <div data-locale={locale} dir="ltr">
                 <Providers>
                     <PageTransitionProvider>
                         <MainLayout>

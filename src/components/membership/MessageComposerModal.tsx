@@ -8,7 +8,6 @@ import { toast } from 'react-hot-toast'
 interface Tier {
     id: string
     name: string
-    nameAr?: string
     icon?: string
     color?: string
     subscriberCount?: number
@@ -39,7 +38,6 @@ export default function MessageComposerModal({
     const [selectedTiers, setSelectedTiers] = useState<string[]>([])
     const [subject, setSubject] = useState('')
     const [content, setContent] = useState('')
-    const [contentAr, setContentAr] = useState('')
     const [loading, setLoading] = useState(false)
     const [fetchingTiers, setFetchingTiers] = useState(true)
     const [recipientPreview, setRecipientPreview] = useState<RecipientPreview | null>(null)
@@ -53,7 +51,6 @@ export default function MessageComposerModal({
             setSelectedTiers([])
             setSubject('')
             setContent('')
-            setContentAr('')
             setRecipientPreview(null)
         }
     }, [isOpen, channelId])
@@ -71,10 +68,10 @@ export default function MessageComposerModal({
             setFetchingTiers(true)
             const response = await fetch(`/api/channels/${channelId}/tiers`)
             if (!response.ok) throw new Error('Failed to fetch tiers')
-            
+
             const data = await response.json()
             setTiers(data.tiers || [])
-            
+
             // Select all tiers by default
             setSelectedTiers(data.tiers.map((t: Tier) => t.id))
         } catch (error) {
@@ -95,7 +92,7 @@ export default function MessageComposerModal({
             })
 
             if (!response.ok) throw new Error('Failed to fetch preview')
-            
+
             const data = await response.json()
             setRecipientPreview(data)
         } catch (error) {
@@ -106,8 +103,8 @@ export default function MessageComposerModal({
     }
 
     const handleTierToggle = (tierId: string) => {
-        setSelectedTiers(prev => 
-            prev.includes(tierId) 
+        setSelectedTiers(prev =>
+            prev.includes(tierId)
                 ? prev.filter(id => id !== tierId)
                 : [...prev, tierId]
         )
@@ -134,14 +131,13 @@ export default function MessageComposerModal({
 
         try {
             setLoading(true)
-            
+
             const response = await fetch(`/api/channels/${channelId}/messages`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     subject,
                     content,
-                    contentAr: contentAr || null,
                     targetTierIds: selectedTiers
                 })
             })
@@ -150,7 +146,7 @@ export default function MessageComposerModal({
                 const error = await response.json()
                 throw new Error(error.error || 'Failed to send message')
             }
-            
+
             toast.success(`Message sent to ${recipientPreview?.totalRecipients || 0} members!`)
             onSuccess?.()
             onClose()
@@ -248,27 +244,6 @@ export default function MessageComposerModal({
                                         </span>
                                     </div>
                                 </div>
-
-                                {/* Arabic Content (Optional) */}
-                                <div>
-                                    <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                        Arabic Content (Optional)
-                                    </label>
-                                    <textarea
-                                        value={contentAr}
-                                        onChange={(e) => setContentAr(e.target.value)}
-                                        placeholder="المحتوى بالعربية (اختياري)..."
-                                        dir="rtl"
-                                        rows={6}
-                                        className="w-full px-4 py-3 bg-card border border-border rounded-xl text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-                                        maxLength={2000}
-                                    />
-                                    <div className="flex justify-end mt-1">
-                                        <span className="text-xs text-muted-foreground">
-                                            {contentAr.length}/2000
-                                        </span>
-                                    </div>
-                                </div>
                             </div>
 
                             {/* Right: Recipients */}
@@ -298,11 +273,10 @@ export default function MessageComposerModal({
                                             {tiers.map(tier => (
                                                 <label
                                                     key={tier.id}
-                                                    className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                                                        selectedTiers.includes(tier.id)
+                                                    className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedTiers.includes(tier.id)
                                                             ? 'border-purple-500 bg-purple-500/10'
                                                             : 'border-border hover:border-gray-600 bg-gray-800/50'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     <input
                                                         type="checkbox"
