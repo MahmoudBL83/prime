@@ -136,7 +136,7 @@ export default function MentorChannelsPage() {
 	}
 
 	const formatCurrency = (value: number | null) => {
-		if (value == null) return '—'
+		if (value == null) return 'N/A'
 		return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value)
 	}
 
@@ -144,7 +144,7 @@ export default function MentorChannelsPage() {
 		try {
 			return new Date(value).toLocaleDateString()
 		} catch (error) {
-			return '—'
+			return 'N/A'
 		}
 	}
 
@@ -324,7 +324,7 @@ export default function MentorChannelsPage() {
 											</div>
 											<div>
 												<p className="text-sm font-semibold text-foreground">{channel.name}</p>
-												<p className="text-xs text-muted-foreground">{channel.creator.name} · {channel.creator.email}</p>
+												<p className="text-xs text-muted-foreground">{channel.creator.name} - {channel.creator.email}</p>
 											</div>
 											<Badge className={`${statusBadge(channel.status)} capitalize ml-auto`}>{channel.status}</Badge>
 										</div>
@@ -343,7 +343,7 @@ export default function MentorChannelsPage() {
 													<Badge key={tier.id} className="bg-white/10 border border-border text-foreground text-[11px] flex items-center gap-1">
 														<span>{tier.name}</span>
 														<span className="opacity-80">{formatCurrency(tier.price)}</span>
-														{tier.subscriberCount != null && <span className="opacity-70">· {tier.subscriberCount} subs</span>}
+														{tier.subscriberCount != null && <span className="opacity-70"> - {tier.subscriberCount} subs</span>}
 													</Badge>
 												))}
 												{channel.tiers.length > 4 && (
