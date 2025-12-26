@@ -284,10 +284,10 @@ export default function EnhancedCoursesPage() {
                             </div>
 
                             <button
-                                onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+                                onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
                                 className="px-4 py-2 border border-[var(--border)] rounded-md text-sm text-[var(--foreground)] hover:bg-[var(--secondary)] transition-colors"
                             >
-                                {lang === 'en' ? 'العربية' : 'English'}
+                                {lang === 'en' ? 'Deutsch' : 'English'}
                             </button>
                         </div>
                     </div>

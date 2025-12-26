@@ -283,7 +283,7 @@ export default function CoursePlayerLayout({
                                 currentLessonId={currentLesson.id}
                                 onLessonSelect={(lessonId) => handleLessonSelect({ id: lessonId })}
                                 onLessonComplete={() => { }}
-                                lang="ar"
+                                lang="en"
                             />
                         </SheetContent>
                     </Sheet>
@@ -492,7 +492,7 @@ export default function CoursePlayerLayout({
                         currentLessonId={currentLesson.id}
                         onLessonSelect={(lessonId) => handleLessonSelect({ id: lessonId })}
                         onLessonComplete={() => { }}
-                        lang="ar"
+                        lang="en"
                     />
                 </aside>
             </div>

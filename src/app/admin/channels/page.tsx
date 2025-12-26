@@ -276,11 +276,10 @@ export default function MentorChannelsPage() {
 						<button
 							key={item.id}
 							onClick={() => setStatus(item.id)}
-							className={`px-3 py-1 rounded-lg text-xs border transition-all ${
-								status === item.id
+							className={`px-3 py-1 rounded-lg text-xs border transition-all ${status === item.id
 									? 'bg-gradient-to-r from-pink-600 to-purple-600 text-foreground border-transparent'
 									: 'bg-white/10 border border-border text-foreground hover:bg-white/20'
-							}`}
+								}`}
 						>
 							{item.label}
 						</button>
