@@ -3889,7 +3889,6 @@ export default function OnlyFansStyleMentorsPage() {
                     currentProfile={{
                         id: selectedCreator?.id,
                         name: selectedCreator?.user?.name || session.user?.name || '',
-                        arabicName: selectedCreator?.user?.arabicName || '',
                         bio: selectedCreator?.user?.bio || 'Welcome to my exclusive content! 🔥 Subscribe for premium educational content, 1-on-1 coaching, and behind-the-scenes access.',
                         expertise: selectedCreator?.expertise || 'Content Creator',
                         profileImage: selectedCreator?.user?.profileImage || (session.user as any)?.image || null,
