@@ -239,7 +239,7 @@ export async function POST(request: NextRequest) {
                     subjectAr: original.subjectAr,
                     bodyEn: original.bodyEn,
                     bodyAr: original.bodyAr,
-                    variables: original.variables,
+                    variables: original.variables ?? undefined,
                     triggerType: original.triggerType,
                     eventTrigger: original.eventTrigger,
                     schedule: original.schedule,
@@ -263,10 +263,10 @@ export async function POST(request: NextRequest) {
             // In production, this would send a test email
             // For now, just log it
             console.log('Test email would be sent to:', data.testEmail);
-            
-            return NextResponse.json({ 
-                success: true, 
-                message: `Test email would be sent to ${data.testEmail}` 
+
+            return NextResponse.json({
+                success: true,
+                message: `Test email would be sent to ${data.testEmail}`
             });
         }
 

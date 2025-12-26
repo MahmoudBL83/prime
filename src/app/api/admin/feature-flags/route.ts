@@ -58,12 +58,14 @@ export async function GET(request: NextRequest) {
             }
 
             // Check role targeting
-            if (flag.targetRoles.length > 0 && !flag.targetRoles.includes(user.role)) {
+            const targetRoles = (flag.targetRoles as string[] | null) || []
+            if (targetRoles.length > 0 && !targetRoles.includes(user.role)) {
                 return NextResponse.json({ enabled: false })
             }
 
             // Check user targeting
-            if (flag.targetUsers.length > 0 && !flag.targetUsers.includes(user.id)) {
+            const targetUsers = (flag.targetUsers as string[] | null) || []
+            if (targetUsers.length > 0 && !targetUsers.includes(user.id)) {
                 return NextResponse.json({ enabled: false })
             }
 
@@ -85,9 +87,16 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const flags = await prisma.featureFlag.findMany({
+        const rawFlags = await prisma.featureFlag.findMany({
             orderBy: { createdAt: 'desc' }
         })
+
+        // Format flags to ensure targetRoles/targetUsers are arrays
+        const flags = rawFlags.map(flag => ({
+            ...flag,
+            targetRoles: (flag.targetRoles as string[] | null) || [],
+            targetUsers: (flag.targetUsers as string[] | null) || []
+        }))
 
         const stats = {
             total: flags.length,
