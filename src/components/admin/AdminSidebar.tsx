@@ -21,9 +21,7 @@ import {
     Search,
     Trophy,
     MessageSquare,
-    AlertTriangle,Caused by:
-    0: Failed to read source code from /vercel/path0/src/app/admin/channels/page.tsx
-    1: stream did not contain valid UTF-8
+    AlertTriangle,
     Wallet,
     History,
     Gavel,
