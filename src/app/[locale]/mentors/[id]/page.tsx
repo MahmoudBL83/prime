@@ -3083,7 +3083,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                     <button
                                                                         onClick={(e) => {
                                                                             e.stopPropagation()
-                                                                            setShowTipModal(true)
+                                                                            //setShowTipModal(true)
                                                                         }}
                                                                         className="flex items-center gap-1.5 text-muted-foreground hover:text-green-400 transition-colors"
                                                                     >
