@@ -127,7 +127,7 @@ export default function OnlyFansMentorProfilePage() {
     const { data: session } = useSession()
     const { openAuthModal } = useAuthModal()
     const locale = (params.locale as string) || 'en'
-    const isArabic = locale === 'ar'
+    const isGerman = locale === 'de'
 
     const [mentor, setMentor] = useState<MentorData | null>(null)
     const [loading, setLoading] = useState(true)
@@ -394,7 +394,7 @@ export default function OnlyFansMentorProfilePage() {
                     type: apiPost.mediaType === 'VIDEO' ? 'video' :
                         apiPost.mediaType === 'IMAGE' ? 'image' :
                             apiPost.type?.toLowerCase() || 'text',
-                    content: isArabic && apiPost.contentAr ? apiPost.contentAr : (apiPost.content || apiPost.title || ''),
+                    content: isGerman && apiPost.contentAr ? apiPost.contentAr : (apiPost.content || apiPost.title || ''),
                     media: apiPost.mediaUrl || undefined,
                     tier: tierMap[apiPost.tier] || 'FREE',
                     likes: apiPost.likesCount || 0,
@@ -411,17 +411,17 @@ export default function OnlyFansMentorProfilePage() {
                 console.error('API Error:', response.status, response.statusText)
                 const errorData = await response.json().catch(() => ({}))
                 console.error('Error details:', errorData)
-                toast.error(isArabic ? 'فشل تحميل البيانات' : 'Failed to load data')
+                toast.error(isGerman ? 'فشل تحميل البيانات' : 'Failed to load data')
                 setPostsLoading(false)
             }
         } catch (error) {
             console.error('Error fetching mentor data:', error)
-            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+            toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
             setPostsLoading(false)
         } finally {
             setLoading(false)
         }
-    }, [params.id, isArabic])
+    }, [params.id, isGerman])
 
     // Function to refresh subscription status (can be called after successful subscription)
     const refreshSubscriptionStatus = useCallback(() => {
@@ -787,17 +787,17 @@ export default function OnlyFansMentorProfilePage() {
                 // Transform API data to match the expected format - single subscription model
                 const transformedSessions = data.sessions?.map((session: any) => ({
                     id: session.id,
-                    title: isArabic && session.titleAr ? session.titleAr : session.title,
+                    title: isGerman && session.titleAr ? session.titleAr : session.title,
                     type: 'WORKSHOP', // Default type
                     date: session.scheduledAt,
-                    time: new Date(session.scheduledAt).toLocaleTimeString(isArabic ? 'ar-EG' : 'en-US', {
+                    time: new Date(session.scheduledAt).toLocaleTimeString(isGerman ? 'ar-EG' : 'en-US', {
                         hour: '2-digit',
                         minute: '2-digit'
                     }),
                     duration: session.duration,
                     attendees: session.attendees?.length || 0,
                     maxAttendees: session.maxAttendees || 100,
-                    description: isArabic && session.descriptionAr ? session.descriptionAr : session.description,
+                    description: isGerman && session.descriptionAr ? session.descriptionAr : session.description,
                     joinLink: session.streamUrl || null,
                     meetingPassword: session.meetingPassword || null,
                     status: session.status
@@ -821,14 +821,14 @@ export default function OnlyFansMentorProfilePage() {
                 // Transform API data to match the expected format - single subscription model
                 const transformedSessions = data.sessions?.map((session: any) => ({
                     id: session.id,
-                    title: isArabic && session.titleAr ? session.titleAr : session.title,
+                    title: isGerman && session.titleAr ? session.titleAr : session.title,
                     type: 'WORKSHOP', // Default type, can be enhanced later
                     recordedDate: session.scheduledAt,
                     duration: session.duration,
                     views: session.viewCount || 0,
                     thumbnail: null,
                     recordingUrl: session.recordingUrl,
-                    description: isArabic && session.descriptionAr ? session.descriptionAr : session.description
+                    description: isGerman && session.descriptionAr ? session.descriptionAr : session.description
                 })) || []
                 setRealArchivedSessions(transformedSessions)
             }
@@ -928,7 +928,7 @@ export default function OnlyFansMentorProfilePage() {
         if (!mentor) return
 
         if (!newSessionData.title.trim() || !newSessionData.scheduledAt) {
-            toast.error(isArabic ? 'الرجاء ملء الحقول المطلوبة' : 'Please fill in required fields')
+            toast.error(isGerman ? 'الرجاء ملء الحقول المطلوبة' : 'Please fill in required fields')
             return
         }
 
@@ -952,7 +952,7 @@ export default function OnlyFansMentorProfilePage() {
             })
 
             if (response.ok) {
-                toast.success(isArabic ? 'تم إنشاء الجلسة!' : 'Session created!')
+                toast.success(isGerman ? 'تم إنشاء الجلسة!' : 'Session created!')
                 setShowNewSessionModal(false)
                 setNewSessionData({
                     title: '', titleAr: '', description: '', descriptionAr: '',
@@ -963,11 +963,11 @@ export default function OnlyFansMentorProfilePage() {
                 fetchUpcomingSessionsFromAPI()
             } else {
                 const error = await response.json()
-                toast.error(error.message || (isArabic ? 'فشل الإنشاء' : 'Failed to create'))
+                toast.error(error.message || (isGerman ? 'فشل الإنشاء' : 'Failed to create'))
             }
         } catch (error) {
             console.error('Error creating session:', error)
-            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+            toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
         } finally {
             setSavingSession(false)
         }
@@ -979,7 +979,7 @@ export default function OnlyFansMentorProfilePage() {
         if (!mentor || !editingSession) return
 
         if (!editSessionData.title.trim() || !editSessionData.scheduledAt) {
-            toast.error(isArabic ? 'الرجاء ملء الحقول المطلوبة' : 'Please fill in required fields')
+            toast.error(isGerman ? 'الرجاء ملء الحقول المطلوبة' : 'Please fill in required fields')
             return
         }
 
@@ -1004,7 +1004,7 @@ export default function OnlyFansMentorProfilePage() {
             })
 
             if (response.ok) {
-                toast.success(isArabic ? 'تم تحديث الجلسة!' : 'Session updated!')
+                toast.success(isGerman ? 'تم تحديث الجلسة!' : 'Session updated!')
                 setShowEditSessionModal(false)
                 setEditingSession(null)
                 setEditSessionData({
@@ -1016,11 +1016,11 @@ export default function OnlyFansMentorProfilePage() {
                 fetchUpcomingSessionsFromAPI()
             } else {
                 const error = await response.json()
-                toast.error(error.message || (isArabic ? 'فشل التحديث' : 'Failed to update'))
+                toast.error(error.message || (isGerman ? 'فشل التحديث' : 'Failed to update'))
             }
         } catch (error) {
             console.error('Error updating session:', error)
-            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+            toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
         } finally {
             setSavingSession(false)
         }
@@ -1030,7 +1030,7 @@ export default function OnlyFansMentorProfilePage() {
     const handleDeleteSession = async (sessionId: string, isArchived: boolean = false) => {
         if (!mentor) return
 
-        if (!confirm(isArabic ? 'هل أنت متأكد من حذف هذه الجلسة؟' : 'Are you sure you want to delete this session?')) {
+        if (!confirm(isGerman ? 'هل أنت متأكد من حذف هذه الجلسة؟' : 'Are you sure you want to delete this session?')) {
             return
         }
 
@@ -1041,7 +1041,7 @@ export default function OnlyFansMentorProfilePage() {
             })
 
             if (response.ok) {
-                toast.success(isArabic ? 'تم حذف الجلسة!' : 'Session deleted!')
+                toast.success(isGerman ? 'تم حذف الجلسة!' : 'Session deleted!')
                 // Refresh the appropriate list
                 if (isArchived) {
                     fetchArchivedSessionsFromAPI()
@@ -1050,11 +1050,11 @@ export default function OnlyFansMentorProfilePage() {
                 }
             } else {
                 const error = await response.json()
-                toast.error(error.message || (isArabic ? 'فشل الحذف' : 'Failed to delete'))
+                toast.error(error.message || (isGerman ? 'فشل الحذف' : 'Failed to delete'))
             }
         } catch (error) {
             console.error('Error deleting session:', error)
-            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+            toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
         } finally {
             setDeletingSessionId(null)
         }
@@ -1087,9 +1087,9 @@ export default function OnlyFansMentorProfilePage() {
 
             if (response.ok) {
                 const statusMessages = {
-                    'LIVE': isArabic ? 'تم بدء الجلسة!' : 'Session started!',
-                    'ENDED': isArabic ? 'تم إنهاء الجلسة!' : 'Session ended!',
-                    'CANCELLED': isArabic ? 'تم إلغاء الجلسة!' : 'Session cancelled!'
+                    'LIVE': isGerman ? 'تم بدء الجلسة!' : 'Session started!',
+                    'ENDED': isGerman ? 'تم إنهاء الجلسة!' : 'Session ended!',
+                    'CANCELLED': isGerman ? 'تم إلغاء الجلسة!' : 'Session cancelled!'
                 }
                 toast.success(statusMessages[newStatus])
                 fetchUpcomingSessionsFromAPI()
@@ -1098,11 +1098,11 @@ export default function OnlyFansMentorProfilePage() {
                 }
             } else {
                 const error = await response.json()
-                toast.error(error.message || (isArabic ? 'فشل التحديث' : 'Failed to update'))
+                toast.error(error.message || (isGerman ? 'فشل التحديث' : 'Failed to update'))
             }
         } catch (error) {
             console.error('Error updating session status:', error)
-            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+            toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
         }
     }
 
@@ -1128,7 +1128,7 @@ export default function OnlyFansMentorProfilePage() {
             })
 
             if (response.ok) {
-                toast.success(isArabic ? 'تم تحديث التسجيل!' : 'Recording updated!')
+                toast.success(isGerman ? 'تم تحديث التسجيل!' : 'Recording updated!')
                 setShowEditArchivedModal(false)
                 setEditingArchivedSession(null)
                 setEditArchivedData({
@@ -1138,11 +1138,11 @@ export default function OnlyFansMentorProfilePage() {
                 fetchArchivedSessionsFromAPI()
             } else {
                 const error = await response.json()
-                toast.error(error.message || (isArabic ? 'فشل التحديث' : 'Failed to update'))
+                toast.error(error.message || (isGerman ? 'فشل التحديث' : 'Failed to update'))
             }
         } catch (error) {
             console.error('Error updating archived session:', error)
-            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+            toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
         } finally {
             setSavingSession(false)
         }
@@ -1154,7 +1154,7 @@ export default function OnlyFansMentorProfilePage() {
         if (!mentor || !editingResource) return
 
         if (!newResourceData.title.trim()) {
-            toast.error(isArabic ? 'الرجاء إدخال عنوان المورد' : 'Please enter resource title')
+            toast.error(isGerman ? 'الرجاء إدخال عنوان المورد' : 'Please enter resource title')
             return
         }
 
@@ -1168,7 +1168,7 @@ export default function OnlyFansMentorProfilePage() {
                 formData.append('file', resourceFile)
                 formData.append('type', 'resource')
 
-                toast.loading(isArabic ? 'جاري رفع الملف...' : 'Uploading file...')
+                toast.loading(isGerman ? 'جاري رفع الملف...' : 'Uploading file...')
 
                 const uploadResponse = await fetch('/api/upload', {
                     method: 'POST',
@@ -1200,7 +1200,7 @@ export default function OnlyFansMentorProfilePage() {
             })
 
             if (response.ok) {
-                toast.success(isArabic ? 'تم تحديث المورد!' : 'Resource updated!')
+                toast.success(isGerman ? 'تم تحديث المورد!' : 'Resource updated!')
                 setShowEditResourceModal(false)
                 setEditingResource(null)
                 setNewResourceData({
@@ -1211,11 +1211,11 @@ export default function OnlyFansMentorProfilePage() {
                 fetchResourcesFromAPI()
             } else {
                 const error = await response.json()
-                toast.error(error.message || (isArabic ? 'فشل التحديث' : 'Failed to update'))
+                toast.error(error.message || (isGerman ? 'فشل التحديث' : 'Failed to update'))
             }
         } catch (error) {
             console.error('Error updating resource:', error)
-            toast.error(isArabic ? 'حدث خطأ في التحديث' : 'Error updating resource')
+            toast.error(isGerman ? 'حدث خطأ في التحديث' : 'Error updating resource')
         } finally {
             setSavingResource(false)
         }
@@ -1227,12 +1227,12 @@ export default function OnlyFansMentorProfilePage() {
         if (!mentor) return
 
         if (!newResourceData.title.trim()) {
-            toast.error(isArabic ? 'الرجاء إدخال عنوان المورد' : 'Please enter resource title')
+            toast.error(isGerman ? 'الرجاء إدخال عنوان المورد' : 'Please enter resource title')
             return
         }
 
         if (!resourceFile) {
-            toast.error(isArabic ? 'الرجاء اختيار ملف' : 'Please select a file')
+            toast.error(isGerman ? 'الرجاء اختيار ملف' : 'Please select a file')
             return
         }
 
@@ -1243,7 +1243,7 @@ export default function OnlyFansMentorProfilePage() {
             formData.append('file', resourceFile)
             formData.append('type', 'resource')
 
-            toast.loading(isArabic ? 'جاري رفع الملف...' : 'Uploading file...')
+            toast.loading(isGerman ? 'جاري رفع الملف...' : 'Uploading file...')
 
             const uploadResponse = await fetch('/api/upload', {
                 method: 'POST',
@@ -1273,7 +1273,7 @@ export default function OnlyFansMentorProfilePage() {
             })
 
             if (response.ok) {
-                toast.success(isArabic ? 'تم إضافة المورد!' : 'Resource added!')
+                toast.success(isGerman ? 'تم إضافة المورد!' : 'Resource added!')
                 setShowAddResourceModal(false)
                 setNewResourceData({
                     title: '', titleAr: '', type: 'PDF', size: '',
@@ -1283,11 +1283,11 @@ export default function OnlyFansMentorProfilePage() {
                 fetchResourcesFromAPI()
             } else {
                 const error = await response.json()
-                toast.error(error.message || (isArabic ? 'فشل الإضافة' : 'Failed to add'))
+                toast.error(error.message || (isGerman ? 'فشل الإضافة' : 'Failed to add'))
             }
         } catch (error) {
             console.error('Error creating resource:', error)
-            toast.error(isArabic ? 'حدث خطأ في رفع الملف' : 'Error uploading file')
+            toast.error(isGerman ? 'حدث خطأ في رفع الملف' : 'Error uploading file')
         } finally {
             setSavingResource(false)
         }
@@ -1299,7 +1299,7 @@ export default function OnlyFansMentorProfilePage() {
         if (!mentor) return
 
         if (!newCommunityPost.content.trim()) {
-            toast.error(isArabic ? 'الرجاء إدخال محتوى المنشور' : 'Please enter post content')
+            toast.error(isGerman ? 'الرجاء إدخال محتوى المنشور' : 'Please enter post content')
             return
         }
 
@@ -1321,7 +1321,7 @@ export default function OnlyFansMentorProfilePage() {
             })
 
             if (response.ok) {
-                toast.success(isArabic ? 'تم نشر المنشور!' : 'Post published!')
+                toast.success(isGerman ? 'تم نشر المنشور!' : 'Post published!')
                 setShowCreatePostModal(false)
                 setNewCommunityPost({
                     title: '',
@@ -1334,11 +1334,11 @@ export default function OnlyFansMentorProfilePage() {
                 fetchCommunityPostsFromAPI()
             } else {
                 const error = await response.json()
-                toast.error(error.message || (isArabic ? 'فشل النشر' : 'Failed to publish'))
+                toast.error(error.message || (isGerman ? 'فشل النشر' : 'Failed to publish'))
             }
         } catch (error) {
             console.error('Error creating community post:', error)
-            toast.error(isArabic ? 'حدث خطأ في النشر' : 'Error publishing post')
+            toast.error(isGerman ? 'حدث خطأ في النشر' : 'Error publishing post')
         } finally {
             setCreatingPost(false)
         }
@@ -1360,16 +1360,16 @@ export default function OnlyFansMentorProfilePage() {
             if (response.ok) {
                 toast.success(
                     !currentPinStatus
-                        ? (isArabic ? 'تم تثبيت المنشور' : 'Post pinned')
-                        : (isArabic ? 'تم إلغاء التثبيت' : 'Post unpinned')
+                        ? (isGerman ? 'تم تثبيت المنشور' : 'Post pinned')
+                        : (isGerman ? 'تم إلغاء التثبيت' : 'Post unpinned')
                 )
                 fetchCommunityPostsFromAPI()
             } else {
-                toast.error(isArabic ? 'فشل في التحديث' : 'Failed to update')
+                toast.error(isGerman ? 'فشل في التحديث' : 'Failed to update')
             }
         } catch (error) {
             console.error('Error toggling pin:', error)
-            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+            toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
         }
     }
 
@@ -1378,9 +1378,9 @@ export default function OnlyFansMentorProfilePage() {
         if (!mentor) return
 
         const confirmMessage = {
-            warn: isArabic ? 'هل تريد إرسال تحذير لهذا العضو؟' : 'Do you want to warn this member?',
-            mute: isArabic ? 'هل تريد كتم هذا العضو؟' : 'Do you want to mute this member?',
-            remove: isArabic ? 'هل تريد إزالة هذا العضو من المجتمع؟' : 'Do you want to remove this member from the community?'
+            warn: isGerman ? 'هل تريد إرسال تحذير لهذا العضو؟' : 'Do you want to warn this member?',
+            mute: isGerman ? 'هل تريد كتم هذا العضو؟' : 'Do you want to mute this member?',
+            remove: isGerman ? 'هل تريد إزالة هذا العضو من المجتمع؟' : 'Do you want to remove this member from the community?'
         }
 
         if (!window.confirm(confirmMessage[action])) return
@@ -1394,18 +1394,18 @@ export default function OnlyFansMentorProfilePage() {
 
             if (response.ok) {
                 const successMessage = {
-                    warn: isArabic ? 'تم إرسال التحذير' : 'Warning sent',
-                    mute: isArabic ? 'تم كتم العضو' : 'Member muted',
-                    remove: isArabic ? 'تم إزالة العضو' : 'Member removed'
+                    warn: isGerman ? 'تم إرسال التحذير' : 'Warning sent',
+                    mute: isGerman ? 'تم كتم العضو' : 'Member muted',
+                    remove: isGerman ? 'تم إزالة العضو' : 'Member removed'
                 }
                 toast.success(successMessage[action])
                 fetchCommunityMembers()
             } else {
-                toast.error(isArabic ? 'فشل في العملية' : 'Operation failed')
+                toast.error(isGerman ? 'فشل في العملية' : 'Operation failed')
             }
         } catch (error) {
             console.error('Error managing member:', error)
-            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+            toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
         }
     }
 
@@ -1415,12 +1415,12 @@ export default function OnlyFansMentorProfilePage() {
         if (!mentor) return
 
         if (!newRecordingData.title.trim() || !newRecordingData.recordedDate) {
-            toast.error(isArabic ? 'الرجاء ملء الحقول المطلوبة' : 'Please fill in required fields')
+            toast.error(isGerman ? 'الرجاء ملء الحقول المطلوبة' : 'Please fill in required fields')
             return
         }
 
         if (!recordingVideoFile) {
-            toast.error(isArabic ? 'الرجاء تحميل ملف الفيديو' : 'Please upload a video file')
+            toast.error(isGerman ? 'الرجاء تحميل ملف الفيديو' : 'Please upload a video file')
             return
         }
 
@@ -1431,7 +1431,7 @@ export default function OnlyFansMentorProfilePage() {
             formData.append('file', recordingVideoFile)
             formData.append('type', 'video')
 
-            toast.loading(isArabic ? 'جاري رفع الفيديو...' : 'Uploading video...')
+            toast.loading(isGerman ? 'جاري رفع الفيديو...' : 'Uploading video...')
 
             const uploadResponse = await fetch('/api/upload', {
                 method: 'POST',
@@ -1463,7 +1463,7 @@ export default function OnlyFansMentorProfilePage() {
             })
 
             if (response.ok) {
-                toast.success(isArabic ? 'تم إضافة التسجيل!' : 'Recording added!')
+                toast.success(isGerman ? 'تم إضافة التسجيل!' : 'Recording added!')
                 setShowNewRecordingModal(false)
                 setNewRecordingData({
                     title: '', titleAr: '', description: '', descriptionAr: '',
@@ -1474,11 +1474,11 @@ export default function OnlyFansMentorProfilePage() {
                 fetchArchivedSessionsFromAPI()
             } else {
                 const error = await response.json()
-                toast.error(error.message || (isArabic ? 'فشل الإضافة' : 'Failed to add'))
+                toast.error(error.message || (isGerman ? 'فشل الإضافة' : 'Failed to add'))
             }
         } catch (error) {
             console.error('Error creating recording:', error)
-            toast.error(isArabic ? 'حدث خطأ في رفع الفيديو' : 'Error uploading video')
+            toast.error(isGerman ? 'حدث خطأ في رفع الفيديو' : 'Error uploading video')
         } finally {
             setSavingSession(false)
         }
@@ -1486,12 +1486,12 @@ export default function OnlyFansMentorProfilePage() {
 
     const handleSubmitFeedbackRequest = useCallback(async () => {
         if (!newFeedbackRequest.trim()) {
-            toast.error(isArabic ? 'الرجاء إدخال سؤالك' : 'Please enter your question')
+            toast.error(isGerman ? 'الرجاء إدخال سؤالك' : 'Please enter your question')
             return
         }
 
         if (feedbackTokens.available <= 0) {
-            toast.error(isArabic ? 'لا توجد رموز متاحة' : 'No tokens available')
+            toast.error(isGerman ? 'لا توجد رموز متاحة' : 'No tokens available')
             return
         }
 
@@ -1507,24 +1507,24 @@ export default function OnlyFansMentorProfilePage() {
             })
 
             if (response.ok) {
-                toast.success(isArabic ? 'تم إرسال الطلب!' : 'Request submitted!')
+                toast.success(isGerman ? 'تم إرسال الطلب!' : 'Request submitted!')
                 setNewFeedbackRequest('')
                 setFeedbackAttachment(null)
                 setShowFeedbackModal(false)
                 setFeedbackTokens(prev => ({ ...prev, available: prev.available - 1 }))
                 fetchFeedbackTokens()
             } else {
-                toast.error(isArabic ? 'فشل الإرسال' : 'Failed to submit')
+                toast.error(isGerman ? 'فشل الإرسال' : 'Failed to submit')
             }
         } catch (error) {
             console.error('Error submitting feedback request:', error)
-            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+            toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
         }
-    }, [newFeedbackRequest, feedbackTokens.available, mentor?.id, feedbackAttachment, isArabic])
+    }, [newFeedbackRequest, feedbackTokens.available, mentor?.id, feedbackAttachment, isGerman])
 
     const handleFollow = useCallback(async () => {
         if (!session) {
-            toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
+            toast.error(isGerman ? 'يرجى تسجيل الدخول' : 'Please sign in')
             router.push(`/${locale}/login`)
             return
         }
@@ -1540,28 +1540,28 @@ export default function OnlyFansMentorProfilePage() {
             if (response.ok) {
                 setIsFollowing(!isFollowing)
                 toast.success(isFollowing
-                    ? (isArabic ? 'تم إلغاء المتابعة' : 'Unfollowed')
-                    : (isArabic ? 'تمت المتابعة' : 'Following!'))
+                    ? (isGerman ? 'تم إلغاء المتابعة' : 'Unfollowed')
+                    : (isGerman ? 'تمت المتابعة' : 'Following!'))
             } else {
                 const data = await response.json()
-                toast.error(data.error || (isArabic ? 'فشلت العملية' : 'Operation failed'))
+                toast.error(data.error || (isGerman ? 'فشلت العملية' : 'Operation failed'))
             }
         } catch (error) {
             console.error('Follow error:', error)
-            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+            toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
         }
-    }, [session, isArabic, locale, router, isFollowing, mentor?.id])
+    }, [session, isGerman, locale, router, isFollowing, mentor?.id])
 
     const handleSubscribe = async () => {
         if (!session) {
-            toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
+            toast.error(isGerman ? 'يرجى تسجيل الدخول' : 'Please sign in')
             router.push(`/${locale}/login`)
             return
         }
 
         if (!channelId) {
             toast.error(
-                isArabic
+                isGerman
                     ? 'القناة غير متوفرة. جاري إعادة المحاولة...'
                     : 'Channel not available. Retrying...'
             )
@@ -1571,7 +1571,7 @@ export default function OnlyFansMentorProfilePage() {
             // Check if we have channelId now after retry
             if (!channelId) {
                 toast.error(
-                    isArabic
+                    isGerman
                         ? 'عذراً، هذا المنشئ ليس لديه قناة متاحة حالياً'
                         : 'Sorry, this creator does not have an available channel yet'
                 )
@@ -1606,7 +1606,7 @@ export default function OnlyFansMentorProfilePage() {
             if (response.ok) {
                 setCurrentSubscription('ALL_ACCESS')
                 toast.success(
-                    isArabic
+                    isGerman
                         ? '🎉 تم الاشتراك بنجاح!'
                         : '🎉 Successfully subscribed!'
                 )
@@ -1614,11 +1614,11 @@ export default function OnlyFansMentorProfilePage() {
                 // Refresh subscription status
                 await checkSubscriptionStatus()
             } else {
-                toast.error(data.error || (isArabic ? 'فشل الاشتراك' : 'Subscription failed'))
+                toast.error(data.error || (isGerman ? 'فشل الاشتراك' : 'Subscription failed'))
             }
         } catch (error) {
             console.error('Subscription error:', error)
-            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+            toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
         } finally {
             setIsSubscribing(false)
         }
@@ -1626,11 +1626,11 @@ export default function OnlyFansMentorProfilePage() {
 
     const handleCancelSubscription = async () => {
         if (!session || !activeSubscriptionId) {
-            toast.error(isArabic ? 'لم يتم العثور على الاشتراك' : 'No subscription found')
+            toast.error(isGerman ? 'لم يتم العثور على الاشتراك' : 'No subscription found')
             return
         }
 
-        const confirmMessage = isArabic
+        const confirmMessage = isGerman
             ? 'هل أنت متأكد من إلغاء الاشتراك؟'
             : 'Are you sure you want to cancel your subscription?'
 
@@ -1650,25 +1650,25 @@ export default function OnlyFansMentorProfilePage() {
             if (response.ok) {
                 setCurrentSubscription(null)
                 setActiveSubscriptionId(null)
-                toast.success(isArabic ? 'تم إلغاء الاشتراك' : 'Subscription cancelled')
+                toast.success(isGerman ? 'تم إلغاء الاشتراك' : 'Subscription cancelled')
             } else {
                 const data = await response.json()
-                toast.error(data.error || (isArabic ? 'فشل الإلغاء' : 'Cancellation failed'))
+                toast.error(data.error || (isGerman ? 'فشل الإلغاء' : 'Cancellation failed'))
             }
         } catch (error) {
             console.error('Cancellation error:', error)
-            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+            toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
         }
     }
 
     // No upgrade needed for single ALL_ACCESS tier
     const handleUpgradeSubscription = async () => {
-        toast.success(isArabic ? 'لديك بالفعل وصول كامل!' : 'You already have full access!')
+        toast.success(isGerman ? 'لديك بالفعل وصول كامل!' : 'You already have full access!')
     }
 
     const handleLikePost = useCallback(async (postId: string) => {
         if (!session) {
-            toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
+            toast.error(isGerman ? 'يرجى تسجيل الدخول' : 'Please sign in')
             return
         }
 
@@ -1708,7 +1708,7 @@ export default function OnlyFansMentorProfilePage() {
                     : post
             ))
         }
-    }, [session, isArabic])
+    }, [session, isGerman])
 
     const toggleComments = useCallback(async (postId: string) => {
         const isExpanded = expandedComments.has(postId)
@@ -1754,12 +1754,12 @@ export default function OnlyFansMentorProfilePage() {
 
     const handleAddComment = async (postId: string) => {
         if (!session) {
-            toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
+            toast.error(isGerman ? 'يرجى تسجيل الدخول' : 'Please sign in')
             return
         }
 
         if (!currentSubscription) {
-            toast.error(isArabic ? 'يجب الاشتراك للتعليق' : 'Subscribe to comment')
+            toast.error(isGerman ? 'يجب الاشتراك للتعليق' : 'Subscribe to comment')
             return
         }
 
@@ -1808,30 +1808,30 @@ export default function OnlyFansMentorProfilePage() {
                 // Clear input
                 setNewComment(prev => ({ ...prev, [postId]: '' }))
 
-                toast.success(isArabic ? 'تم إضافة التعليق' : 'Comment added!')
+                toast.success(isGerman ? 'تم إضافة التعليق' : 'Comment added!')
             } else {
-                toast.error(isArabic ? 'فشل إضافة التعليق' : 'Failed to add comment')
+                toast.error(isGerman ? 'فشل إضافة التعليق' : 'Failed to add comment')
             }
         } catch (error) {
             console.error('Error adding comment:', error)
-            toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+            toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
         }
     }
 
     const handleDownloadContent = useCallback(async (postId: string, mediaUrl: string, postType: string) => {
         if (!session) {
-            toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
+            toast.error(isGerman ? 'يرجى تسجيل الدخول' : 'Please sign in')
             return
         }
 
         // All subscribers can download - single subscription model
         if (!currentSubscription) {
-            toast.error(isArabic ? 'اشترك للتحميل' : 'Subscribe to download')
+            toast.error(isGerman ? 'اشترك للتحميل' : 'Subscribe to download')
             return
         }
 
         try {
-            toast.success(isArabic ? 'جاري التحميل...' : 'Starting download...')
+            toast.success(isGerman ? 'جاري التحميل...' : 'Starting download...')
 
             // In a real implementation, this would download from the server
             // For now, we'll simulate the download
@@ -1839,7 +1839,7 @@ export default function OnlyFansMentorProfilePage() {
 
             // Simulate download
             setTimeout(() => {
-                toast.success(isArabic ? 'تم التحميل بنجاح!' : 'Downloaded successfully!')
+                toast.success(isGerman ? 'تم التحميل بنجاح!' : 'Downloaded successfully!')
             }, 1000)
 
             // In production, you would:
@@ -1853,9 +1853,9 @@ export default function OnlyFansMentorProfilePage() {
             // window.URL.revokeObjectURL(url)
         } catch (error) {
             console.error('Download error:', error)
-            toast.error(isArabic ? 'فشل التحميل' : 'Download failed')
+            toast.error(isGerman ? 'فشل التحميل' : 'Download failed')
         }
-    }, [session, isArabic, currentSubscription, mentor?.user.name])
+    }, [session, isGerman, currentSubscription, mentor?.user.name])
 
     const handleShare = useCallback(() => {
         const url = window.location.href
@@ -1863,9 +1863,9 @@ export default function OnlyFansMentorProfilePage() {
             navigator.share({ url })
         } else {
             navigator.clipboard.writeText(url)
-            toast.success(isArabic ? 'تم النسخ!' : 'Link copied!')
+            toast.success(isGerman ? 'تم النسخ!' : 'Link copied!')
         }
-    }, [isArabic])
+    }, [isGerman])
 
     // Initialize data on component mount
     useEffect(() => {
@@ -1962,8 +1962,8 @@ export default function OnlyFansMentorProfilePage() {
 
     // Define callbacks before early returns
     const getMentorName = useCallback(() =>
-        isArabic && mentor?.user.arabicName ? mentor.user.arabicName : mentor?.user.name || ''
-        , [isArabic, mentor?.user.arabicName, mentor?.user.name])
+        isGerman && mentor?.user.arabicName ? mentor.user.arabicName : mentor?.user.name || ''
+        , [isGerman, mentor?.user.arabicName, mentor?.user.name])
 
     const canViewPost = useCallback((post: Post) => {
         // Single subscription model - all subscribers can view all posts
@@ -2076,7 +2076,7 @@ export default function OnlyFansMentorProfilePage() {
     // Content Management Handlers
     const handleCreatePost = useCallback(async () => {
         if (!newPostText.trim()) {
-            toast.error(isArabic ? 'يرجى كتابة محتوى المنشور' : 'Please write post content')
+            toast.error(isGerman ? 'يرجى كتابة محتوى المنشور' : 'Please write post content')
             return
         }
 
@@ -2109,7 +2109,7 @@ export default function OnlyFansMentorProfilePage() {
                     }
                     return p
                 }))
-                toast.success(isArabic ? '✏️ تم تحديث المنشور بنجاح!' : '✏️ Post updated successfully!')
+                toast.success(isGerman ? '✏️ تم تحديث المنشور بنجاح!' : '✏️ Post updated successfully!')
             } else if (editingPost) {
                 // API post edit - call PATCH endpoint
                 const response = await fetch(`/api/posts/${editingPost.id}`, {
@@ -2130,7 +2130,7 @@ export default function OnlyFansMentorProfilePage() {
 
                 // Refresh posts from API
                 fetchMentorData()
-                toast.success(isArabic ? '✏️ تم تحديث المنشور بنجاح!' : '✏️ Post updated successfully!')
+                toast.success(isGerman ? '✏️ تم تحديث المنشور بنجاح!' : '✏️ Post updated successfully!')
             } else {
                 // Create new post via API
                 const response = await fetch('/api/creator/posts', {
@@ -2174,9 +2174,9 @@ export default function OnlyFansMentorProfilePage() {
                 }
 
                 if (isScheduled) {
-                    toast.success(isArabic ? '⏰ تم جدولة المنشور بنجاح!' : '⏰ Post scheduled successfully!')
+                    toast.success(isGerman ? '⏰ تم جدولة المنشور بنجاح!' : '⏰ Post scheduled successfully!')
                 } else {
-                    toast.success(isArabic ? '✅ تم نشر المنشور بنجاح!' : '✅ Post published successfully!')
+                    toast.success(isGerman ? '✅ تم نشر المنشور بنجاح!' : '✅ Post published successfully!')
                 }
             }
 
@@ -2189,11 +2189,11 @@ export default function OnlyFansMentorProfilePage() {
             setShowNewPostModal(false)
         } catch (error) {
             console.error('Error creating post:', error)
-            toast.error(isArabic ? 'فشل نشر المنشور' : 'Failed to publish post')
+            toast.error(isGerman ? 'فشل نشر المنشور' : 'Failed to publish post')
         } finally {
             setUploadingPost(false)
         }
-    }, [newPostText, newPostScheduledDate, uploadFile, uploadPreview, posts, isArabic, editingPost, fetchMentorData])
+    }, [newPostText, newPostScheduledDate, uploadFile, uploadPreview, posts, isGerman, editingPost, fetchMentorData])
 
     const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -2201,7 +2201,7 @@ export default function OnlyFansMentorProfilePage() {
 
         // Check file size (max 50MB)
         if (file.size > 50 * 1024 * 1024) {
-            toast.error(isArabic ? 'حجم الملف كبير جداً (الحد الأقصى 50 ميجا)' : 'File too large (max 50MB)')
+            toast.error(isGerman ? 'حجم الملف كبير جداً (الحد الأقصى 50 ميجا)' : 'File too large (max 50MB)')
             return
         }
 
@@ -2213,7 +2213,7 @@ export default function OnlyFansMentorProfilePage() {
             setUploadPreview(reader.result as string)
         }
         reader.readAsDataURL(file)
-    }, [isArabic])
+    }, [isGerman])
 
     const handleRemoveFile = useCallback(() => {
         setUploadFile(null)
@@ -2221,11 +2221,11 @@ export default function OnlyFansMentorProfilePage() {
     }, [])
 
     const handleDeletePost = useCallback((postId: string) => {
-        if (confirm(isArabic ? 'هل أنت متأكد من حذف هذا المنشور؟' : 'Are you sure you want to delete this post?')) {
+        if (confirm(isGerman ? 'هل أنت متأكد من حذف هذا المنشور؟' : 'Are you sure you want to delete this post?')) {
             setPosts(posts.filter(p => p.id !== postId))
-            toast.success(isArabic ? '🗑️ تم حذف المنشور' : '🗑️ Post deleted')
+            toast.success(isGerman ? '🗑️ تم حذف المنشور' : '🗑️ Post deleted')
         }
-    }, [posts, isArabic])
+    }, [posts, isGerman])
 
     const handlePublishNow = useCallback((postId: string) => {
         setPosts(posts.map(post => {
@@ -2238,8 +2238,8 @@ export default function OnlyFansMentorProfilePage() {
             }
             return post
         }))
-        toast.success(isArabic ? '✅ تم نشر المنشور الآن!' : '✅ Post published now!')
-    }, [posts, isArabic])
+        toast.success(isGerman ? '✅ تم نشر المنشور الآن!' : '✅ Post published now!')
+    }, [posts, isGerman])
 
     if (loading || subscriptionLoading) {
         return (
@@ -2248,8 +2248,8 @@ export default function OnlyFansMentorProfilePage() {
                     <div className="w-16 h-16 border-4 border-[#0a84ff]/30 border-t-[#0a84ff] rounded-full animate-spin mx-auto mb-4" />
                     <p className="text-muted-foreground">
                         {subscriptionLoading
-                            ? (isArabic ? 'جاري التحقق من الاشتراك...' : 'Checking subscription...')
-                            : (isArabic ? 'جاري التحميل...' : 'Loading...')
+                            ? (isGerman ? 'جاري التحقق من الاشتراك...' : 'Checking subscription...')
+                            : (isGerman ? 'جاري التحميل...' : 'Loading...')
                         }
                     </p>
                 </div>
@@ -2263,17 +2263,17 @@ export default function OnlyFansMentorProfilePage() {
             <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
                 <div className="text-center p-6">
                     <p className="text-lg font-semibold mb-4">
-                        {isArabic
+                        {isGerman
                             ? 'فشل تحميل صفحة المُنشئ. يرجى المحاولة مرة أخرى.'
                             : 'Failed to load creator profile. Please try again.'
                         }
                     </p>
                     <div className="flex items-center justify-center gap-3">
                         <Button onClick={() => fetchMentorData()} className="px-4 py-2">
-                            {isArabic ? 'إعادة المحاولة' : 'Retry'}
+                            {isGerman ? 'إعادة المحاولة' : 'Retry'}
                         </Button>
                         <Button onClick={() => router.push(`/${locale}/mentors`)} className="px-4 py-2 bg-card hover:bg-card-hover">
-                            {isArabic ? 'العودة' : 'Back to creators'}
+                            {isGerman ? 'العودة' : 'Back to creators'}
                         </Button>
                     </div>
                 </div>
@@ -2313,7 +2313,7 @@ export default function OnlyFansMentorProfilePage() {
                                     className="w-full flex items-center gap-4 px-4 py-3 rounded-full hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all"
                                 >
                                     <ArrowLeft className="w-6 h-6" />
-                                    <span className="text-lg font-bold">{isArabic ? 'رجوع' : 'Back to Feed'}</span>
+                                    <span className="text-lg font-bold">{isGerman ? 'رجوع' : 'Back to Feed'}</span>
                                 </button>
 
                                 {/* Posts Tab */}
@@ -2325,7 +2325,7 @@ export default function OnlyFansMentorProfilePage() {
                                         }`}
                                 >
                                     <MessageCircle className="w-6 h-6" />
-                                    <span className="text-lg font-bold">{isArabic ? 'المنشورات' : 'Posts'}</span>
+                                    <span className="text-lg font-bold">{isGerman ? 'المنشورات' : 'Posts'}</span>
                                 </button>
 
                                 {/* Media Tab */}
@@ -2337,7 +2337,7 @@ export default function OnlyFansMentorProfilePage() {
                                         }`}
                                 >
                                     <ImageIcon className="w-6 h-6" />
-                                    <span className="text-lg font-bold">{isArabic ? 'الوسائط' : 'Media'}</span>
+                                    <span className="text-lg font-bold">{isGerman ? 'الوسائط' : 'Media'}</span>
                                 </button>
 
                                 {/* Live Sessions Tab */}
@@ -2349,7 +2349,7 @@ export default function OnlyFansMentorProfilePage() {
                                         }`}
                                 >
                                     <Calendar className="w-6 h-6" />
-                                    <span className="text-lg font-bold">{isArabic ? 'الجلسات المباشرة' : 'Live Sessions'}</span>
+                                    <span className="text-lg font-bold">{isGerman ? 'الجلسات المباشرة' : 'Live Sessions'}</span>
                                     {upcomingSessions.length > 0 && (
                                         <Badge className="ml-auto bg-purple-500 text-white border-0">
                                             {upcomingSessions.length}
@@ -2367,7 +2367,7 @@ export default function OnlyFansMentorProfilePage() {
                                             }`}
                                     >
                                         <Users className="w-6 h-6" />
-                                        <span className="text-lg font-bold">{isArabic ? 'المجتمع' : 'Community'}</span>
+                                        <span className="text-lg font-bold">{isGerman ? 'المجتمع' : 'Community'}</span>
                                         {communityPosts.length > 0 && (
                                             <Badge className="ml-auto bg-green-500 text-white border-0">
                                                 {communityPosts.length}
@@ -2386,7 +2386,7 @@ export default function OnlyFansMentorProfilePage() {
                                             }`}
                                     >
                                         <Paperclip className="w-6 h-6" />
-                                        <span className="text-lg font-bold">{isArabic ? 'الموارد' : 'Resources'}</span>
+                                        <span className="text-lg font-bold">{isGerman ? 'الموارد' : 'Resources'}</span>
                                         {resources.length > 0 && (
                                             <Badge className="ml-auto bg-green-500 text-white border-0">
                                                 {resources.length}
@@ -2404,8 +2404,19 @@ export default function OnlyFansMentorProfilePage() {
                                         }`}
                                 >
                                     <Globe className="w-6 h-6" />
-                                    <span className="text-lg font-bold">{isArabic ? 'حول' : 'About'}</span>
+                                    <span className="text-lg font-bold">{isGerman ? 'حول' : 'About'}</span>
                                 </button>
+
+                                {/* Notifications - Only for logged in users */}
+                                {session && (
+                                    <button
+                                        onClick={() => router.push(`/${locale}/notifications`)}
+                                        className="w-full flex items-center gap-4 px-4 py-3 rounded-full hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all"
+                                    >
+                                        <Bell className="w-6 h-6" />
+                                        <span className="text-lg font-bold">{isGerman ? 'الإشعارات' : 'Notifications'}</span>
+                                    </button>
+                                )}
 
                                 {/* Profile Tab - Creator Dashboard (Only for creator) */}
                                 {isCreatorView && (
@@ -2417,7 +2428,7 @@ export default function OnlyFansMentorProfilePage() {
                                             }`}
                                     >
                                         <Crown className="w-6 h-6 text-yellow-500" />
-                                        <span className="text-lg font-bold">{isArabic ? 'لوحة التحكم' : 'Creator Dashboard'}</span>
+                                        <span className="text-lg font-bold">{isGerman ? 'لوحة التحكم' : 'Creator Dashboard'}</span>
                                     </button>
                                 )}
                             </nav>
@@ -2437,7 +2448,7 @@ export default function OnlyFansMentorProfilePage() {
                                     <Menu className="w-6 h-6 text-foreground" />
                                 </button>
                                 <h2 className="text-lg font-bold text-foreground">
-                                    {isArabic && mentor?.user.arabicName ? mentor.user.arabicName : mentor?.user.name || 'Profile'}
+                                    {isGerman && mentor?.user.arabicName ? mentor.user.arabicName : mentor?.user.name || 'Profile'}
                                 </h2>
                             </div>
                         </div>
@@ -2514,14 +2525,14 @@ export default function OnlyFansMentorProfilePage() {
                                                         className="bg-card hover:bg-card-hover text-foreground border border-border font-semibold px-6 py-2 rounded-full"
                                                     >
                                                         <Settings className="w-4 h-4 mr-2" />
-                                                        {isArabic ? 'تعديل الملف الشخصي' : 'Edit Profile'}
+                                                        {isGerman ? 'تعديل الملف الشخصي' : 'Edit Profile'}
                                                     </Button>
                                                     <Button
                                                         onClick={() => setActiveTab('profile')}
                                                         className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold px-6 py-2 rounded-full"
                                                     >
                                                         <BarChart3 className="w-4 h-4 mr-2" />
-                                                        {isArabic ? 'لوحة التحكم' : 'Dashboard'}
+                                                        {isGerman ? 'لوحة التحكم' : 'Dashboard'}
                                                     </Button>
                                                     <button
                                                         onClick={handleShare}
@@ -2551,7 +2562,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             {upcomingSessions[0] && (
                                                                 <div className="absolute top-full right-0 mt-2 w-64 bg-card border border-border rounded-xl shadow-xl p-4 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity z-50">
                                                                     <div className="text-sm font-semibold text-foreground mb-1">
-                                                                        {isArabic ? 'الجلسة القادمة' : 'Next Session'}
+                                                                        {isGerman ? 'الجلسة القادمة' : 'Next Session'}
                                                                     </div>
                                                                     <div className="text-xs text-muted-foreground mb-2">
                                                                         {upcomingSessions[0].title}
@@ -2568,11 +2579,11 @@ export default function OnlyFansMentorProfilePage() {
 
                                                                                 if (diffHours < 1) {
                                                                                     const diffMins = Math.floor(diffMs / (1000 * 60))
-                                                                                    return isArabic ? `خلال ${diffMins} دقيقة` : `in ${diffMins} minutes`
+                                                                                    return isGerman ? `خلال ${diffMins} دقيقة` : `in ${diffMins} minutes`
                                                                                 } else if (diffHours < 24) {
-                                                                                    return isArabic ? `خلال ${diffHours} ساعة` : `in ${diffHours} hours`
+                                                                                    return isGerman ? `خلال ${diffHours} ساعة` : `in ${diffHours} hours`
                                                                                 } else {
-                                                                                    return isArabic ? `خلال ${diffDays} يوم` : `in ${diffDays} days`
+                                                                                    return isGerman ? `خلال ${diffDays} يوم` : `in ${diffDays} days`
                                                                                 }
                                                                             })()}
                                                                         </span>
@@ -2590,7 +2601,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             : 'bg-card hover:bg-card-hover text-foreground border border-border'
                                                             } ${!session ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                     >
-                                                        {isFollowing ? (isArabic ? 'متابع' : 'Following') : (isArabic ? 'متابعة' : 'Follow')}
+                                                        {isFollowing ? (isGerman ? 'متابع' : 'Following') : (isGerman ? 'متابعة' : 'Follow')}
                                                     </button>
                                                     {!currentSubscription ? (
                                                         <Button
@@ -2607,7 +2618,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white font-bold px-8 py-2 rounded-full disabled:opacity-50 transition-all"
                                                         >
                                                             <Crown className="w-4 h-4 mr-2" />
-                                                            {isSubscribing ? (isArabic ? 'جاري...' : 'Loading...') : (isArabic ? 'اشترك' : 'Subscribe')}
+                                                            {isSubscribing ? (isGerman ? 'جاري...' : 'Loading...') : (isGerman ? 'اشترك' : 'Subscribe')}
                                                         </Button>
                                                     ) : (
                                                         <div className="flex items-center gap-3">
@@ -2616,20 +2627,20 @@ export default function OnlyFansMentorProfilePage() {
                                                                 className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white font-semibold px-6 py-2 rounded-full transition-all"
                                                             >
                                                                 <Calendar className="w-4 h-4 mr-2" />
-                                                                {isArabic ? 'حجز جلسة' : 'Book Session'}
+                                                                {isGerman ? 'حجز جلسة' : 'Book Session'}
                                                             </Button>
                                                             <Button
                                                                 onClick={() => router.push(`/${locale}/messaging?userId=${mentor.user.id}`)}
                                                                 className="bg-card/50 hover:bg-card-hover text-foreground border border-border font-semibold px-6 py-2 rounded-full"
                                                             >
                                                                 <MessageCircle className="w-4 h-4 mr-2" />
-                                                                {isArabic ? 'مراسلة' : 'Message'}
+                                                                {isGerman ? 'مراسلة' : 'Message'}
                                                             </Button>
                                                             <button
                                                                 onClick={handleCancelSubscription}
                                                                 className="px-4 py-2 rounded-full text-sm text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-all"
                                                             >
-                                                                {isArabic ? 'إدارة' : 'Manage'}
+                                                                {isGerman ? 'إدارة' : 'Manage'}
                                                             </button>
                                                         </div>
                                                     )}
@@ -2662,7 +2673,7 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pb-6 border-b border-border">
                                         <div>
                                             <span className="font-bold text-foreground text-lg">{mentor.stats.totalPosts}</span>
-                                            <span className="text-muted-foreground text-sm ml-1">{isArabic ? 'منشورات' : 'posts'}</span>
+                                            <span className="text-muted-foreground text-sm ml-1">{isGerman ? 'منشورات' : 'posts'}</span>
                                         </div>
                                         <div>
                                             <span className="font-bold text-foreground text-lg">
@@ -2670,7 +2681,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     ? `${(mentor.totalSubscribers / 1000).toFixed(1)}K`
                                                     : mentor.totalSubscribers || 0}
                                             </span>
-                                            <span className="text-muted-foreground text-sm ml-1">{isArabic ? 'مشتركين' : 'subscribers'}</span>
+                                            <span className="text-muted-foreground text-sm ml-1">{isGerman ? 'مشتركين' : 'subscribers'}</span>
                                         </div>
                                         <div>
                                             <span className="font-bold text-foreground text-lg">
@@ -2678,12 +2689,12 @@ export default function OnlyFansMentorProfilePage() {
                                                     ? `${(mentor.stats.totalFollowers / 1000).toFixed(1)}K`
                                                     : mentor.stats.totalFollowers || 0}
                                             </span>
-                                            <span className="text-muted-foreground text-sm ml-1">{isArabic ? 'متابعين' : 'followers'}</span>
+                                            <span className="text-muted-foreground text-sm ml-1">{isGerman ? 'متابعين' : 'followers'}</span>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                                             <span className="font-bold text-foreground text-lg">{mentor.stats.averageRating.toFixed(1)}</span>
-                                            <span className="text-muted-foreground text-sm">{isArabic ? 'تقييم' : 'rating'}</span>
+                                            <span className="text-muted-foreground text-sm">{isGerman ? 'تقييم' : 'rating'}</span>
                                         </div>
 
                                         {/* Leave Review Button - Only for subscribers (not for own profile) */}
@@ -2693,7 +2704,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-full text-sm font-semibold transition-all ml-auto"
                                             >
                                                 <Star className="w-4 h-4" />
-                                                {isArabic ? 'اترك تقييماً' : 'Leave a Review'}
+                                                {isGerman ? 'اترك تقييماً' : 'Leave a Review'}
                                             </button>
                                         )}
                                     </div>
@@ -2724,10 +2735,10 @@ export default function OnlyFansMentorProfilePage() {
                                                         </div>
                                                         <div>
                                                             <h3 className="text-base font-semibold text-white">
-                                                                {isArabic ? 'أنت مشترك!' : 'You\'re Subscribed!'}
+                                                                {isGerman ? 'أنت مشترك!' : 'You\'re Subscribed!'}
                                                             </h3>
                                                             <p className="text-sm text-white/50">
-                                                                {isArabic ? 'عضوية وصول شامل نشطة' : 'All-Access membership active'}
+                                                                {isGerman ? 'عضوية وصول شامل نشطة' : 'All-Access membership active'}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -2736,7 +2747,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             onClick={handleCancelSubscription}
                                                             className="bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10"
                                                         >
-                                                            {isArabic ? 'إلغاء' : 'Cancel'}
+                                                            {isGerman ? 'إلغاء' : 'Cancel'}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -2766,102 +2777,81 @@ export default function OnlyFansMentorProfilePage() {
                                                         transition={{ delay: i * 0.05 }}
                                                         className="bg-card border border-border rounded-2xl p-6 hover:border-[#0a84ff]/30 transition-all"
                                                     >
-                                                        {/* Post Header */}
-                                                        <div className="flex items-center gap-3 mb-4">
-                                                            {mentor.user.profileImage && mentor.user.profileImage.length > 0 ? (
-                                                                <Image
-                                                                    src={mentor.user.profileImage}
-                                                                    alt={getMentorName()}
-                                                                    width={48} height={48} className="rounded-full object-cover w-12 h-12"
-                                                                />
-                                                            ) : (
-                                                                <AvatarPlaceholder
-                                                                    name={getMentorName()}
-                                                                    size={48}
-                                                                    className="rounded-full"
-                                                                />
-                                                            )}
-                                                            <div className="flex-1">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="font-bold text-foreground">{getMentorName()}</span>
-                                                                    <CheckCircle className="w-4 h-4 text-blue-500 fill-blue-500" />
-                                                                    {post.tier !== 'FREE' && (
-                                                                        <Badge className={`${post.tier === 'VIP' ? 'bg-[#0a84ff] border-2 border-white/20' :
-                                                                            post.tier === 'PREMIUM' ? 'bg-[#0a84ff]/80' :
-                                                                                'bg-[#0a84ff]/60'
-                                                                            } text-white border-0 text-xs`}>
-                                                                            <Crown className="w-3 h-3 mr-1" />
-                                                                            {post.tier}
-                                                                        </Badge>
-                                                                    )}
+                                                        {/* Prime Header - OnlyFans Style */}
+                                                        <div className="flex items-center justify-between mb-4">
+                                                            <div className="flex items-center gap-3">
+                                                                {/* Prime Logo/Icon */}
+                                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                                                    <span className="text-white font-black text-sm">P</span>
                                                                 </div>
-                                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                                    <Clock className="w-4 h-4" />
-                                                                    <span>
-                                                                        {(() => {
-                                                                            let postDate: Date;
-
-                                                                            // Parse timestamp - handle both ISO strings and relative strings
-                                                                            if (post.timestamp && post.timestamp.includes('T')) {
-                                                                                // ISO string format
-                                                                                postDate = new Date(post.timestamp);
-                                                                            } else if (post.scheduledFor && post.timestamp) {
-                                                                                // Scheduled post that was published
-                                                                                postDate = new Date(post.scheduledFor);
-                                                                            } else {
-                                                                                // Fallback for legacy formats
-                                                                                const now = new Date();
-                                                                                if (post.timestamp === '2h') postDate = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-                                                                                else if (post.timestamp === '5h') postDate = new Date(now.getTime() - 5 * 60 * 60 * 1000);
-                                                                                else if (post.timestamp === '8h') postDate = new Date(now.getTime() - 8 * 60 * 60 * 1000);
-                                                                                else if (post.timestamp === '1d') postDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-                                                                                else if (post.timestamp === '2d') postDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
-                                                                                else postDate = new Date(); // Default to now
-                                                                            }
-
-                                                                            // Calculate time difference
-                                                                            const now = new Date();
-                                                                            const diffMs = now.getTime() - postDate.getTime();
-                                                                            const diffMinutes = Math.floor(diffMs / (1000 * 60));
-
-                                                                            if (diffMinutes < 1) {
-                                                                                return isArabic ? 'الآن' : 'now';
-                                                                            } else if (diffMinutes < 60) {
-                                                                                return isArabic ? `منذ ${diffMinutes} دقيقة` : `${diffMinutes}m ago`;
-                                                                            } else if (diffMinutes < 1440) { // Less than 24 hours
-                                                                                const hours = Math.floor(diffMinutes / 60);
-                                                                                return isArabic ? `منذ ${hours} ساعة` : `${hours}h ago`;
-                                                                            } else if (diffMinutes < 10080) { // Less than 7 days
-                                                                                const days = Math.floor(diffMinutes / 1440);
-                                                                                return isArabic ? `منذ ${days} يوم` : `${days}d ago`;
-                                                                            } else {
-                                                                                // Show actual date for older posts
-                                                                                return postDate.toLocaleDateString(isArabic ? 'ar-EG' : 'en-US', {
-                                                                                    month: 'short',
-                                                                                    day: 'numeric'
-                                                                                });
-                                                                            }
-                                                                        })()}
-                                                                    </span>
-
-                                                                    {/* Show exact time on hover */}
-                                                                    <span
-                                                                        className="text-xs text-muted-foreground/70 hover:text-muted-foreground cursor-help"
-                                                                        title={
-                                                                            post.timestamp && post.timestamp.includes('T')
-                                                                                ? new Date(post.timestamp).toLocaleString(isArabic ? 'ar-EG' : 'en-US')
-                                                                                : post.scheduledFor
-                                                                                    ? new Date(post.scheduledFor).toLocaleString(isArabic ? 'ar-EG' : 'en-US')
-                                                                                    : ''
+                                                                <div>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="font-bold text-foreground">Prime</span>
+                                                                        <CheckCircle className="w-4 h-4 text-[#0a84ff] fill-[#0a84ff]" />
+                                                                    </div>
+                                                                    <span className="text-muted-foreground text-xs">@prime</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                {post.tier !== 'FREE' && (
+                                                                    <Badge className={`${post.tier === 'VIP' ? 'bg-[#0a84ff] border-2 border-white/20' :
+                                                                        post.tier === 'PREMIUM' ? 'bg-[#0a84ff]/80' :
+                                                                            'bg-[#0a84ff]/60'
+                                                                        } text-white border-0 text-xs`}>
+                                                                        <Crown className="w-3 h-3 mr-1" />
+                                                                        {post.tier}
+                                                                    </Badge>
+                                                                )}
+                                                                <span className="text-muted-foreground text-sm">
+                                                                    {(() => {
+                                                                        let postDate: Date;
+                                                                        if (post.timestamp && post.timestamp.includes('T')) {
+                                                                            postDate = new Date(post.timestamp);
+                                                                        } else if (post.scheduledFor && post.timestamp) {
+                                                                            postDate = new Date(post.scheduledFor);
+                                                                        } else {
+                                                                            postDate = new Date();
                                                                         }
-                                                                    >
-                                                                        •
-                                                                    </span>
-                                                                </div>
+                                                                        return postDate.toLocaleDateString(isGerman ? 'ar-EG' : 'en-US', {
+                                                                            month: 'short',
+                                                                            day: 'numeric'
+                                                                        });
+                                                                    })()}
+                                                                </span>
+                                                                <button className="p-1 hover:bg-white/10 rounded-full">
+                                                                    <svg className="w-5 h-5 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24">
+                                                                        <circle cx="12" cy="6" r="1.5" />
+                                                                        <circle cx="12" cy="12" r="1.5" />
+                                                                        <circle cx="12" cy="18" r="1.5" />
+                                                                    </svg>
+                                                                </button>
                                                             </div>
                                                         </div>
 
-                                                        {/* Post Content */}
+                                                        {/* @Mention Link to Creator */}
+                                                        <div className="mb-3">
+                                                            <span
+                                                                className="text-[#0a84ff] hover:underline cursor-pointer font-medium"
+                                                                onClick={() => router.push(`/${locale}/mentors/${mentor.id}`)}
+                                                            >
+                                                                @{mentor.user.name?.toLowerCase().replace(/\s+/g, '') || 'mentor'}
+                                                            </span>
+                                                            <span className="text-foreground ml-1">
+                                                                {post.content}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Link to Creator Profile */}
+                                                        <div className="mb-4">
+                                                            <span
+                                                                className="text-[#0a84ff] hover:underline cursor-pointer text-sm"
+                                                                onClick={() => router.push(`/${locale}/mentors/${mentor.id}`)}
+                                                            >
+                                                                prime.com/{mentor.user.name?.toLowerCase().replace(/\s+/g, '') || 'mentor'}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Post Content - Locked or Media */}
                                                         {isLocked ? (
                                                             <div className="relative overflow-hidden rounded-2xl">
                                                                 {/* Blurred Preview Background */}
@@ -2885,12 +2875,12 @@ export default function OnlyFansMentorProfilePage() {
 
                                                                     {/* Title */}
                                                                     <h3 className="text-2xl md:text-3xl font-black text-white mb-2 text-center">
-                                                                        {post.tier} {isArabic ? 'حصري' : 'Exclusive'}
+                                                                        {post.tier} {isGerman ? 'حصري' : 'Exclusive'}
                                                                     </h3>
 
                                                                     {/* Description */}
                                                                     <p className="text-white/70 text-sm md:text-base mb-6 text-center max-w-md">
-                                                                        {isArabic
+                                                                        {isGerman
                                                                             ? 'اشترك للوصول إلى هذا المحتوى الحصري وأكثر'
                                                                             : 'Subscribe to unlock this exclusive content and more'
                                                                         }
@@ -2902,7 +2892,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                             €{mentor.monthlyPrice || 0}
                                                                         </span>
                                                                         <span className="text-white/60">
-                                                                            /{isArabic ? 'شهر' : 'month'}
+                                                                            /{isGerman ? 'شهر' : 'month'}
                                                                         </span>
                                                                     </div>
 
@@ -2926,7 +2916,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                         ) : (
                                                                             <>
                                                                                 <Crown className="w-4 h-4 mr-2" />
-                                                                                {isArabic ? 'اشترك الآن' : 'Subscribe Now'}
+                                                                                {isGerman ? 'اشترك الآن' : 'Subscribe Now'}
                                                                             </>
                                                                         )}
                                                                     </Button>
@@ -2935,11 +2925,9 @@ export default function OnlyFansMentorProfilePage() {
                                                             </div>
                                                         ) : (
                                                             <>
-                                                                <p className="text-foreground mb-4 whitespace-pre-wrap">{post.content}</p>
-
                                                                 {/* Media */}
                                                                 {post.media && post.type === 'image' && (
-                                                                    <div className="relative rounded-xl overflow-hidden border border-border mb-4 group">
+                                                                    <div className="relative rounded-xl overflow-hidden mb-4 group">
                                                                         <img
                                                                             src={post.media}
                                                                             alt="Post content"
@@ -2947,10 +2935,6 @@ export default function OnlyFansMentorProfilePage() {
                                                                             onError={(e) => {
                                                                                 console.error('Image failed to load:', post.media?.substring(0, 100))
                                                                                 e.currentTarget.style.display = 'none'
-                                                                                const parent = e.currentTarget.parentElement
-                                                                                if (parent) {
-                                                                                    parent.innerHTML = '<div class="aspect-video bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center"><svg class="w-16 h-16 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><p class="text-sm text-muted-foreground mt-2">Image preview unavailable</p></div>'
-                                                                                }
                                                                             }}
                                                                         />
                                                                         {/* Download Button - VIP Only */}
@@ -2965,13 +2949,13 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                                                                                 >
                                                                                     <Download className="w-4 h-4 mr-1" />
-                                                                                    {isArabic ? 'تحميل' : 'Download'}
+                                                                                    {isGerman ? 'تحميل' : 'Download'}
                                                                                 </Button>
                                                                             ) : (
                                                                                 <div className="bg-black/60 backdrop-blur-sm px-3 py-2 rounded-lg flex items-center gap-2">
                                                                                     <Lock className="w-4 h-4 text-[#0a84ff]" />
                                                                                     <span className="text-xs text-white">
-                                                                                        {isArabic ? 'VIP فقط' : 'VIP Only'}
+                                                                                        {isGerman ? 'VIP فقط' : 'VIP Only'}
                                                                                     </span>
                                                                                 </div>
                                                                             )}
@@ -2979,7 +2963,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                     </div>
                                                                 )}
                                                                 {post.media && post.type === 'video' && (
-                                                                    <div className="relative rounded-xl overflow-hidden border border-border mb-4 group">
+                                                                    <div className="relative rounded-xl overflow-hidden mb-4 group">
                                                                         <video
                                                                             src={post.media}
                                                                             className="w-full aspect-video object-cover"
@@ -2998,13 +2982,13 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                                                                                 >
                                                                                     <Download className="w-4 h-4 mr-1" />
-                                                                                    {isArabic ? 'تحميل' : 'Download'}
+                                                                                    {isGerman ? 'تحميل' : 'Download'}
                                                                                 </Button>
                                                                             ) : (
                                                                                 <div className="bg-black/60 backdrop-blur-sm px-3 py-2 rounded-lg flex items-center gap-2">
                                                                                     <Lock className="w-4 h-4 text-[#0a84ff]" />
                                                                                     <span className="text-xs text-white">
-                                                                                        {isArabic ? 'VIP فقط' : 'VIP Only'}
+                                                                                        {isGerman ? 'VIP فقط' : 'VIP Only'}
                                                                                     </span>
                                                                                 </div>
                                                                             )}
@@ -3012,55 +2996,124 @@ export default function OnlyFansMentorProfilePage() {
                                                                     </div>
                                                                 )}
 
-                                                                {/* Engagement Stats */}
-                                                                <div className="flex items-center justify-between text-muted-foreground text-sm border-t border-border pt-4">
+                                                                {/* Embedded Creator Card - OnlyFans Style */}
+                                                                <div
+                                                                    className="bg-card border border-border rounded-xl overflow-hidden mb-4 cursor-pointer hover:border-white/20 transition-colors"
+                                                                    onClick={() => router.push(`/${locale}/mentors/${mentor.id}`)}
+                                                                >
+                                                                    {/* Creator Card Background */}
+                                                                    <div className="relative h-16 bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600">
+                                                                        {mentor.user.profileImage && (
+                                                                            <Image
+                                                                                src={mentor.user.profileImage}
+                                                                                alt=""
+                                                                                fill
+                                                                                className="object-cover opacity-50"
+                                                                            />
+                                                                        )}
+                                                                        {/* Free Badge */}
+                                                                        <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+                                                                            {post.tier === 'FREE' ? 'Free' : post.tier}
+                                                                        </div>
+                                                                    </div>
+                                                                    {/* Creator Info */}
+                                                                    <div className="relative px-4 pb-3">
+                                                                        {/* Profile Picture - Overlapping */}
+                                                                        <div className="absolute -top-6 left-4">
+                                                                            <div className="w-12 h-12 rounded-full border-3 border-card overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500">
+                                                                                {mentor.user.profileImage ? (
+                                                                                    <Image
+                                                                                        src={mentor.user.profileImage}
+                                                                                        alt={getMentorName()}
+                                                                                        width={48}
+                                                                                        height={48}
+                                                                                        className="w-full h-full object-cover"
+                                                                                    />
+                                                                                ) : (
+                                                                                    <AvatarPlaceholder
+                                                                                        name={getMentorName()}
+                                                                                        size={48}
+                                                                                    />
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                        {/* Name and Handle */}
+                                                                        <div className="pt-8">
+                                                                            <div className="flex items-center gap-1.5">
+                                                                                <h4 className="font-bold text-foreground text-sm">{getMentorName()}</h4>
+                                                                                <CheckCircle className="w-3.5 h-3.5 text-[#0a84ff] fill-[#0a84ff]" />
+                                                                            </div>
+                                                                            <p className="text-muted-foreground text-xs">
+                                                                                @{mentor.user.name?.toLowerCase().replace(/\s+/g, '') || 'mentor'}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Engagement Stats - OnlyFans Style */}
+                                                                <div className="flex items-center gap-6 text-muted-foreground border-t border-border pt-4">
+                                                                    {/* Like Button */}
                                                                     <button
                                                                         onClick={(e) => {
                                                                             e.stopPropagation()
                                                                             handleLikePost(post.id)
                                                                         }}
                                                                         disabled={!session}
-                                                                        className="flex items-center gap-2 hover:text-[#0a84ff] transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                        className="hover:text-pink-400 transition-colors disabled:opacity-50"
                                                                     >
-                                                                        <div className="p-2 rounded-full group-hover:bg-[#0a84ff]/10">
-                                                                            <Heart className="w-5 h-5" />
-                                                                        </div>
-                                                                        <span>{post.likes.toLocaleString()}</span>
+                                                                        <Heart className="w-6 h-6" />
                                                                     </button>
 
+                                                                    {/* Comment Button */}
                                                                     <button
                                                                         onClick={(e) => {
                                                                             e.stopPropagation()
                                                                             if (!session) {
-                                                                                toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
+                                                                                toast.error(isGerman ? 'يرجى تسجيل الدخول' : 'Please sign in')
                                                                                 return
                                                                             }
                                                                             toggleComments(post.id)
                                                                         }}
-                                                                        className="flex items-center gap-2 hover:text-[#0a84ff] transition-colors group"
+                                                                        className="hover:text-purple-400 transition-colors"
                                                                     >
-                                                                        <div className="p-2 rounded-full group-hover:bg-[#0a84ff]/10">
-                                                                            <MessageSquare className="w-5 h-5" />
-                                                                        </div>
-                                                                        <span>{post.comments}</span>
+                                                                        <MessageSquare className="w-6 h-6" />
                                                                     </button>
 
-                                                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                                                        <Eye className="w-5 h-5" />
-                                                                        <span>{post.views.toLocaleString()}</span>
-                                                                    </div>
+                                                                    {/* Send Tip Button */}
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation()
+                                                                            setShowTipModal(true)
+                                                                        }}
+                                                                        className="flex items-center gap-1.5 text-muted-foreground hover:text-green-400 transition-colors"
+                                                                    >
+                                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v12M9 9h6M9 15h6" />
+                                                                        </svg>
+                                                                        <span className="text-sm font-medium">{isGerman ? 'إكرامية' : 'SEND TIP'}</span>
+                                                                    </button>
 
+                                                                    {/* Spacer */}
+                                                                    <div className="flex-1" />
+
+                                                                    {/* Share Button */}
                                                                     <button
                                                                         onClick={(e) => {
                                                                             e.stopPropagation()
                                                                             handleShare()
                                                                         }}
-                                                                        className="flex items-center gap-2 hover:text-[#0a84ff] transition-colors group"
+                                                                        className="hover:text-[#0a84ff] transition-colors"
                                                                     >
-                                                                        <div className="p-2 rounded-full group-hover:bg-[#0a84ff]/10">
-                                                                            <Share2 className="w-5 h-5" />
-                                                                        </div>
+                                                                        <Share2 className="w-6 h-6" />
                                                                     </button>
+                                                                </div>
+
+                                                                {/* Like Count */}
+                                                                <div className="mt-2">
+                                                                    <span className="font-bold text-foreground text-sm">
+                                                                        {post.likes.toLocaleString()} {isGerman ? 'إعجاب' : 'likes'}
+                                                                    </span>
                                                                 </div>
 
                                                                 {/* Comments Section */}
@@ -3087,7 +3140,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                                 ...prev,
                                                                                                 [post.id]: e.target.value
                                                                                             }))}
-                                                                                            placeholder={isArabic ? 'اكتب تعليقاً...' : 'Write a comment...'}
+                                                                                            placeholder={isGerman ? 'اكتب تعليقاً...' : 'Write a comment...'}
                                                                                             className="bg-background border-border mb-2"
                                                                                             onKeyDown={(e) => {
                                                                                                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -3103,14 +3156,14 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white"
                                                                                         >
                                                                                             <Send className="w-3 h-3 mr-1" />
-                                                                                            {isArabic ? 'إرسال' : 'Post'}
+                                                                                            {isGerman ? 'إرسال' : 'Post'}
                                                                                         </Button>
                                                                                     </div>
                                                                                 </div>
                                                                             ) : (
                                                                                 <div className="bg-white/5 border border-white/10 rounded-lg p-3 mb-4">
                                                                                     <p className="text-sm text-white/70 text-center">
-                                                                                        {isArabic ? 'اشترك للتعليق على المنشورات' : 'Subscribe to comment on posts'}
+                                                                                        {isGerman ? 'اشترك للتعليق على المنشورات' : 'Subscribe to comment on posts'}
                                                                                     </p>
                                                                                 </div>
                                                                             )}
@@ -3127,7 +3180,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             {comment.author.profileImage ? (
                                                                                                 <Image
                                                                                                     src={comment.author.profileImage}
-                                                                                                    alt={isArabic && comment.author.arabicName ? comment.author.arabicName : comment.author.name}
+                                                                                                    alt={isGerman && comment.author.arabicName ? comment.author.arabicName : comment.author.name}
                                                                                                     width={32}
                                                                                                     height={32}
                                                                                                     className="rounded-full object-cover w-8 h-8"
@@ -3143,7 +3196,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                                 <div className="bg-card-hover rounded-lg px-3 py-2">
                                                                                                     <div className="flex items-center gap-2 mb-1">
                                                                                                         <span className="text-sm font-semibold text-foreground">
-                                                                                                            {isArabic && comment.author.arabicName ? comment.author.arabicName : comment.author.name}
+                                                                                                            {isGerman && comment.author.arabicName ? comment.author.arabicName : comment.author.name}
                                                                                                         </span>
                                                                                                         <span className="text-xs text-muted-foreground">
                                                                                                             {comment.timestamp}
@@ -3155,10 +3208,10 @@ export default function OnlyFansMentorProfilePage() {
                                                                                                 </div>
                                                                                                 <div className="flex items-center gap-3 mt-1 ml-3">
                                                                                                     <button className="text-xs text-muted-foreground hover:text-pink-400 transition-colors">
-                                                                                                        {isArabic ? 'إعجاب' : 'Like'} {comment.likes > 0 && `(${comment.likes})`}
+                                                                                                        {isGerman ? 'إعجاب' : 'Like'} {comment.likes > 0 && `(${comment.likes})`}
                                                                                                     </button>
                                                                                                     <button className="text-xs text-muted-foreground hover:text-purple-400 transition-colors">
-                                                                                                        {isArabic ? 'رد' : 'Reply'}
+                                                                                                        {isGerman ? 'رد' : 'Reply'}
                                                                                                     </button>
                                                                                                 </div>
                                                                                             </div>
@@ -3167,7 +3220,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                 </div>
                                                                             ) : (
                                                                                 <p className="text-center text-muted-foreground text-sm py-4">
-                                                                                    {isArabic ? 'لا توجد تعليقات بعد' : 'No comments yet'}
+                                                                                    {isGerman ? 'لا توجد تعليقات بعد' : 'No comments yet'}
                                                                                 </p>
                                                                             )}
                                                                         </motion.div>
@@ -3199,7 +3252,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     : 'hover:bg-card-hover text-muted-foreground hover:text-foreground'
                                                     }`}
                                             >
-                                                {isArabic ? 'الكل' : 'All'}
+                                                {isGerman ? 'الكل' : 'All'}
                                             </button>
                                             <button
                                                 onClick={() => setMediaFilter('images')}
@@ -3208,7 +3261,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     : 'hover:bg-card-hover text-muted-foreground hover:text-foreground'
                                                     }`}
                                             >
-                                                {isArabic ? 'صور' : 'Photos'}
+                                                {isGerman ? 'صور' : 'Photos'}
                                             </button>
                                             <button
                                                 onClick={() => setMediaFilter('videos')}
@@ -3217,7 +3270,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     : 'hover:bg-card-hover text-muted-foreground hover:text-foreground'
                                                     }`}
                                             >
-                                                {isArabic ? 'فيديوهات' : 'Videos'}
+                                                {isGerman ? 'فيديوهات' : 'Videos'}
                                             </button>
                                         </div>
 
@@ -3232,7 +3285,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     {displayPosts.filter(p => p.media).length}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">
-                                                    {isArabic ? 'إجمالي الوسائط' : 'Total Media'}
+                                                    {isGerman ? 'إجمالي الوسائط' : 'Total Media'}
                                                 </div>
                                             </div>
                                             <div
@@ -3244,7 +3297,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     {displayPosts.filter(p => p.type === 'image').length}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">
-                                                    {isArabic ? 'الصور' : 'Photos'}
+                                                    {isGerman ? 'الصور' : 'Photos'}
                                                 </div>
                                             </div>
                                             <div
@@ -3256,7 +3309,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     {displayPosts.filter(p => p.type === 'video').length}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">
-                                                    {isArabic ? 'الفيديوهات' : 'Videos'}
+                                                    {isGerman ? 'الفيديوهات' : 'Videos'}
                                                 </div>
                                             </div>
                                             <div className="bg-card border border-border rounded-xl p-4">
@@ -3264,7 +3317,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     {displayPosts.filter(p => p.media && !canViewPost(p)).length}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">
-                                                    {isArabic ? 'حصري' : 'Exclusive'}
+                                                    {isGerman ? 'حصري' : 'Exclusive'}
                                                 </div>
                                             </div>
                                         </div>
@@ -3325,8 +3378,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                         </Badge>
                                                                         <p className="text-xs text-foreground font-semibold text-center">
                                                                             {isSubscribing
-                                                                                ? (isArabic ? 'جاري...' : 'Processing...')
-                                                                                : (isArabic ? 'انقر للاشتراك' : 'Click to Subscribe')
+                                                                                ? (isGerman ? 'جاري...' : 'Processing...')
+                                                                                : (isGerman ? 'انقر للاشتراك' : 'Click to Subscribe')
                                                                             }
                                                                         </p>
                                                                     </div>
@@ -3407,10 +3460,10 @@ export default function OnlyFansMentorProfilePage() {
                                                     <ImageIcon className="w-10 h-10 text-muted-foreground" />
                                                 </div>
                                                 <h3 className="text-xl font-bold text-foreground mb-2">
-                                                    {isArabic ? 'لا توجد وسائط' : 'No Media Yet'}
+                                                    {isGerman ? 'لا توجد وسائط' : 'No Media Yet'}
                                                 </h3>
                                                 <p className="text-muted-foreground mb-4">
-                                                    {isArabic ? 'لم يتم نشر أي صور أو فيديوهات بعد' : 'No photos or videos have been posted yet'}
+                                                    {isGerman ? 'لم يتم نشر أي صور أو فيديوهات بعد' : 'No photos or videos have been posted yet'}
                                                 </p>
                                                 {isCreatorView && (
                                                     <Button
@@ -3422,7 +3475,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                                                     >
                                                         <Plus className="w-4 h-4 mr-2" />
-                                                        {isArabic ? 'إنشاء أول منشور' : 'Create First Post'}
+                                                        {isGerman ? 'إنشاء أول منشور' : 'Create First Post'}
                                                     </Button>
                                                 )}
                                             </div>
@@ -3432,7 +3485,7 @@ export default function OnlyFansMentorProfilePage() {
                                         {displayPosts.filter(p => p.media).length > 0 && (
                                             <div className="text-center pt-4">
                                                 <Button className="bg-card hover:bg-card-hover text-foreground border border-border">
-                                                    {isArabic ? 'تحميل المزيد' : 'Load More'}
+                                                    {isGerman ? 'تحميل المزيد' : 'Load More'}
                                                 </Button>
                                             </div>
                                         )}
@@ -3462,7 +3515,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         </div>
                                                         <div>
                                                             <p className="text-2xl font-bold text-foreground">{upcomingSessions.length}</p>
-                                                            <p className="text-xs text-muted-foreground">{isArabic ? 'جلسة قادمة' : 'Upcoming'}</p>
+                                                            <p className="text-xs text-muted-foreground">{isGerman ? 'جلسة قادمة' : 'Upcoming'}</p>
                                                         </div>
                                                     </div>
                                                 </motion.div>
@@ -3480,7 +3533,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             <p className="text-2xl font-bold text-foreground">
                                                                 {upcomingSessions.reduce((acc, s) => acc + (s.attendees || 0), 0)}
                                                             </p>
-                                                            <p className="text-xs text-muted-foreground">{isArabic ? 'مشارك' : 'Attendees'}</p>
+                                                            <p className="text-xs text-muted-foreground">{isGerman ? 'مشارك' : 'Attendees'}</p>
                                                         </div>
                                                     </div>
                                                 </motion.div>
@@ -3496,7 +3549,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         </div>
                                                         <div>
                                                             <p className="text-2xl font-bold text-foreground">{archivedSessions.length}</p>
-                                                            <p className="text-xs text-muted-foreground">{isArabic ? 'مسجل' : 'Recorded'}</p>
+                                                            <p className="text-xs text-muted-foreground">{isGerman ? 'مسجل' : 'Recorded'}</p>
                                                         </div>
                                                     </div>
                                                 </motion.div>
@@ -3514,7 +3567,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             <p className="text-2xl font-bold text-foreground">
                                                                 {upcomingSessions.reduce((acc, s) => acc + (s.duration || 0), 0)}
                                                             </p>
-                                                            <p className="text-xs text-muted-foreground">{isArabic ? 'دقيقة' : 'Total Min'}</p>
+                                                            <p className="text-xs text-muted-foreground">{isGerman ? 'دقيقة' : 'Total Min'}</p>
                                                         </div>
                                                     </div>
                                                 </motion.div>
@@ -3527,8 +3580,8 @@ export default function OnlyFansMentorProfilePage() {
                                                     <Calendar className="w-6 h-6 text-purple-400" />
                                                     <h3 className="text-xl font-bold text-foreground">
                                                         {isCreatorView
-                                                            ? (isArabic ? 'إدارة الجلسات' : 'Manage Sessions')
-                                                            : (isArabic ? 'الجلسات القادمة' : 'Upcoming Live Sessions')
+                                                            ? (isGerman ? 'إدارة الجلسات' : 'Manage Sessions')
+                                                            : (isGerman ? 'الجلسات القادمة' : 'Upcoming Live Sessions')
                                                         }
                                                     </h3>
                                                 </div>
@@ -3539,7 +3592,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                                                         >
                                                             <Plus className="w-4 h-4 mr-2" />
-                                                            {isArabic ? 'جلسة جديدة' : 'New Session'}
+                                                            {isGerman ? 'جلسة جديدة' : 'New Session'}
                                                         </Button>
                                                     ) : (
                                                         currentSubscription && (
@@ -3555,7 +3608,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 <div className="text-center py-12">
                                                     <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-3" />
                                                     <p className="text-muted-foreground">
-                                                        {isArabic ? 'جاري التحميل...' : 'Loading sessions...'}
+                                                        {isGerman ? 'جاري التحميل...' : 'Loading sessions...'}
                                                     </p>
                                                 </div>
                                             ) : upcomingSessions.length === 0 ? (
@@ -3564,12 +3617,12 @@ export default function OnlyFansMentorProfilePage() {
                                                         <Calendar className="w-10 h-10 text-muted-foreground" />
                                                     </div>
                                                     <h3 className="text-lg font-bold text-foreground mb-2">
-                                                        {isArabic ? 'لا توجد جلسات قادمة' : 'No Upcoming Sessions'}
+                                                        {isGerman ? 'لا توجد جلسات قادمة' : 'No Upcoming Sessions'}
                                                     </h3>
                                                     <p className="text-muted-foreground">
                                                         {isCreatorView
-                                                            ? (isArabic ? 'ابدأ بإنشاء جلستك الأولى' : 'Start by creating your first session')
-                                                            : (isArabic ? 'ليس هناك جلسات مجدولة حالياً' : 'No sessions are currently scheduled')
+                                                            ? (isGerman ? 'ابدأ بإنشاء جلستك الأولى' : 'Start by creating your first session')
+                                                            : (isGerman ? 'ليس هناك جلسات مجدولة حالياً' : 'No sessions are currently scheduled')
                                                         }
                                                     </p>
                                                     {isCreatorView && (
@@ -3578,7 +3631,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                                                         >
                                                             <Plus className="w-4 h-4 mr-2" />
-                                                            {isArabic ? 'إنشاء جلسة' : 'Create Session'}
+                                                            {isGerman ? 'إنشاء جلسة' : 'Create Session'}
                                                         </Button>
                                                     )}
                                                 </div>
@@ -3603,10 +3656,10 @@ export default function OnlyFansMentorProfilePage() {
                                                                         <div className="flex items-center gap-2 mb-2">
                                                                             <Badge className="bg-card text-foreground border border-border text-xs">
                                                                                 {session.type === 'ONE_ON_ONE'
-                                                                                    ? (isArabic ? '1:1' : '1-on-1')
+                                                                                    ? (isGerman ? '1:1' : '1-on-1')
                                                                                     : session.type === 'GROUP_QA'
-                                                                                        ? (isArabic ? 'أسئلة وأجوبة' : 'Group Q&A')
-                                                                                        : (isArabic ? 'ورشة عمل' : 'Workshop')
+                                                                                        ? (isGerman ? 'أسئلة وأجوبة' : 'Group Q&A')
+                                                                                        : (isGerman ? 'ورشة عمل' : 'Workshop')
                                                                                 }
                                                                             </Badge>
                                                                         </div>
@@ -3634,7 +3687,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     setShowEditSessionModal(true)
                                                                                 }}
                                                                                 className="p-2 hover:bg-card-hover rounded-lg transition-colors"
-                                                                                title={isArabic ? 'تعديل الجلسة' : 'Edit session'}
+                                                                                title={isGerman ? 'تعديل الجلسة' : 'Edit session'}
                                                                             >
                                                                                 <Edit2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
                                                                             </button>
@@ -3642,7 +3695,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                 onClick={() => handleDeleteSession(session.id, false)}
                                                                                 disabled={deletingSessionId === session.id}
                                                                                 className="p-2 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
-                                                                                title={isArabic ? 'حذف الجلسة' : 'Delete session'}
+                                                                                title={isGerman ? 'حذف الجلسة' : 'Delete session'}
                                                                             >
                                                                                 {deletingSessionId === session.id ? (
                                                                                     <div className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
@@ -3661,7 +3714,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                                         <Calendar className="w-4 h-4" />
                                                                         <span>
-                                                                            {sessionDate.toLocaleDateString(isArabic ? 'ar-EG' : 'en-US', {
+                                                                            {sessionDate.toLocaleDateString(isGerman ? 'ar-EG' : 'en-US', {
                                                                                 weekday: 'long',
                                                                                 year: 'numeric',
                                                                                 month: 'long',
@@ -3672,17 +3725,17 @@ export default function OnlyFansMentorProfilePage() {
                                                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                                         <Video className="w-4 h-4" />
                                                                         <span>
-                                                                            {sessionDate.toLocaleTimeString(isArabic ? 'ar-EG' : 'en-US', {
+                                                                            {sessionDate.toLocaleTimeString(isGerman ? 'ar-EG' : 'en-US', {
                                                                                 hour: '2-digit',
                                                                                 minute: '2-digit'
-                                                                            })} • {session.duration} {isArabic ? 'دقيقة' : 'min'}
+                                                                            })} • {session.duration} {isGerman ? 'دقيقة' : 'min'}
                                                                         </span>
                                                                     </div>
                                                                     {session.type !== 'ONE_ON_ONE' && (
                                                                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                                             <Users className="w-4 h-4" />
                                                                             <span>
-                                                                                {session.attendees} / {session.maxAttendees} {isArabic ? 'مشارك' : 'attendees'}
+                                                                                {session.attendees} / {session.maxAttendees} {isGerman ? 'مشارك' : 'attendees'}
                                                                             </span>
                                                                         </div>
                                                                     )}
@@ -3699,7 +3752,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                                                                                 </span>
                                                                                 <span className="text-sm font-bold text-red-500">
-                                                                                    {isArabic ? 'مباشر الآن' : 'LIVE NOW'}
+                                                                                    {isGerman ? 'مباشر الآن' : 'LIVE NOW'}
                                                                                 </span>
                                                                             </div>
                                                                         )}
@@ -3725,7 +3778,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                 className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
                                                                             >
                                                                                 <Users className="w-4 h-4 mr-2" />
-                                                                                {isArabic ? `الحاضرون (${session.attendees})` : `Attendees (${session.attendees})`}
+                                                                                {isGerman ? `الحاضرون (${session.attendees})` : `Attendees (${session.attendees})`}
                                                                             </Button>
 
                                                                             {session.status === 'SCHEDULED' ? (
@@ -3735,15 +3788,15 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             window.open(session.joinLink, '_blank')
                                                                                             handleUpdateSessionStatus(session.id, 'LIVE')
                                                                                         } else {
-                                                                                            toast.error(isArabic ? 'لم يتم إضافة رابط الاجتماع بعد' : 'No meeting link added yet')
+                                                                                            toast.error(isGerman ? 'لم يتم إضافة رابط الاجتماع بعد' : 'No meeting link added yet')
                                                                                         }
                                                                                     }}
                                                                                     className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                                                                                 >
                                                                                     <Video className="w-4 h-4 mr-2" />
                                                                                     {session.joinLink
-                                                                                        ? (isArabic ? 'بدء الجلسة' : 'Start Session')
-                                                                                        : (isArabic ? 'أضف رابط' : 'Add Link')
+                                                                                        ? (isGerman ? 'بدء الجلسة' : 'Start Session')
+                                                                                        : (isGerman ? 'أضف رابط' : 'Add Link')
                                                                                     }
                                                                                 </Button>
                                                                             ) : session.status === 'LIVE' ? (
@@ -3752,7 +3805,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white"
                                                                                 >
                                                                                     <X className="w-4 h-4 mr-2" />
-                                                                                    {isArabic ? 'إنهاء الجلسة' : 'End Session'}
+                                                                                    {isGerman ? 'إنهاء الجلسة' : 'End Session'}
                                                                                 </Button>
                                                                             ) : (
                                                                                 <Button
@@ -3760,7 +3813,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     className="flex-1 bg-card text-muted-foreground border border-border"
                                                                                 >
                                                                                     <CheckCircle className="w-4 h-4 mr-2" />
-                                                                                    {isArabic ? 'انتهت' : 'Ended'}
+                                                                                    {isGerman ? 'انتهت' : 'Ended'}
                                                                                 </Button>
                                                                             )}
                                                                         </div>
@@ -3773,7 +3826,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                 className="w-full bg-card hover:bg-card-hover text-foreground border border-border"
                                                                             >
                                                                                 <Video className="w-3 h-3 mr-2" />
-                                                                                {isArabic ? 'العودة للجلسة' : 'Rejoin Session'}
+                                                                                {isGerman ? 'العودة للجلسة' : 'Rejoin Session'}
                                                                             </Button>
                                                                         )}
 
@@ -3783,7 +3836,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                 <button
                                                                                     onClick={() => {
                                                                                         navigator.clipboard.writeText(session.joinLink)
-                                                                                        toast.success(isArabic ? 'تم النسخ!' : 'Copied!')
+                                                                                        toast.success(isGerman ? 'تم النسخ!' : 'Copied!')
                                                                                     }}
                                                                                     className="p-1 hover:bg-card rounded"
                                                                                 >
@@ -3796,7 +3849,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                     <Button
                                                                         onClick={() => {
                                                                             if (!session) {
-                                                                                toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
+                                                                                toast.error(isGerman ? 'يرجى تسجيل الدخول' : 'Please sign in')
                                                                                 router.push(`/${locale}/login`)
                                                                                 return
                                                                             }
@@ -3805,7 +3858,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                         className="w-full bg-card hover:bg-card-hover text-foreground border border-border"
                                                                     >
                                                                         <Lock className="w-4 h-4 mr-2" />
-                                                                        {isArabic ? 'اشترك للانضمام' : 'Subscribe to Join'}
+                                                                        {isGerman ? 'اشترك للانضمام' : 'Subscribe to Join'}
                                                                     </Button>
                                                                 ) : (
                                                                     <div className="space-y-2">
@@ -3817,7 +3870,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                                                                                 </span>
                                                                                 <span className="text-sm font-bold text-red-500">
-                                                                                    {isArabic ? 'مباشر الآن!' : 'LIVE NOW!'}
+                                                                                    {isGerman ? 'مباشر الآن!' : 'LIVE NOW!'}
                                                                                 </span>
                                                                             </div>
                                                                         )}
@@ -3828,14 +3881,14 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     window.open(session.joinLink, '_blank')
                                                                                     if (session.meetingPassword) {
                                                                                         toast.success(
-                                                                                            isArabic
+                                                                                            isGerman
                                                                                                 ? `كلمة مرور الاجتماع: ${session.meetingPassword}`
                                                                                                 : `Meeting password: ${session.meetingPassword}`,
                                                                                             { duration: 10000 }
                                                                                         )
                                                                                     }
                                                                                 } else {
-                                                                                    toast.success(isArabic ? 'ستتلقى رابط الانضمام قريباً' : 'You will receive the join link soon')
+                                                                                    toast.success(isGerman ? 'ستتلقى رابط الانضمام قريباً' : 'You will receive the join link soon')
                                                                                 }
                                                                             }}
                                                                             className={`w-full font-semibold ${session.status === 'LIVE'
@@ -3845,15 +3898,15 @@ export default function OnlyFansMentorProfilePage() {
                                                                         >
                                                                             <Video className="w-4 h-4 mr-2" />
                                                                             {session.status === 'LIVE'
-                                                                                ? (isArabic ? 'انضم الآن!' : 'Join Now!')
+                                                                                ? (isGerman ? 'انضم الآن!' : 'Join Now!')
                                                                                 : session.joinLink
-                                                                                    ? (isArabic ? 'انضم للجلسة' : 'Join Session')
-                                                                                    : (isArabic ? 'الرابط قريباً' : 'Link Coming Soon')
+                                                                                    ? (isGerman ? 'انضم للجلسة' : 'Join Session')
+                                                                                    : (isGerman ? 'الرابط قريباً' : 'Link Coming Soon')
                                                                             }
                                                                         </Button>
                                                                         {session.meetingPassword && session.joinLink && (
                                                                             <p className="text-xs text-muted-foreground text-center">
-                                                                                {isArabic ? 'كلمة المرور:' : 'Password:'} <span className="font-mono font-semibold text-foreground">{session.meetingPassword}</span>
+                                                                                {isGerman ? 'كلمة المرور:' : 'Password:'} <span className="font-mono font-semibold text-foreground">{session.meetingPassword}</span>
                                                                             </p>
                                                                         )}
                                                                     </div>
@@ -3871,10 +3924,10 @@ export default function OnlyFansMentorProfilePage() {
                                                         <Crown className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
                                                         <div>
                                                             <p className="text-sm font-semibold text-foreground mb-1">
-                                                                {isArabic ? 'اشترك للوصول' : 'Subscribe for Access'}
+                                                                {isGerman ? 'اشترك للوصول' : 'Subscribe for Access'}
                                                             </p>
                                                             <p className="text-xs text-muted-foreground">
-                                                                {isArabic
+                                                                {isGerman
                                                                     ? 'اشترك في أحد الباقات للانضمام إلى الجلسات المباشرة'
                                                                     : 'Subscribe to a tier to join live sessions and interact with the mentor'}
                                                             </p>
@@ -3891,8 +3944,8 @@ export default function OnlyFansMentorProfilePage() {
                                                     <Play className="w-6 h-6 text-pink-400" />
                                                     <h3 className="text-xl font-bold text-foreground">
                                                         {isCreatorView
-                                                            ? (isArabic ? 'إدارة التسجيلات' : 'Manage Recordings')
-                                                            : (isArabic ? 'التسجيلات المؤرشفة' : 'Archived Recordings')
+                                                            ? (isGerman ? 'إدارة التسجيلات' : 'Manage Recordings')
+                                                            : (isGerman ? 'التسجيلات المؤرشفة' : 'Archived Recordings')
                                                         }
                                                     </h3>
                                                 </div>
@@ -3903,7 +3956,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                                                     >
                                                         <Plus className="w-4 h-4 mr-2" />
-                                                        {isArabic ? 'إضافة تسجيل' : 'Add Recording'}
+                                                        {isGerman ? 'إضافة تسجيل' : 'Add Recording'}
                                                     </Button>
                                                 )}
                                             </div>
@@ -3914,7 +3967,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     <div className="bg-gradient-to-br from-pink-900/10 to-purple-900/10 border border-pink-500/20 rounded-lg p-3">
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <Eye className="w-4 h-4 text-pink-400" />
-                                                            <span className="text-xs text-muted-foreground">{isArabic ? 'إجمالي المشاهدات' : 'Total Views'}</span>
+                                                            <span className="text-xs text-muted-foreground">{isGerman ? 'إجمالي المشاهدات' : 'Total Views'}</span>
                                                         </div>
                                                         <p className="text-xl font-bold text-foreground">
                                                             {displayArchivedSessions.reduce((acc, s) => acc + (s.views || 0), 0).toLocaleString()}
@@ -3923,7 +3976,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     <div className="bg-gradient-to-br from-blue-900/10 to-cyan-900/10 border border-blue-500/20 rounded-lg p-3">
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <Clock className="w-4 h-4 text-blue-400" />
-                                                            <span className="text-xs text-muted-foreground">{isArabic ? 'إجمالي الساعات' : 'Total Hours'}</span>
+                                                            <span className="text-xs text-muted-foreground">{isGerman ? 'إجمالي الساعات' : 'Total Hours'}</span>
                                                         </div>
                                                         <p className="text-xl font-bold text-foreground">
                                                             {Math.round(displayArchivedSessions.reduce((acc, s) => acc + ((s.views || 0) * (s.duration || 60) / 60), 0))}h
@@ -3932,14 +3985,14 @@ export default function OnlyFansMentorProfilePage() {
                                                     <div className="bg-gradient-to-br from-green-900/10 to-emerald-900/10 border border-green-500/20 rounded-lg p-3">
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <BarChart3 className="w-4 h-4 text-green-400" />
-                                                            <span className="text-xs text-muted-foreground">{isArabic ? 'معدل الإكمال' : 'Completion Rate'}</span>
+                                                            <span className="text-xs text-muted-foreground">{isGerman ? 'معدل الإكمال' : 'Completion Rate'}</span>
                                                         </div>
                                                         <p className="text-xl font-bold text-foreground">78%</p>
                                                     </div>
                                                     <div className="bg-gradient-to-br from-yellow-900/10 to-orange-900/10 border border-yellow-500/20 rounded-lg p-3">
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <TrendingUp className="w-4 h-4 text-yellow-400" />
-                                                            <span className="text-xs text-muted-foreground">{isArabic ? 'متوسط المشاهدات' : 'Avg Views'}</span>
+                                                            <span className="text-xs text-muted-foreground">{isGerman ? 'متوسط المشاهدات' : 'Avg Views'}</span>
                                                         </div>
                                                         <p className="text-xl font-bold text-foreground">
                                                             {displayArchivedSessions.length > 0
@@ -3960,7 +4013,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
-                                                    {isArabic ? 'الكل' : 'All'}
+                                                    {isGerman ? 'الكل' : 'All'}
                                                 </button>
                                                 <button
                                                     onClick={handleSessionFilterWorkshop}
@@ -3969,7 +4022,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
-                                                    {isArabic ? 'ورش العمل' : 'Workshops'}
+                                                    {isGerman ? 'ورش العمل' : 'Workshops'}
                                                 </button>
                                                 <button
                                                     onClick={() => setSessionFilter('qa')}
@@ -3978,7 +4031,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
-                                                    {isArabic ? 'أسئلة وأجوبة' : 'Q&A Sessions'}
+                                                    {isGerman ? 'أسئلة وأجوبة' : 'Q&A Sessions'}
                                                 </button>
                                                 <button
                                                     onClick={() => setSessionFilter('oneOnOne')}
@@ -3987,7 +4040,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
-                                                    {isArabic ? '1:1' : '1-on-1'}
+                                                    {isGerman ? '1:1' : '1-on-1'}
                                                 </button>
                                             </div>
 
@@ -3996,7 +4049,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 <Input
                                                     value={searchRecording}
                                                     onChange={(e) => setSearchRecording(e.target.value)}
-                                                    placeholder={isArabic ? 'ابحث في التسجيلات...' : 'Search recordings...'}
+                                                    placeholder={isGerman ? 'ابحث في التسجيلات...' : 'Search recordings...'}
                                                     className="bg-background border-border"
                                                 />
                                             </div>
@@ -4031,7 +4084,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                     )}
                                                                     <div className="absolute top-2 right-2">
                                                                         <Badge className="bg-black/60 text-white border-0 text-xs backdrop-blur-sm">
-                                                                            {session.duration} {isArabic ? 'د' : 'min'}
+                                                                            {session.duration} {isGerman ? 'د' : 'min'}
                                                                         </Badge>
                                                                     </div>
                                                                 </div>
@@ -4045,8 +4098,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     {session.type === 'ONE_ON_ONE'
                                                                                         ? '1:1'
                                                                                         : session.type === 'GROUP_QA'
-                                                                                            ? (isArabic ? 'Q&A' : 'Q&A')
-                                                                                            : (isArabic ? 'ورشة' : 'Workshop')
+                                                                                            ? (isGerman ? 'Q&A' : 'Q&A')
+                                                                                            : (isGerman ? 'ورشة' : 'Workshop')
                                                                                     }
                                                                                 </Badge>
                                                                             </div>
@@ -4063,7 +4116,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                                                             <span className="flex items-center gap-1">
                                                                                 <Calendar className="w-3 h-3" />
-                                                                                {recordedDate.toLocaleDateString(isArabic ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric' })}
+                                                                                {recordedDate.toLocaleDateString(isGerman ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric' })}
                                                                             </span>
                                                                             <span className="flex items-center gap-1">
                                                                                 <Eye className="w-3 h-3" />
@@ -4090,7 +4143,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     variant="outline"
                                                                                 >
                                                                                     <Edit2 className="w-3 h-3 mr-1" />
-                                                                                    {isArabic ? 'تعديل' : 'Edit'}
+                                                                                    {isGerman ? 'تعديل' : 'Edit'}
                                                                                 </Button>
                                                                                 <Button
                                                                                     size="sm"
@@ -4104,7 +4157,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     ) : (
                                                                                         <Trash2 className="w-3 h-3 mr-1" />
                                                                                     )}
-                                                                                    {isArabic ? 'حذف' : 'Delete'}
+                                                                                    {isGerman ? 'حذف' : 'Delete'}
                                                                                 </Button>
                                                                             </div>
                                                                         ) : canAccess ? (
@@ -4114,20 +4167,20 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     if (session.recordingUrl) {
                                                                                         window.open(session.recordingUrl, '_blank')
                                                                                     } else {
-                                                                                        toast.error(isArabic ? 'لا يوجد تسجيل متاح' : 'No recording available')
+                                                                                        toast.error(isGerman ? 'لا يوجد تسجيل متاح' : 'No recording available')
                                                                                     }
                                                                                 }}
                                                                                 className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                                                                             >
                                                                                 <Play className="w-3 h-3 mr-1" />
-                                                                                {isArabic ? 'مشاهدة' : 'Watch'}
+                                                                                {isGerman ? 'مشاهدة' : 'Watch'}
                                                                             </Button>
                                                                         ) : (
                                                                             <Button
                                                                                 size="sm"
                                                                                 onClick={() => {
                                                                                     if (!session) {
-                                                                                        toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
+                                                                                        toast.error(isGerman ? 'يرجى تسجيل الدخول' : 'Please sign in')
                                                                                         router.push(`/${locale}/login`)
                                                                                         return
                                                                                     }
@@ -4136,7 +4189,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                 className="bg-card hover:bg-card-hover text-foreground border border-border"
                                                                             >
                                                                                 <Lock className="w-3 h-3 mr-1" />
-                                                                                {isArabic ? 'اشترك' : 'Subscribe'}
+                                                                                {isGerman ? 'اشترك' : 'Subscribe'}
                                                                             </Button>
                                                                         )}
                                                                     </div>
@@ -4154,12 +4207,12 @@ export default function OnlyFansMentorProfilePage() {
                                                         <Play className="w-10 h-10 text-muted-foreground" />
                                                     </div>
                                                     <h3 className="text-lg font-bold text-foreground mb-2">
-                                                        {isArabic ? 'لا توجد تسجيلات' : 'No Recordings Yet'}
+                                                        {isGerman ? 'لا توجد تسجيلات' : 'No Recordings Yet'}
                                                     </h3>
                                                     <p className="text-muted-foreground">
                                                         {isCreatorView
-                                                            ? (isArabic ? 'ابدأ بإضافة تسجيلك الأول' : 'Start by adding your first recording')
-                                                            : (isArabic ? 'سيتم إضافة التسجيلات المؤرشفة هنا' : 'Archived session recordings will appear here')
+                                                            ? (isGerman ? 'ابدأ بإضافة تسجيلك الأول' : 'Start by adding your first recording')
+                                                            : (isGerman ? 'سيتم إضافة التسجيلات المؤرشفة هنا' : 'Archived session recordings will appear here')
                                                         }
                                                     </p>
                                                     {isCreatorView && (
@@ -4167,21 +4220,21 @@ export default function OnlyFansMentorProfilePage() {
                                                             onClick={() => {
                                                                 const newRecording = {
                                                                     id: `recording-${Date.now()}`,
-                                                                    title: isArabic ? 'تسجيل جديد' : 'New Recording',
+                                                                    title: isGerman ? 'تسجيل جديد' : 'New Recording',
                                                                     type: 'WORKSHOP',
                                                                     duration: 60,
                                                                     recordedDate: new Date().toISOString(),
                                                                     views: 0,
                                                                     likes: 0,
-                                                                    description: isArabic ? 'وصف التسجيل' : 'Recording description'
+                                                                    description: isGerman ? 'وصف التسجيل' : 'Recording description'
                                                                 }
                                                                 setRealArchivedSessions([newRecording])
-                                                                toast.success(isArabic ? 'تم إضافة التسجيل' : 'Recording added!')
+                                                                toast.success(isGerman ? 'تم إضافة التسجيل' : 'Recording added!')
                                                             }}
                                                             className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                                                         >
                                                             <Plus className="w-4 h-4 mr-2" />
-                                                            {isArabic ? 'إضافة تسجيل' : 'Add Recording'}
+                                                            {isGerman ? 'إضافة تسجيل' : 'Add Recording'}
                                                         </Button>
                                                     )}
                                                 </div>
@@ -4194,10 +4247,10 @@ export default function OnlyFansMentorProfilePage() {
                                                         <Play className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
                                                         <div>
                                                             <p className="text-sm font-semibold text-foreground mb-1">
-                                                                {isArabic ? 'اشترك للمشاهدة' : 'Subscribe to Watch'}
+                                                                {isGerman ? 'اشترك للمشاهدة' : 'Subscribe to Watch'}
                                                             </p>
                                                             <p className="text-xs text-muted-foreground">
-                                                                {isArabic
+                                                                {isGerman
                                                                     ? 'اشترك للوصول إلى مكتبة التسجيلات المؤرشفة الكاملة'
                                                                     : 'Subscribe to access the full library of archived session recordings'}
                                                             </p>
@@ -4232,7 +4285,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         </div>
                                                         <div>
                                                             <p className="text-2xl font-bold text-foreground">{displayCommunityPosts.length}</p>
-                                                            <p className="text-xs text-muted-foreground">{isArabic ? 'منشور' : 'Posts'}</p>
+                                                            <p className="text-xs text-muted-foreground">{isGerman ? 'منشور' : 'Posts'}</p>
                                                         </div>
                                                     </div>
                                                 </motion.div>
@@ -4250,7 +4303,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             <p className="text-2xl font-bold text-foreground">
                                                                 {displayCommunityPosts.reduce((acc, p) => acc + p.replies, 0)}
                                                             </p>
-                                                            <p className="text-xs text-muted-foreground">{isArabic ? 'ردود' : 'Replies'}</p>
+                                                            <p className="text-xs text-muted-foreground">{isGerman ? 'ردود' : 'Replies'}</p>
                                                         </div>
                                                     </div>
                                                 </motion.div>
@@ -4268,7 +4321,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             <p className="text-2xl font-bold text-foreground">
                                                                 {displayCommunityPosts.reduce((acc, p) => acc + p.likes, 0)}
                                                             </p>
-                                                            <p className="text-xs text-muted-foreground">{isArabic ? 'إعجاب' : 'Likes'}</p>
+                                                            <p className="text-xs text-muted-foreground">{isGerman ? 'إعجاب' : 'Likes'}</p>
                                                         </div>
                                                     </div>
                                                 </motion.div>
@@ -4282,7 +4335,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     <div className="flex items-center gap-3">
                                                         <Paperclip className="w-5 h-5 text-purple-400" />
                                                         <h3 className="text-lg font-bold text-foreground">
-                                                            {isArabic ? 'الموارد المثبتة' : 'Pinned Resources'}
+                                                            {isGerman ? 'الموارد المثبتة' : 'Pinned Resources'}
                                                         </h3>
                                                     </div>
                                                     {isCreatorView && (
@@ -4292,7 +4345,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                                                         >
                                                             <Plus className="w-4 h-4 mr-2" />
-                                                            {isArabic ? 'إضافة مورد' : 'Add Resource'}
+                                                            {isGerman ? 'إضافة مورد' : 'Add Resource'}
                                                         </Button>
                                                     )}
                                                 </div>
@@ -4315,7 +4368,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                         {resource.title}
                                                                     </h4>
                                                                     <p className="text-xs text-muted-foreground">
-                                                                        {resource.size} • {resource.downloads} {isArabic ? 'تحميل' : 'downloads'}
+                                                                        {resource.size} • {resource.downloads} {isGerman ? 'تحميل' : 'downloads'}
                                                                     </p>
                                                                 </div>
                                                             </div>
@@ -4344,7 +4397,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                             if (!mentor) return
 
                                                                             const confirmed = window.confirm(
-                                                                                isArabic
+                                                                                isGerman
                                                                                     ? `هل أنت متأكد من حذف "${resource.title}"؟ لا يمكن التراجع عن هذا الإجراء.`
                                                                                     : `Are you sure you want to delete "${resource.title}"? This action cannot be undone.`
                                                                             )
@@ -4352,22 +4405,22 @@ export default function OnlyFansMentorProfilePage() {
                                                                             if (!confirmed) return
 
                                                                             try {
-                                                                                toast.loading(isArabic ? 'جاري الحذف...' : 'Deleting...')
+                                                                                toast.loading(isGerman ? 'جاري الحذف...' : 'Deleting...')
 
                                                                                 const response = await fetch(`/api/mentors/${mentor.id}/resources?resourceId=${resource.id}`, {
                                                                                     method: 'DELETE'
                                                                                 })
 
                                                                                 if (response.ok) {
-                                                                                    toast.success(isArabic ? 'تم حذف المورد!' : 'Resource deleted!')
+                                                                                    toast.success(isGerman ? 'تم حذف المورد!' : 'Resource deleted!')
                                                                                     fetchResourcesFromAPI()
                                                                                 } else {
                                                                                     const error = await response.json()
-                                                                                    toast.error(error.message || (isArabic ? 'فشل الحذف' : 'Failed to delete'))
+                                                                                    toast.error(error.message || (isGerman ? 'فشل الحذف' : 'Failed to delete'))
                                                                                 }
                                                                             } catch (error) {
                                                                                 console.error('Error deleting resource:', error)
-                                                                                toast.error(isArabic ? 'حدث خطأ أثناء الحذف' : 'Error deleting resource')
+                                                                                toast.error(isGerman ? 'حدث خطأ أثناء الحذف' : 'Error deleting resource')
                                                                             }
                                                                         }}
                                                                         className="p-2 hover:bg-red-500/10 hover:bg-card-hover rounded-lg transition-colors group"
@@ -4377,7 +4430,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 </div>
                                                             ) : (
                                                                 <Button size="sm" className="bg-purple-500 hover:bg-purple-600 text-white">
-                                                                    {isArabic ? 'تحميل' : 'Download'}
+                                                                    {isGerman ? 'تحميل' : 'Download'}
                                                                 </Button>
                                                             )}
                                                         </motion.div>
@@ -4393,7 +4446,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     <div className="flex items-center gap-3">
                                                         <MessageSquare className="w-6 h-6 text-purple-400" />
                                                         <h3 className="text-xl font-bold text-foreground">
-                                                            {isArabic ? 'إدارة المجتمع' : 'Community Management'}
+                                                            {isGerman ? 'إدارة المجتمع' : 'Community Management'}
                                                         </h3>
                                                     </div>
                                                     <Button
@@ -4401,7 +4454,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
                                                     >
                                                         <Plus className="w-4 h-4 mr-2" />
-                                                        {isArabic ? 'منشور جديد' : 'New Post'}
+                                                        {isGerman ? 'منشور جديد' : 'New Post'}
                                                     </Button>
                                                 </div>
 
@@ -4415,7 +4468,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             }`}
                                                     >
                                                         <MessageSquare className="w-4 h-4 mr-2 inline" />
-                                                        {isArabic ? 'المنشورات' : 'Posts'}
+                                                        {isGerman ? 'المنشورات' : 'Posts'}
                                                     </button>
                                                     <button
                                                         onClick={() => {
@@ -4428,7 +4481,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             }`}
                                                     >
                                                         <Users className="w-4 h-4 mr-2 inline" />
-                                                        {isArabic ? 'الأعضاء' : 'Members'}
+                                                        {isGerman ? 'الأعضاء' : 'Members'}
                                                     </button>
                                                     <button
                                                         onClick={() => {
@@ -4441,7 +4494,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             }`}
                                                     >
                                                         <BarChart3 className="w-4 h-4 mr-2 inline" />
-                                                        {isArabic ? 'الإحصائيات' : 'Analytics'}
+                                                        {isGerman ? 'الإحصائيات' : 'Analytics'}
                                                     </button>
                                                 </div>
 
@@ -4454,7 +4507,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="flex items-center gap-2 mb-1">
                                                                     <MessageSquare className="w-4 h-4 text-purple-400" />
                                                                     <span className="text-xs text-muted-foreground">
-                                                                        {isArabic ? 'المنشورات' : 'Posts'}
+                                                                        {isGerman ? 'المنشورات' : 'Posts'}
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-2xl font-bold text-foreground">{displayCommunityPosts.length}</p>
@@ -4463,7 +4516,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="flex items-center gap-2 mb-1">
                                                                     <Heart className="w-4 h-4 text-pink-400" />
                                                                     <span className="text-xs text-muted-foreground">
-                                                                        {isArabic ? 'الإعجابات' : 'Likes'}
+                                                                        {isGerman ? 'الإعجابات' : 'Likes'}
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-2xl font-bold text-foreground">
@@ -4474,7 +4527,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="flex items-center gap-2 mb-1">
                                                                     <MessageCircle className="w-4 h-4 text-blue-400" />
                                                                     <span className="text-xs text-muted-foreground">
-                                                                        {isArabic ? 'الردود' : 'Replies'}
+                                                                        {isGerman ? 'الردود' : 'Replies'}
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-2xl font-bold text-foreground">
@@ -4485,7 +4538,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="flex items-center gap-2 mb-1">
                                                                     <Eye className="w-4 h-4 text-green-400" />
                                                                     <span className="text-xs text-muted-foreground">
-                                                                        {isArabic ? 'المشاهدات' : 'Views'}
+                                                                        {isGerman ? 'المشاهدات' : 'Views'}
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-2xl font-bold text-foreground">
@@ -4500,7 +4553,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="text-center py-8">
                                                                     <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
                                                                     <p className="text-muted-foreground">
-                                                                        {isArabic ? 'لا توجد منشورات بعد' : 'No posts yet'}
+                                                                        {isGerman ? 'لا توجد منشورات بعد' : 'No posts yet'}
                                                                     </p>
                                                                 </div>
                                                             ) : (
@@ -4522,7 +4575,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     {post.isPinned && (
                                                                                         <Badge className="bg-orange-500 text-white border-0 text-xs">
                                                                                             <Paperclip className="w-3 h-3 mr-1" />
-                                                                                            {isArabic ? 'مثبت' : 'Pinned'}
+                                                                                            {isGerman ? 'مثبت' : 'Pinned'}
                                                                                         </Badge>
                                                                                     )}
                                                                                 </div>
@@ -4534,11 +4587,11 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     </span>
                                                                                     <span className="flex items-center gap-1">
                                                                                         <MessageCircle className="w-4 h-4" />
-                                                                                        {post.replies} {isArabic ? 'رد' : 'replies'}
+                                                                                        {post.replies} {isGerman ? 'رد' : 'replies'}
                                                                                     </span>
                                                                                     <span className="flex items-center gap-1">
                                                                                         <Eye className="w-4 h-4" />
-                                                                                        {post.likes * 5} {isArabic ? 'مشاهدة' : 'views'}
+                                                                                        {post.likes * 5} {isGerman ? 'مشاهدة' : 'views'}
                                                                                     </span>
                                                                                 </div>
                                                                             </div>
@@ -4549,7 +4602,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                         ? 'bg-orange-500/10 text-orange-500'
                                                                                         : 'hover:bg-card-hover text-muted-foreground'
                                                                                         }`}
-                                                                                    title={post.isPinned ? (isArabic ? 'إلغاء التثبيت' : 'Unpin') : (isArabic ? 'تثبيت' : 'Pin')}
+                                                                                    title={post.isPinned ? (isGerman ? 'إلغاء التثبيت' : 'Unpin') : (isGerman ? 'تثبيت' : 'Pin')}
                                                                                 >
                                                                                     <Paperclip className="w-4 h-4" />
                                                                                 </button>
@@ -4557,7 +4610,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     onClick={async () => {
                                                                                         if (!mentor) return
                                                                                         const confirmed = window.confirm(
-                                                                                            isArabic ? 'هل تريد حذف هذا المنشور؟' : 'Delete this post?'
+                                                                                            isGerman ? 'هل تريد حذف هذا المنشور؟' : 'Delete this post?'
                                                                                         )
                                                                                         if (confirmed) {
                                                                                             try {
@@ -4565,18 +4618,18 @@ export default function OnlyFansMentorProfilePage() {
                                                                                                     method: 'DELETE'
                                                                                                 })
                                                                                                 if (response.ok) {
-                                                                                                    toast.success(isArabic ? 'تم الحذف' : 'Deleted')
+                                                                                                    toast.success(isGerman ? 'تم الحذف' : 'Deleted')
                                                                                                     fetchCommunityPostsFromAPI()
                                                                                                 } else {
-                                                                                                    toast.error(isArabic ? 'فشل الحذف' : 'Failed to delete')
+                                                                                                    toast.error(isGerman ? 'فشل الحذف' : 'Failed to delete')
                                                                                                 }
                                                                                             } catch (error) {
-                                                                                                toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+                                                                                                toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
                                                                                             }
                                                                                         }
                                                                                     }}
                                                                                     className="p-2 hover:bg-red-500/10 text-red-400 hover:text-red-500 rounded-lg transition-colors"
-                                                                                    title={isArabic ? 'حذف' : 'Delete'}
+                                                                                    title={isGerman ? 'حذف' : 'Delete'}
                                                                                 >
                                                                                     <Trash2 className="w-4 h-4" />
                                                                                 </button>
@@ -4598,7 +4651,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="flex items-center gap-2 mb-1">
                                                                     <Users className="w-4 h-4 text-blue-400" />
                                                                     <span className="text-xs text-muted-foreground">
-                                                                        {isArabic ? 'إجمالي الأعضاء' : 'Total Members'}
+                                                                        {isGerman ? 'إجمالي الأعضاء' : 'Total Members'}
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-2xl font-bold text-foreground">{communityMembers.length}</p>
@@ -4607,7 +4660,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="flex items-center gap-2 mb-1">
                                                                     <Crown className="w-4 h-4 text-yellow-400" />
                                                                     <span className="text-xs text-muted-foreground">
-                                                                        {isArabic ? 'أعضاء VIP' : 'VIP Members'}
+                                                                        {isGerman ? 'أعضاء VIP' : 'VIP Members'}
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-2xl font-bold text-foreground">{communityMembers.filter(m => m.tier?.toLowerCase() === 'vip').length}</p>
@@ -4616,7 +4669,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="flex items-center gap-2 mb-1">
                                                                     <TrendingUp className="w-4 h-4 text-green-400" />
                                                                     <span className="text-xs text-muted-foreground">
-                                                                        {isArabic ? 'Premium' : 'Premium'}
+                                                                        {isGerman ? 'Premium' : 'Premium'}
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-2xl font-bold text-foreground">{communityMembers.filter(m => m.tier?.toLowerCase() === 'premium').length}</p>
@@ -4625,7 +4678,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="flex items-center gap-2 mb-1">
                                                                     <Clock className="w-4 h-4 text-orange-400" />
                                                                     <span className="text-xs text-muted-foreground">
-                                                                        {isArabic ? 'Basic' : 'Basic'}
+                                                                        {isGerman ? 'Basic' : 'Basic'}
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-2xl font-bold text-foreground">{communityMembers.filter(m => m.tier?.toLowerCase() === 'basic').length}</p>
@@ -4640,7 +4693,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                     size="sm"
                                                                     onClick={() => setMemberFilter('all')}
                                                                 >
-                                                                    {isArabic ? 'الكل' : 'All'}
+                                                                    {isGerman ? 'الكل' : 'All'}
                                                                 </Button>
                                                                 <Button
                                                                     variant={memberFilter === 'vip' ? 'default' : 'outline'}
@@ -4669,7 +4722,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             </div>
                                                             <div className="flex items-center gap-2">
                                                                 <Input
-                                                                    placeholder={isArabic ? 'ابحث عن عضو...' : 'Search members...'}
+                                                                    placeholder={isGerman ? 'ابحث عن عضو...' : 'Search members...'}
                                                                     className="w-48"
                                                                     value={memberSearchQuery}
                                                                     onChange={(e) => setMemberSearchQuery(e.target.value)}
@@ -4698,7 +4751,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     {/* Avatar */}
                                                                                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center">
                                                                                         <span className="text-sm font-bold text-white">
-                                                                                            {(isArabic ? member.arabicName : member.name)[0]}
+                                                                                            {(isGerman ? member.arabicName : member.name)[0]}
                                                                                         </span>
                                                                                     </div>
 
@@ -4706,7 +4759,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     <div className="flex-1">
                                                                                         <div className="flex items-center gap-2 mb-1">
                                                                                             <h4 className="font-semibold text-foreground">
-                                                                                                {isArabic ? member.arabicName : member.name}
+                                                                                                {isGerman ? member.arabicName : member.name}
                                                                                             </h4>
                                                                                             <Badge className={`${member.tier === 'VIP' ? 'bg-yellow-500' :
                                                                                                 member.tier === 'PREMIUM' ? 'bg-purple-500' :
@@ -4717,16 +4770,16 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             {member.status === 'warned' && (
                                                                                                 <Badge className="bg-orange-500 text-white border-0 text-xs">
                                                                                                     <AlertTriangle className="w-3 h-3 mr-1" />
-                                                                                                    {isArabic ? 'محذر' : 'Warned'}
+                                                                                                    {isGerman ? 'محذر' : 'Warned'}
                                                                                                 </Badge>
                                                                                             )}
                                                                                         </div>
                                                                                         <p className="text-sm text-muted-foreground mb-1">{member.email}</p>
                                                                                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                                                                            <span>{isArabic ? 'انضم:' : 'Joined:'} {new Date(member.joinDate).toLocaleDateString()}</span>
-                                                                                            <span>{isArabic ? 'آخر نشاط:' : 'Last active:'} {member.lastActive}</span>
-                                                                                            <span>{member.totalPosts} {isArabic ? 'منشور' : 'posts'}</span>
-                                                                                            <span>{member.totalLikes} {isArabic ? 'إعجاب' : 'likes'}</span>
+                                                                                            <span>{isGerman ? 'انضم:' : 'Joined:'} {new Date(member.joinDate).toLocaleDateString()}</span>
+                                                                                            <span>{isGerman ? 'آخر نشاط:' : 'Last active:'} {member.lastActive}</span>
+                                                                                            <span>{member.totalPosts} {isGerman ? 'منشور' : 'posts'}</span>
+                                                                                            <span>{member.totalLikes} {isGerman ? 'إعجاب' : 'likes'}</span>
                                                                                         </div>
                                                                                     </div>
                                                                                 </div>
@@ -4739,7 +4792,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             router.push(`/${locale}/messaging?userId=${member.id}`)
                                                                                         }}
                                                                                         className="p-2 hover:bg-blue-500/10 text-blue-500 rounded-lg transition-colors"
-                                                                                        title={isArabic ? 'إرسال رسالة' : 'Send message'}
+                                                                                        title={isGerman ? 'إرسال رسالة' : 'Send message'}
                                                                                     >
                                                                                         <MessageSquare className="w-4 h-4" />
                                                                                     </button>
@@ -4756,7 +4809,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                                 })
                                                                                                 const data = await response.json()
                                                                                                 if (response.ok) {
-                                                                                                    toast.success(isArabic ?
+                                                                                                    toast.success(isGerman ?
                                                                                                         (data.newStatus === 'warned' ? 'تم تحذير العضو' : 'تم إزالة التحذير') :
                                                                                                         data.message)
                                                                                                     fetchCommunityMembers()
@@ -4764,7 +4817,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                                     toast.error(data.error || 'Failed')
                                                                                                 }
                                                                                             } catch {
-                                                                                                toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+                                                                                                toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
                                                                                             }
                                                                                         }}
                                                                                         className={`p-2 rounded-lg transition-colors ${member.status === 'warned'
@@ -4772,8 +4825,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             : 'hover:bg-orange-500/10 text-orange-500'
                                                                                             }`}
                                                                                         title={member.status === 'warned' ?
-                                                                                            (isArabic ? 'إزالة التحذير' : 'Remove warning') :
-                                                                                            (isArabic ? 'تحذير العضو' : 'Warn member')}
+                                                                                            (isGerman ? 'إزالة التحذير' : 'Remove warning') :
+                                                                                            (isGerman ? 'تحذير العضو' : 'Warn member')}
                                                                                     >
                                                                                         <AlertTriangle className="w-4 h-4" />
                                                                                     </button>
@@ -4791,7 +4844,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                                 })
                                                                                                 const data = await response.json()
                                                                                                 if (response.ok) {
-                                                                                                    toast.success(isArabic ?
+                                                                                                    toast.success(isGerman ?
                                                                                                         (data.newStatus === 'muted' ? 'تم كتم العضو لمدة 24 ساعة' : 'تم إلغاء الكتم') :
                                                                                                         data.message)
                                                                                                     fetchCommunityMembers()
@@ -4799,7 +4852,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                                     toast.error(data.error || 'Failed')
                                                                                                 }
                                                                                             } catch {
-                                                                                                toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+                                                                                                toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
                                                                                             }
                                                                                         }}
                                                                                         className={`p-2 rounded-lg transition-colors ${member.status === 'muted'
@@ -4807,15 +4860,15 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             : 'hover:bg-purple-500/10 text-purple-500'
                                                                                             }`}
                                                                                         title={member.status === 'muted' ?
-                                                                                            (isArabic ? 'إلغاء الكتم' : 'Unmute') :
-                                                                                            (isArabic ? 'كتم العضو' : 'Mute member')}
+                                                                                            (isGerman ? 'إلغاء الكتم' : 'Unmute') :
+                                                                                            (isGerman ? 'كتم العضو' : 'Mute member')}
                                                                                     >
                                                                                         <VolumeX className="w-4 h-4" />
                                                                                     </button>
                                                                                     <button
                                                                                         onClick={async () => {
                                                                                             const confirmed = window.confirm(
-                                                                                                isArabic ?
+                                                                                                isGerman ?
                                                                                                     `هل أنت متأكد من إزالة "${member.name || member.arabicName}" من المجتمع؟` :
                                                                                                     `Are you sure you want to remove "${member.name}" from the community?`
                                                                                             )
@@ -4831,17 +4884,17 @@ export default function OnlyFansMentorProfilePage() {
                                                                                                 })
                                                                                                 const data = await response.json()
                                                                                                 if (response.ok) {
-                                                                                                    toast.success(isArabic ? 'تم إزالة العضو' : 'Member removed')
+                                                                                                    toast.success(isGerman ? 'تم إزالة العضو' : 'Member removed')
                                                                                                     fetchCommunityMembers()
                                                                                                 } else {
                                                                                                     toast.error(data.error || 'Failed')
                                                                                                 }
                                                                                             } catch {
-                                                                                                toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+                                                                                                toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
                                                                                             }
                                                                                         }}
                                                                                         className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
-                                                                                        title={isArabic ? 'إزالة العضو' : 'Remove member'}
+                                                                                        title={isGerman ? 'إزالة العضو' : 'Remove member'}
                                                                                     >
                                                                                         <UserX className="w-4 h-4" />
                                                                                     </button>
@@ -4853,7 +4906,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="text-center py-8">
                                                                     <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
                                                                     <p className="text-muted-foreground">
-                                                                        {isArabic ? 'لا يوجد أعضاء حتى الآن' : 'No members yet'}
+                                                                        {isGerman ? 'لا يوجد أعضاء حتى الآن' : 'No members yet'}
                                                                     </p>
                                                                 </div>
                                                             )}
@@ -4862,7 +4915,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         {/* Bulk Actions */}
                                                         <div className="bg-background rounded-lg p-4 border border-border">
                                                             <h4 className="font-semibold text-foreground mb-3">
-                                                                {isArabic ? 'إجراءات جماعية' : 'Bulk Actions'}
+                                                                {isGerman ? 'إجراءات جماعية' : 'Bulk Actions'}
                                                             </h4>
                                                             <div className="flex items-center gap-2 flex-wrap">
                                                                 <Button
@@ -4871,7 +4924,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                     onClick={() => setShowBroadcastModal(true)}
                                                                 >
                                                                     <MessageSquare className="w-4 h-4 mr-2" />
-                                                                    {isArabic ? 'رسالة للجميع' : 'Message All'}
+                                                                    {isGerman ? 'رسالة للجميع' : 'Message All'}
                                                                 </Button>
                                                                 <Button
                                                                     variant="outline"
@@ -4879,7 +4932,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                     onClick={() => {
                                                                         // Export members list to CSV
                                                                         if (communityMembers.length === 0) {
-                                                                            toast.error(isArabic ? 'لا يوجد أعضاء للتصدير' : 'No members to export')
+                                                                            toast.error(isGerman ? 'لا يوجد أعضاء للتصدير' : 'No members to export')
                                                                             return
                                                                         }
                                                                         const headers = ['Name', 'Email', 'Tier', 'Joined Date', 'Status']
@@ -4900,22 +4953,22 @@ export default function OnlyFansMentorProfilePage() {
                                                                         a.download = `members-${mentor?.user?.name || 'community'}.csv`
                                                                         a.click()
                                                                         window.URL.revokeObjectURL(url)
-                                                                        toast.success(isArabic ? 'تم تصدير قائمة الأعضاء' : 'Members list exported')
+                                                                        toast.success(isGerman ? 'تم تصدير قائمة الأعضاء' : 'Members list exported')
                                                                     }}
                                                                 >
                                                                     <Download className="w-4 h-4 mr-2" />
-                                                                    {isArabic ? 'تصدير القائمة' : 'Export List'}
+                                                                    {isGerman ? 'تصدير القائمة' : 'Export List'}
                                                                 </Button>
                                                                 <Button
                                                                     variant="outline"
                                                                     size="sm"
                                                                     onClick={() => {
                                                                         fetchCommunityMembers()
-                                                                        toast.success(isArabic ? 'تم تحديث القائمة' : 'List refreshed')
+                                                                        toast.success(isGerman ? 'تم تحديث القائمة' : 'List refreshed')
                                                                     }}
                                                                 >
                                                                     <RefreshCw className="w-4 h-4 mr-2" />
-                                                                    {isArabic ? 'تحديث' : 'Refresh'}
+                                                                    {isGerman ? 'تحديث' : 'Refresh'}
                                                                 </Button>
                                                             </div>
                                                         </div>
@@ -4931,48 +4984,48 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="flex items-center gap-2 mb-2">
                                                                     <Users className="w-5 h-5 text-[#0a84ff]" />
                                                                     <span className="text-sm font-medium text-foreground">
-                                                                        {isArabic ? 'إجمالي الأعضاء' : 'Total Members'}
+                                                                        {isGerman ? 'إجمالي الأعضاء' : 'Total Members'}
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-2xl font-bold text-foreground">{communityAnalytics.totalMembers}</p>
                                                                 <p className="text-xs text-muted-foreground">
-                                                                    {isArabic ? 'مشتركين' : 'subscribers'}
+                                                                    {isGerman ? 'مشتركين' : 'subscribers'}
                                                                 </p>
                                                             </div>
                                                             <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                                                                 <div className="flex items-center gap-2 mb-2">
                                                                     <FileText className="w-5 h-5 text-[#0a84ff]" />
                                                                     <span className="text-sm font-medium text-foreground">
-                                                                        {isArabic ? 'إجمالي المنشورات' : 'Total Posts'}
+                                                                        {isGerman ? 'إجمالي المنشورات' : 'Total Posts'}
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-2xl font-bold text-foreground">{communityAnalytics.totalPosts}</p>
                                                                 <p className="text-xs text-muted-foreground">
-                                                                    {isArabic ? 'منشور' : 'posts'}
+                                                                    {isGerman ? 'منشور' : 'posts'}
                                                                 </p>
                                                             </div>
                                                             <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                                                                 <div className="flex items-center gap-2 mb-2">
                                                                     <Activity className="w-5 h-5 text-[#0a84ff]" />
                                                                     <span className="text-sm font-medium text-foreground">
-                                                                        {isArabic ? 'نشطون اليوم' : 'Active Today'}
+                                                                        {isGerman ? 'نشطون اليوم' : 'Active Today'}
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-2xl font-bold text-foreground">{communityAnalytics.activeToday}</p>
                                                                 <p className="text-xs text-muted-foreground">
-                                                                    {isArabic ? 'أعضاء' : 'members'}
+                                                                    {isGerman ? 'أعضاء' : 'members'}
                                                                 </p>
                                                             </div>
                                                             <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                                                                 <div className="flex items-center gap-2 mb-2">
                                                                     <MessageSquare className="w-5 h-5 text-[#0a84ff]" />
                                                                     <span className="text-sm font-medium text-foreground">
-                                                                        {isArabic ? 'معدل التفاعل' : 'Avg Engagement'}
+                                                                        {isGerman ? 'معدل التفاعل' : 'Avg Engagement'}
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-2xl font-bold text-foreground">{communityAnalytics.avgEngagement}%</p>
                                                                 <p className="text-xs text-muted-foreground">
-                                                                    {isArabic ? 'تفاعل' : 'engagement'}
+                                                                    {isGerman ? 'تفاعل' : 'engagement'}
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -4981,7 +5034,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         <div className="bg-background border border-border rounded-xl p-6">
                                                             <h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                                                                 <Trophy className="w-5 h-5 text-[#0a84ff]" />
-                                                                {isArabic ? 'أفضل الأعضاء' : 'Top Members'}
+                                                                {isGerman ? 'أفضل الأعضاء' : 'Top Members'}
                                                             </h4>
                                                             {communityAnalytics.topMembers.length > 0 ? (
                                                                 <div className="space-y-3">
@@ -5000,8 +5053,8 @@ export default function OnlyFansMentorProfilePage() {
                                                                                 </div>
                                                                             </div>
                                                                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                                                                <span>{member.posts} {isArabic ? 'منشور' : 'posts'}</span>
-                                                                                <span>{member.likes} {isArabic ? 'إعجاب' : 'likes'}</span>
+                                                                                <span>{member.posts} {isGerman ? 'منشور' : 'posts'}</span>
+                                                                                <span>{member.likes} {isGerman ? 'إعجاب' : 'likes'}</span>
                                                                             </div>
                                                                         </div>
                                                                     ))}
@@ -5010,7 +5063,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="text-center py-8">
                                                                     <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
                                                                     <p className="text-muted-foreground">
-                                                                        {isArabic ? 'لا توجد بيانات متاحة بعد' : 'No data available yet'}
+                                                                        {isGerman ? 'لا توجد بيانات متاحة بعد' : 'No data available yet'}
                                                                     </p>
                                                                 </div>
                                                             )}
@@ -5020,7 +5073,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         <div className="bg-background border border-border rounded-xl p-6">
                                                             <h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                                                                 <Activity className="w-5 h-5 text-blue-500" />
-                                                                {isArabic ? 'نشاط الأعضاء' : 'Recent Activity'}
+                                                                {isGerman ? 'نشاط الأعضاء' : 'Recent Activity'}
                                                             </h4>
                                                             {communityAnalytics.recentActivity.length > 0 ? (
                                                                 <div className="space-y-4">
@@ -5043,7 +5096,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="text-center py-8">
                                                                     <Activity className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
                                                                     <p className="text-muted-foreground">
-                                                                        {isArabic ? 'لا يوجد نشاط حديث' : 'No recent activity'}
+                                                                        {isGerman ? 'لا يوجد نشاط حديث' : 'No recent activity'}
                                                                     </p>
                                                                 </div>
                                                             )}
@@ -5066,7 +5119,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <textarea
                                                                     value={newPostContent}
                                                                     onChange={(e) => setNewPostContent(e.target.value)}
-                                                                    placeholder={isArabic ? 'شارك أفكارك مع المجتمع...' : 'Share your thoughts with the community...'}
+                                                                    placeholder={isGerman ? 'شارك أفكارك مع المجتمع...' : 'Share your thoughts with the community...'}
                                                                     className="w-full bg-background border border-border rounded-lg p-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                                                                     rows={3}
                                                                 />
@@ -5095,22 +5148,22 @@ export default function OnlyFansMentorProfilePage() {
                                                                                 })
 
                                                                                 if (response.ok) {
-                                                                                    toast.success(isArabic ? 'تم نشر التعليق' : 'Post shared!')
+                                                                                    toast.success(isGerman ? 'تم نشر التعليق' : 'Post shared!')
                                                                                     setNewPostContent('')
                                                                                     // Refresh community posts
                                                                                     fetchCommunityPostsFromAPI()
                                                                                 } else {
-                                                                                    toast.error(isArabic ? 'فشل النشر' : 'Failed to post')
+                                                                                    toast.error(isGerman ? 'فشل النشر' : 'Failed to post')
                                                                                 }
                                                                             } catch (error) {
-                                                                                toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+                                                                                toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
                                                                             }
                                                                         }}
                                                                         disabled={!newPostContent.trim()}
                                                                         className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                                                                     >
                                                                         <Send className="w-4 h-4 mr-2" />
-                                                                        {isArabic ? 'نشر' : 'Post'}
+                                                                        {isGerman ? 'نشر' : 'Post'}
                                                                     </Button>
                                                                 </div>
                                                             </div>
@@ -5123,7 +5176,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     <div className="text-center py-12">
                                                         <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-3" />
                                                         <p className="text-muted-foreground">
-                                                            {isArabic ? 'جاري التحميل...' : 'Loading discussions...'}
+                                                            {isGerman ? 'جاري التحميل...' : 'Loading discussions...'}
                                                         </p>
                                                     </div>
                                                 ) : communityPosts.length === 0 ? (
@@ -5132,10 +5185,10 @@ export default function OnlyFansMentorProfilePage() {
                                                             <MessageSquare className="w-10 h-10 text-muted-foreground" />
                                                         </div>
                                                         <h3 className="text-lg font-bold text-foreground mb-2">
-                                                            {isArabic ? 'كن أول من يبدأ النقاش' : 'Be the First to Start a Discussion'}
+                                                            {isGerman ? 'كن أول من يبدأ النقاش' : 'Be the First to Start a Discussion'}
                                                         </h3>
                                                         <p className="text-muted-foreground">
-                                                            {isArabic ? 'شارك أفكارك وتواصل مع الأعضاء' : 'Share your thoughts and connect with members'}
+                                                            {isGerman ? 'شارك أفكارك وتواصل مع الأعضاء' : 'Share your thoughts and connect with members'}
                                                         </p>
                                                     </div>
                                                 ) : (
@@ -5152,7 +5205,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                     {post.author?.profileImage ? (
                                                                         <Image
                                                                             src={post.author.profileImage}
-                                                                            alt={isArabic && post.author?.arabicName ? post.author.arabicName : (post.author?.name || 'User')}
+                                                                            alt={isGerman && post.author?.arabicName ? post.author.arabicName : (post.author?.name || 'User')}
                                                                             width={40}
                                                                             height={40}
                                                                             className="rounded-full object-cover w-10 h-10"
@@ -5160,14 +5213,14 @@ export default function OnlyFansMentorProfilePage() {
                                                                     ) : (
                                                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center">
                                                                             <span className="text-sm font-bold text-white">
-                                                                                {(isArabic && post.author?.arabicName ? post.author.arabicName : post.author?.name || 'U')[0]}
+                                                                                {(isGerman && post.author?.arabicName ? post.author.arabicName : post.author?.name || 'U')[0]}
                                                                             </span>
                                                                         </div>
                                                                     )}
                                                                     <div className="flex-1">
                                                                         <div className="flex items-center gap-2">
                                                                             <span className="font-semibold text-foreground">
-                                                                                {isArabic && post.author?.arabicName ? post.author.arabicName : post.author?.name || 'Unknown'}
+                                                                                {isGerman && post.author?.arabicName ? post.author.arabicName : post.author?.name || 'Unknown'}
                                                                             </span>
                                                                             <Badge className={`${post.author?.tier === 'VIP' ? 'bg-yellow-500' :
                                                                                 post.author?.tier === 'PREMIUM' ? 'bg-purple-500' :
@@ -5190,17 +5243,17 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             body: JSON.stringify({ commentId: post.id, isPinned: !post.isPinned })
                                                                                         })
                                                                                         if (response.ok) {
-                                                                                            toast.success(isArabic ? (post.isPinned ? 'تم إلغاء التثبيت' : 'تم التثبيت') : (post.isPinned ? 'Unpinned' : 'Pinned'))
+                                                                                            toast.success(isGerman ? (post.isPinned ? 'تم إلغاء التثبيت' : 'تم التثبيت') : (post.isPinned ? 'Unpinned' : 'Pinned'))
                                                                                             fetchCommunityPostsFromAPI()
                                                                                         } else {
-                                                                                            toast.error(isArabic ? 'فشلت العملية' : 'Operation failed')
+                                                                                            toast.error(isGerman ? 'فشلت العملية' : 'Operation failed')
                                                                                         }
                                                                                     } catch (error) {
-                                                                                        toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+                                                                                        toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
                                                                                     }
                                                                                 }}
                                                                                 className="p-1 hover:bg-card-hover rounded-lg transition-colors"
-                                                                                title={isArabic ? 'تثبيت المنشور' : 'Pin post'}
+                                                                                title={isGerman ? 'تثبيت المنشور' : 'Pin post'}
                                                                             >
                                                                                 <Paperclip className={`w-4 h-4 ${post.isPinned ? 'text-purple-500' : 'text-muted-foreground'}`} />
                                                                             </button>
@@ -5212,17 +5265,17 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             method: 'DELETE'
                                                                                         })
                                                                                         if (response.ok) {
-                                                                                            toast.success(isArabic ? 'تم الحذف' : 'Deleted')
+                                                                                            toast.success(isGerman ? 'تم الحذف' : 'Deleted')
                                                                                             fetchCommunityPostsFromAPI()
                                                                                         } else {
-                                                                                            toast.error(isArabic ? 'فشل الحذف' : 'Failed to delete')
+                                                                                            toast.error(isGerman ? 'فشل الحذف' : 'Failed to delete')
                                                                                         }
                                                                                     } catch (error) {
-                                                                                        toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+                                                                                        toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
                                                                                     }
                                                                                 }}
                                                                                 className="p-1 hover:bg-card-hover rounded-lg transition-colors"
-                                                                                title={isArabic ? 'حذف المنشور' : 'Delete post'}
+                                                                                title={isGerman ? 'حذف المنشور' : 'Delete post'}
                                                                             >
                                                                                 <Trash2 className="w-4 h-4 text-red-400" />
                                                                             </button>
@@ -5247,7 +5300,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                     </button>
                                                                     <button className="flex items-center gap-1 text-muted-foreground hover:text-purple-400 transition-colors">
                                                                         <MessageCircle className="w-4 h-4" />
-                                                                        <span>{post.replies} {isArabic ? 'رد' : 'replies'}</span>
+                                                                        <span>{post.replies} {isGerman ? 'رد' : 'replies'}</span>
                                                                     </button>
                                                                     {!isCreatorView && (
                                                                         <button className="flex items-center gap-1 text-muted-foreground hover:text-purple-400 transition-colors ml-auto">
@@ -5274,10 +5327,10 @@ export default function OnlyFansMentorProfilePage() {
                                                         <Sparkles className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                                                         <div>
                                                             <p className="text-sm font-semibold text-foreground mb-1">
-                                                                {isArabic ? 'إرشادات المجتمع' : 'Community Guidelines'}
+                                                                {isGerman ? 'إرشادات المجتمع' : 'Community Guidelines'}
                                                             </p>
                                                             <p className="text-xs text-muted-foreground">
-                                                                {isArabic
+                                                                {isGerman
                                                                     ? 'كن محترماً ومفيداً. شارك المعرفة وساعد الآخرين على التعلم.'
                                                                     : 'Be respectful and helpful. Share knowledge and help others learn.'}
                                                             </p>
@@ -5303,11 +5356,11 @@ export default function OnlyFansMentorProfilePage() {
                                                 <div className="flex items-center gap-3">
                                                     <Paperclip className="w-6 h-6 text-green-400" />
                                                     <h3 className="text-xl font-bold text-foreground">
-                                                        {isArabic ? 'مكتبة الموارد' : 'Resource Library'}
+                                                        {isGerman ? 'مكتبة الموارد' : 'Resource Library'}
                                                     </h3>
                                                 </div>
                                                 <Badge className="bg-green-500 text-white border-0">
-                                                    {resources.length} {isArabic ? 'موارد' : 'Resources'}
+                                                    {resources.length} {isGerman ? 'موارد' : 'Resources'}
                                                 </Badge>
                                             </div>
 
@@ -5320,7 +5373,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
-                                                    {isArabic ? 'الكل' : 'All'}
+                                                    {isGerman ? 'الكل' : 'All'}
                                                 </button>
                                                 <button
                                                     onClick={() => setResourceCategory('pdf')}
@@ -5338,7 +5391,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
-                                                    🎥 {isArabic ? 'فيديو' : 'Video'}
+                                                    🎥 {isGerman ? 'فيديو' : 'Video'}
                                                 </button>
                                                 <button
                                                     onClick={() => setResourceCategory('template')}
@@ -5347,7 +5400,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
-                                                    📋 {isArabic ? 'قوالب' : 'Templates'}
+                                                    📋 {isGerman ? 'قوالب' : 'Templates'}
                                                 </button>
                                                 <button
                                                     onClick={() => setResourceCategory('code')}
@@ -5356,7 +5409,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         : 'bg-card hover:bg-card-hover text-muted-foreground border border-border'
                                                         }`}
                                                 >
-                                                    💻 {isArabic ? 'أكواد' : 'Code'}
+                                                    💻 {isGerman ? 'أكواد' : 'Code'}
                                                 </button>
                                             </div>
 
@@ -5365,7 +5418,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 <Input
                                                     value={searchResource}
                                                     onChange={(e) => setSearchResource(e.target.value)}
-                                                    placeholder={isArabic ? 'ابحث في الموارد...' : 'Search resources...'}
+                                                    placeholder={isGerman ? 'ابحث في الموارد...' : 'Search resources...'}
                                                     className="bg-background border-border"
                                                 />
                                             </div>
@@ -5420,11 +5473,11 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     <span>{resource.size}</span>
                                                                                     <span className="flex items-center gap-1">
                                                                                         <Download className="w-3 h-3" />
-                                                                                        {resource.downloads} {isArabic ? 'تحميل' : 'downloads'}
+                                                                                        {resource.downloads} {isGerman ? 'تحميل' : 'downloads'}
                                                                                     </span>
                                                                                     <span className="flex items-center gap-1">
                                                                                         <Calendar className="w-3 h-3" />
-                                                                                        {uploadedDate.toLocaleDateString(isArabic ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric' })}
+                                                                                        {uploadedDate.toLocaleDateString(isGerman ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric' })}
                                                                                     </span>
                                                                                 </div>
                                                                             </div>
@@ -5438,22 +5491,22 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     onClick={() => {
                                                                                         if (resource.url) {
                                                                                             window.open(resource.url, '_blank')
-                                                                                            toast.success(isArabic ? 'جاري التحميل...' : 'Downloading...')
+                                                                                            toast.success(isGerman ? 'جاري التحميل...' : 'Downloading...')
                                                                                         } else {
-                                                                                            toast.error(isArabic ? 'الملف غير متاح' : 'File not available')
+                                                                                            toast.error(isGerman ? 'الملف غير متاح' : 'File not available')
                                                                                         }
                                                                                     }}
                                                                                     className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
                                                                                 >
                                                                                     <Download className="w-3 h-3 mr-1" />
-                                                                                    {isArabic ? 'تحميل' : 'Download'}
+                                                                                    {isGerman ? 'تحميل' : 'Download'}
                                                                                 </Button>
                                                                             ) : (
                                                                                 <Button
                                                                                     size="sm"
                                                                                     onClick={() => {
                                                                                         if (!session) {
-                                                                                            toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
+                                                                                            toast.error(isGerman ? 'يرجى تسجيل الدخول' : 'Please sign in')
                                                                                             router.push(`/${locale}/login`)
                                                                                             return
                                                                                         }
@@ -5462,7 +5515,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     className="bg-card hover:bg-card-hover text-foreground border border-border"
                                                                                 >
                                                                                     <Lock className="w-3 h-3 mr-1" />
-                                                                                    {isArabic ? 'اشترك للوصول' : 'Subscribe to Access'}
+                                                                                    {isGerman ? 'اشترك للوصول' : 'Subscribe to Access'}
                                                                                 </Button>
                                                                             )}
                                                                         </div>
@@ -5480,10 +5533,10 @@ export default function OnlyFansMentorProfilePage() {
                                                         <Paperclip className="w-10 h-10 text-muted-foreground" />
                                                     </div>
                                                     <h3 className="text-lg font-bold text-foreground mb-2">
-                                                        {isArabic ? 'لا توجد موارد بعد' : 'No Resources Yet'}
+                                                        {isGerman ? 'لا توجد موارد بعد' : 'No Resources Yet'}
                                                     </h3>
                                                     <p className="text-muted-foreground">
-                                                        {isArabic ? 'سيتم إضافة الموارد القابلة للتحميل هنا' : 'Downloadable resources will appear here'}
+                                                        {isGerman ? 'سيتم إضافة الموارد القابلة للتحميل هنا' : 'Downloadable resources will appear here'}
                                                     </p>
                                                 </div>
                                             )}
@@ -5495,10 +5548,10 @@ export default function OnlyFansMentorProfilePage() {
                                                         <Paperclip className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
                                                         <div>
                                                             <p className="text-sm font-semibold text-foreground mb-1">
-                                                                {isArabic ? 'اشترك للتحميل' : 'Subscribe to Download'}
+                                                                {isGerman ? 'اشترك للتحميل' : 'Subscribe to Download'}
                                                             </p>
                                                             <p className="text-xs text-muted-foreground">
-                                                                {isArabic
+                                                                {isGerman
                                                                     ? 'احصل على وصول كامل إلى جميع الموارد القابلة للتحميل'
                                                                     : 'Get full access to all downloadable resources and materials'}
                                                             </p>
@@ -5520,54 +5573,54 @@ export default function OnlyFansMentorProfilePage() {
                                         className="space-y-6"
                                     >
                                         <div className="bg-card border border-border rounded-2xl p-6">
-                                            <h3 className="text-xl font-bold text-foreground mb-4">{isArabic ? 'حول' : 'About'}</h3>
+                                            <h3 className="text-xl font-bold text-foreground mb-4">{isGerman ? 'حول' : 'About'}</h3>
                                             <p className="text-muted-foreground leading-relaxed mb-6">{mentor.user.bio}</p>
 
                                             <div className="space-y-4 pt-4 border-t border-border">
                                                 {mentor.expertise && (
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-muted-foreground">{isArabic ? 'التخصص' : 'Expertise'}</span>
+                                                        <span className="text-muted-foreground">{isGerman ? 'التخصص' : 'Expertise'}</span>
                                                         <span className="text-foreground font-semibold">{mentor.expertise}</span>
                                                     </div>
                                                 )}
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-muted-foreground">{isArabic ? 'الخبرة' : 'Experience'}</span>
-                                                    <span className="text-foreground font-semibold">{mentor.stats.yearsOfExperience}+ {isArabic ? 'سنوات' : 'years'}</span>
+                                                    <span className="text-muted-foreground">{isGerman ? 'الخبرة' : 'Experience'}</span>
+                                                    <span className="text-foreground font-semibold">{mentor.stats.yearsOfExperience}+ {isGerman ? 'سنوات' : 'years'}</span>
                                                 </div>
                                                 {mentor.languages && (
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-muted-foreground">{isArabic ? 'اللغات' : 'Languages'}</span>
+                                                        <span className="text-muted-foreground">{isGerman ? 'اللغات' : 'Languages'}</span>
                                                         <span className="text-foreground font-semibold">{mentor.languages}</span>
                                                     </div>
                                                 )}
                                                 {mentor.timezone && (
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-muted-foreground">{isArabic ? 'المنطقة الزمنية' : 'Timezone'}</span>
+                                                        <span className="text-muted-foreground">{isGerman ? 'المنطقة الزمنية' : 'Timezone'}</span>
                                                         <span className="text-foreground font-semibold">{mentor.timezone}</span>
                                                     </div>
                                                 )}
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-muted-foreground">{isArabic ? 'التقييم' : 'Rating'}</span>
+                                                    <span className="text-muted-foreground">{isGerman ? 'التقييم' : 'Rating'}</span>
                                                     <span className="text-foreground font-semibold flex items-center gap-1">
                                                         <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                                                         {mentor.stats.averageRating.toFixed(1)}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-muted-foreground">{isArabic ? 'المنشورات' : 'Total Posts'}</span>
+                                                    <span className="text-muted-foreground">{isGerman ? 'المنشورات' : 'Total Posts'}</span>
                                                     <span className="text-foreground font-semibold">{mentor.stats.totalPosts}</span>
                                                 </div>
                                                 {mentor.availableForMeetings && (
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-muted-foreground">{isArabic ? 'متاح للاجتماعات' : 'Available for Meetings'}</span>
+                                                        <span className="text-muted-foreground">{isGerman ? 'متاح للاجتماعات' : 'Available for Meetings'}</span>
                                                         <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                                                            {isArabic ? 'متاح' : 'Available'}
+                                                            {isGerman ? 'متاح' : 'Available'}
                                                         </Badge>
                                                     </div>
                                                 )}
                                                 {mentor.hourlyRate && (
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-muted-foreground">{isArabic ? 'سعر الساعة' : 'Hourly Rate'}</span>
+                                                        <span className="text-muted-foreground">{isGerman ? 'سعر الساعة' : 'Hourly Rate'}</span>
                                                         <span className="text-foreground font-semibold">€{mentor.hourlyRate}/hr</span>
                                                     </div>
                                                 )}
@@ -5576,7 +5629,7 @@ export default function OnlyFansMentorProfilePage() {
                                             {/* Social Links */}
                                             {mentor.socialLinks && Object.values(mentor.socialLinks).some(v => v) && (
                                                 <div className="pt-4 mt-4 border-t border-border">
-                                                    <h4 className="text-sm font-semibold text-foreground mb-3">{isArabic ? 'روابط التواصل' : 'Social Links'}</h4>
+                                                    <h4 className="text-sm font-semibold text-foreground mb-3">{isGerman ? 'روابط التواصل' : 'Social Links'}</h4>
                                                     <div className="flex flex-wrap gap-2">
                                                         {mentor.socialLinks.youtube && (
                                                             <a href={mentor.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 text-red-400 rounded-full text-sm hover:bg-red-500/20 transition-colors">
@@ -5605,7 +5658,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         {mentor.socialLinks.website && (
                                                             <a href={mentor.socialLinks.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 text-purple-400 rounded-full text-sm hover:bg-purple-500/20 transition-colors">
                                                                 <Globe className="w-4 h-4" />
-                                                                {isArabic ? 'الموقع' : 'Website'}
+                                                                {isGerman ? 'الموقع' : 'Website'}
                                                             </a>
                                                         )}
                                                     </div>
@@ -5617,7 +5670,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 <div className="pt-4 mt-4 border-t border-border">
                                                     <CredentialsDisplay
                                                         credentials={creatorCredentials}
-                                                        isArabic={isArabic}
+                                                        isArabic={isGerman}
                                                     />
                                                 </div>
                                             )}
@@ -5640,10 +5693,10 @@ export default function OnlyFansMentorProfilePage() {
                                                 <Crown className="w-8 h-8 text-yellow-400" />
                                                 <div>
                                                     <h2 className="text-2xl font-black text-foreground">
-                                                        {isArabic ? 'مرحباً بك، ' + getMentorName() : 'Welcome, ' + getMentorName()}
+                                                        {isGerman ? 'مرحباً بك، ' + getMentorName() : 'Welcome, ' + getMentorName()}
                                                     </h2>
                                                     <p className="text-muted-foreground">
-                                                        {isArabic ? 'لوحة تحكم المنشئ' : 'Creator Dashboard'}
+                                                        {isGerman ? 'لوحة تحكم المنشئ' : 'Creator Dashboard'}
                                                     </p>
                                                 </div>
                                             </div>
@@ -5659,7 +5712,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         </svg>
                                                     </div>
                                                     <h3 className="text-xl font-bold text-foreground">
-                                                        {isArabic ? 'الأرباح' : 'Earnings'}
+                                                        {isGerman ? 'الأرباح' : 'Earnings'}
                                                     </h3>
                                                 </div>
                                                 <Button
@@ -5679,13 +5732,13 @@ export default function OnlyFansMentorProfilePage() {
                                                         setShowWithdrawalModal(true)
                                                     }}
                                                 >
-                                                    {isArabic ? 'سحب' : 'Withdraw'}
+                                                    {isGerman ? 'سحب' : 'Withdraw'}
                                                 </Button>
                                             </div>
 
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                 <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl p-4">
-                                                    <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'هذا الشهر' : 'This Month'}</div>
+                                                    <div className="text-xs text-muted-foreground mb-1">{isGerman ? 'هذا الشهر' : 'This Month'}</div>
                                                     <div className="text-2xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                                                         €{creatorStats.earnings.thisMonth.toLocaleString()}
                                                     </div>
@@ -5696,21 +5749,21 @@ export default function OnlyFansMentorProfilePage() {
                                                 </div>
 
                                                 <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-xl p-4">
-                                                    <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'الشهر الماضي' : 'Last Month'}</div>
+                                                    <div className="text-xs text-muted-foreground mb-1">{isGerman ? 'الشهر الماضي' : 'Last Month'}</div>
                                                     <div className="text-2xl font-black text-foreground">
                                                         €{creatorStats.earnings.lastMonth.toLocaleString()}
                                                     </div>
                                                 </div>
 
                                                 <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-4">
-                                                    <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'إجمالي الأرباح' : 'Total Earnings'}</div>
+                                                    <div className="text-xs text-muted-foreground mb-1">{isGerman ? 'إجمالي الأرباح' : 'Total Earnings'}</div>
                                                     <div className="text-2xl font-black text-foreground">
                                                         €{creatorStats.earnings.total.toLocaleString()}
                                                     </div>
                                                 </div>
 
                                                 <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-xl p-4">
-                                                    <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'قيد الانتظار' : 'Pending'}</div>
+                                                    <div className="text-xs text-muted-foreground mb-1">{isGerman ? 'قيد الانتظار' : 'Pending'}</div>
                                                     <div className="text-2xl font-black text-foreground">
                                                         €{creatorStats.earnings.pending.toLocaleString()}
                                                     </div>
@@ -5725,7 +5778,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     <Users className="w-5 h-5 text-purple-400" />
                                                 </div>
                                                 <h3 className="text-xl font-bold text-foreground">
-                                                    {isArabic ? 'المشتركون' : 'Subscribers'}
+                                                    {isGerman ? 'المشتركون' : 'Subscribers'}
                                                 </h3>
                                             </div>
 
@@ -5754,17 +5807,17 @@ export default function OnlyFansMentorProfilePage() {
 
                                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                                 <div className="bg-card-hover rounded-xl p-4">
-                                                    <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'إجمالي المشتركين' : 'Total Subs'}</div>
+                                                    <div className="text-xs text-muted-foreground mb-1">{isGerman ? 'إجمالي المشتركين' : 'Total Subs'}</div>
                                                     <div className="text-xl font-black text-foreground">{creatorStats.subscribers?.total?.toLocaleString() ?? 0}</div>
                                                 </div>
 
                                                 <div className="bg-card-hover rounded-xl p-4">
-                                                    <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'جدد هذا الشهر' : 'New This Month'}</div>
+                                                    <div className="text-xs text-muted-foreground mb-1">{isGerman ? 'جدد هذا الشهر' : 'New This Month'}</div>
                                                     <div className="text-xl font-black text-green-400">+{creatorStats.subscribers?.newThisMonth ?? 0}</div>
                                                 </div>
 
                                                 <div className="bg-card-hover rounded-xl p-4">
-                                                    <div className="text-xs text-muted-foreground mb-1">{isArabic ? 'معدل التسرب' : 'Churn Rate'}</div>
+                                                    <div className="text-xs text-muted-foreground mb-1">{isGerman ? 'معدل التسرب' : 'Churn Rate'}</div>
                                                     <div className="text-xl font-black text-red-400">{creatorStats.subscribers?.churnRate ?? 0}%</div>
                                                 </div>
                                             </div>
@@ -5777,7 +5830,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     <TrendingUp className="w-5 h-5 text-pink-400" />
                                                 </div>
                                                 <h3 className="text-xl font-bold text-foreground">
-                                                    {isArabic ? 'أداء المحتوى' : 'Content Performance'}
+                                                    {isGerman ? 'أداء المحتوى' : 'Content Performance'}
                                                 </h3>
                                             </div>
 
@@ -5785,7 +5838,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 <div className="bg-card-hover rounded-xl p-4">
                                                     <div className="flex items-center gap-2 mb-2">
                                                         <MessageCircle className="w-4 h-4 text-purple-400" />
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'المنشورات' : 'Posts'}</div>
+                                                        <div className="text-xs text-muted-foreground">{isGerman ? 'المنشورات' : 'Posts'}</div>
                                                     </div>
                                                     <div className="text-2xl font-black text-foreground">{creatorStats.content?.posts ?? 0}</div>
                                                 </div>
@@ -5793,7 +5846,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 <div className="bg-card-hover rounded-xl p-4">
                                                     <div className="flex items-center gap-2 mb-2">
                                                         <Eye className="w-4 h-4 text-blue-400" />
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'المشاهدات' : 'Views'}</div>
+                                                        <div className="text-xs text-muted-foreground">{isGerman ? 'المشاهدات' : 'Views'}</div>
                                                     </div>
                                                     <div className="text-2xl font-black text-foreground">{creatorStats.content?.totalViews?.toLocaleString() ?? 0}</div>
                                                 </div>
@@ -5801,7 +5854,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 <div className="bg-card-hover rounded-xl p-4">
                                                     <div className="flex items-center gap-2 mb-2">
                                                         <Heart className="w-4 h-4 text-pink-400" />
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'متوسط الإعجابات' : 'Avg Likes'}</div>
+                                                        <div className="text-xs text-muted-foreground">{isGerman ? 'متوسط الإعجابات' : 'Avg Likes'}</div>
                                                     </div>
                                                     <div className="text-2xl font-black text-foreground">{creatorStats.engagement?.avgLikes ?? 0}</div>
                                                 </div>
@@ -5809,7 +5862,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 <div className="bg-card-hover rounded-xl p-4">
                                                     <div className="flex items-center gap-2 mb-2">
                                                         <Sparkles className="w-4 h-4 text-yellow-400" />
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'معدل التفاعل' : 'Engagement'}</div>
+                                                        <div className="text-xs text-muted-foreground">{isGerman ? 'معدل التفاعل' : 'Engagement'}</div>
                                                     </div>
                                                     <div className="text-2xl font-black text-foreground">{creatorStats.engagement?.engagementRate ?? 0}%</div>
                                                 </div>
@@ -5819,7 +5872,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-4">
                                                     <div className="flex items-center gap-2 mb-2">
                                                         <Video className="w-4 h-4 text-purple-400" />
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'جلسات مكتملة' : 'Sessions Done'}</div>
+                                                        <div className="text-xs text-muted-foreground">{isGerman ? 'جلسات مكتملة' : 'Sessions Done'}</div>
                                                     </div>
                                                     <div className="text-xl font-black text-foreground">{creatorStats.content?.liveSessionsCompleted ?? 0}</div>
                                                 </div>
@@ -5827,7 +5880,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl p-4">
                                                     <div className="flex items-center gap-2 mb-2">
                                                         <Download className="w-4 h-4 text-green-400" />
-                                                        <div className="text-xs text-muted-foreground">{isArabic ? 'التحميلات' : 'Downloads'}</div>
+                                                        <div className="text-xs text-muted-foreground">{isGerman ? 'التحميلات' : 'Downloads'}</div>
                                                     </div>
                                                     <div className="text-xl font-black text-foreground">{creatorStats.content?.totalDownloads?.toLocaleString() ?? 0}</div>
                                                 </div>
@@ -5840,7 +5893,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 <div className="flex items-center gap-3">
                                                     <Crown className="w-6 h-6 text-yellow-400" />
                                                     <h3 className="text-xl font-bold text-foreground">
-                                                        {isArabic ? 'أفضل المشتركين' : 'Top Subscribers'}
+                                                        {isGerman ? 'أفضل المشتركين' : 'Top Subscribers'}
                                                     </h3>
                                                 </div>
                                                 <Badge className="bg-yellow-500 text-white border-0">
@@ -5858,7 +5911,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             <div>
                                                                 <div className="font-semibold text-foreground">{sub.name}</div>
                                                                 <div className="text-xs text-muted-foreground">
-                                                                    {sub.tier} • {isArabic ? 'عضو منذ' : 'Member for'} {sub.since}
+                                                                    {sub.tier} • {isGerman ? 'عضو منذ' : 'Member for'} {sub.since}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -5866,7 +5919,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             <div className="font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
                                                                 €{sub.spent?.toLocaleString() ?? 0}
                                                             </div>
-                                                            <div className="text-xs text-muted-foreground">{isArabic ? 'إجمالي' : 'Total'}</div>
+                                                            <div className="text-xs text-muted-foreground">{isGerman ? 'إجمالي' : 'Total'}</div>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -5878,7 +5931,7 @@ export default function OnlyFansMentorProfilePage() {
                                             <div className="flex items-center gap-3 mb-6">
                                                 <TrendingUp className="w-6 h-6 text-blue-400" />
                                                 <h3 className="text-xl font-bold text-foreground">
-                                                    {isArabic ? 'النشاط الأخير' : 'Recent Activity'}
+                                                    {isGerman ? 'النشاط الأخير' : 'Recent Activity'}
                                                 </h3>
                                             </div>
 
@@ -5899,16 +5952,16 @@ export default function OnlyFansMentorProfilePage() {
                                                             <div className="text-sm text-foreground">
                                                                 <span className="font-semibold">{activity.user}</span>
                                                                 {activity.type === 'subscription' && (
-                                                                    <span> {isArabic ? 'اشترك في' : 'subscribed to'} <Badge className="bg-purple-500 text-white border-0 text-xs">{activity.tier}</Badge></span>
+                                                                    <span> {isGerman ? 'اشترك في' : 'subscribed to'} <Badge className="bg-purple-500 text-white border-0 text-xs">{activity.tier}</Badge></span>
                                                                 )}
                                                                 {activity.type === 'post_like' && (
-                                                                    <span> {isArabic ? 'أعجب بمنشور' : 'liked post'} "{activity.post}"</span>
+                                                                    <span> {isGerman ? 'أعجب بمنشور' : 'liked post'} "{activity.post}"</span>
                                                                 )}
                                                                 {activity.type === 'session_booked' && (
-                                                                    <span> {isArabic ? 'حجز جلسة' : 'booked session'} "{activity.session}"</span>
+                                                                    <span> {isGerman ? 'حجز جلسة' : 'booked session'} "{activity.session}"</span>
                                                                 )}
                                                                 {activity.type === 'subscription_upgraded' && (
-                                                                    <span> {isArabic ? 'ترقية من' : 'upgraded from'} {activity.from} {isArabic ? 'إلى' : 'to'} <Badge className="bg-yellow-500 text-white border-0 text-xs">{activity.to}</Badge></span>
+                                                                    <span> {isGerman ? 'ترقية من' : 'upgraded from'} {activity.from} {isGerman ? 'إلى' : 'to'} <Badge className="bg-yellow-500 text-white border-0 text-xs">{activity.to}</Badge></span>
                                                                 )}
                                                             </div>
                                                             <div className="text-xs text-muted-foreground">{activity.timestamp}</div>
@@ -5921,7 +5974,7 @@ export default function OnlyFansMentorProfilePage() {
                                         {/* Quick Actions */}
                                         <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-2xl p-6">
                                             <h3 className="text-lg font-bold text-foreground mb-4">
-                                                {isArabic ? 'إجراءات سريعة' : 'Quick Actions'}
+                                                {isGerman ? 'إجراءات سريعة' : 'Quick Actions'}
                                             </h3>
                                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                                 <Button
@@ -5929,28 +5982,28 @@ export default function OnlyFansMentorProfilePage() {
                                                     className="bg-purple-500 hover:bg-purple-600 text-white"
                                                 >
                                                     <MessageCircle className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'منشور جديد' : 'New Post'}
+                                                    {isGerman ? 'منشور جديد' : 'New Post'}
                                                 </Button>
                                                 <Button
                                                     onClick={() => setShowNewSessionModal(true)}
                                                     className="bg-blue-500 hover:bg-blue-600 text-white"
                                                 >
                                                     <Calendar className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'جدولة جلسة' : 'Schedule Session'}
+                                                    {isGerman ? 'جدولة جلسة' : 'Schedule Session'}
                                                 </Button>
                                                 <Button
                                                     onClick={() => setShowUploadModal(true)}
                                                     className="bg-green-500 hover:bg-green-600 text-white"
                                                 >
                                                     <Download className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'رفع محتوى' : 'Upload Content'}
+                                                    {isGerman ? 'رفع محتوى' : 'Upload Content'}
                                                 </Button>
                                                 <Button
                                                     onClick={() => router.push(`/${locale}/messaging`)}
                                                     className="bg-yellow-500 hover:bg-yellow-600 text-white"
                                                 >
                                                     <MessageSquare className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'الرسائل' : 'Messages'}
+                                                    {isGerman ? 'الرسائل' : 'Messages'}
                                                 </Button>
                                                 <Button
                                                     onClick={() => {
@@ -5960,7 +6013,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     className="bg-pink-500 hover:bg-pink-600 text-white"
                                                 >
                                                     <Users className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'المشتركون' : 'Subscribers'}
+                                                    {isGerman ? 'المشتركون' : 'Subscribers'}
                                                 </Button>
                                                 <Button
                                                     onClick={() => {
@@ -5970,7 +6023,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     className="bg-orange-500 hover:bg-orange-600 text-white"
                                                 >
                                                     <TrendingUp className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'التحليلات' : 'Analytics'}
+                                                    {isGerman ? 'التحليلات' : 'Analytics'}
                                                 </Button>
                                             </div>
                                         </div>
@@ -5979,7 +6032,7 @@ export default function OnlyFansMentorProfilePage() {
                                         <div className="bg-card border border-border rounded-2xl p-6">
                                             <div className="flex items-center justify-between mb-6">
                                                 <h3 className="text-xl font-bold text-foreground">
-                                                    {isArabic ? 'إدارة المحتوى' : 'Content Management'}
+                                                    {isGerman ? 'إدارة المحتوى' : 'Content Management'}
                                                 </h3>
                                                 <div className="flex items-center gap-2">
                                                     <Button
@@ -6006,7 +6059,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         }`}
                                                 >
                                                     <MessageCircle className="w-4 h-4 inline mr-2" />
-                                                    {isArabic ? 'المنشورات' : 'Posts'}
+                                                    {isGerman ? 'المنشورات' : 'Posts'}
                                                 </button>
                                                 <button
                                                     onClick={() => setContentManagementTab('media')}
@@ -6016,7 +6069,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         }`}
                                                 >
                                                     <ImageIcon className="w-4 h-4 inline mr-2" />
-                                                    {isArabic ? 'الوسائط' : 'Media'}
+                                                    {isGerman ? 'الوسائط' : 'Media'}
                                                 </button>
                                                 <button
                                                     onClick={() => setContentManagementTab('calendar')}
@@ -6026,7 +6079,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         }`}
                                                 >
                                                     <Calendar className="w-4 h-4 inline mr-2" />
-                                                    {isArabic ? 'الجدول' : 'Calendar'}
+                                                    {isGerman ? 'الجدول' : 'Calendar'}
                                                 </button>
                                                 <button
                                                     onClick={() => setContentManagementTab('scheduled')}
@@ -6036,7 +6089,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         }`}
                                                 >
                                                     <Clock className="w-4 h-4 inline mr-2" />
-                                                    {isArabic ? 'المجدولة' : 'Scheduled'}
+                                                    {isGerman ? 'المجدولة' : 'Scheduled'}
                                                 </button>
                                             </div>
 
@@ -6090,7 +6143,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                             className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
                                                                         >
                                                                             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                                                            {isArabic ? 'تعديل' : 'Edit'}
+                                                                            {isGerman ? 'تعديل' : 'Edit'}
                                                                         </Button>
                                                                         <Button
                                                                             size="sm"
@@ -6185,7 +6238,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 size="sm"
                                                                 className={mediaFilter === 'all' ? 'bg-purple-500 text-white' : 'bg-card-hover text-foreground'}
                                                             >
-                                                                {isArabic ? 'الكل' : 'All'}
+                                                                {isGerman ? 'الكل' : 'All'}
                                                             </Button>
                                                             <Button
                                                                 onClick={() => setMediaFilter('images')}
@@ -6193,7 +6246,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 className={mediaFilter === 'images' ? 'bg-purple-500 text-white' : 'bg-card-hover text-foreground'}
                                                             >
                                                                 <ImageIcon className="w-3 h-3 mr-1" />
-                                                                {isArabic ? 'الصور' : 'Images'}
+                                                                {isGerman ? 'الصور' : 'Images'}
                                                             </Button>
                                                             <Button
                                                                 onClick={() => setMediaFilter('videos')}
@@ -6201,7 +6254,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 className={mediaFilter === 'videos' ? 'bg-purple-500 text-white' : 'bg-card-hover text-foreground'}
                                                             >
                                                                 <Play className="w-3 h-3 mr-1" />
-                                                                {isArabic ? 'الفيديوهات' : 'Videos'}
+                                                                {isGerman ? 'الفيديوهات' : 'Videos'}
                                                             </Button>
                                                         </div>
                                                         <Button
@@ -6210,7 +6263,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
                                                         >
                                                             <Download className="w-3 h-3 mr-1" />
-                                                            {isArabic ? 'رفع' : 'Upload'}
+                                                            {isGerman ? 'رفع' : 'Upload'}
                                                         </Button>
                                                     </div>
                                                     <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
@@ -6267,7 +6320,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     {/* Calendar Header */}
                                                     <div className="flex items-center justify-between">
                                                         <h3 className="text-lg font-bold text-foreground">
-                                                            {isArabic ? 'جدول المحتوى' : 'Content Calendar'}
+                                                            {isGerman ? 'جدول المحتوى' : 'Content Calendar'}
                                                         </h3>
                                                         <Button
                                                             onClick={() => {
@@ -6277,7 +6330,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
                                                         >
                                                             <Calendar className="w-4 h-4 mr-2" />
-                                                            {isArabic ? 'جدولة منشور' : 'Schedule Post'}
+                                                            {isGerman ? 'جدولة منشور' : 'Schedule Post'}
                                                         </Button>
                                                     </div>
 
@@ -6287,7 +6340,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         <div className="grid grid-cols-7 gap-2 mb-2">
                                                             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => (
                                                                 <div key={i} className="text-center text-xs font-semibold text-muted-foreground p-2">
-                                                                    {isArabic ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][i] : day}
+                                                                    {isGerman ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][i] : day}
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -6367,7 +6420,7 @@ export default function OnlyFansMentorProfilePage() {
                                                             <div className="flex items-center justify-between mb-4">
                                                                 <h4 className="font-bold text-foreground flex items-center gap-2">
                                                                     <Calendar className="w-5 h-5 text-blue-400" />
-                                                                    {isArabic ? 'منشورات' : 'Posts for'} {new Date(selectedCalendarDate).toLocaleDateString(isArabic ? 'ar-EG' : 'en-US', {
+                                                                    {isGerman ? 'منشورات' : 'Posts for'} {new Date(selectedCalendarDate).toLocaleDateString(isGerman ? 'ar-EG' : 'en-US', {
                                                                         weekday: 'long',
                                                                         month: 'long',
                                                                         day: 'numeric'
@@ -6383,7 +6436,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                         className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
                                                                     >
                                                                         <Plus className="w-4 h-4 mr-1" />
-                                                                        {isArabic ? 'منشور جديد' : 'New Post'}
+                                                                        {isGerman ? 'منشور جديد' : 'New Post'}
                                                                     </Button>
                                                                     <button
                                                                         onClick={() => setSelectedCalendarDate('')}
@@ -6409,7 +6462,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                         <div className="text-center py-8 text-muted-foreground">
                                                                             <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
                                                                             <p className="text-sm">
-                                                                                {isArabic ? 'لا توجد منشورات مجدولة لهذا اليوم' : 'No posts scheduled for this day'}
+                                                                                {isGerman ? 'لا توجد منشورات مجدولة لهذا اليوم' : 'No posts scheduled for this day'}
                                                                             </p>
                                                                             <Button
                                                                                 onClick={() => {
@@ -6420,7 +6473,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                 size="sm"
                                                                             >
                                                                                 <Plus className="w-4 h-4 mr-1" />
-                                                                                {isArabic ? 'إضافة منشور' : 'Add Post'}
+                                                                                {isGerman ? 'إضافة منشور' : 'Add Post'}
                                                                             </Button>
                                                                         </div>
                                                                     )
@@ -6435,7 +6488,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     <div className="flex-shrink-0 w-16 text-center">
                                                                                         <div className="bg-blue-500/20 rounded-lg py-1 px-2">
                                                                                             <div className="text-xs font-bold text-blue-400">
-                                                                                                {new Date(post.scheduledFor!).toLocaleTimeString(isArabic ? 'ar-EG' : 'en-US', {
+                                                                                                {new Date(post.scheduledFor!).toLocaleTimeString(isGerman ? 'ar-EG' : 'en-US', {
                                                                                                     hour: '2-digit',
                                                                                                     minute: '2-digit',
                                                                                                     hour12: false
@@ -6475,7 +6528,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             variant="ghost"
                                                                                             size="sm"
                                                                                             className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/10 rounded-lg transition-colors"
-                                                                                            title={isArabic ? 'نشر الآن' : 'Publish Now'}
+                                                                                            title={isGerman ? 'نشر الآن' : 'Publish Now'}
                                                                                         >
                                                                                             <Send className="w-4 h-4" />
                                                                                         </Button>
@@ -6490,7 +6543,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             variant="ghost"
                                                                                             size="sm"
                                                                                             className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-colors"
-                                                                                            title={isArabic ? 'تعديل' : 'Edit'}
+                                                                                            title={isGerman ? 'تعديل' : 'Edit'}
                                                                                         >
                                                                                             <Edit2 className="w-4 h-4" />
                                                                                         </Button>
@@ -6499,7 +6552,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             variant="ghost"
                                                                                             size="sm"
                                                                                             className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
-                                                                                            title={isArabic ? 'حذف' : 'Delete'}
+                                                                                            title={isGerman ? 'حذف' : 'Delete'}
                                                                                         >
                                                                                             <Trash2 className="w-4 h-4" />
                                                                                         </Button>
@@ -6518,7 +6571,7 @@ export default function OnlyFansMentorProfilePage() {
                                                         <div className="bg-card border border-border rounded-xl p-4">
                                                             <h4 className="font-bold text-foreground mb-3 flex items-center gap-2">
                                                                 <Clock className="w-4 h-4 text-purple-400" />
-                                                                {isArabic ? 'المنشورات القادمة' : 'Upcoming Posts'}
+                                                                {isGerman ? 'المنشورات القادمة' : 'Upcoming Posts'}
                                                             </h4>
                                                             <div className="space-y-2">
                                                                 {posts
@@ -6535,7 +6588,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                     {post.content.substring(0, 50)}...
                                                                                 </p>
                                                                                 <p className="text-xs text-muted-foreground">
-                                                                                    {new Date(post.scheduledFor!).toLocaleDateString(isArabic ? 'ar-EG' : 'en-US', {
+                                                                                    {new Date(post.scheduledFor!).toLocaleDateString(isGerman ? 'ar-EG' : 'en-US', {
                                                                                         month: 'short',
                                                                                         day: 'numeric',
                                                                                         hour: '2-digit',
@@ -6568,17 +6621,17 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-xl p-6 text-center">
                                                                     <Clock className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
                                                                     <h4 className="font-bold text-foreground mb-2">
-                                                                        {isArabic ? 'لا توجد منشورات مجدولة' : 'No Scheduled Posts'}
+                                                                        {isGerman ? 'لا توجد منشورات مجدولة' : 'No Scheduled Posts'}
                                                                     </h4>
                                                                     <p className="text-sm text-muted-foreground mb-4">
-                                                                        {isArabic ? 'جدول منشوراتك للنشر التلقائي' : 'Schedule posts to publish automatically'}
+                                                                        {isGerman ? 'جدول منشوراتك للنشر التلقائي' : 'Schedule posts to publish automatically'}
                                                                     </p>
                                                                     <Button
                                                                         onClick={() => setShowNewPostModal(true)}
                                                                         className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
                                                                     >
                                                                         <Calendar className="w-4 h-4 mr-2" />
-                                                                        {isArabic ? 'جدولة منشور' : 'Schedule Post'}
+                                                                        {isGerman ? 'جدولة منشور' : 'Schedule Post'}
                                                                     </Button>
                                                                 </div>
                                                             )
@@ -6589,7 +6642,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                 <div className="flex items-center justify-between mb-4">
                                                                     <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                                                                         <Clock className="w-5 h-5 text-yellow-400" />
-                                                                        {isArabic ? `المنشورات المجدولة (${scheduledPosts.length})` : `Scheduled Posts (${scheduledPosts.length})`}
+                                                                        {isGerman ? `المنشورات المجدولة (${scheduledPosts.length})` : `Scheduled Posts (${scheduledPosts.length})`}
                                                                     </h3>
                                                                     <Button
                                                                         onClick={() => setShowNewPostModal(true)}
@@ -6597,7 +6650,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                         className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
                                                                     >
                                                                         <Plus className="w-4 h-4 mr-1" />
-                                                                        {isArabic ? 'جديد' : 'New'}
+                                                                        {isGerman ? 'جديد' : 'New'}
                                                                     </Button>
                                                                 </div>
 
@@ -6628,7 +6681,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                                                                                             <Calendar className="w-3 h-3 text-yellow-400" />
                                                                                             <span>
-                                                                                                {new Date(post.scheduledFor!).toLocaleDateString(isArabic ? 'ar-EG' : 'en-US', {
+                                                                                                {new Date(post.scheduledFor!).toLocaleDateString(isGerman ? 'ar-EG' : 'en-US', {
                                                                                                     weekday: 'short',
                                                                                                     month: 'short',
                                                                                                     day: 'numeric',
@@ -6653,7 +6706,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                                             className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0"
                                                                                         >
                                                                                             <Send className="w-3 h-3 mr-1" />
-                                                                                            {isArabic ? 'نشر الآن' : 'Publish Now'}
+                                                                                            {isGerman ? 'نشر الآن' : 'Publish Now'}
                                                                                         </Button>
                                                                                         <div className="flex gap-2">
                                                                                             <button
@@ -6685,39 +6738,39 @@ export default function OnlyFansMentorProfilePage() {
                                                     })()}
                                                 </div>
                                             )}
+
+                                            {/* Credentials Management Section - Only visible in profile tab */}
+                                            <div className="bg-card border border-border rounded-2xl p-4 mt-6">
+                                                <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                                                    <Award className="w-5 h-5 text-[#0a84ff]" />
+                                                    {isGerman ? 'إدارة الشهادات والمؤهلات' : 'Manage Credentials & Qualifications'}
+                                                </h3>
+                                                <p className="text-sm text-muted-foreground mb-4">
+                                                    {isGerman ? 'أضف وعدّل شهاداتك ومؤهلاتك لإبراز خبراتك' : 'Add and edit your credentials to showcase your expertise'}
+                                                </p>
+                                                <CredentialsSection
+                                                    credentials={creatorCredentials}
+                                                    onCredentialsChange={async () => {
+                                                        // Refresh credentials after changes
+                                                        try {
+                                                            const res = await fetch('/api/creator/credentials')
+                                                            if (res.ok) {
+                                                                const data = await res.json()
+                                                                setCreatorCredentials(data.credentials || [])
+                                                            }
+                                                        } catch (error) {
+                                                            console.error('Error refreshing credentials:', error)
+                                                        }
+                                                    }}
+                                                    isArabic={isGerman}
+                                                />
+                                            </div>
                                         </div>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
 
-                            {/* Credentials Management Section - Only visible to profile owner */}
-                            {isCreatorView && (
-                                <div className="bg-card border border-border rounded-2xl p-4 mt-6">
-                                    <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-                                        <Award className="w-5 h-5 text-[#0a84ff]" />
-                                        {isArabic ? 'إدارة الشهادات والمؤهلات' : 'Manage Credentials & Qualifications'}
-                                    </h3>
-                                    <p className="text-sm text-muted-foreground mb-4">
-                                        {isArabic ? 'أضف وعدّل شهاداتك ومؤهلاتك لإبراز خبراتك' : 'Add and edit your credentials to showcase your expertise'}
-                                    </p>
-                                    <CredentialsSection
-                                        credentials={creatorCredentials}
-                                        onCredentialsChange={async () => {
-                                            // Refresh credentials after changes
-                                            try {
-                                                const res = await fetch('/api/creator/credentials')
-                                                if (res.ok) {
-                                                    const data = await res.json()
-                                                    setCreatorCredentials(data.credentials || [])
-                                                }
-                                            } catch (error) {
-                                                console.error('Error refreshing credentials:', error)
-                                            }
-                                        }}
-                                        isArabic={isArabic}
-                                    />
-                                </div>
-                            )}
+
                         </div>
                     </div>
                     {/* End Main Content Column */}
@@ -6728,9 +6781,9 @@ export default function OnlyFansMentorProfilePage() {
                             {/* Quick Subscribe Card */}
                             {!currentSubscription && (
                                 <div className="bg-card border border-border rounded-2xl p-4">
-                                    <h3 className="font-bold text-foreground mb-3">{isArabic ? 'اشترك الآن' : 'Subscribe Now'}</h3>
+                                    <h3 className="font-bold text-foreground mb-3">{isGerman ? 'اشترك الآن' : 'Subscribe Now'}</h3>
                                     <p className="text-sm text-muted-foreground mb-4">
-                                        {isArabic ? 'احصل على محتوى حصري ودروس خاصة' : 'Get exclusive content and private lessons'}
+                                        {isGerman ? 'احصل على محتوى حصري ودروس خاصة' : 'Get exclusive content and private lessons'}
                                     </p>
                                     <Button
                                         onClick={() => {
@@ -6743,7 +6796,7 @@ export default function OnlyFansMentorProfilePage() {
                                         className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-full"
                                     >
                                         <Crown className="w-4 h-4 mr-2" />
-                                        {isArabic ? 'اشترك' : 'Subscribe'}
+                                        {isGerman ? 'اشترك' : 'Subscribe'}
                                     </Button>
                                 </div>
                             )}
@@ -6753,17 +6806,17 @@ export default function OnlyFansMentorProfilePage() {
                                 <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl p-4">
                                     <div className="flex items-center gap-2 mb-3">
                                         <Crown className="w-5 h-5 text-purple-400" />
-                                        <h3 className="font-bold text-foreground">{currentSubscription} {isArabic ? 'عضو' : 'Member'}</h3>
+                                        <h3 className="font-bold text-foreground">{currentSubscription} {isGerman ? 'عضو' : 'Member'}</h3>
                                     </div>
                                     <p className="text-sm text-muted-foreground mb-3">
-                                        {isArabic ? 'لديك وصول كامل لجميع المحتويات' : 'You have full access to all content'}
+                                        {isGerman ? 'لديك وصول كامل لجميع المحتويات' : 'You have full access to all content'}
                                     </p>
                                     <Button
                                         onClick={() => router.push(`/${locale}/messaging?userId=${mentor.user.id}`)}
                                         className="w-full bg-card hover:bg-card-hover text-foreground font-semibold rounded-full border border-border"
                                     >
                                         <MessageCircle className="w-4 h-4 mr-2" />
-                                        {isArabic ? 'مراسلة' : 'Send Message'}
+                                        {isGerman ? 'مراسلة' : 'Send Message'}
                                     </Button>
                                 </div>
                             )}
@@ -6774,7 +6827,7 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="flex items-center gap-2 mb-3">
                                         <Sparkles className="w-5 h-5 text-yellow-400" />
                                         <h3 className="font-bold text-foreground">
-                                            {isArabic ? 'رموز التغذية الراجعة' : 'Feedback Tokens'}
+                                            {isGerman ? 'رموز التغذية الراجعة' : 'Feedback Tokens'}
                                         </h3>
                                     </div>
 
@@ -6782,7 +6835,7 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="bg-card/50 rounded-xl p-3 mb-3">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-sm text-muted-foreground">
-                                                {isArabic ? 'الرموز المتاحة' : 'Available'}
+                                                {isGerman ? 'الرموز المتاحة' : 'Available'}
                                             </span>
                                             <span className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
                                                 {feedbackTokens.available}/{feedbackTokens.total}
@@ -6799,8 +6852,8 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Renewal Date */}
                                     {feedbackTokens.renewalDate && (
                                         <p className="text-xs text-muted-foreground mb-3">
-                                            {isArabic ? 'التجديد في: ' : 'Renews: '}
-                                            {new Date(feedbackTokens.renewalDate).toLocaleDateString(isArabic ? 'ar-EG' : 'en-US', {
+                                            {isGerman ? 'التجديد في: ' : 'Renews: '}
+                                            {new Date(feedbackTokens.renewalDate).toLocaleDateString(isGerman ? 'ar-EG' : 'en-US', {
                                                 month: 'short',
                                                 day: 'numeric'
                                             })}
@@ -6814,7 +6867,7 @@ export default function OnlyFansMentorProfilePage() {
                                         className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold rounded-full disabled:opacity-50"
                                     >
                                         <Send className="w-4 h-4 mr-2" />
-                                        {isArabic ? 'طلب تعليقات' : 'Request Feedback'}
+                                        {isGerman ? 'طلب تعليقات' : 'Request Feedback'}
                                     </Button>
 
                                     {/* Pending Requests Count */}
@@ -6822,7 +6875,7 @@ export default function OnlyFansMentorProfilePage() {
                                         <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                                             <TrendingUp className="w-3 h-3" />
                                             <span>
-                                                {feedbackRequests.filter(r => r.status === 'IN_PROGRESS').length} {isArabic ? 'طلبات معلقة' : 'pending requests'}
+                                                {feedbackRequests.filter(r => r.status === 'IN_PROGRESS').length} {isGerman ? 'طلبات معلقة' : 'pending requests'}
                                             </span>
                                         </div>
                                     )}
@@ -6833,7 +6886,7 @@ export default function OnlyFansMentorProfilePage() {
                             {/* Suggested Creators */}
                             <div className="bg-[#1a1a1a] dark:bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl">
                                 <div className="p-4 border-b border-white/10">
-                                    <h3 className="font-bold text-white">{isArabic ? 'منشئون آخرون' : 'Other Creators'}</h3>
+                                    <h3 className="font-bold text-white">{isGerman ? 'منشئون آخرون' : 'Other Creators'}</h3>
                                 </div>
                                 {suggestedCreators.length > 0 ? (
                                     <div className="divide-y divide-white/5">
@@ -6862,7 +6915,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-1 mb-1">
                                                             <h4 className="font-semibold text-white text-sm truncate group-hover:text-[#0a84ff] transition-colors">
-                                                                {isArabic ? creator.user?.arabicName || creator.user?.name : creator.user?.name}
+                                                                {isGerman ? creator.user?.arabicName || creator.user?.name : creator.user?.name}
                                                             </h4>
                                                             {creator.averageRating >= 4.5 && (
                                                                 <CheckCircle className="w-3 h-3 text-[#0a84ff] fill-[#0a84ff] flex-shrink-0" />
@@ -6894,7 +6947,7 @@ export default function OnlyFansMentorProfilePage() {
                                     </div>
                                 ) : (
                                     <div className="p-4 text-center text-sm text-white/50">
-                                        {isArabic ? 'جاري التحميل...' : 'Loading...'}
+                                        {isGerman ? 'جاري التحميل...' : 'Loading...'}
                                     </div>
                                 )}
                             </div>
@@ -6914,7 +6967,7 @@ export default function OnlyFansMentorProfilePage() {
                     onClose={() => setIsBookingModalOpen(false)}
                     mentorId={mentor.id}
                     mentorName={getMentorName()}
-                    isArabic={isArabic}
+                    isArabic={isGerman}
                     currentSubscription={currentSubscription}
                     monthlyPrice={mentor.monthlyPrice}
                 />
@@ -6940,10 +6993,10 @@ export default function OnlyFansMentorProfilePage() {
                                 <Sparkles className="w-6 h-6" />
                                 <div>
                                     <h2 className="text-2xl font-bold">
-                                        {isArabic ? 'طلب تعليقات شخصية' : 'Request Personal Feedback'}
+                                        {isGerman ? 'طلب تعليقات شخصية' : 'Request Personal Feedback'}
                                     </h2>
                                     <p className="text-white/80 text-sm mt-1">
-                                        {isArabic ? `${feedbackTokens.available} رموز متاحة` : `${feedbackTokens.available} tokens available`}
+                                        {isGerman ? `${feedbackTokens.available} رموز متاحة` : `${feedbackTokens.available} tokens available`}
                                     </p>
                                 </div>
                             </div>
@@ -6954,12 +7007,12 @@ export default function OnlyFansMentorProfilePage() {
                             {/* Request Input */}
                             <div className="mb-6">
                                 <label className="block text-sm font-semibold text-foreground mb-2">
-                                    {isArabic ? 'سؤالك أو طلبك' : 'Your Question or Request'}
+                                    {isGerman ? 'سؤالك أو طلبك' : 'Your Question or Request'}
                                 </label>
                                 <textarea
                                     value={newFeedbackRequest}
                                     onChange={(e) => setNewFeedbackRequest(e.target.value)}
-                                    placeholder={isArabic
+                                    placeholder={isGerman
                                         ? 'اشرح ما تحتاج تعليقات عليه بالتفصيل...'
                                         : 'Explain in detail what you need feedback on...'
                                     }
@@ -6975,15 +7028,15 @@ export default function OnlyFansMentorProfilePage() {
                             {/* Attachment (Placeholder) */}
                             <div className="mb-6">
                                 <label className="block text-sm font-semibold text-foreground mb-2">
-                                    {isArabic ? 'مرفق (اختياري)' : 'Attachment (Optional)'}
+                                    {isGerman ? 'مرفق (اختياري)' : 'Attachment (Optional)'}
                                 </label>
                                 <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-yellow-500 transition-all cursor-pointer">
                                     <Paperclip className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                                     <p className="text-sm text-muted-foreground">
-                                        {isArabic ? 'انقر لإرفاق ملف' : 'Click to attach file'}
+                                        {isGerman ? 'انقر لإرفاق ملف' : 'Click to attach file'}
                                     </p>
                                     <p className="text-xs text-muted-foreground mt-1">
-                                        {isArabic ? 'PDF, صور، أو ملفات أخرى' : 'PDF, images, or other files'}
+                                        {isGerman ? 'PDF, صور، أو ملفات أخرى' : 'PDF, images, or other files'}
                                     </p>
                                 </div>
                             </div>
@@ -6992,7 +7045,7 @@ export default function OnlyFansMentorProfilePage() {
                             {feedbackRequests.length > 0 && (
                                 <div className="mb-6">
                                     <h3 className="text-sm font-semibold text-foreground mb-3">
-                                        {isArabic ? 'طلباتك السابقة' : 'Your Previous Requests'}
+                                        {isGerman ? 'طلباتك السابقة' : 'Your Previous Requests'}
                                     </h3>
                                     <div className="space-y-3 max-h-60 overflow-y-auto">
                                         {feedbackRequests.slice(0, 3).map((request) => (
@@ -7010,8 +7063,8 @@ export default function OnlyFansMentorProfilePage() {
                                                     <Badge className={`${request.status === 'ANSWERED' ? 'bg-green-500' : 'bg-yellow-500'
                                                         } text-white border-0 text-xs flex-shrink-0`}>
                                                         {request.status === 'ANSWERED'
-                                                            ? (isArabic ? 'تم الرد' : 'Answered')
-                                                            : (isArabic ? 'قيد المعالجة' : 'Pending')
+                                                            ? (isGerman ? 'تم الرد' : 'Answered')
+                                                            : (isGerman ? 'قيد المعالجة' : 'Pending')
                                                         }
                                                     </Badge>
                                                 </div>
@@ -7032,7 +7085,7 @@ export default function OnlyFansMentorProfilePage() {
                                     onClick={() => setShowFeedbackModal(false)}
                                     className="flex-1 bg-card hover:bg-card-hover text-foreground border border-border"
                                 >
-                                    {isArabic ? 'إلغاء' : 'Cancel'}
+                                    {isGerman ? 'إلغاء' : 'Cancel'}
                                 </Button>
                                 <Button
                                     onClick={handleSubmitFeedbackRequest}
@@ -7040,14 +7093,14 @@ export default function OnlyFansMentorProfilePage() {
                                     className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold disabled:opacity-50"
                                 >
                                     <Send className="w-4 h-4 mr-2" />
-                                    {isArabic ? 'إرسال الطلب' : 'Submit Request'}
+                                    {isGerman ? 'إرسال الطلب' : 'Submit Request'}
                                 </Button>
                             </div>
 
                             {/* Info */}
                             <div className="mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
                                 <p className="text-xs text-muted-foreground">
-                                    {isArabic
+                                    {isGerman
                                         ? '💡 ستتلقى رداً شخصياً من المعلم خلال 24-48 ساعة. استخدم الرموز بحكمة!'
                                         : '💡 You\'ll receive a personalized response from the mentor within 24-48 hours. Use tokens wisely!'
                                     }
@@ -7065,7 +7118,7 @@ export default function OnlyFansMentorProfilePage() {
                     onClose={() => setIsReviewModalOpen(false)}
                     mentorId={mentor.id}
                     mentorName={getMentorName()}
-                    isArabic={isArabic}
+                    isArabic={isGerman}
                     courses={mentor.courses || []}
                     onReviewSubmitted={() => {
                         // Refresh mentor data to update rating
@@ -7094,8 +7147,8 @@ export default function OnlyFansMentorProfilePage() {
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-2xl font-black text-foreground">
                                     {editingPost
-                                        ? (isArabic ? '✏️ تعديل المنشور' : '✏️ Edit Post')
-                                        : (isArabic ? '📝 منشور جديد' : '📝 Create New Post')
+                                        ? (isGerman ? '✏️ تعديل المنشور' : '✏️ Edit Post')
+                                        : (isGerman ? '📝 منشور جديد' : '📝 Create New Post')
                                     }
                                 </h2>
                                 <button
@@ -7116,12 +7169,12 @@ export default function OnlyFansMentorProfilePage() {
                             {/* Post Content */}
                             <div className="mb-4">
                                 <label className="block text-sm font-semibold text-foreground mb-2">
-                                    {isArabic ? 'محتوى المنشور' : 'Post Content'}
+                                    {isGerman ? 'محتوى المنشور' : 'Post Content'}
                                 </label>
                                 <textarea
                                     value={newPostText}
                                     onChange={(e) => setNewPostText(e.target.value)}
-                                    placeholder={isArabic ? 'اكتب شيئاً مثيراً للاهتمام...' : 'Write something interesting...'}
+                                    placeholder={isGerman ? 'اكتب شيئاً مثيراً للاهتمام...' : 'Write something interesting...'}
                                     className="w-full min-h-[150px] bg-card-hover border border-border rounded-xl p-4 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
                                     maxLength={1000}
                                 />
@@ -7133,7 +7186,7 @@ export default function OnlyFansMentorProfilePage() {
                             {/* Media Upload */}
                             <div className="mb-4">
                                 <label className="block text-sm font-semibold text-foreground mb-2">
-                                    {isArabic ? 'إضافة وسائط (اختياري)' : 'Add Media (Optional)'}
+                                    {isGerman ? 'إضافة وسائط (اختياري)' : 'Add Media (Optional)'}
                                 </label>
                                 {uploadPreview ? (
                                     <div className="relative rounded-xl overflow-hidden border-2 border-purple-500/30">
@@ -7159,10 +7212,10 @@ export default function OnlyFansMentorProfilePage() {
                                         />
                                         <Download className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
                                         <p className="text-sm text-foreground font-semibold mb-1">
-                                            {isArabic ? 'انقر لرفع صورة أو فيديو' : 'Click to upload image or video'}
+                                            {isGerman ? 'انقر لرفع صورة أو فيديو' : 'Click to upload image or video'}
                                         </p>
                                         <p className="text-xs text-muted-foreground">
-                                            {isArabic ? 'الحد الأقصى 50 ميجا' : 'Max 50MB'}
+                                            {isGerman ? 'الحد الأقصى 50 ميجا' : 'Max 50MB'}
                                         </p>
                                     </label>
                                 )}
@@ -7173,7 +7226,7 @@ export default function OnlyFansMentorProfilePage() {
                             {/* Schedule (Optional) */}
                             <div className="mb-6">
                                 <label className="block text-sm font-semibold text-foreground mb-2">
-                                    {isArabic ? 'جدولة للنشر لاحقاً (اختياري)' : 'Schedule for later (Optional)'}
+                                    {isGerman ? 'جدولة للنشر لاحقاً (اختياري)' : 'Schedule for later (Optional)'}
                                 </label>
                                 <input
                                     type="datetime-local"
@@ -7190,7 +7243,7 @@ export default function OnlyFansMentorProfilePage() {
                                     onClick={() => setShowNewPostModal(false)}
                                     className="flex-1 bg-card-hover hover:bg-card text-foreground border border-border"
                                 >
-                                    {isArabic ? 'إلغاء' : 'Cancel'}
+                                    {isGerman ? 'إلغاء' : 'Cancel'}
                                 </Button>
                                 <Button
                                     onClick={handleCreatePost}
@@ -7201,8 +7254,8 @@ export default function OnlyFansMentorProfilePage() {
                                         <>
                                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
                                             {editingPost
-                                                ? (isArabic ? 'جاري التحديث...' : 'Updating...')
-                                                : (isArabic ? 'جاري النشر...' : 'Publishing...')
+                                                ? (isGerman ? 'جاري التحديث...' : 'Updating...')
+                                                : (isGerman ? 'جاري النشر...' : 'Publishing...')
                                             }
                                         </>
                                     ) : (
@@ -7210,14 +7263,14 @@ export default function OnlyFansMentorProfilePage() {
                                             {editingPost ? (
                                                 <>
                                                     <Edit2 className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'تحديث' : 'Update'}
+                                                    {isGerman ? 'تحديث' : 'Update'}
                                                 </>
                                             ) : (
                                                 <>
                                                     <Send className="w-4 h-4 mr-2" />
                                                     {newPostScheduledDate
-                                                        ? (isArabic ? 'جدولة' : 'Schedule')
-                                                        : (isArabic ? 'نشر الآن' : 'Publish Now')
+                                                        ? (isGerman ? 'جدولة' : 'Schedule')
+                                                        : (isGerman ? 'نشر الآن' : 'Publish Now')
                                                     }
                                                 </>
                                             )}
@@ -7249,7 +7302,7 @@ export default function OnlyFansMentorProfilePage() {
                         >
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-2xl font-black text-foreground">
-                                    {isArabic ? '📤 رفع محتوى' : '📤 Upload Content'}
+                                    {isGerman ? '📤 رفع محتوى' : '📤 Upload Content'}
                                 </h2>
                                 <button
                                     onClick={() => setShowUploadModal(false)}
@@ -7273,7 +7326,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 className="flex-1 bg-red-500 hover:bg-red-600 text-white"
                                             >
                                                 <X className="w-4 h-4 mr-2" />
-                                                {isArabic ? 'حذف' : 'Remove'}
+                                                {isGerman ? 'حذف' : 'Remove'}
                                             </Button>
                                             <Button
                                                 onClick={() => {
@@ -7283,7 +7336,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
                                             >
                                                 <Send className="w-4 h-4 mr-2" />
-                                                {isArabic ? 'إنشاء منشور' : 'Create Post'}
+                                                {isGerman ? 'إنشاء منشور' : 'Create Post'}
                                             </Button>
                                         </div>
                                     </div>
@@ -7299,10 +7352,10 @@ export default function OnlyFansMentorProfilePage() {
                                         />
                                         <Download className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                                         <p className="text-lg font-bold text-foreground mb-2">
-                                            {isArabic ? 'اسحب وأفلت أو انقر للرفع' : 'Drag & drop or click to upload'}
+                                            {isGerman ? 'اسحب وأفلت أو انقر للرفع' : 'Drag & drop or click to upload'}
                                         </p>
                                         <p className="text-sm text-muted-foreground">
-                                            {isArabic ? 'صور أو فيديوهات (حتى 50 ميجا)' : 'Images or videos (up to 50MB)'}
+                                            {isGerman ? 'صور أو فيديوهات (حتى 50 ميجا)' : 'Images or videos (up to 50MB)'}
                                         </p>
                                     </label>
                                 )}
@@ -7379,7 +7432,7 @@ export default function OnlyFansMentorProfilePage() {
                             {/* Header */}
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-2xl font-black text-foreground">
-                                    {isArabic ? 'تعديل الملف الشخصي' : 'Edit Profile'}
+                                    {isGerman ? 'تعديل الملف الشخصي' : 'Edit Profile'}
                                 </h2>
                                 <button
                                     onClick={() => setShowEditProfileModal(false)}
@@ -7394,7 +7447,7 @@ export default function OnlyFansMentorProfilePage() {
                                 {/* Profile Photo Upload */}
                                 <div>
                                     <label className="block text-sm font-semibold text-foreground mb-2">
-                                        {isArabic ? 'صورة الملف الشخصي' : 'Profile Photo'}
+                                        {isGerman ? 'صورة الملف الشخصي' : 'Profile Photo'}
                                     </label>
                                     <div className="flex items-center gap-4">
                                         <div className="relative w-24 h-24 rounded-full overflow-hidden bg-muted flex-shrink-0">
@@ -7434,7 +7487,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 htmlFor="profile-photo-upload"
                                                 className="inline-block px-4 py-2 bg-card hover:bg-card-hover border border-border rounded-lg cursor-pointer transition-colors text-sm font-medium"
                                             >
-                                                {isArabic ? 'تحميل صورة' : 'Upload Photo'}
+                                                {isGerman ? 'تحميل صورة' : 'Upload Photo'}
                                             </label>
                                             {profilePhotoPreview && (
                                                 <button
@@ -7444,7 +7497,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     }}
                                                     className="ml-2 text-sm text-red-400 hover:text-red-300"
                                                 >
-                                                    {isArabic ? 'إزالة' : 'Remove'}
+                                                    {isGerman ? 'إزالة' : 'Remove'}
                                                 </button>
                                             )}
                                         </div>
@@ -7454,7 +7507,7 @@ export default function OnlyFansMentorProfilePage() {
                                 {/* Cover Photo Upload */}
                                 <div>
                                     <label className="block text-sm font-semibold text-foreground mb-2">
-                                        {isArabic ? 'صورة الغلاف' : 'Cover Photo'}
+                                        {isGerman ? 'صورة الغلاف' : 'Cover Photo'}
                                     </label>
                                     <div className="space-y-2">
                                         <div className="relative w-full h-32 rounded-lg overflow-hidden bg-muted">
@@ -7492,7 +7545,7 @@ export default function OnlyFansMentorProfilePage() {
                                                 htmlFor="cover-photo-upload"
                                                 className="inline-block px-4 py-2 bg-card hover:bg-card-hover border border-border rounded-lg cursor-pointer transition-colors text-sm font-medium"
                                             >
-                                                {isArabic ? 'تحميل غلاف' : 'Upload Cover'}
+                                                {isGerman ? 'تحميل غلاف' : 'Upload Cover'}
                                             </label>
                                             {coverPhotoPreview && (
                                                 <button
@@ -7502,7 +7555,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     }}
                                                     className="ml-2 text-sm text-red-400 hover:text-red-300"
                                                 >
-                                                    {isArabic ? 'إزالة' : 'Remove'}
+                                                    {isGerman ? 'إزالة' : 'Remove'}
                                                 </button>
                                             )}
                                         </div>
@@ -7512,12 +7565,12 @@ export default function OnlyFansMentorProfilePage() {
                                 {/* Name */}
                                 <div>
                                     <label className="block text-sm font-semibold text-foreground mb-2">
-                                        {isArabic ? 'الاسم' : 'Name'}
+                                        {isGerman ? 'الاسم' : 'Name'}
                                     </label>
                                     <Input
                                         value={editProfileData.name}
                                         onChange={(e) => setEditProfileData({ ...editProfileData, name: e.target.value })}
-                                        placeholder={isArabic ? 'أدخل اسمك' : 'Enter your name'}
+                                        placeholder={isGerman ? 'أدخل اسمك' : 'Enter your name'}
                                         className="bg-background border-border"
                                     />
                                 </div>
@@ -7525,12 +7578,12 @@ export default function OnlyFansMentorProfilePage() {
                                 {/* Arabic Name */}
                                 <div>
                                     <label className="block text-sm font-semibold text-foreground mb-2">
-                                        {isArabic ? 'الاسم بالعربية' : 'Arabic Name'}
+                                        {isGerman ? 'الاسم بالعربية' : 'Arabic Name'}
                                     </label>
                                     <Input
                                         value={editProfileData.arabicName}
                                         onChange={(e) => setEditProfileData({ ...editProfileData, arabicName: e.target.value })}
-                                        placeholder={isArabic ? 'أدخل اسمك بالعربية' : 'Enter your name in Arabic'}
+                                        placeholder={isGerman ? 'أدخل اسمك بالعربية' : 'Enter your name in Arabic'}
                                         className="bg-background border-border"
                                     />
                                 </div>
@@ -7538,12 +7591,12 @@ export default function OnlyFansMentorProfilePage() {
                                 {/* Bio */}
                                 <div>
                                     <label className="block text-sm font-semibold text-foreground mb-2">
-                                        {isArabic ? 'النبذة' : 'Bio'}
+                                        {isGerman ? 'النبذة' : 'Bio'}
                                     </label>
                                     <textarea
                                         value={editProfileData.bio}
                                         onChange={(e) => setEditProfileData({ ...editProfileData, bio: e.target.value })}
-                                        placeholder={isArabic ? 'اكتب نبذة عنك' : 'Write about yourself'}
+                                        placeholder={isGerman ? 'اكتب نبذة عنك' : 'Write about yourself'}
                                         rows={4}
                                         className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
                                     />
@@ -7552,12 +7605,12 @@ export default function OnlyFansMentorProfilePage() {
                                 {/* Expertise */}
                                 <div>
                                     <label className="block text-sm font-semibold text-foreground mb-2">
-                                        {isArabic ? 'المجالات (مفصولة بفواصل)' : 'Expertise (comma separated)'}
+                                        {isGerman ? 'المجالات (مفصولة بفواصل)' : 'Expertise (comma separated)'}
                                     </label>
                                     <Input
                                         value={editProfileData.expertise}
                                         onChange={(e) => setEditProfileData({ ...editProfileData, expertise: e.target.value })}
-                                        placeholder={isArabic ? 'مثال: تداول، استثمار، تحليل' : 'e.g., Trading, Investment, Analysis'}
+                                        placeholder={isGerman ? 'مثال: تداول، استثمار، تحليل' : 'e.g., Trading, Investment, Analysis'}
                                         className="bg-background border-border"
                                     />
                                 </div>
@@ -7565,12 +7618,12 @@ export default function OnlyFansMentorProfilePage() {
                                 {/* Location */}
                                 <div>
                                     <label className="block text-sm font-semibold text-foreground mb-2">
-                                        {isArabic ? 'الموقع' : 'Location'}
+                                        {isGerman ? 'الموقع' : 'Location'}
                                     </label>
                                     <Input
                                         value={editProfileData.location}
                                         onChange={(e) => setEditProfileData({ ...editProfileData, location: e.target.value })}
-                                        placeholder={isArabic ? 'المدينة، البلد' : 'City, Country'}
+                                        placeholder={isGerman ? 'المدينة، البلد' : 'City, Country'}
                                         className="bg-background border-border"
                                     />
                                 </div>
@@ -7579,7 +7632,7 @@ export default function OnlyFansMentorProfilePage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'السعر بالساعة (€)' : 'Hourly Rate (€)'}
+                                            {isGerman ? 'السعر بالساعة (€)' : 'Hourly Rate (€)'}
                                         </label>
                                         <Input
                                             type="number"
@@ -7591,7 +7644,7 @@ export default function OnlyFansMentorProfilePage() {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'سعر الاشتراك (€)' : 'Subscription Price (€)'}
+                                            {isGerman ? 'سعر الاشتراك (€)' : 'Subscription Price (€)'}
                                         </label>
                                         <Input
                                             type="number"
@@ -7644,16 +7697,16 @@ export default function OnlyFansMentorProfilePage() {
                                                     })
                                                 }
 
-                                                toast.success(isArabic ? 'تم حفظ التغييرات!' : 'Changes saved!')
+                                                toast.success(isGerman ? 'تم حفظ التغييرات!' : 'Changes saved!')
                                                 setShowEditProfileModal(false)
                                             } catch (error) {
                                                 console.error('Error saving profile:', error)
-                                                toast.error(isArabic ? 'فشل حفظ التغييرات' : 'Failed to save changes')
+                                                toast.error(isGerman ? 'فشل حفظ التغييرات' : 'Failed to save changes')
                                             }
                                         }}
                                         className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold"
                                     >
-                                        {isArabic ? 'حفظ التغييرات' : 'Save Changes'}
+                                        {isGerman ? 'حفظ التغييرات' : 'Save Changes'}
                                     </Button>
                                     <Button
                                         onClick={() => {
@@ -7666,7 +7719,7 @@ export default function OnlyFansMentorProfilePage() {
                                         }}
                                         className="flex-1 bg-card hover:bg-card-hover text-foreground border border-border"
                                     >
-                                        {isArabic ? 'إلغاء' : 'Cancel'}
+                                        {isGerman ? 'إلغاء' : 'Cancel'}
                                     </Button>
                                 </div>
                             </div>
@@ -7701,10 +7754,10 @@ export default function OnlyFansMentorProfilePage() {
                                         </div>
                                         <div>
                                             <h3 className="text-2xl font-bold text-foreground">
-                                                {isArabic ? 'جلسة جديدة' : 'New Session'}
+                                                {isGerman ? 'جلسة جديدة' : 'New Session'}
                                             </h3>
                                             <p className="text-sm text-muted-foreground">
-                                                {isArabic ? 'أنشئ جلسة مباشرة جديدة' : 'Create a new live session'}
+                                                {isGerman ? 'أنشئ جلسة مباشرة جديدة' : 'Create a new live session'}
                                             </p>
                                         </div>
                                     </div>
@@ -7721,12 +7774,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Title */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'عنوان الجلسة *' : 'Session Title *'}
+                                            {isGerman ? 'عنوان الجلسة *' : 'Session Title *'}
                                         </label>
                                         <Input
                                             value={newSessionData.title}
                                             onChange={(e) => setNewSessionData({ ...newSessionData, title: e.target.value })}
-                                            placeholder={isArabic ? 'مثال: استراتيجيات التداول المتقدمة' : 'e.g., Advanced Trading Strategies'}
+                                            placeholder={isGerman ? 'مثال: استراتيجيات التداول المتقدمة' : 'e.g., Advanced Trading Strategies'}
                                             required
                                             className="bg-background border-border"
                                         />
@@ -7735,12 +7788,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Arabic Title */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'العنوان بالعربية' : 'Arabic Title'}
+                                            {isGerman ? 'العنوان بالعربية' : 'Arabic Title'}
                                         </label>
                                         <Input
                                             value={newSessionData.titleAr}
                                             onChange={(e) => setNewSessionData({ ...newSessionData, titleAr: e.target.value })}
-                                            placeholder={isArabic ? 'العنوان بالعربية' : 'Title in Arabic'}
+                                            placeholder={isGerman ? 'العنوان بالعربية' : 'Title in Arabic'}
                                             className="bg-background border-border"
                                             dir="rtl"
                                         />
@@ -7749,12 +7802,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Description */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'الوصف' : 'Description'}
+                                            {isGerman ? 'الوصف' : 'Description'}
                                         </label>
                                         <textarea
                                             value={newSessionData.description}
                                             onChange={(e) => setNewSessionData({ ...newSessionData, description: e.target.value })}
-                                            placeholder={isArabic ? 'وصف محتوى الجلسة...' : 'Describe what you will cover...'}
+                                            placeholder={isGerman ? 'وصف محتوى الجلسة...' : 'Describe what you will cover...'}
                                             rows={4}
                                             className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-foreground resize-none"
                                         />
@@ -7763,12 +7816,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Arabic Description */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'الوصف بالعربية' : 'Arabic Description'}
+                                            {isGerman ? 'الوصف بالعربية' : 'Arabic Description'}
                                         </label>
                                         <textarea
                                             value={newSessionData.descriptionAr}
                                             onChange={(e) => setNewSessionData({ ...newSessionData, descriptionAr: e.target.value })}
-                                            placeholder={isArabic ? 'الوصف بالعربية...' : 'Description in Arabic...'}
+                                            placeholder={isGerman ? 'الوصف بالعربية...' : 'Description in Arabic...'}
                                             rows={4}
                                             className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-foreground resize-none"
                                             dir="rtl"
@@ -7778,7 +7831,7 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Scheduled Date & Time */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'التاريخ والوقت *' : 'Date & Time *'}
+                                            {isGerman ? 'التاريخ والوقت *' : 'Date & Time *'}
                                         </label>
                                         <Input
                                             type="datetime-local"
@@ -7793,7 +7846,7 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'المدة (دقيقة)' : 'Duration (min)'}
+                                                {isGerman ? 'المدة (دقيقة)' : 'Duration (min)'}
                                             </label>
                                             <Input
                                                 type="number"
@@ -7806,7 +7859,7 @@ export default function OnlyFansMentorProfilePage() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'الباقة المطلوبة' : 'Required Tier'}
+                                                {isGerman ? 'الباقة المطلوبة' : 'Required Tier'}
                                             </label>
                                             <select
                                                 value={newSessionData.tier}
@@ -7821,7 +7874,7 @@ export default function OnlyFansMentorProfilePage() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'الحد الأقصى' : 'Max Attendees'}
+                                                {isGerman ? 'الحد الأقصى' : 'Max Attendees'}
                                             </label>
                                             <Input
                                                 type="number"
@@ -7837,35 +7890,35 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="border-t border-border pt-4">
                                         <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                                             <Video className="w-4 h-4 text-purple-500" />
-                                            {isArabic ? 'رابط الاجتماع' : 'Meeting Link'}
+                                            {isGerman ? 'رابط الاجتماع' : 'Meeting Link'}
                                         </h4>
                                         <div className="space-y-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                                    {isArabic ? 'رابط Zoom / Google Meet / Teams' : 'Zoom / Google Meet / Teams URL'}
+                                                    {isGerman ? 'رابط Zoom / Google Meet / Teams' : 'Zoom / Google Meet / Teams URL'}
                                                 </label>
                                                 <Input
                                                     type="url"
                                                     value={newSessionData.meetingUrl}
                                                     onChange={(e) => setNewSessionData({ ...newSessionData, meetingUrl: e.target.value })}
-                                                    placeholder={isArabic ? 'مثال: https://zoom.us/j/123456789' : 'e.g., https://zoom.us/j/123456789'}
+                                                    placeholder={isGerman ? 'مثال: https://zoom.us/j/123456789' : 'e.g., https://zoom.us/j/123456789'}
                                                     className="bg-background border-border"
                                                 />
                                                 <p className="text-xs text-muted-foreground mt-1">
-                                                    {isArabic
+                                                    {isGerman
                                                         ? 'أضف رابط الاجتماع من Zoom أو Google Meet أو Microsoft Teams'
                                                         : 'Add your meeting link from Zoom, Google Meet, or Microsoft Teams'}
                                                 </p>
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                                    {isArabic ? 'كلمة مرور الاجتماع (اختياري)' : 'Meeting Password (optional)'}
+                                                    {isGerman ? 'كلمة مرور الاجتماع (اختياري)' : 'Meeting Password (optional)'}
                                                 </label>
                                                 <Input
                                                     type="text"
                                                     value={newSessionData.meetingPassword}
                                                     onChange={(e) => setNewSessionData({ ...newSessionData, meetingPassword: e.target.value })}
-                                                    placeholder={isArabic ? 'كلمة المرور إن وجدت' : 'Password if required'}
+                                                    placeholder={isGerman ? 'كلمة المرور إن وجدت' : 'Password if required'}
                                                     className="bg-background border-border"
                                                 />
                                             </div>
@@ -7882,12 +7935,12 @@ export default function OnlyFansMentorProfilePage() {
                                             {savingSession ? (
                                                 <>
                                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                                                    {isArabic ? 'جاري الإنشاء...' : 'Creating...'}
+                                                    {isGerman ? 'جاري الإنشاء...' : 'Creating...'}
                                                 </>
                                             ) : (
                                                 <>
                                                     <Calendar className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'إنشاء الجلسة' : 'Create Session'}
+                                                    {isGerman ? 'إنشاء الجلسة' : 'Create Session'}
                                                 </>
                                             )}
                                         </Button>
@@ -7897,7 +7950,7 @@ export default function OnlyFansMentorProfilePage() {
                                             disabled={savingSession}
                                             className="flex-1 bg-card hover:bg-card-hover text-foreground border border-border"
                                         >
-                                            {isArabic ? 'إلغاء' : 'Cancel'}
+                                            {isGerman ? 'إلغاء' : 'Cancel'}
                                         </Button>
                                     </div>
                                 </form>
@@ -7933,10 +7986,10 @@ export default function OnlyFansMentorProfilePage() {
                                         </div>
                                         <div>
                                             <h3 className="text-2xl font-bold text-foreground">
-                                                {isArabic ? 'تعديل الجلسة' : 'Edit Session'}
+                                                {isGerman ? 'تعديل الجلسة' : 'Edit Session'}
                                             </h3>
                                             <p className="text-sm text-muted-foreground">
-                                                {isArabic ? 'تحديث تفاصيل الجلسة' : 'Update session details'}
+                                                {isGerman ? 'تحديث تفاصيل الجلسة' : 'Update session details'}
                                             </p>
                                         </div>
                                     </div>
@@ -7954,24 +8007,24 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'عنوان الجلسة (إنجليزي) *' : 'Session Title (English) *'}
+                                                {isGerman ? 'عنوان الجلسة (إنجليزي) *' : 'Session Title (English) *'}
                                             </label>
                                             <Input
                                                 value={editSessionData.title}
                                                 onChange={(e) => setEditSessionData({ ...editSessionData, title: e.target.value })}
-                                                placeholder={isArabic ? 'أدخل العنوان بالإنجليزية' : 'Enter title in English'}
+                                                placeholder={isGerman ? 'أدخل العنوان بالإنجليزية' : 'Enter title in English'}
                                                 className="bg-background border-border"
                                                 required
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'عنوان الجلسة (عربي)' : 'Session Title (Arabic)'}
+                                                {isGerman ? 'عنوان الجلسة (عربي)' : 'Session Title (Arabic)'}
                                             </label>
                                             <Input
                                                 value={editSessionData.titleAr}
                                                 onChange={(e) => setEditSessionData({ ...editSessionData, titleAr: e.target.value })}
-                                                placeholder={isArabic ? 'أدخل العنوان بالعربية' : 'Enter title in Arabic'}
+                                                placeholder={isGerman ? 'أدخل العنوان بالعربية' : 'Enter title in Arabic'}
                                                 className="bg-background border-border"
                                                 dir="rtl"
                                             />
@@ -7982,23 +8035,23 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'الوصف (إنجليزي)' : 'Description (English)'}
+                                                {isGerman ? 'الوصف (إنجليزي)' : 'Description (English)'}
                                             </label>
                                             <textarea
                                                 value={editSessionData.description}
                                                 onChange={(e) => setEditSessionData({ ...editSessionData, description: e.target.value })}
-                                                placeholder={isArabic ? 'وصف الجلسة' : 'Session description'}
+                                                placeholder={isGerman ? 'وصف الجلسة' : 'Session description'}
                                                 className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-foreground min-h-[80px] resize-none"
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'الوصف (عربي)' : 'Description (Arabic)'}
+                                                {isGerman ? 'الوصف (عربي)' : 'Description (Arabic)'}
                                             </label>
                                             <textarea
                                                 value={editSessionData.descriptionAr}
                                                 onChange={(e) => setEditSessionData({ ...editSessionData, descriptionAr: e.target.value })}
-                                                placeholder={isArabic ? 'وصف الجلسة بالعربية' : 'Session description in Arabic'}
+                                                placeholder={isGerman ? 'وصف الجلسة بالعربية' : 'Session description in Arabic'}
                                                 className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-foreground min-h-[80px] resize-none"
                                                 dir="rtl"
                                             />
@@ -8009,7 +8062,7 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'التاريخ والوقت *' : 'Date & Time *'}
+                                                {isGerman ? 'التاريخ والوقت *' : 'Date & Time *'}
                                             </label>
                                             <Input
                                                 type="datetime-local"
@@ -8021,7 +8074,7 @@ export default function OnlyFansMentorProfilePage() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'المدة (دقيقة)' : 'Duration (min)'}
+                                                {isGerman ? 'المدة (دقيقة)' : 'Duration (min)'}
                                             </label>
                                             <Input
                                                 type="number"
@@ -8034,7 +8087,7 @@ export default function OnlyFansMentorProfilePage() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'الباقة المطلوبة' : 'Required Tier'}
+                                                {isGerman ? 'الباقة المطلوبة' : 'Required Tier'}
                                             </label>
                                             <select
                                                 value={editSessionData.tier}
@@ -8049,7 +8102,7 @@ export default function OnlyFansMentorProfilePage() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'الحد الأقصى' : 'Max Attendees'}
+                                                {isGerman ? 'الحد الأقصى' : 'Max Attendees'}
                                             </label>
                                             <Input
                                                 type="number"
@@ -8065,30 +8118,30 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="border-t border-border pt-4">
                                         <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                                             <Video className="w-4 h-4 text-purple-500" />
-                                            {isArabic ? 'رابط الاجتماع' : 'Meeting Link'}
+                                            {isGerman ? 'رابط الاجتماع' : 'Meeting Link'}
                                         </h4>
                                         <div className="space-y-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                                    {isArabic ? 'رابط Zoom / Google Meet / Teams' : 'Zoom / Google Meet / Teams URL'}
+                                                    {isGerman ? 'رابط Zoom / Google Meet / Teams' : 'Zoom / Google Meet / Teams URL'}
                                                 </label>
                                                 <Input
                                                     type="url"
                                                     value={editSessionData.meetingUrl}
                                                     onChange={(e) => setEditSessionData({ ...editSessionData, meetingUrl: e.target.value })}
-                                                    placeholder={isArabic ? 'مثال: https://zoom.us/j/123456789' : 'e.g., https://zoom.us/j/123456789'}
+                                                    placeholder={isGerman ? 'مثال: https://zoom.us/j/123456789' : 'e.g., https://zoom.us/j/123456789'}
                                                     className="bg-background border-border"
                                                 />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                                    {isArabic ? 'كلمة مرور الاجتماع (اختياري)' : 'Meeting Password (optional)'}
+                                                    {isGerman ? 'كلمة مرور الاجتماع (اختياري)' : 'Meeting Password (optional)'}
                                                 </label>
                                                 <Input
                                                     type="text"
                                                     value={editSessionData.meetingPassword}
                                                     onChange={(e) => setEditSessionData({ ...editSessionData, meetingPassword: e.target.value })}
-                                                    placeholder={isArabic ? 'كلمة المرور إن وجدت' : 'Password if required'}
+                                                    placeholder={isGerman ? 'كلمة المرور إن وجدت' : 'Password if required'}
                                                     className="bg-background border-border"
                                                 />
                                             </div>
@@ -8105,12 +8158,12 @@ export default function OnlyFansMentorProfilePage() {
                                             {savingSession ? (
                                                 <>
                                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                                                    {isArabic ? 'جاري الحفظ...' : 'Saving...'}
+                                                    {isGerman ? 'جاري الحفظ...' : 'Saving...'}
                                                 </>
                                             ) : (
                                                 <>
                                                     <CheckCircle className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'حفظ التغييرات' : 'Save Changes'}
+                                                    {isGerman ? 'حفظ التغييرات' : 'Save Changes'}
                                                 </>
                                             )}
                                         </Button>
@@ -8120,7 +8173,7 @@ export default function OnlyFansMentorProfilePage() {
                                             disabled={savingSession}
                                             className="flex-1 bg-card hover:bg-card-hover text-foreground border border-border"
                                         >
-                                            {isArabic ? 'إلغاء' : 'Cancel'}
+                                            {isGerman ? 'إلغاء' : 'Cancel'}
                                         </Button>
                                     </div>
                                 </form>
@@ -8156,10 +8209,10 @@ export default function OnlyFansMentorProfilePage() {
                                         </div>
                                         <div>
                                             <h3 className="text-2xl font-bold text-foreground">
-                                                {isArabic ? 'تعديل التسجيل' : 'Edit Recording'}
+                                                {isGerman ? 'تعديل التسجيل' : 'Edit Recording'}
                                             </h3>
                                             <p className="text-sm text-muted-foreground">
-                                                {isArabic ? 'تحديث تفاصيل التسجيل ورابط الفيديو' : 'Update recording details and video URL'}
+                                                {isGerman ? 'تحديث تفاصيل التسجيل ورابط الفيديو' : 'Update recording details and video URL'}
                                             </p>
                                         </div>
                                     </div>
@@ -8177,23 +8230,23 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'عنوان التسجيل (إنجليزي)' : 'Recording Title (English)'}
+                                                {isGerman ? 'عنوان التسجيل (إنجليزي)' : 'Recording Title (English)'}
                                             </label>
                                             <Input
                                                 value={editArchivedData.title}
                                                 onChange={(e) => setEditArchivedData({ ...editArchivedData, title: e.target.value })}
-                                                placeholder={isArabic ? 'أدخل العنوان بالإنجليزية' : 'Enter title in English'}
+                                                placeholder={isGerman ? 'أدخل العنوان بالإنجليزية' : 'Enter title in English'}
                                                 className="bg-background border-border"
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'عنوان التسجيل (عربي)' : 'Recording Title (Arabic)'}
+                                                {isGerman ? 'عنوان التسجيل (عربي)' : 'Recording Title (Arabic)'}
                                             </label>
                                             <Input
                                                 value={editArchivedData.titleAr}
                                                 onChange={(e) => setEditArchivedData({ ...editArchivedData, titleAr: e.target.value })}
-                                                placeholder={isArabic ? 'أدخل العنوان بالعربية' : 'Enter title in Arabic'}
+                                                placeholder={isGerman ? 'أدخل العنوان بالعربية' : 'Enter title in Arabic'}
                                                 className="bg-background border-border"
                                                 dir="rtl"
                                             />
@@ -8204,23 +8257,23 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'الوصف (إنجليزي)' : 'Description (English)'}
+                                                {isGerman ? 'الوصف (إنجليزي)' : 'Description (English)'}
                                             </label>
                                             <textarea
                                                 value={editArchivedData.description}
                                                 onChange={(e) => setEditArchivedData({ ...editArchivedData, description: e.target.value })}
-                                                placeholder={isArabic ? 'وصف التسجيل' : 'Recording description'}
+                                                placeholder={isGerman ? 'وصف التسجيل' : 'Recording description'}
                                                 className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-foreground min-h-[80px] resize-none"
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'الوصف (عربي)' : 'Description (Arabic)'}
+                                                {isGerman ? 'الوصف (عربي)' : 'Description (Arabic)'}
                                             </label>
                                             <textarea
                                                 value={editArchivedData.descriptionAr}
                                                 onChange={(e) => setEditArchivedData({ ...editArchivedData, descriptionAr: e.target.value })}
-                                                placeholder={isArabic ? 'وصف التسجيل بالعربية' : 'Recording description in Arabic'}
+                                                placeholder={isGerman ? 'وصف التسجيل بالعربية' : 'Recording description in Arabic'}
                                                 className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-foreground min-h-[80px] resize-none"
                                                 dir="rtl"
                                             />
@@ -8231,21 +8284,21 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="border-t border-border pt-4">
                                         <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                                             <Video className="w-4 h-4 text-pink-500" />
-                                            {isArabic ? 'رابط التسجيل' : 'Recording URL'}
+                                            {isGerman ? 'رابط التسجيل' : 'Recording URL'}
                                         </h4>
                                         <div>
                                             <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                                {isArabic ? 'رابط الفيديو (YouTube, Vimeo, إلخ)' : 'Video URL (YouTube, Vimeo, etc.)'}
+                                                {isGerman ? 'رابط الفيديو (YouTube, Vimeo, إلخ)' : 'Video URL (YouTube, Vimeo, etc.)'}
                                             </label>
                                             <Input
                                                 type="url"
                                                 value={editArchivedData.recordingUrl}
                                                 onChange={(e) => setEditArchivedData({ ...editArchivedData, recordingUrl: e.target.value })}
-                                                placeholder={isArabic ? 'مثال: https://youtube.com/watch?v=...' : 'e.g., https://youtube.com/watch?v=...'}
+                                                placeholder={isGerman ? 'مثال: https://youtube.com/watch?v=...' : 'e.g., https://youtube.com/watch?v=...'}
                                                 className="bg-background border-border"
                                             />
                                             <p className="text-xs text-muted-foreground mt-1">
-                                                {isArabic
+                                                {isGerman
                                                     ? 'أضف رابط تسجيل الجلسة لعرضه للمشتركين'
                                                     : 'Add the session recording URL for subscribers to watch'}
                                             </p>
@@ -8255,7 +8308,7 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Tier */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'الباقة المطلوبة للمشاهدة' : 'Required Tier to Watch'}
+                                            {isGerman ? 'الباقة المطلوبة للمشاهدة' : 'Required Tier to Watch'}
                                         </label>
                                         <select
                                             value={editArchivedData.tier}
@@ -8279,12 +8332,12 @@ export default function OnlyFansMentorProfilePage() {
                                             {savingSession ? (
                                                 <>
                                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                                                    {isArabic ? 'جاري الحفظ...' : 'Saving...'}
+                                                    {isGerman ? 'جاري الحفظ...' : 'Saving...'}
                                                 </>
                                             ) : (
                                                 <>
                                                     <CheckCircle className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'حفظ التغييرات' : 'Save Changes'}
+                                                    {isGerman ? 'حفظ التغييرات' : 'Save Changes'}
                                                 </>
                                             )}
                                         </Button>
@@ -8294,7 +8347,7 @@ export default function OnlyFansMentorProfilePage() {
                                             disabled={savingSession}
                                             className="flex-1 bg-card hover:bg-card-hover text-foreground border border-border"
                                         >
-                                            {isArabic ? 'إلغاء' : 'Cancel'}
+                                            {isGerman ? 'إلغاء' : 'Cancel'}
                                         </Button>
                                     </div>
                                 </form>
@@ -8330,7 +8383,7 @@ export default function OnlyFansMentorProfilePage() {
                                         </div>
                                         <div>
                                             <h3 className="text-xl font-bold text-foreground">
-                                                {isArabic ? 'الحاضرون' : 'Session Attendees'}
+                                                {isGerman ? 'الحاضرون' : 'Session Attendees'}
                                             </h3>
                                             <p className="text-sm text-muted-foreground">
                                                 {selectedSessionForAttendees.title}
@@ -8351,7 +8404,7 @@ export default function OnlyFansMentorProfilePage() {
                                         <div className="text-center py-12">
                                             <div className="w-10 h-10 border-4 border-green-500/30 border-t-green-500 rounded-full animate-spin mx-auto mb-3" />
                                             <p className="text-muted-foreground">
-                                                {isArabic ? 'جاري التحميل...' : 'Loading attendees...'}
+                                                {isGerman ? 'جاري التحميل...' : 'Loading attendees...'}
                                             </p>
                                         </div>
                                     ) : sessionAttendees.length === 0 ? (
@@ -8360,10 +8413,10 @@ export default function OnlyFansMentorProfilePage() {
                                                 <Users className="w-8 h-8 text-muted-foreground" />
                                             </div>
                                             <h4 className="text-lg font-semibold text-foreground mb-2">
-                                                {isArabic ? 'لا يوجد حاضرون بعد' : 'No Attendees Yet'}
+                                                {isGerman ? 'لا يوجد حاضرون بعد' : 'No Attendees Yet'}
                                             </h4>
                                             <p className="text-sm text-muted-foreground">
-                                                {isArabic
+                                                {isGerman
                                                     ? 'سيظهر الحاضرون هنا عند انضمامهم للجلسة'
                                                     : 'Attendees will appear here when they join the session'}
                                             </p>
@@ -8388,10 +8441,10 @@ export default function OnlyFansMentorProfilePage() {
                                                     )}
                                                     <div className="flex-1">
                                                         <p className="font-semibold text-foreground">
-                                                            {isArabic && attendee.arabicName ? attendee.arabicName : attendee.name}
+                                                            {isGerman && attendee.arabicName ? attendee.arabicName : attendee.name}
                                                         </p>
                                                         <p className="text-xs text-muted-foreground">
-                                                            {isArabic ? 'انضم' : 'Joined'} {new Date(attendee.joinedAt).toLocaleTimeString(isArabic ? 'ar-EG' : 'en-US', {
+                                                            {isGerman ? 'انضم' : 'Joined'} {new Date(attendee.joinedAt).toLocaleTimeString(isGerman ? 'ar-EG' : 'en-US', {
                                                                 hour: '2-digit',
                                                                 minute: '2-digit'
                                                             })}
@@ -8407,7 +8460,7 @@ export default function OnlyFansMentorProfilePage() {
                                 <div className="mt-6 pt-4 border-t border-border">
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-muted-foreground">
-                                            {isArabic ? 'إجمالي الحاضرين:' : 'Total Attendees:'}
+                                            {isGerman ? 'إجمالي الحاضرين:' : 'Total Attendees:'}
                                         </span>
                                         <span className="font-bold text-foreground">
                                             {sessionAttendees.length} / {selectedSessionForAttendees.maxAttendees || 100}
@@ -8446,10 +8499,10 @@ export default function OnlyFansMentorProfilePage() {
                                         </div>
                                         <div>
                                             <h3 className="text-2xl font-bold text-foreground">
-                                                {isArabic ? 'إضافة تسجيل' : 'Add Recording'}
+                                                {isGerman ? 'إضافة تسجيل' : 'Add Recording'}
                                             </h3>
                                             <p className="text-sm text-muted-foreground">
-                                                {isArabic ? 'أضف تسجيل جلسة سابقة' : 'Add a previously recorded session'}
+                                                {isGerman ? 'أضف تسجيل جلسة سابقة' : 'Add a previously recorded session'}
                                             </p>
                                         </div>
                                     </div>
@@ -8466,12 +8519,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Title */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'عنوان التسجيل *' : 'Recording Title *'}
+                                            {isGerman ? 'عنوان التسجيل *' : 'Recording Title *'}
                                         </label>
                                         <Input
                                             value={newRecordingData.title}
                                             onChange={(e) => setNewRecordingData({ ...newRecordingData, title: e.target.value })}
-                                            placeholder={isArabic ? 'مثال: جلسة تحليل السوق - يناير 2024' : 'e.g., Market Analysis Session - Jan 2024'}
+                                            placeholder={isGerman ? 'مثال: جلسة تحليل السوق - يناير 2024' : 'e.g., Market Analysis Session - Jan 2024'}
                                             required
                                             className="bg-background border-border"
                                         />
@@ -8480,12 +8533,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Arabic Title */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'العنوان بالعربية' : 'Arabic Title'}
+                                            {isGerman ? 'العنوان بالعربية' : 'Arabic Title'}
                                         </label>
                                         <Input
                                             value={newRecordingData.titleAr}
                                             onChange={(e) => setNewRecordingData({ ...newRecordingData, titleAr: e.target.value })}
-                                            placeholder={isArabic ? 'العنوان بالعربية' : 'Title in Arabic'}
+                                            placeholder={isGerman ? 'العنوان بالعربية' : 'Title in Arabic'}
                                             className="bg-background border-border"
                                             dir="rtl"
                                         />
@@ -8494,12 +8547,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Description */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'الوصف' : 'Description'}
+                                            {isGerman ? 'الوصف' : 'Description'}
                                         </label>
                                         <textarea
                                             value={newRecordingData.description}
                                             onChange={(e) => setNewRecordingData({ ...newRecordingData, description: e.target.value })}
-                                            placeholder={isArabic ? 'وصف محتوى التسجيل...' : 'Describe what was covered...'}
+                                            placeholder={isGerman ? 'وصف محتوى التسجيل...' : 'Describe what was covered...'}
                                             rows={4}
                                             className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-foreground resize-none"
                                         />
@@ -8508,12 +8561,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Arabic Description */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'الوصف بالعربية' : 'Arabic Description'}
+                                            {isGerman ? 'الوصف بالعربية' : 'Arabic Description'}
                                         </label>
                                         <textarea
                                             value={newRecordingData.descriptionAr}
                                             onChange={(e) => setNewRecordingData({ ...newRecordingData, descriptionAr: e.target.value })}
-                                            placeholder={isArabic ? 'الوصف بالعربية...' : 'Description in Arabic...'}
+                                            placeholder={isGerman ? 'الوصف بالعربية...' : 'Description in Arabic...'}
                                             rows={4}
                                             className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-foreground resize-none"
                                             dir="rtl"
@@ -8523,7 +8576,7 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Video Upload */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'تحميل ملف الفيديو *' : 'Upload Video File *'}
+                                            {isGerman ? 'تحميل ملف الفيديو *' : 'Upload Video File *'}
                                         </label>
                                         <div className="space-y-3">
                                             <div className="relative">
@@ -8550,7 +8603,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     <span className="text-sm text-muted-foreground">
                                                         {recordingVideoFile
                                                             ? recordingVideoFile.name
-                                                            : (isArabic ? 'انقر لتحميل الفيديو' : 'Click to upload video')
+                                                            : (isGerman ? 'انقر لتحميل الفيديو' : 'Click to upload video')
                                                         }
                                                     </span>
                                                 </label>
@@ -8577,7 +8630,7 @@ export default function OnlyFansMentorProfilePage() {
                                             )}
 
                                             <p className="text-xs text-muted-foreground">
-                                                {isArabic
+                                                {isGerman
                                                     ? 'تنسيقات مدعومة: MP4, WebM, MOV (الحد الأقصى 500 ميجابايت)'
                                                     : 'Supported formats: MP4, WebM, MOV (Max 500MB)'
                                                 }
@@ -8589,7 +8642,7 @@ export default function OnlyFansMentorProfilePage() {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'تاريخ التسجيل *' : 'Recorded Date *'}
+                                                {isGerman ? 'تاريخ التسجيل *' : 'Recorded Date *'}
                                             </label>
                                             <Input
                                                 type="date"
@@ -8601,7 +8654,7 @@ export default function OnlyFansMentorProfilePage() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                                {isArabic ? 'المدة (دقيقة)' : 'Duration (min)'}
+                                                {isGerman ? 'المدة (دقيقة)' : 'Duration (min)'}
                                             </label>
                                             <Input
                                                 type="number"
@@ -8616,7 +8669,7 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Required Tier */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'الباقة المطلوبة للمشاهدة' : 'Required Tier to Watch'}
+                                            {isGerman ? 'الباقة المطلوبة للمشاهدة' : 'Required Tier to Watch'}
                                         </label>
                                         <select
                                             value={newRecordingData.tier}
@@ -8640,12 +8693,12 @@ export default function OnlyFansMentorProfilePage() {
                                             {savingSession ? (
                                                 <>
                                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                                                    {isArabic ? 'جاري الإضافة...' : 'Adding...'}
+                                                    {isGerman ? 'جاري الإضافة...' : 'Adding...'}
                                                 </>
                                             ) : (
                                                 <>
                                                     <Play className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'إضافة التسجيل' : 'Add Recording'}
+                                                    {isGerman ? 'إضافة التسجيل' : 'Add Recording'}
                                                 </>
                                             )}
                                         </Button>
@@ -8655,7 +8708,7 @@ export default function OnlyFansMentorProfilePage() {
                                             disabled={savingSession}
                                             className="flex-1 bg-card hover:bg-card-hover text-foreground border border-border"
                                         >
-                                            {isArabic ? 'إلغاء' : 'Cancel'}
+                                            {isGerman ? 'إلغاء' : 'Cancel'}
                                         </Button>
                                     </div>
                                 </form>
@@ -8691,10 +8744,10 @@ export default function OnlyFansMentorProfilePage() {
                                         </div>
                                         <div>
                                             <h3 className="text-2xl font-bold text-foreground">
-                                                {isArabic ? 'تعديل المورد' : 'Edit Resource'}
+                                                {isGerman ? 'تعديل المورد' : 'Edit Resource'}
                                             </h3>
                                             <p className="text-sm text-muted-foreground">
-                                                {isArabic ? 'تحديث معلومات المورد' : 'Update resource information'}
+                                                {isGerman ? 'تحديث معلومات المورد' : 'Update resource information'}
                                             </p>
                                         </div>
                                     </div>
@@ -8715,12 +8768,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Title */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'اسم المورد *' : 'Resource Name *'}
+                                            {isGerman ? 'اسم المورد *' : 'Resource Name *'}
                                         </label>
                                         <Input
                                             value={newResourceData.title}
                                             onChange={(e) => setNewResourceData({ ...newResourceData, title: e.target.value })}
-                                            placeholder={isArabic ? 'مثال: دليل استراتيجيات التداول' : 'e.g., Trading Strategies Guide'}
+                                            placeholder={isGerman ? 'مثال: دليل استراتيجيات التداول' : 'e.g., Trading Strategies Guide'}
                                             required
                                             className="bg-background border-border"
                                         />
@@ -8729,12 +8782,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Arabic Title */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'الاسم بالعربية' : 'Arabic Name'}
+                                            {isGerman ? 'الاسم بالعربية' : 'Arabic Name'}
                                         </label>
                                         <Input
                                             value={newResourceData.titleAr}
                                             onChange={(e) => setNewResourceData({ ...newResourceData, titleAr: e.target.value })}
-                                            placeholder={isArabic ? 'الاسم بالعربية' : 'Name in Arabic'}
+                                            placeholder={isGerman ? 'الاسم بالعربية' : 'Name in Arabic'}
                                             className="bg-background border-border"
                                             dir="rtl"
                                         />
@@ -8743,12 +8796,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Description */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'الوصف' : 'Description'}
+                                            {isGerman ? 'الوصف' : 'Description'}
                                         </label>
                                         <textarea
                                             value={newResourceData.description}
                                             onChange={(e) => setNewResourceData({ ...newResourceData, description: e.target.value })}
-                                            placeholder={isArabic ? 'وصف المورد وفائدته...' : 'Describe the resource and its benefits...'}
+                                            placeholder={isGerman ? 'وصف المورد وفائدته...' : 'Describe the resource and its benefits...'}
                                             rows={4}
                                             className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-foreground resize-none"
                                         />
@@ -8757,12 +8810,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Arabic Description */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'الوصف بالعربية' : 'Arabic Description'}
+                                            {isGerman ? 'الوصف بالعربية' : 'Arabic Description'}
                                         </label>
                                         <textarea
                                             value={newResourceData.descriptionAr}
                                             onChange={(e) => setNewResourceData({ ...newResourceData, descriptionAr: e.target.value })}
-                                            placeholder={isArabic ? 'الوصف بالعربية...' : 'Description in Arabic...'}
+                                            placeholder={isGerman ? 'الوصف بالعربية...' : 'Description in Arabic...'}
                                             rows={4}
                                             className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-foreground resize-none"
                                             dir="rtl"
@@ -8772,7 +8825,7 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* File Upload - Optional for edit */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'استبدال الملف (اختياري)' : 'Replace File (Optional)'}
+                                            {isGerman ? 'استبدال الملف (اختياري)' : 'Replace File (Optional)'}
                                         </label>
                                         <div className="space-y-3">
                                             <div className="relative">
@@ -8802,18 +8855,18 @@ export default function OnlyFansMentorProfilePage() {
                                                         <p className="text-sm font-medium text-foreground">
                                                             {resourceFile
                                                                 ? resourceFile.name
-                                                                : (isArabic ? 'انقر لاستبدال الملف' : 'Click to replace file')
+                                                                : (isGerman ? 'انقر لاستبدال الملف' : 'Click to replace file')
                                                             }
                                                         </p>
                                                         <p className="text-xs text-muted-foreground mt-1">
-                                                            {isArabic
+                                                            {isGerman
                                                                 ? 'اترك فارغاً للاحتفاظ بالملف الحالي'
                                                                 : 'Leave empty to keep current file'
                                                             }
                                                         </p>
                                                         {resourceFile && (
                                                             <p className="text-xs text-blue-500 mt-1">
-                                                                {isArabic ? 'ملف جديد محدد' : 'New file selected'} • {Math.round(resourceFile.size / 1024)} KB
+                                                                {isGerman ? 'ملف جديد محدد' : 'New file selected'} • {Math.round(resourceFile.size / 1024)} KB
                                                             </p>
                                                         )}
                                                     </div>
@@ -8828,7 +8881,7 @@ export default function OnlyFansMentorProfilePage() {
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <p className="text-sm font-medium text-foreground">
-                                                            {isArabic ? 'الملف الحالي:' : 'Current File:'} {editingResource.title}
+                                                            {isGerman ? 'الملف الحالي:' : 'Current File:'} {editingResource.title}
                                                         </p>
                                                         <p className="text-xs text-muted-foreground">
                                                             {editingResource.size} • {editingResource.type}
@@ -8868,7 +8921,7 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Resource Type */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'نوع المورد' : 'Resource Type'}
+                                            {isGerman ? 'نوع المورد' : 'Resource Type'}
                                         </label>
                                         <select
                                             value={newResourceData.type}
@@ -8894,12 +8947,12 @@ export default function OnlyFansMentorProfilePage() {
                                             {savingResource ? (
                                                 <>
                                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                                                    {isArabic ? 'جاري التحديث...' : 'Updating...'}
+                                                    {isGerman ? 'جاري التحديث...' : 'Updating...'}
                                                 </>
                                             ) : (
                                                 <>
                                                     <Edit2 className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'تحديث المورد' : 'Update Resource'}
+                                                    {isGerman ? 'تحديث المورد' : 'Update Resource'}
                                                 </>
                                             )}
                                         </Button>
@@ -8913,7 +8966,7 @@ export default function OnlyFansMentorProfilePage() {
                                             disabled={savingResource}
                                             className="flex-1 bg-card hover:bg-card-hover text-foreground border border-border"
                                         >
-                                            {isArabic ? 'إلغاء' : 'Cancel'}
+                                            {isGerman ? 'إلغاء' : 'Cancel'}
                                         </Button>
                                     </div>
                                 </form>
@@ -8949,10 +9002,10 @@ export default function OnlyFansMentorProfilePage() {
                                         </div>
                                         <div>
                                             <h3 className="text-2xl font-bold text-foreground">
-                                                {isArabic ? 'إضافة مورد' : 'Add Resource'}
+                                                {isGerman ? 'إضافة مورد' : 'Add Resource'}
                                             </h3>
                                             <p className="text-sm text-muted-foreground">
-                                                {isArabic ? 'أضف مورد جديد للمجتمع' : 'Add a new resource for the community'}
+                                                {isGerman ? 'أضف مورد جديد للمجتمع' : 'Add a new resource for the community'}
                                             </p>
                                         </div>
                                     </div>
@@ -8969,12 +9022,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Title */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'اسم المورد *' : 'Resource Name *'}
+                                            {isGerman ? 'اسم المورد *' : 'Resource Name *'}
                                         </label>
                                         <Input
                                             value={newResourceData.title}
                                             onChange={(e) => setNewResourceData({ ...newResourceData, title: e.target.value })}
-                                            placeholder={isArabic ? 'مثال: دليل استراتيجيات التداول' : 'e.g., Trading Strategies Guide'}
+                                            placeholder={isGerman ? 'مثال: دليل استراتيجيات التداول' : 'e.g., Trading Strategies Guide'}
                                             required
                                             className="bg-background border-border"
                                         />
@@ -8983,12 +9036,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Arabic Title */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'الاسم بالعربية' : 'Arabic Name'}
+                                            {isGerman ? 'الاسم بالعربية' : 'Arabic Name'}
                                         </label>
                                         <Input
                                             value={newResourceData.titleAr}
                                             onChange={(e) => setNewResourceData({ ...newResourceData, titleAr: e.target.value })}
-                                            placeholder={isArabic ? 'الاسم بالعربية' : 'Name in Arabic'}
+                                            placeholder={isGerman ? 'الاسم بالعربية' : 'Name in Arabic'}
                                             className="bg-background border-border"
                                             dir="rtl"
                                         />
@@ -8997,12 +9050,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Description */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'الوصف' : 'Description'}
+                                            {isGerman ? 'الوصف' : 'Description'}
                                         </label>
                                         <textarea
                                             value={newResourceData.description}
                                             onChange={(e) => setNewResourceData({ ...newResourceData, description: e.target.value })}
-                                            placeholder={isArabic ? 'وصف المورد وفائدته...' : 'Describe the resource and its benefits...'}
+                                            placeholder={isGerman ? 'وصف المورد وفائدته...' : 'Describe the resource and its benefits...'}
                                             rows={4}
                                             className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-foreground resize-none"
                                         />
@@ -9011,12 +9064,12 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Arabic Description */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'الوصف بالعربية' : 'Arabic Description'}
+                                            {isGerman ? 'الوصف بالعربية' : 'Arabic Description'}
                                         </label>
                                         <textarea
                                             value={newResourceData.descriptionAr}
                                             onChange={(e) => setNewResourceData({ ...newResourceData, descriptionAr: e.target.value })}
-                                            placeholder={isArabic ? 'الوصف بالعربية...' : 'Description in Arabic...'}
+                                            placeholder={isGerman ? 'الوصف بالعربية...' : 'Description in Arabic...'}
                                             rows={4}
                                             className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-foreground resize-none"
                                             dir="rtl"
@@ -9026,7 +9079,7 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* File Upload */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'رفع الملف *' : 'Upload File *'}
+                                            {isGerman ? 'رفع الملف *' : 'Upload File *'}
                                         </label>
                                         <div className="space-y-3">
                                             <div className="relative">
@@ -9056,18 +9109,18 @@ export default function OnlyFansMentorProfilePage() {
                                                         <p className="text-sm font-medium text-foreground">
                                                             {resourceFile
                                                                 ? resourceFile.name
-                                                                : (isArabic ? 'انقر لتحميل ملف' : 'Click to upload file')
+                                                                : (isGerman ? 'انقر لتحميل ملف' : 'Click to upload file')
                                                             }
                                                         </p>
                                                         <p className="text-xs text-muted-foreground mt-1">
-                                                            {isArabic
+                                                            {isGerman
                                                                 ? 'PDF, Word, Excel, PowerPoint, صور (حتى 5 ميجا)'
                                                                 : 'PDF, Word, Excel, PowerPoint, Images (Max 5MB)'
                                                             }
                                                         </p>
                                                         {resourceFile && (
                                                             <p className="text-xs text-green-500 mt-1">
-                                                                {isArabic ? 'تم تحديد الملف' : 'File selected'} • {Math.round(resourceFile.size / 1024)} KB
+                                                                {isGerman ? 'تم تحديد الملف' : 'File selected'} • {Math.round(resourceFile.size / 1024)} KB
                                                             </p>
                                                         )}
                                                     </div>
@@ -9105,7 +9158,7 @@ export default function OnlyFansMentorProfilePage() {
                                     {/* Resource Type */}
                                     <div>
                                         <label className="block text-sm font-semibold text-foreground mb-2">
-                                            {isArabic ? 'نوع المورد' : 'Resource Type'}
+                                            {isGerman ? 'نوع المورد' : 'Resource Type'}
                                         </label>
                                         <select
                                             value={newResourceData.type}
@@ -9131,12 +9184,12 @@ export default function OnlyFansMentorProfilePage() {
                                             {savingResource ? (
                                                 <>
                                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                                                    {isArabic ? 'جاري الإضافة...' : 'Adding...'}
+                                                    {isGerman ? 'جاري الإضافة...' : 'Adding...'}
                                                 </>
                                             ) : (
                                                 <>
                                                     <FileText className="w-4 h-4 mr-2" />
-                                                    {isArabic ? 'إضافة المورد' : 'Add Resource'}
+                                                    {isGerman ? 'إضافة المورد' : 'Add Resource'}
                                                 </>
                                             )}
                                         </Button>
@@ -9146,7 +9199,7 @@ export default function OnlyFansMentorProfilePage() {
                                             disabled={savingResource}
                                             className="flex-1 bg-card hover:bg-card-hover text-foreground border border-border"
                                         >
-                                            {isArabic ? 'إلغاء' : 'Cancel'}
+                                            {isGerman ? 'إلغاء' : 'Cancel'}
                                         </Button>
                                     </div>
                                 </form>
@@ -9170,7 +9223,7 @@ export default function OnlyFansMentorProfilePage() {
                         expertise: mentor.expertise,
                         price: mentor.monthlyPrice || 0, // No fake fallbacks
                     }}
-                    isArabic={isArabic}
+                    isArabic={isGerman}
                     onSuccess={() => {
                         // Refresh subscription status
                         refreshSubscriptionStatus()
@@ -9200,10 +9253,10 @@ export default function OnlyFansMentorProfilePage() {
                                     </div>
                                     <div>
                                         <h2 className="text-xl font-bold text-foreground">
-                                            {isArabic ? 'رسالة جماعية' : 'Broadcast Message'}
+                                            {isGerman ? 'رسالة جماعية' : 'Broadcast Message'}
                                         </h2>
                                         <p className="text-sm text-muted-foreground">
-                                            {isArabic ? `إرسال رسالة لـ ${communityMembers.length} عضو` : `Send to ${communityMembers.length} members`}
+                                            {isGerman ? `إرسال رسالة لـ ${communityMembers.length} عضو` : `Send to ${communityMembers.length} members`}
                                         </p>
                                     </div>
                                 </div>
@@ -9218,7 +9271,7 @@ export default function OnlyFansMentorProfilePage() {
                             <form onSubmit={async (e) => {
                                 e.preventDefault()
                                 if (!broadcastData.subject || !broadcastData.content) {
-                                    toast.error(isArabic ? 'يرجى ملء جميع الحقول' : 'Please fill all fields')
+                                    toast.error(isGerman ? 'يرجى ملء جميع الحقول' : 'Please fill all fields')
                                     return
                                 }
                                 setSendingBroadcast(true)
@@ -9230,49 +9283,49 @@ export default function OnlyFansMentorProfilePage() {
                                     })
                                     const data = await response.json()
                                     if (response.ok) {
-                                        toast.success(isArabic ? `تم إرسال الرسالة إلى ${data.recipientCount} عضو` : data.message)
+                                        toast.success(isGerman ? `تم إرسال الرسالة إلى ${data.recipientCount} عضو` : data.message)
                                         setShowBroadcastModal(false)
                                         setBroadcastData({ subject: '', content: '', contentAr: '' })
                                     } else {
                                         toast.error(data.error || 'Failed to send')
                                     }
                                 } catch {
-                                    toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+                                    toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
                                 } finally {
                                     setSendingBroadcast(false)
                                 }
                             }} className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-foreground mb-2">
-                                        {isArabic ? 'العنوان' : 'Subject'}
+                                        {isGerman ? 'العنوان' : 'Subject'}
                                     </label>
                                     <Input
                                         value={broadcastData.subject}
                                         onChange={(e) => setBroadcastData({ ...broadcastData, subject: e.target.value })}
-                                        placeholder={isArabic ? 'عنوان الرسالة' : 'Message subject'}
+                                        placeholder={isGerman ? 'عنوان الرسالة' : 'Message subject'}
                                         required
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-foreground mb-2">
-                                        {isArabic ? 'المحتوى' : 'Content'}
+                                        {isGerman ? 'المحتوى' : 'Content'}
                                     </label>
                                     <textarea
                                         value={broadcastData.content}
                                         onChange={(e) => setBroadcastData({ ...broadcastData, content: e.target.value })}
-                                        placeholder={isArabic ? 'اكتب رسالتك هنا...' : 'Write your message here...'}
+                                        placeholder={isGerman ? 'اكتب رسالتك هنا...' : 'Write your message here...'}
                                         className="w-full min-h-[150px] bg-background border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                                         required
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-foreground mb-2">
-                                        {isArabic ? 'المحتوى بالعربية (اختياري)' : 'Arabic Content (optional)'}
+                                        {isGerman ? 'المحتوى بالعربية (اختياري)' : 'Arabic Content (optional)'}
                                     </label>
                                     <textarea
                                         value={broadcastData.contentAr}
                                         onChange={(e) => setBroadcastData({ ...broadcastData, contentAr: e.target.value })}
-                                        placeholder={isArabic ? 'اكتب رسالتك بالعربية...' : 'Write Arabic version...'}
+                                        placeholder={isGerman ? 'اكتب رسالتك بالعربية...' : 'Write Arabic version...'}
                                         className="w-full min-h-[100px] bg-background border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                                         dir="rtl"
                                     />
@@ -9284,9 +9337,9 @@ export default function OnlyFansMentorProfilePage() {
                                         className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
                                     >
                                         {sendingBroadcast ? (
-                                            <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />{isArabic ? 'جاري الإرسال...' : 'Sending...'}</>
+                                            <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />{isGerman ? 'جاري الإرسال...' : 'Sending...'}</>
                                         ) : (
-                                            <><Send className="w-4 h-4 mr-2" />{isArabic ? 'إرسال للجميع' : 'Send to All'}</>
+                                            <><Send className="w-4 h-4 mr-2" />{isGerman ? 'إرسال للجميع' : 'Send to All'}</>
                                         )}
                                     </Button>
                                     <Button
@@ -9295,7 +9348,7 @@ export default function OnlyFansMentorProfilePage() {
                                         disabled={sendingBroadcast}
                                         className="flex-1 bg-card hover:bg-card-hover text-foreground border border-border"
                                     >
-                                        {isArabic ? 'إلغاء' : 'Cancel'}
+                                        {isGerman ? 'إلغاء' : 'Cancel'}
                                     </Button>
                                 </div>
                             </form>
@@ -9328,10 +9381,10 @@ export default function OnlyFansMentorProfilePage() {
                                     </div>
                                     <div>
                                         <h2 className="text-xl font-bold text-foreground">
-                                            {isArabic ? 'طلب سحب' : 'Request Withdrawal'}
+                                            {isGerman ? 'طلب سحب' : 'Request Withdrawal'}
                                         </h2>
                                         <p className="text-sm text-muted-foreground">
-                                            {isArabic ? `الرصيد المتاح: €${withdrawalInfo?.balance?.available?.toFixed(2) || '0.00'}` : `Available: €${withdrawalInfo?.balance?.available?.toFixed(2) || '0.00'}`}
+                                            {isGerman ? `الرصيد المتاح: €${withdrawalInfo?.balance?.available?.toFixed(2) || '0.00'}` : `Available: €${withdrawalInfo?.balance?.available?.toFixed(2) || '0.00'}`}
                                         </p>
                                     </div>
                                 </div>
@@ -9347,11 +9400,11 @@ export default function OnlyFansMentorProfilePage() {
                             {withdrawalInfo && (
                                 <div className="grid grid-cols-2 gap-3 mb-6">
                                     <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3">
-                                        <div className="text-xs text-muted-foreground">{isArabic ? 'متاح للسحب' : 'Available'}</div>
+                                        <div className="text-xs text-muted-foreground">{isGerman ? 'متاح للسحب' : 'Available'}</div>
                                         <div className="text-xl font-bold text-green-400">€{withdrawalInfo.balance?.available?.toFixed(2) || '0.00'}</div>
                                     </div>
                                     <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3">
-                                        <div className="text-xs text-muted-foreground">{isArabic ? 'قيد المعالجة' : 'Pending'}</div>
+                                        <div className="text-xs text-muted-foreground">{isGerman ? 'قيد المعالجة' : 'Pending'}</div>
                                         <div className="text-xl font-bold text-yellow-400">€{withdrawalInfo.balance?.pending?.toFixed(2) || '0.00'}</div>
                                     </div>
                                 </div>
@@ -9360,16 +9413,16 @@ export default function OnlyFansMentorProfilePage() {
                             <form onSubmit={async (e) => {
                                 e.preventDefault()
                                 if (!withdrawalData.amount || !withdrawalData.method || !withdrawalData.accountDetails) {
-                                    toast.error(isArabic ? 'يرجى ملء جميع الحقول' : 'Please fill all fields')
+                                    toast.error(isGerman ? 'يرجى ملء جميع الحقول' : 'Please fill all fields')
                                     return
                                 }
                                 const amount = parseFloat(withdrawalData.amount)
                                 if (amount < 50) {
-                                    toast.error(isArabic ? 'الحد الأدنى للسحب €50' : 'Minimum withdrawal is €50')
+                                    toast.error(isGerman ? 'الحد الأدنى للسحب €50' : 'Minimum withdrawal is €50')
                                     return
                                 }
                                 if (amount > (withdrawalInfo?.balance?.available || 0)) {
-                                    toast.error(isArabic ? 'رصيد غير كافٍ' : 'Insufficient balance')
+                                    toast.error(isGerman ? 'رصيد غير كافٍ' : 'Insufficient balance')
                                     return
                                 }
                                 setSubmittingWithdrawal(true)
@@ -9385,43 +9438,43 @@ export default function OnlyFansMentorProfilePage() {
                                     })
                                     const data = await response.json()
                                     if (response.ok) {
-                                        toast.success(isArabic ? 'تم تقديم طلب السحب بنجاح' : data.message)
+                                        toast.success(isGerman ? 'تم تقديم طلب السحب بنجاح' : data.message)
                                         setShowWithdrawalModal(false)
                                         setWithdrawalData({ amount: '', method: 'bank_transfer', accountDetails: '' })
                                     } else {
                                         toast.error(data.error || 'Failed')
                                     }
                                 } catch {
-                                    toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
+                                    toast.error(isGerman ? 'حدث خطأ' : 'An error occurred')
                                 } finally {
                                     setSubmittingWithdrawal(false)
                                 }
                             }} className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-foreground mb-2">
-                                        {isArabic ? 'المبلغ (€)' : 'Amount (€)'}
+                                        {isGerman ? 'المبلغ (€)' : 'Amount (€)'}
                                     </label>
                                     <Input
                                         type="number"
                                         value={withdrawalData.amount}
                                         onChange={(e) => setWithdrawalData({ ...withdrawalData, amount: e.target.value })}
-                                        placeholder={isArabic ? 'أدخل المبلغ' : 'Enter amount'}
+                                        placeholder={isGerman ? 'أدخل المبلغ' : 'Enter amount'}
                                         min={50}
                                         max={withdrawalInfo?.balance?.available || 0}
                                         required
                                     />
-                                    <p className="text-xs text-muted-foreground mt-1">{isArabic ? 'الحد الأدنى €50' : 'Minimum €50'}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">{isGerman ? 'الحد الأدنى €50' : 'Minimum €50'}</p>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-foreground mb-2">
-                                        {isArabic ? 'طريقة السحب' : 'Withdrawal Method'}
+                                        {isGerman ? 'طريقة السحب' : 'Withdrawal Method'}
                                     </label>
                                     <select
                                         value={withdrawalData.method}
                                         onChange={(e) => setWithdrawalData({ ...withdrawalData, method: e.target.value })}
                                         className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-foreground"
                                     >
-                                        <option value="bank_transfer">{isArabic ? 'تحويل بنكي' : 'Bank Transfer'}</option>
+                                        <option value="bank_transfer">{isGerman ? 'تحويل بنكي' : 'Bank Transfer'}</option>
                                         <option value="paypal">PayPal</option>
                                         <option value="vodafone_cash">Vodafone Cash</option>
                                         <option value="instapay">InstaPay</option>
@@ -9429,12 +9482,12 @@ export default function OnlyFansMentorProfilePage() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-foreground mb-2">
-                                        {isArabic ? 'تفاصيل الحساب' : 'Account Details'}
+                                        {isGerman ? 'تفاصيل الحساب' : 'Account Details'}
                                     </label>
                                     <textarea
                                         value={withdrawalData.accountDetails}
                                         onChange={(e) => setWithdrawalData({ ...withdrawalData, accountDetails: e.target.value })}
-                                        placeholder={isArabic ? 'أدخل رقم الحساب / IBAN / رقم الهاتف' : 'Enter account number / IBAN / phone number'}
+                                        placeholder={isGerman ? 'أدخل رقم الحساب / IBAN / رقم الهاتف' : 'Enter account number / IBAN / phone number'}
                                         className="w-full min-h-[80px] bg-background border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
                                         required
                                     />
@@ -9443,7 +9496,7 @@ export default function OnlyFansMentorProfilePage() {
                                 {/* Recent Withdrawals */}
                                 {withdrawalInfo?.withdrawals && withdrawalInfo.withdrawals.length > 0 && (
                                     <div className="border-t border-border pt-4">
-                                        <h4 className="text-sm font-semibold text-foreground mb-3">{isArabic ? 'آخر الطلبات' : 'Recent Requests'}</h4>
+                                        <h4 className="text-sm font-semibold text-foreground mb-3">{isGerman ? 'آخر الطلبات' : 'Recent Requests'}</h4>
                                         <div className="space-y-2 max-h-32 overflow-y-auto">
                                             {withdrawalInfo.withdrawals.slice(0, 3).map((w: any) => (
                                                 <div key={w.id} className="flex items-center justify-between text-sm p-2 bg-card-hover rounded-lg">
@@ -9468,9 +9521,9 @@ export default function OnlyFansMentorProfilePage() {
                                         className="flex-1 bg-green-500 hover:bg-green-600 text-white"
                                     >
                                         {submittingWithdrawal ? (
-                                            <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />{isArabic ? 'جاري التقديم...' : 'Submitting...'}</>
+                                            <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />{isGerman ? 'جاري التقديم...' : 'Submitting...'}</>
                                         ) : (
-                                            <>{isArabic ? 'تقديم طلب السحب' : 'Submit Request'}</>
+                                            <>{isGerman ? 'تقديم طلب السحب' : 'Submit Request'}</>
                                         )}
                                     </Button>
                                     <Button
@@ -9479,7 +9532,7 @@ export default function OnlyFansMentorProfilePage() {
                                         disabled={submittingWithdrawal}
                                         className="flex-1 bg-card hover:bg-card-hover text-foreground border border-border"
                                     >
-                                        {isArabic ? 'إلغاء' : 'Cancel'}
+                                        {isGerman ? 'إلغاء' : 'Cancel'}
                                     </Button>
                                 </div>
                             </form>
@@ -9496,7 +9549,7 @@ export default function OnlyFansMentorProfilePage() {
                             }`}
                     >
                         <MessageCircle className="w-6 h-6" />
-                        <span className="text-[10px] font-medium">{isArabic ? 'المنشورات' : 'Posts'}</span>
+                        <span className="text-[10px] font-medium">{isGerman ? 'المنشورات' : 'Posts'}</span>
                     </button>
 
                     <button
@@ -9505,7 +9558,7 @@ export default function OnlyFansMentorProfilePage() {
                             }`}
                     >
                         <ImageIcon className="w-6 h-6" />
-                        <span className="text-[10px] font-medium">{isArabic ? 'الوسائط' : 'Media'}</span>
+                        <span className="text-[10px] font-medium">{isGerman ? 'الوسائط' : 'Media'}</span>
                     </button>
 
                     <button
@@ -9514,7 +9567,7 @@ export default function OnlyFansMentorProfilePage() {
                             }`}
                     >
                         <Calendar className="w-6 h-6" />
-                        <span className="text-[10px] font-medium">{isArabic ? 'الجلسات' : 'Sessions'}</span>
+                        <span className="text-[10px] font-medium">{isGerman ? 'الجلسات' : 'Sessions'}</span>
                     </button>
 
                     <button
@@ -9523,8 +9576,18 @@ export default function OnlyFansMentorProfilePage() {
                             }`}
                     >
                         <Globe className="w-6 h-6" />
-                        <span className="text-[10px] font-medium">{isArabic ? 'حول' : 'About'}</span>
+                        <span className="text-[10px] font-medium">{isGerman ? 'حول' : 'About'}</span>
                     </button>
+
+                    {session && (
+                        <button
+                            onClick={() => router.push(`/${locale}/notifications`)}
+                            className="flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all text-white/60 hover:text-white"
+                        >
+                            <Bell className="w-6 h-6" />
+                            <span className="text-[10px] font-medium">{isGerman ? 'إشعارات' : 'Alerts'}</span>
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

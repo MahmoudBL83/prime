@@ -1297,211 +1297,259 @@ export default function OnlyFansStyleMentorsPage() {
                                 </div>
                             )}
 
-                            {/* Real Posts from Database */}
+                            {/* Real Posts from Database - OnlyFans Style */}
                             {activeView === 'feed' && !loadingPosts && posts.length > 0 && posts.map((post: any, i: number) => (
                                 <div
                                     key={post.id}
-                                    className="px-3 sm:px-4 py-3 sm:py-4 hover:bg-white/[0.02] transition-colors animate-fade-in"
+                                    className="px-4 py-4 hover:bg-white/[0.02] transition-colors animate-fade-in"
                                     style={{ animationDelay: `${i * 50}ms`, borderBottom: i < posts.length - 1 ? '0.5px solid hsla(0,0%,100%,.1)' : 'none' }}
                                 >
-                                    <div className="flex gap-3">
-                                        {/* Profile Image */}
-                                        <div className="flex-shrink-0 cursor-pointer" onClick={() => handleCreatorClick(post.channel.creator.id)}>
-                                            {post.channel.creator.user.profileImage ? (
+                                    {/* Prime Header - Like OnlyFans */}
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-2">
+                                            {/* Prime Logo/Icon */}
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                                <span className="text-white font-black text-sm">P</span>
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-1">
+                                                    <span className="font-bold text-foreground">Prime</span>
+                                                    <DynamicIcon name="CheckCircle" className="w-4 h-4 text-[#0a84ff] fill-[#0a84ff]" />
+                                                </div>
+                                                <span className="text-muted-foreground text-xs">@prime</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-muted-foreground text-sm">
+                                                {new Date(post.publishedAt).toLocaleDateString(isArabic ? 'ar-EG' : 'en-US', {
+                                                    month: 'short',
+                                                    day: 'numeric'
+                                                })}
+                                            </span>
+                                            <button className="p-1 hover:bg-white/10 rounded-full">
+                                                <svg className="w-5 h-5 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24">
+                                                    <circle cx="12" cy="6" r="1.5" />
+                                                    <circle cx="12" cy="12" r="1.5" />
+                                                    <circle cx="12" cy="18" r="1.5" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* @Mention Link to Creator */}
+                                    <div className="mb-2">
+                                        <span
+                                            className="text-[#0a84ff] hover:underline cursor-pointer font-medium"
+                                            onClick={() => handleCreatorClick(post.channel.creator.id)}
+                                        >
+                                            @{post.channel.creator.user.name.toLowerCase().replace(/\s+/g, '')}
+                                        </span>
+                                        <span className="text-foreground ml-1">
+                                            {isArabic && post.contentAr ? post.contentAr : post.content}
+                                        </span>
+                                    </div>
+
+                                    {/* Link to Creator Profile */}
+                                    <div className="mb-3">
+                                        <span
+                                            className="text-[#0a84ff] hover:underline cursor-pointer text-sm"
+                                            onClick={() => handleCreatorClick(post.channel.creator.id)}
+                                        >
+                                            prime.com/{post.channel.creator.user.name.toLowerCase().replace(/\s+/g, '')}
+                                        </span>
+                                    </div>
+
+                                    {/* Media Preview */}
+                                    {post.type === 'IMAGE' && (post.thumbnailUrl || post.mediaUrl) && (
+                                        <div
+                                            className="relative rounded-xl overflow-hidden mb-3 cursor-pointer"
+                                            onClick={() => router.push(`/${locale}/posts/${post.id}`)}
+                                        >
+                                            <img
+                                                src={post.thumbnailUrl || post.mediaUrl}
+                                                alt="Post media"
+                                                className="w-full object-cover max-h-[500px]"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none'
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* VIDEO Post */}
+                                    {post.type === 'VIDEO' && (
+                                        <div
+                                            className="relative rounded-xl overflow-hidden mb-3 cursor-pointer"
+                                            onClick={() => router.push(`/${locale}/posts/${post.id}`)}
+                                        >
+                                            <div className="aspect-video relative bg-gradient-to-br from-purple-900/30 to-pink-900/30">
+                                                {post.thumbnailUrl && post.thumbnailUrl.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i) ? (
+                                                    <img
+                                                        src={post.thumbnailUrl}
+                                                        alt="Video thumbnail"
+                                                        className="absolute inset-0 w-full h-full object-cover"
+                                                        onError={(e) => {
+                                                            e.currentTarget.style.display = 'none'
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                                                        <DynamicIcon name="Video" className="w-20 h-20 text-purple-400" />
+                                                    </div>
+                                                )}
+                                                {/* Play button overlay */}
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <div className="w-16 h-16 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                                                        <DynamicIcon name="Play" className="w-8 h-8 text-white ml-1" fill="white" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Embedded Creator Card - OnlyFans Style */}
+                                    <div
+                                        className="bg-card border border-border rounded-xl overflow-hidden mb-4 cursor-pointer hover:border-white/20 transition-colors"
+                                        onClick={() => handleCreatorClick(post.channel.creator.id)}
+                                    >
+                                        {/* Creator Card Background */}
+                                        <div className="relative h-20 bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600">
+                                            {post.channel.creator.user.profileImage && (
                                                 <Image
                                                     src={post.channel.creator.user.profileImage}
-                                                    alt={post.channel.creator.user.name}
-                                                    width={48} height={48} className="rounded-full object-cover w-12 h-12"
-                                                />
-                                            ) : (
-                                                <AvatarPlaceholder
-                                                    name={post.channel.creator.user.name}
-                                                    size={48}
-                                                    className="rounded-full"
+                                                    alt=""
+                                                    fill
+                                                    className="object-cover opacity-50"
                                                 />
                                             )}
-                                        </div>
-
-                                        {/* Post Content */}
-                                        <div className="flex-1 min-w-0">
-                                            {/* Header */}
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span
-                                                    className="font-bold text-foreground hover:underline cursor-pointer"
-                                                    onClick={() => handleCreatorClick(post.channel.creator.id)}
-                                                >
-                                                    {isArabic && post.channel.creator.user.arabicName
-                                                        ? post.channel.creator.user.arabicName
-                                                        : post.channel.creator.user.name}
-                                                </span>
-                                                <DynamicIcon name="CheckCircle" className="w-4 h-4 text-purple-500 fill-purple-500" />
-                                                <span className="text-muted-foreground text-sm">
-                                                    @{post.channel.creator.user.name.toLowerCase().replace(/\s+/g, '')}
-                                                </span>
-                                                <span className="text-muted-foreground text-sm">·</span>
-                                                <span className="text-muted-foreground text-sm">
-                                                    {new Date(post.publishedAt).toLocaleDateString(isArabic ? 'ar-EG' : 'en-US', {
-                                                        month: 'short',
-                                                        day: 'numeric'
-                                                    })}
-                                                </span>
+                                            {/* Free Badge */}
+                                            <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+                                                Free
                                             </div>
-
-                                            {/* Post Text */}
-                                            <div
-                                                className="text-foreground mb-3 cursor-pointer hover:bg-card-hover -mx-2 px-2 py-1 rounded transition-colors"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    router.push(`/${locale}/posts/${post.id}`)
-                                                }}
+                                            {/* Menu Button */}
+                                            <button
+                                                className="absolute top-2 right-2 p-1 hover:bg-black/20 rounded-full"
+                                                onClick={(e) => e.stopPropagation()}
                                             >
-                                                {post.title && (
-                                                    <h3 className="font-bold mb-2">
-                                                        {isArabic && post.titleAr ? post.titleAr : post.title}
-                                                    </h3>
-                                                )}
-                                                <p className="whitespace-pre-wrap">
-                                                    {isArabic && post.contentAr ? post.contentAr : post.content}
-                                                </p>
-
-                                                {/* Media Preview */}
-                                                {post.type === 'IMAGE' && (post.thumbnailUrl || post.mediaUrl) && (
-                                                    <div className="relative rounded-2xl overflow-hidden border border-border mt-3">
-                                                        <img
-                                                            src={post.thumbnailUrl || post.mediaUrl}
-                                                            alt="Post media"
-                                                            className="w-full object-cover max-h-[500px]"
-                                                            onError={(e) => {
-                                                                e.currentTarget.style.display = 'none'
-                                                            }}
+                                                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                    <circle cx="12" cy="6" r="1.5" />
+                                                    <circle cx="12" cy="12" r="1.5" />
+                                                    <circle cx="12" cy="18" r="1.5" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        {/* Creator Info */}
+                                        <div className="relative px-4 pb-4">
+                                            {/* Profile Picture - Overlapping */}
+                                            <div className="absolute -top-8 left-4">
+                                                <div className="w-16 h-16 rounded-full border-4 border-card overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500">
+                                                    {post.channel.creator.user.profileImage ? (
+                                                        <Image
+                                                            src={post.channel.creator.user.profileImage}
+                                                            alt={post.channel.creator.user.name}
+                                                            width={64}
+                                                            height={64}
+                                                            className="w-full h-full object-cover"
                                                         />
-                                                    </div>
-                                                )}
-
-                                                {/* VIDEO Post */}
-                                                {post.type === 'VIDEO' && (
-                                                    <div className="relative rounded-2xl overflow-hidden border border-border mt-3 bg-gradient-to-br from-purple-900/30 to-pink-900/30">
-
-                                                        <div className="aspect-video relative">
-                                                            {/* Only show thumbnail if it's an actual image file, not a video file */}
-                                                            {post.thumbnailUrl && post.thumbnailUrl.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i) ? (
-                                                                <img
-                                                                    src={post.thumbnailUrl}
-                                                                    alt="Video thumbnail"
-                                                                    className="absolute inset-0 w-full h-full object-cover"
-                                                                    onError={(e) => {
-                                                                        e.currentTarget.style.display = 'none'
-                                                                    }}
-                                                                />
-                                                            ) : null}
-                                                            {/* Placeholder for when no valid image thumbnail (show for videos without thumbnails) */}
-                                                            <div className={`video-placeholder absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center ${post.thumbnailUrl && post.thumbnailUrl.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i) ? 'hidden' : 'flex'}`}>
-                                                                <DynamicIcon name="Video" className="w-20 h-20 text-purple-400" />
-                                                            </div>
-                                                            {/* Play button overlay */}
-                                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                                <div className="w-20 h-20 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-black/80 transition-all">
-                                                                    <DynamicIcon name="Play" className="w-10 h-10 text-white ml-1" fill="white" />
-                                                                </div>
-                                                            </div>
-                                                            {post.duration && (
-                                                                <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-semibold px-2 py-1 rounded">
-                                                                    {Math.floor(post.duration / 60)}:{String(post.duration % 60).padStart(2, '0')}
-                                                                </div>
-                                                            )}
-                                                            {/* Video type badge */}
-                                                            <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
-                                                                <DynamicIcon name="Video" className="w-3 h-3" />
-                                                                VIDEO
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                    ) : (
+                                                        <AvatarPlaceholder
+                                                            name={post.channel.creator.user.name}
+                                                            size={64}
+                                                        />
+                                                    )}
+                                                </div>
                                             </div>
-
-                                            {/* Engagement Stats */}
-                                            <div className="flex items-center justify-between text-muted-foreground text-sm">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        router.push(`/${locale}/posts/${post.id}`)
-                                                    }}
-                                                    className="flex items-center gap-2 hover:text-purple-400 transition-colors group"
-                                                >
-                                                    <div className="p-2 rounded-full group-hover:bg-purple-500/10">
-                                                        <DynamicIcon name="MessageCircle" className="w-4 h-4" />
-                                                    </div>
-                                                    <span>{post._count?.comments || 0}</span>
-                                                </button>
-
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        toast.success(isArabic ? 'تم إعادة النشر!' : 'Reposted!')
-                                                    }}
-                                                    className="flex items-center gap-2 hover:text-green-400 transition-colors group"
-                                                >
-                                                    <div className="p-2 rounded-full group-hover:bg-green-500/10">
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                        </svg>
-                                                    </div>
-                                                    <span>{post._count?.reposts || 0}</span>
-                                                </button>
-
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        const target = e.currentTarget
-                                                        target.classList.toggle('text-pink-500')
-                                                        const icon = target.querySelector('.heart-icon')
-                                                        icon?.classList.toggle('fill-pink-500')
-                                                    }}
-                                                    className="flex items-center gap-2 hover:text-pink-400 transition-colors group"
-                                                >
-                                                    <div className="p-2 rounded-full group-hover:bg-pink-500/10">
-                                                        <DynamicIcon name="Heart" className="w-4 h-4 heart-icon transition-all" />
-                                                    </div>
-                                                    <span>{post._count?.likes || 0}</span>
-                                                </button>
-
-                                                {/* Bookmark button - Only show for signed in users */}
-                                                {session && (
-                                                    <button
-                                                        onClick={async (e) => {
-                                                            e.stopPropagation()
-                                                            await handleBookmark(post.id)
-                                                        }}
-                                                        className={`flex items-center gap-2 transition-colors group ${bookmarkedPostIds.includes(post.id)
-                                                            ? 'text-blue-500'
-                                                            : 'hover:text-blue-400'
-                                                            }`}
-                                                    >
-                                                        <div className="p-2 rounded-full group-hover:bg-blue-500/10">
-                                                            <DynamicIcon
-                                                                name="Bookmark"
-                                                                className={`w-4 h-4 transition-all ${bookmarkedPostIds.includes(post.id)
-                                                                    ? 'fill-blue-500'
-                                                                    : ''
-                                                                    }`}
-                                                            />
-                                                        </div>
-                                                    </button>
-                                                )}
-
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        toast.success(isArabic ? 'تم النسخ!' : 'Link copied!')
-                                                    }}
-                                                    className="flex items-center gap-2 hover:text-purple-400 transition-colors group"
-                                                >
-                                                    <div className="p-2 rounded-full group-hover:bg-purple-500/10">
-                                                        <DynamicIcon name="Share2" className="w-4 h-4" />
-                                                    </div>
-                                                </button>
+                                            {/* Name and Handle */}
+                                            <div className="pt-10">
+                                                <div className="flex items-center gap-1.5">
+                                                    <h4 className="font-bold text-foreground">
+                                                        {isArabic && post.channel.creator.user.arabicName
+                                                            ? post.channel.creator.user.arabicName
+                                                            : post.channel.creator.user.name}
+                                                    </h4>
+                                                    <DynamicIcon name="CheckCircle" className="w-4 h-4 text-[#0a84ff] fill-[#0a84ff]" />
+                                                </div>
+                                                <p className="text-muted-foreground text-sm">
+                                                    @{post.channel.creator.user.name.toLowerCase().replace(/\s+/g, '')}
+                                                </p>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    {/* Engagement Stats - OnlyFans Style */}
+                                    <div className="flex items-center gap-6 text-muted-foreground">
+                                        {/* Like Button */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                const target = e.currentTarget
+                                                target.classList.toggle('text-pink-500')
+                                                const icon = target.querySelector('.heart-icon')
+                                                icon?.classList.toggle('fill-pink-500')
+                                            }}
+                                            className="hover:text-pink-400 transition-colors"
+                                        >
+                                            <DynamicIcon name="Heart" className="w-6 h-6 heart-icon transition-all" />
+                                        </button>
+
+                                        {/* Comment Button */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                router.push(`/${locale}/posts/${post.id}`)
+                                            }}
+                                            className="hover:text-purple-400 transition-colors"
+                                        >
+                                            <DynamicIcon name="MessageCircle" className="w-6 h-6" />
+                                        </button>
+
+                                        {/* Send Tip Button */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                setSelectedCreator(post.channel.creator)
+                                                setTipModalOpen(true)
+                                            }}
+                                            className="flex items-center gap-1.5 text-muted-foreground hover:text-green-400 transition-colors"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v12M9 9h6M9 15h6" />
+                                            </svg>
+                                            <span className="text-sm font-medium">{isArabic ? 'إكرامية' : 'SEND TIP'}</span>
+                                        </button>
+
+                                        {/* Spacer */}
+                                        <div className="flex-1" />
+
+                                        {/* Bookmark Button */}
+                                        {session && (
+                                            <button
+                                                onClick={async (e) => {
+                                                    e.stopPropagation()
+                                                    await handleBookmark(post.id)
+                                                }}
+                                                className={`transition-colors ${bookmarkedPostIds.includes(post.id)
+                                                    ? 'text-blue-500'
+                                                    : 'hover:text-blue-400'
+                                                    }`}
+                                            >
+                                                <DynamicIcon
+                                                    name="Bookmark"
+                                                    className={`w-6 h-6 transition-all ${bookmarkedPostIds.includes(post.id)
+                                                        ? 'fill-blue-500'
+                                                        : ''
+                                                        }`}
+                                                />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Like Count */}
+                                    <div className="mt-2">
+                                        <span className="font-bold text-foreground text-sm">
+                                            {post._count?.likes || 0} {isArabic ? 'إعجاب' : 'likes'}
+                                        </span>
                                     </div>
                                 </div>
                             ))}
@@ -3947,6 +3995,18 @@ export default function OnlyFansStyleMentorsPage() {
                         </svg>
                         <span className="text-[10px] font-medium">{isArabic ? 'اشتراكاتي' : 'Subs'}</span>
                     </button>
+
+                    {session && (
+                        <button
+                            onClick={() => router.push(`/${locale}/notifications`)}
+                            className="flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all text-white/60 hover:text-white"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            <span className="text-[10px] font-medium">{isArabic ? 'إشعارات' : 'Alerts'}</span>
+                        </button>
+                    )}
 
                     {session && (
                         <button

@@ -21,15 +21,15 @@ model User {
   emailVerified             DateTime?
   phoneVerified             DateTime?
   arabicName                String?
-  profileImage              String?
-  bio                       String?
+  profileImage              String?                    @db.LongText
+  bio                       String?                    @db.Text
   loginDisabled             Boolean                    @default(false)
   passwordResetRequired     Boolean                    @default(false)
   featureFlags              Json?
   age                       String?
   birthDate                 DateTime?
   country                   String?
-  avatar                    String?
+  avatar                    String?                    @db.LongText
   interests                 String?
   goals                     String?
   skillLevel                String?
@@ -137,9 +137,9 @@ model Creator {
   userId                 String                   @unique
   kycStatus              KYCStatus                @default(NOT_STARTED)
   nationalId             String?
-  nationalIdImage        String?
-  selfieImage            String?
-  addressProof           String?
+  nationalIdImage        String?                  @db.LongText
+  selfieImage            String?                  @db.LongText
+  addressProof           String?                  @db.LongText
   bankAccountIBAN        String?
   bankName               String?
   stripeConnectAccountId String?
@@ -282,7 +282,7 @@ model Course {
   description        String
   descriptionAr      String?
   descriptionDe      String?
-  thumbnail          String?
+  thumbnail          String?                  @db.LongText
   creatorId          String
   contentType        ContentType              @default(SERIES)
   runtime            Int?
@@ -403,9 +403,9 @@ model Lesson {
   seasonNumber   Int?
   episodeNumber  Int?
   resources      Json?
-  transcript     String?
-  transcriptAr   String?
-  transcriptDe   String?
+  transcript     String?          @db.Text
+  transcriptAr   String?          @db.Text
+  transcriptDe   String?          @db.Text
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   assignments    Assignment[]
@@ -476,7 +476,7 @@ model CreatorChannel {
   description          String
   descriptionAr        String?
   descriptionDe        String?
-  coverImage           String?
+  coverImage           String?               @db.LongText
   tiers                Json
   totalSubscribers     Int                   @default(0)
   createdAt            DateTime              @default(now())
@@ -746,7 +746,7 @@ model StudyWorkspace {
   matchId         String              @unique
   name            String
   description     String?
-  coverImage      String?
+  coverImage      String?             @db.LongText
   isActive        Boolean             @default(true)
   settings        Json?
   lastActivityAt  DateTime            @default(now())
@@ -842,7 +842,7 @@ model CoWatchSession {
   initiatedBy    String
   videoUrl       String
   videoTitle     String
-  videoThumbnail String?
+  videoThumbnail String?        @db.LongText
   currentTime    Float          @default(0)
   duration       Float?
   isPlaying      Boolean        @default(false)
@@ -893,7 +893,7 @@ model SupportTicketMessage {
   authorId       String
   content        String
   isInternal     Boolean       @default(false)
-  attachmentUrls String?
+  attachmentUrls String?       @db.LongText
   createdAt      DateTime      @default(now())
   author         User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   ticket         SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
@@ -967,7 +967,7 @@ model Achievement {
   titleAr       String?
   description   String
   descriptionAr String?
-  icon          String?
+  icon          String?         @db.LongText
   points        Int             @default(0)
   courseId      String?
   unlockedAt    DateTime        @default(now())
@@ -1024,7 +1024,7 @@ model BadgeDefinition {
   titleAr       String?
   description   String
   descriptionAr String?
-  icon          String
+  icon          String          @db.LongText
   color         String        @default("#8B5CF6")
   rarity        BadgeRarity   @default(COMMON)
   xpReward      Int           @default(0)
@@ -1072,7 +1072,7 @@ model Reward {
   startDate     DateTime?
   endDate       DateTime?
   isActive      Boolean        @default(true)
-  imageUrl      String?
+  imageUrl      String?        @db.LongText
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   course        Course?        @relation(fields: [courseId], references: [id])
@@ -1183,7 +1183,7 @@ model VideoAsset {
   frameRate        Float?
   fileSize         Int?
   originalFilename String?
-  thumbnailUrl     String?
+  thumbnailUrl     String?             @db.LongText
   creatorId        String
   courseId         String?
   lessonId         String?
@@ -1413,7 +1413,7 @@ model Conversation {
   type         ConversationType
   title        String?
   description  String?
-  avatar       String?
+  avatar       String?                   @db.LongText
   createdAt    DateTime                  @default(now())
   updatedAt    DateTime                  @updatedAt
   participants ConversationParticipant[]
@@ -1477,8 +1477,8 @@ model MessageAttachment {
   fileName     String
   fileSize     Int
   fileType     String
-  fileUrl      String
-  thumbnailUrl String?
+  fileUrl      String          @db.LongText
+  thumbnailUrl String?         @db.LongText
   createdAt    DateTime @default(now())
   message      Message  @relation(fields: [messageId], references: [id])
 
@@ -1744,11 +1744,11 @@ model ChannelPost {
   channelId    String
   title        String?
   titleAr      String?
-  content      String
-  contentAr    String?
+  content      String         @db.Text
+  contentAr    String?        @db.Text
   type         PostType       @default(TEXT)
-  mediaUrl     String?
-  thumbnailUrl String?
+  mediaUrl     String?        @db.LongText
+  thumbnailUrl String?        @db.LongText
   duration     Int?
   scheduledAt  DateTime?
   publishedAt  DateTime?
@@ -1782,8 +1782,8 @@ model PostComment {
   id        String      @id @default(cuid())
   postId    String
   userId    String
-  content   String
-  imageUrl  String?
+  content   String      @db.Text
+  imageUrl  String?     @db.LongText
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   post      ChannelPost @relation(fields: [postId], references: [id], onDelete: Cascade)
