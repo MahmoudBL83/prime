@@ -329,7 +329,7 @@
     "categories": {
         "programming": "Programming",
         "technology": "Technology",
-        "marketing": "Marketing", 
+        "marketing": "Marketing",
         "design": "Design",
         "business": "Business",
         "gaming": "Gaming"
@@ -670,7 +670,7 @@
                 "description": "Get expert advice and guidance on your learning journey"
             },
             "COURSE_HELP": {
-                "label": "Course Help & Support", 
+                "label": "Course Help & Support",
                 "description": "Get help with specific courses, assignments, or concepts"
             },
             "CAREER_ADVICE": {
@@ -693,7 +693,7 @@
         "included": {
             "hdVideo": "HD Video Call",
             "hdVideoDesc": "Crystal clear video quality",
-            "secure": "Secure & Private", 
+            "secure": "Secure & Private",
             "secureDesc": "End-to-end encrypted session",
             "screenShare": "Screen Sharing",
             "screenShareDesc": "Share code, documents & resources",
@@ -1259,7 +1259,7 @@
             "chat": {
                 "title": "Live Chat",
                 "placeholder": "Chat will appear here",
-                "comingSoon": "Coming soon with real-time messaging",
+                "comingSoon": "Real-time interaction will be available soon in the upcoming update",
                 "sendMessage": "Send message...",
                 "noMessages": "No messages yet"
             },

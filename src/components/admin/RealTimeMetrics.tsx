@@ -158,7 +158,7 @@ export default function RealTimeMetrics({
             value: metrics.activeUsers,
             icon: Users,
             color: 'text-green-400',
-            bgColor: 'bg-green-500/10',
+            bgColor: 'bg-green-500/10 hover:bg-green-500/20',
             pulse: true
         },
         {
@@ -166,21 +166,21 @@ export default function RealTimeMetrics({
             value: metrics.dailyActiveUsers,
             icon: Activity,
             color: 'text-blue-400',
-            bgColor: 'bg-blue-500/10'
+            bgColor: 'bg-blue-500/10 hover:bg-blue-500/20'
         },
         {
             label: 'New Signups',
             value: metrics.newSignups,
             icon: UserPlus,
             color: 'text-purple-400',
-            bgColor: 'bg-purple-500/10'
+            bgColor: 'bg-purple-500/10 hover:bg-purple-500/20'
         },
         {
             label: "Today's Revenue",
             value: `${metrics.todayRevenue.toLocaleString()} EGP`,
             icon: DollarSign,
             color: 'text-yellow-400',
-            bgColor: 'bg-yellow-500/10'
+            bgColor: 'bg-yellow-500/10 hover:bg-yellow-500/20'
         }
     ]
 
@@ -234,21 +234,24 @@ export default function RealTimeMetrics({
                 {statCards.map((stat, i) => (
                     <div
                         key={i}
-                        className={`${stat.bgColor} rounded-xl p-4 border border-gray-700/50`}
+                        className={`relative group ${stat.bgColor} backdrop-blur-xl rounded-2xl p-5 border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl overflow-hidden`}
                     >
-                        <div className="flex items-center justify-between mb-2">
-                            <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="relative flex items-center justify-between mb-4">
+                            <div className={`p-2 rounded-xl bg-white/5`}>
+                                <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                            </div>
                             {stat.pulse && (
-                                <span className="relative flex h-2 w-2">
+                                <span className="flex h-3 w-3">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                                 </span>
                             )}
                         </div>
-                        <p className="text-2xl font-bold text-white">
+                        <p className="relative text-3xl font-black text-white mb-1 tracking-tight">
                             {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}
                         </p>
-                        <p className="text-sm text-gray-400">{stat.label}</p>
+                        <p className="relative text-sm font-medium text-gray-400 uppercase tracking-wider">{stat.label}</p>
                     </div>
                 ))}
             </div>
@@ -259,14 +262,16 @@ export default function RealTimeMetrics({
                     {additionalStats.map((stat, i) => (
                         <div
                             key={i}
-                            className="bg-gray-800/50 rounded-lg p-3 flex items-center gap-3"
+                            className="bg-white/5 backdrop-blur-md rounded-xl p-4 flex items-center gap-4 border border-white/5 hover:bg-white/10 transition-all group"
                         >
-                            <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                            <div className={`p-2 rounded-lg bg-white/5 group-hover:scale-110 transition-transform`}>
+                                <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                            </div>
                             <div>
-                                <p className="text-lg font-semibold text-white">
+                                <p className="text-xl font-bold text-white">
                                     {stat.value.toLocaleString()}
                                 </p>
-                                <p className="text-xs text-gray-500">{stat.label}</p>
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">{stat.label}</p>
                             </div>
                         </div>
                     ))}
@@ -275,20 +280,28 @@ export default function RealTimeMetrics({
 
             {/* Recent Activity Feed */}
             {metrics.recentActivity && metrics.recentActivity.length > 0 && (
-                <div className="mt-4 space-y-2">
-                    <h4 className="text-sm font-medium text-gray-400">Recent Activity</h4>
-                    <div className="space-y-1 max-h-32 overflow-y-auto">
-                        {metrics.recentActivity.slice(0, 5).map(activity => (
+                <div className="mt-8 space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Live Activity Stream</h4>
+                        <div className="flex gap-1">
+                            <div className="w-1 h-1 rounded-full bg-purple-500" />
+                            <div className="w-1 h-1 rounded-full bg-purple-500/50" />
+                            <div className="w-1 h-1 rounded-full bg-purple-500/20" />
+                        </div>
+                    </div>
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                        {metrics.recentActivity.slice(0, 8).map(activity => (
                             <div
                                 key={activity.id}
-                                className="text-sm text-gray-300 py-1 px-2 bg-gray-800/30 rounded flex items-center gap-2"
+                                className="group text-sm text-gray-300 p-3 bg-white/5 backdrop-blur-sm border border-white/5 rounded-xl flex items-center gap-4 transition-all hover:bg-white/10"
                             >
-                                <span className={`w-1.5 h-1.5 rounded-full ${activity.type === 'signup' ? 'bg-green-500' :
-                                        activity.type === 'purchase' ? 'bg-yellow-500' :
-                                            activity.type === 'enrollment' ? 'bg-blue-500' :
-                                                'bg-purple-500'
+                                <div className={`w-2.5 h-2.5 rounded-full shadow-lg ${activity.type === 'signup' ? 'bg-green-500 shadow-green-500/20' :
+                                    activity.type === 'purchase' ? 'bg-yellow-500 shadow-yellow-500/20' :
+                                        activity.type === 'enrollment' ? 'bg-blue-500 shadow-blue-500/20' :
+                                            'bg-purple-500 shadow-purple-500/20'
                                     }`} />
-                                {activity.message}
+                                <span className="flex-1 font-medium">{activity.message}</span>
+                                <span className="text-[10px] text-gray-500 font-mono">JUST NOW</span>
                             </div>
                         ))}
                     </div>

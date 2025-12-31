@@ -28,7 +28,7 @@ const ensureUploadDir = async (subDir: string = '') => {
 export async function POST(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions)
-        
+
         if (!session?.user?.id) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
@@ -110,15 +110,15 @@ export async function POST(req: NextRequest) {
             try {
                 const uploadDir = await ensureUploadDir(subDir)
                 const filePath = path.join(uploadDir, filename)
-                
+
                 const bytes = await file.arrayBuffer()
                 const buffer = Buffer.from(bytes)
-                
+
                 await writeFile(filePath, buffer)
-                
+
                 // Return public URL path
                 const publicUrl = `/uploads/${subDir}/${filename}`
-                
+
                 return NextResponse.json({
                     success: true,
                     url: publicUrl,
@@ -128,12 +128,37 @@ export async function POST(req: NextRequest) {
                 })
             } catch (fsError) {
                 console.error('File system write error:', fsError)
-                // Fallback to base64 if filesystem fails
+
+                const errorMsg = fsError instanceof Error ? fsError.message : 'Unknown FS error'
+                const currentDir = process.cwd()
+                const targetDir = path.join(currentDir, 'public', 'uploads', subDir)
+
+                // If the file is large (> 1MB), do NOT fall back to base64
+                // as this ensures files appear in Hostinger File Manager
+                if (file.size > 1 * 1024 * 1024) {
+                    return NextResponse.json(
+                        {
+                            error: `Storage error: ${errorMsg}`,
+                            details: `Could not write to ${targetDir}. Current directory: ${currentDir}. Please ensure public/uploads is writable (chmod 755 or 777).`,
+                            env: process.env.NODE_ENV,
+                            cwd: currentDir,
+                            target: targetDir
+                        },
+                        { status: 507 } // Insufficient Storage
+                    )
+                }
             }
         }
 
         // Fallback: Convert file to base64 data URL
-        // This works in both development and serverless environments
+        // ONLY for very small files (< 1MB) to prevent bloating and ensure physical files for everything else
+        if (file.size > 1 * 1024 * 1024) {
+            return NextResponse.json(
+                { error: 'File too large for base64 fallback. Storage directory must be writable on Hostinger.' },
+                { status: 413 }
+            )
+        }
+
         const bytes = await file.arrayBuffer()
         const buffer = Buffer.from(bytes)
         const base64 = buffer.toString('base64')
@@ -151,7 +176,7 @@ export async function POST(req: NextRequest) {
     } catch (error) {
         console.error('File upload error:', error)
         return NextResponse.json(
-            { error: 'Failed to upload file. Please try again.' },
+            { error: error instanceof Error ? error.message : 'Failed to upload file. Please try again.' },
             { status: 500 }
         )
     }

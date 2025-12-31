@@ -29,7 +29,6 @@ interface User {
     createdAt: string
     updatedAt: string
     phone: string | null
-    arabicName: string | null
     _count: {
         enrollments: number
     }
@@ -61,7 +60,7 @@ export default function UsersPage() {
     const [statusFilter, setStatusFilter] = useState<string>('all')
     const [sortBy, setSortBy] = useState<string>('createdAt')
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-    
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1)
     const [totalUsers, setTotalUsers] = useState(0)
@@ -95,7 +94,7 @@ export default function UsersPage() {
             })
             if (roleFilter !== 'all') params.set('role', roleFilter)
             if (statusFilter !== 'all') params.set('status', statusFilter)
-            
+
             const response = await fetch(`/api/admin/users?${params.toString()}`)
             if (!response.ok) {
                 throw new Error('Failed to fetch users')
@@ -114,8 +113,7 @@ export default function UsersPage() {
 
     const filteredUsers = users.filter(user => {
         const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (user.arabicName && user.arabicName.includes(searchTerm))
+            user.email.toLowerCase().includes(searchTerm.toLowerCase())
 
         const matchesRole = roleFilter === 'all' || user.role === roleFilter
 
@@ -206,7 +204,7 @@ export default function UsersPage() {
             if (statusFilter !== 'all') params.set('status', statusFilter)
 
             const response = await fetch(`/api/admin/users/export?${params.toString()}`)
-            
+
             if (!response.ok) {
                 throw new Error('Failed to export users')
             }
@@ -215,7 +213,7 @@ export default function UsersPage() {
             const blob = await response.blob()
             const contentDisposition = response.headers.get('Content-Disposition')
             let filename = `users-export.${format}`
-            
+
             if (contentDisposition) {
                 const filenameMatch = contentDisposition.match(/filename="(.+)"/)
                 if (filenameMatch) {
@@ -269,7 +267,7 @@ export default function UsersPage() {
                     <p className="text-gray-400 mt-1">Manage and monitor all platform users</p>
                 </div>
                 <div className="flex gap-2">
-                    <button 
+                    <button
                         onClick={() => handleExport('csv')}
                         disabled={exporting}
                         className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white hover:bg-white/10 transition-colors backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -281,7 +279,7 @@ export default function UsersPage() {
                         )}
                         {exporting ? 'Exporting...' : 'Export'}
                     </button>
-                    <button 
+                    <button
                         onClick={() => setShowAddUserModal(true)}
                         className="flex items-center gap-2 bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 transition-colors"
                     >
@@ -346,7 +344,7 @@ export default function UsersPage() {
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Search users by name, email, or Arabic name..."
+                                placeholder="Search users by name or email..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -419,9 +417,6 @@ export default function UsersPage() {
                                         <div>
                                             <div className="font-medium text-white">{user.name}</div>
                                             <div className="text-sm text-gray-400">{user.email}</div>
-                                            {user.arabicName && (
-                                                <div className="text-sm text-gray-400">{user.arabicName}</div>
-                                            )}
                                         </div>
                                     </td>
                                     <td className="py-3 px-4">
@@ -520,11 +515,10 @@ export default function UsersPage() {
                                 <button
                                     key={pageNum}
                                     onClick={() => setCurrentPage(pageNum)}
-                                    className={`px-3 py-1 rounded-lg transition-colors ${
-                                        currentPage === pageNum
+                                    className={`px-3 py-1 rounded-lg transition-colors ${currentPage === pageNum
                                             ? 'bg-blue-600 text-white'
                                             : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
-                                    }`}
+                                        }`}
                                 >
                                     {pageNum}
                                 </button>

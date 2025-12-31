@@ -2,9 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Crown, Check, Sparkles, Mail, CheckCircle, CreditCard } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { X, Check, Sparkles, Mail, CreditCard, Star } from 'lucide-react'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { useSession } from 'next-auth/react'
@@ -37,10 +35,6 @@ export default function SubscribeModal({ isOpen, onClose, creator, isArabic = fa
             id: 'ALL_ACCESS' as const,
             name: isArabic ? 'وصول شامل' : 'All-Access',
             price: creator.monthlyPrice, // Single tier price in EUR
-            color: 'from-purple-500 to-blue-500',
-            borderColor: 'border-purple-500/40',
-            bgColor: 'from-purple-500/10 to-blue-500/10',
-            icon: '🎯',
             benefits: [
                 isArabic ? 'كل المحتوى والوسائط' : 'All posts & media',
                 isArabic ? 'جلسات مباشرة أسبوعية' : 'Weekly live sessions',
@@ -93,8 +87,8 @@ export default function SubscribeModal({ isOpen, onClose, creator, isArabic = fa
                     // Otherwise, email was sent
                     setEmailSent(true)
                     toast.success(
-                        isArabic 
-                            ? 'تم إرسال رابط الدفع إلى بريدك الإلكتروني!' 
+                        isArabic
+                            ? 'تم إرسال رابط الدفع إلى بريدك الإلكتروني!'
                             : 'Payment link sent to your email!'
                     )
                 }
@@ -114,198 +108,158 @@ export default function SubscribeModal({ isOpen, onClose, creator, isArabic = fa
         onClose()
     }
 
+    if (!isOpen) return null
+
     return (
         <AnimatePresence>
-            {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={handleClose}
-                        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-                    />
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center font-sans">
+                {/* Backdrop */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={handleClose}
+                    className="absolute inset-0 bg-black/95"
+                />
 
-                    {/* Modal */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-background border border-border rounded-3xl shadow-2xl"
+                {/* Modal Content */}
+                <motion.div
+                    initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 40, scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="relative z-10 w-full max-w-md mx-4 my-8 bg-[#1a1a1a] rounded-2xl shadow-[0_25px_70px_rgba(0,0,0,0.85)] overflow-hidden flex flex-col"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {/* Close Button */}
+                    <button
+                        onClick={handleClose}
+                        className="absolute top-4 left-4 w-8 h-8 rounded-full bg-[#2d2d2d] hover:bg-[#3d3d3d] flex items-center justify-center transition-all z-10"
                     >
-                        {/* Header */}
-                        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl border-b border-border p-6">
-                            <button
-                                onClick={handleClose}
-                                className="absolute top-6 right-6 text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
-                            
-                            <div className="flex items-center gap-4">
+                        <X className="w-4 h-4 text-white/80" />
+                    </button>
+
+                    {/* Header */}
+                    <div className="flex flex-col items-center pt-12 pb-6 px-8 relative">
+                        {/* Creator Avatar with Glow */}
+                        <div className="relative mb-6">
+                            <div className="absolute inset-0 bg-[#0071e3] blur-2xl opacity-20 rounded-full" />
+                            <div className="relative w-20 h-20 rounded-full p-1 bg-[#1a1a1a] border border-[#3d3d3d]">
                                 {creator.user.profileImage ? (
                                     <Image
                                         src={creator.user.profileImage}
                                         alt={creator.user.name}
-                                        width={64}
-                                        height={64}
-                                        className="rounded-full object-cover"
+                                        fill
+                                        className="rounded-full object-cover p-0.5"
                                     />
                                 ) : (
-                                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                                        <span className="text-2xl font-bold text-white">
+                                    <div className="w-full h-full rounded-full bg-[#2d2d2d] flex items-center justify-center">
+                                        <span className="text-2xl font-semibold text-white">
                                             {creator.user.name[0]}
                                         </span>
                                     </div>
                                 )}
-                                <div>
-                                    <h2 className="text-2xl font-black text-foreground">
-                                        {emailSent 
-                                            ? (isArabic ? 'تحقق من بريدك' : 'Check Your Email')
-                                            : (isArabic ? 'اشترك في' : 'Subscribe to')
-                                        } {!emailSent && creator.user.name}
-                                    </h2>
-                                    <p className="text-muted-foreground">{creator.expertise}</p>
-                                </div>
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#0071e3] rounded-full flex items-center justify-center border-2 border-[#1a1a1a]">
+                                <Star className="w-3 h-3 text-white fill-current" />
                             </div>
                         </div>
 
-                        {/* Content */}
-                        <div className="p-6">
-                            {emailSent ? (
-                                /* Email Sent State */
-                                <div className="text-center py-8 space-y-6">
-                                    <motion.div
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        className="w-20 h-20 mx-auto rounded-full bg-green-500/20 flex items-center justify-center"
-                                    >
-                                        <CheckCircle className="w-10 h-10 text-green-500" />
-                                    </motion.div>
+                        <h2 className="text-2xl font-semibold text-white text-center mb-1">
+                            {emailSent
+                                ? (isArabic ? 'تحقق من بريدك' : 'Check Your Email')
+                                : creator.user.name
+                            }
+                        </h2>
+                        <p className="text-[#86868b] text-sm text-center">
+                            {emailSent
+                                ? (isArabic ? 'رابط الدفع في الطريق إليك' : 'Payment link sent successfully')
+                                : creator.expertise
+                            }
+                        </p>
+                    </div>
+
+                    {/* Content */}
+                    <div className="px-8 pb-8">
+                        {emailSent ? (
+                            /* Email Sent State */
+                            <div className="space-y-6">
+                                <div className="bg-[#2d2d2d] rounded-xl p-4 flex items-start gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-[#3d3d3d] flex items-center justify-center flex-shrink-0">
+                                        <Mail className="w-4 h-4 text-[#0071e3]" />
+                                    </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-foreground mb-2">
-                                            {isArabic ? 'تم إرسال رابط الدفع!' : 'Payment Link Sent!'}
-                                        </h3>
-                                        <p className="text-muted-foreground">
-                                            {isArabic 
-                                                ? `تم إرسال رابط الدفع الآمن إلى ${session?.user?.email}`
-                                                : `A secure payment link has been sent to ${session?.user?.email}`
+                                        <p className="text-white text-sm font-medium mb-1">
+                                            {isArabic ? 'تم الإرسال!' : 'Email Sent!'}
+                                        </p>
+                                        <p className="text-[#86868b] text-xs leading-relaxed">
+                                            {isArabic
+                                                ? `تم إرسال رابط الدفع إلى ${session?.user?.email}. يرجى التحقق من صندوق الوارد.`
+                                                : `We sent a secure payment link to ${session?.user?.email}. Please check your inbox.`
                                             }
                                         </p>
                                     </div>
-                                    <div className="bg-card/50 border border-border rounded-xl p-4">
-                                        <div className="flex items-center gap-3 text-muted-foreground">
-                                            <Mail className="w-5 h-5" />
-                                            <span className="text-sm">
-                                                {isArabic 
-                                                    ? 'افحص صندوق الوارد (وأحياناً البريد المزعج)'
-                                                    : 'Check your inbox (and sometimes spam folder)'
-                                                }
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <Button
-                                        onClick={handleClose}
-                                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 rounded-full"
-                                    >
-                                        {isArabic ? 'حسناً' : 'Got It'}
-                                    </Button>
                                 </div>
-                            ) : (
-                                /* Subscribe Form */
-                                <>
-                                    <p className="text-center text-muted-foreground mb-6">
-                                        {isArabic 
-                                            ? 'خطة واحدة تمنحك كل شيء'
-                                            : 'One simple plan with everything included'}
-                                    </p>
+                                <button
+                                    onClick={handleClose}
+                                    className="w-full rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white py-3.5 text-sm font-semibold transition-all"
+                                >
+                                    {isArabic ? 'حسناً' : 'Got it'}
+                                </button>
+                            </div>
+                        ) : (
+                            /* Subscribe State */
+                            <div className="space-y-6">
+                                {/* Price Card */}
+                                <div className="bg-[#2d2d2d] rounded-xl border border-[#3d3d3d] p-5">
+                                    <div className="flex items-baseline gap-1 mb-4">
+                                        <span className="text-3xl font-bold text-white">€{creator.monthlyPrice}</span>
+                                        <span className="text-[#86868b] text-sm">/{isArabic ? 'شهر' : 'month'}</span>
+                                    </div>
 
-                                    {/* Single Tier Card */}
-                                    <div className="grid grid-cols-1 gap-4 mb-6">
-                                        {tiers.map((tier) => (
-                                            <motion.div
-                                                key={tier.id}
-                                                whileHover={{ scale: 1.01 }}
-                                                className={`relative text-left bg-gradient-to-br ${tier.bgColor} border-2 ${tier.borderColor} rounded-2xl p-6 transition-all shadow-lg`}
-                                            >
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <div>
-                                                        <div className="text-3xl mb-2">{tier.icon}</div>
-                                                        <h3 className="text-xl font-bold text-foreground">{tier.name}</h3>
-                                                    </div>
-                                                    <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${tier.color} flex items-center justify-center`}>
-                                                        <Crown className="w-5 h-5 text-white" />
-                                                    </div>
+                                    <div className="space-y-3">
+                                        {tiers[0].benefits.map((benefit, idx) => (
+                                            <div key={idx} className="flex items-center gap-3">
+                                                <div className="w-5 h-5 rounded-full bg-[#0071e3]/10 flex items-center justify-center flex-shrink-0">
+                                                    <Check className="w-3 h-3 text-[#0071e3]" />
                                                 </div>
-
-                                                <div className="mb-4">
-                                                    <span className={`text-3xl font-black bg-gradient-to-r ${tier.color} bg-clip-text text-transparent`}>
-                                                        €{tier.price}
-                                                    </span>
-                                                    <span className="text-muted-foreground text-sm">
-                                                        /{isArabic ? 'شهر' : 'month'}
-                                                    </span>
-                                                </div>
-
-                                                <ul className="space-y-2">
-                                                    {tier.benefits.map((benefit, idx) => (
-                                                        <li key={idx} className="flex items-start gap-2 text-sm">
-                                                            <Check className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                                                            <span className="text-muted-foreground">{benefit}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </motion.div>
+                                                <span className="text-sm text-white/80">{benefit}</span>
+                                            </div>
                                         ))}
                                     </div>
+                                </div>
 
-                                    {/* User Email Info */}
-                                    {session?.user?.email && (
-                                        <div className="bg-card/50 border border-border rounded-xl p-4 mb-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                                                    <CreditCard className="w-5 h-5 text-purple-500" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm text-foreground font-medium">
-                                                        {isArabic ? 'دفع آمن' : 'Secure Payment'}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {isArabic ? 'ستتم إعادة توجيهك إلى صفحة الدفع' : "You'll be redirected to checkout"}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                {/* Security Note */}
+                                <div className="flex items-center justify-center gap-2 text-[#86868b] text-xs">
+                                    <CreditCard className="w-3 h-3" />
+                                    <span>
+                                        {isArabic ? 'دفع آمن ومشفر' : 'Secure & Encrypted Payment'}
+                                    </span>
+                                </div>
+
+                                {/* Action Button */}
+                                <button
+                                    onClick={handleSubscribe}
+                                    disabled={isProcessing}
+                                    className="w-full rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white py-3.5 text-sm font-semibold transition-all shadow-[0_0_20px_rgba(0,113,227,0.3)] hover:shadow-[0_0_30px_rgba(0,113,227,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isProcessing ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            {isArabic ? 'جاري المعالجة...' : 'Processing...'}
+                                        </span>
+                                    ) : (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <Sparkles className="w-4 h-4" />
+                                            {isArabic ? 'اشترك الآن' : 'Subscribe Now'}
+                                        </span>
                                     )}
-
-                                    {/* Subscribe Button */}
-                                    <Button
-                                        onClick={handleSubscribe}
-                                        disabled={isProcessing}
-                                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 text-lg rounded-full shadow-lg"
-                                    >
-                                        {isProcessing ? (
-                                            <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        ) : (
-                                            <>
-                                                <Sparkles className="w-5 h-5 mr-2" />
-                                                {isArabic ? `اشترك الآن - €${tiers[0].price}/شهر` : `Subscribe Now - €${tiers[0].price}/mo`}
-                                            </>
-                                        )}
-                                    </Button>
-
-                                    <p className="text-center text-xs text-muted-foreground mt-4">
-                                        {isArabic 
-                                            ? 'التجديد التلقائي شهرياً. يمكنك الإلغاء في أي وقت.'
-                                            : 'Auto-renews monthly. Cancel anytime.'}
-                                    </p>
-                                </>
-                            )}
-                        </div>
-                    </motion.div>
-                </div>
-            )}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </motion.div>
+            </div>
         </AnimatePresence>
     )
 }

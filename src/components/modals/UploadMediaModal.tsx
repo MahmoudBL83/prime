@@ -71,16 +71,16 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
     const [uploading, setUploading] = useState(false)
     const [uploadProgress, setUploadProgress] = useState(0)
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-    
+
     const fileInputRef = useRef<HTMLInputElement>(null)
     const videoInputRef = useRef<HTMLInputElement>(null)
 
     const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || [])
-        
+
         files.forEach(file => {
-            // Validate file size (max 100MB for videos, 10MB for images)
-            const maxSize = file.type.startsWith('video/') ? 100 * 1024 * 1024 : 10 * 1024 * 1024
+            // Validate file size (max 500MB for videos, 10MB for images)
+            const maxSize = file.type.startsWith('video/') ? 500 * 1024 * 1024 : 10 * 1024 * 1024
             if (file.size > maxSize) {
                 toast.error(`File ${file.name} is too large. Max size: ${maxSize / (1024 * 1024)}MB`)
                 return
@@ -92,11 +92,11 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
                     id: Math.random().toString(36).substr(2, 9),
                     file,
                     preview: e.target?.result as string,
-                    type: file.type.startsWith('video/') ? 'video' : 
-                          file.type.startsWith('image/') ? 'image' : 'document',
+                    type: file.type.startsWith('video/') ? 'video' :
+                        file.type.startsWith('image/') ? 'image' : 'document',
                     size: file.size
                 }
-                
+
                 // Get video duration if it's a video
                 if (file.type.startsWith('video/')) {
                     const video = document.createElement('video')
@@ -160,7 +160,7 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
             // Upload media files first
             if (mediaFiles.length > 0) {
                 setUploadProgress(10)
-                
+
                 // Upload the first media file
                 const mediaFile = mediaFiles[0]
                 const mediaFormData = new FormData()
@@ -205,7 +205,7 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
             }
 
             setUploadProgress(70)
-            
+
             // Prepare post data
             const postData: any = {
                 action: existingPost ? 'update' : 'create',
@@ -242,7 +242,7 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
             const newPost = result.post
 
             toast.success(
-                isScheduled 
+                isScheduled
                     ? (isArabic ? 'تم جدولة المنشور بنجاح' : 'Post scheduled successfully!')
                     : (isArabic ? 'تم نشر المنشور بنجاح' : 'Post uploaded successfully!')
             )
@@ -316,23 +316,20 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
 
                             {/* Progress Steps */}
                             <div className="flex items-center justify-center gap-2 p-4 bg-card/50">
-                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
-                                    step === 'upload' ? 'bg-purple-500 text-white' : 'bg-card text-muted-foreground'
-                                }`}>
+                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${step === 'upload' ? 'bg-purple-500 text-white' : 'bg-card text-muted-foreground'
+                                    }`}>
                                     <Upload className="w-4 h-4" />
                                     <span className="text-sm font-semibold">{isArabic ? 'رفع' : 'Upload'}</span>
                                 </div>
                                 <div className="w-8 h-0.5 bg-border" />
-                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
-                                    step === 'details' ? 'bg-purple-500 text-white' : 'bg-card text-muted-foreground'
-                                }`}>
+                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${step === 'details' ? 'bg-purple-500 text-white' : 'bg-card text-muted-foreground'
+                                    }`}>
                                     <FileText className="w-4 h-4" />
                                     <span className="text-sm font-semibold">{isArabic ? 'تفاصيل' : 'Details'}</span>
                                 </div>
                                 <div className="w-8 h-0.5 bg-border" />
-                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
-                                    step === 'schedule' ? 'bg-purple-500 text-white' : 'bg-card text-muted-foreground'
-                                }`}>
+                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${step === 'schedule' ? 'bg-purple-500 text-white' : 'bg-card text-muted-foreground'
+                                    }`}>
                                     <Calendar className="w-4 h-4" />
                                     <span className="text-sm font-semibold">{isArabic ? 'نشر' : 'Publish'}</span>
                                 </div>
@@ -372,7 +369,7 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
                                                     </Button>
                                                 </div>
                                                 <p className="text-xs text-muted-foreground mt-4">
-                                                    {isArabic 
+                                                    {isArabic
                                                         ? 'صور: حتى 10 ميجابايت | فيديو: حتى 100 ميجابايت'
                                                         : 'Photos: up to 10MB | Videos: up to 100MB'
                                                     }
@@ -528,15 +525,13 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
                                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                                 <button
                                                     onClick={() => setTierAccess('public')}
-                                                    className={`p-4 rounded-xl border-2 transition-all ${
-                                                        tierAccess === 'public'
+                                                    className={`p-4 rounded-xl border-2 transition-all ${tierAccess === 'public'
                                                             ? 'border-green-500 bg-green-500/10'
                                                             : 'border-border hover:border-green-500/50'
-                                                    }`}
+                                                        }`}
                                                 >
-                                                    <Users className={`w-6 h-6 mx-auto mb-2 ${
-                                                        tierAccess === 'public' ? 'text-green-500' : 'text-muted-foreground'
-                                                    }`} />
+                                                    <Users className={`w-6 h-6 mx-auto mb-2 ${tierAccess === 'public' ? 'text-green-500' : 'text-muted-foreground'
+                                                        }`} />
                                                     <div className="text-sm font-semibold text-foreground">
                                                         {isArabic ? 'عام' : 'Public'}
                                                     </div>
@@ -546,15 +541,13 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
                                                 </button>
                                                 <button
                                                     onClick={() => setTierAccess('basic')}
-                                                    className={`p-4 rounded-xl border-2 transition-all ${
-                                                        tierAccess === 'basic'
+                                                    className={`p-4 rounded-xl border-2 transition-all ${tierAccess === 'basic'
                                                             ? 'border-gray-500 bg-gray-500/10'
                                                             : 'border-border hover:border-gray-500/50'
-                                                    }`}
+                                                        }`}
                                                 >
-                                                    <Lock className={`w-6 h-6 mx-auto mb-2 ${
-                                                        tierAccess === 'basic' ? 'text-gray-400' : 'text-muted-foreground'
-                                                    }`} />
+                                                    <Lock className={`w-6 h-6 mx-auto mb-2 ${tierAccess === 'basic' ? 'text-gray-400' : 'text-muted-foreground'
+                                                        }`} />
                                                     <div className="text-sm font-semibold text-foreground">
                                                         {isArabic ? 'أساسي' : 'Basic'}
                                                     </div>
@@ -562,15 +555,13 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
                                                 </button>
                                                 <button
                                                     onClick={() => setTierAccess('premium')}
-                                                    className={`p-4 rounded-xl border-2 transition-all ${
-                                                        tierAccess === 'premium'
+                                                    className={`p-4 rounded-xl border-2 transition-all ${tierAccess === 'premium'
                                                             ? 'border-purple-500 bg-purple-500/10'
                                                             : 'border-border hover:border-purple-500/50'
-                                                    }`}
+                                                        }`}
                                                 >
-                                                    <Sparkles className={`w-6 h-6 mx-auto mb-2 ${
-                                                        tierAccess === 'premium' ? 'text-purple-400' : 'text-muted-foreground'
-                                                    }`} />
+                                                    <Sparkles className={`w-6 h-6 mx-auto mb-2 ${tierAccess === 'premium' ? 'text-purple-400' : 'text-muted-foreground'
+                                                        }`} />
                                                     <div className="text-sm font-semibold text-foreground">
                                                         {isArabic ? 'مميز' : 'Premium'}
                                                     </div>
@@ -578,29 +569,25 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
                                                 </button>
                                                 <button
                                                     onClick={() => setTierAccess('vip')}
-                                                    className={`p-4 rounded-xl border-2 transition-all ${
-                                                        tierAccess === 'vip'
+                                                    className={`p-4 rounded-xl border-2 transition-all ${tierAccess === 'vip'
                                                             ? 'border-yellow-500 bg-yellow-500/10'
                                                             : 'border-border hover:border-yellow-500/50'
-                                                    }`}
+                                                        }`}
                                                 >
-                                                    <Crown className={`w-6 h-6 mx-auto mb-2 ${
-                                                        tierAccess === 'vip' ? 'text-yellow-400' : 'text-muted-foreground'
-                                                    }`} />
+                                                    <Crown className={`w-6 h-6 mx-auto mb-2 ${tierAccess === 'vip' ? 'text-yellow-400' : 'text-muted-foreground'
+                                                        }`} />
                                                     <div className="text-sm font-semibold text-foreground">VIP</div>
                                                     <div className="text-xs text-muted-foreground">199 EGP+</div>
                                                 </button>
                                                 <button
                                                     onClick={() => setTierAccess('ppv')}
-                                                    className={`p-4 rounded-xl border-2 transition-all ${
-                                                        tierAccess === 'ppv'
+                                                    className={`p-4 rounded-xl border-2 transition-all ${tierAccess === 'ppv'
                                                             ? 'border-pink-500 bg-pink-500/10'
                                                             : 'border-border hover:border-pink-500/50'
-                                                    }`}
+                                                        }`}
                                                 >
-                                                    <DollarSign className={`w-6 h-6 mx-auto mb-2 ${
-                                                        tierAccess === 'ppv' ? 'text-pink-400' : 'text-muted-foreground'
-                                                    }`} />
+                                                    <DollarSign className={`w-6 h-6 mx-auto mb-2 ${tierAccess === 'ppv' ? 'text-pink-400' : 'text-muted-foreground'
+                                                        }`} />
                                                     <div className="text-sm font-semibold text-foreground">
                                                         {isArabic ? 'الدفع لكل مشاهدة' : 'Pay-Per-View'}
                                                     </div>
@@ -635,7 +622,7 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
                                                     </span>
                                                 </div>
                                                 <p className="text-xs text-muted-foreground">
-                                                    {isArabic 
+                                                    {isArabic
                                                         ? 'المستخدمون سيدفعون هذا المبلغ لرؤية هذا المنشور'
                                                         : 'Users will pay this amount to view this post'
                                                     }
@@ -711,18 +698,15 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
                                         <div className="grid grid-cols-2 gap-4">
                                             <button
                                                 onClick={() => setIsScheduled(false)}
-                                                className={`p-6 rounded-2xl border-2 transition-all ${
-                                                    !isScheduled
+                                                className={`p-6 rounded-2xl border-2 transition-all ${!isScheduled
                                                         ? 'border-purple-500 bg-purple-500/10'
                                                         : 'border-border hover:border-purple-500/50'
-                                                }`}
+                                                    }`}
                                             >
-                                                <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
-                                                    !isScheduled ? 'bg-purple-500' : 'bg-card'
-                                                }`}>
-                                                    <Upload className={`w-6 h-6 ${
-                                                        !isScheduled ? 'text-white' : 'text-muted-foreground'
-                                                    }`} />
+                                                <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${!isScheduled ? 'bg-purple-500' : 'bg-card'
+                                                    }`}>
+                                                    <Upload className={`w-6 h-6 ${!isScheduled ? 'text-white' : 'text-muted-foreground'
+                                                        }`} />
                                                 </div>
                                                 <div className="text-lg font-bold text-foreground mb-1">
                                                     {isArabic ? 'نشر الآن' : 'Post Now'}
@@ -733,18 +717,15 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
                                             </button>
                                             <button
                                                 onClick={() => setIsScheduled(true)}
-                                                className={`p-6 rounded-2xl border-2 transition-all ${
-                                                    isScheduled
+                                                className={`p-6 rounded-2xl border-2 transition-all ${isScheduled
                                                         ? 'border-purple-500 bg-purple-500/10'
                                                         : 'border-border hover:border-purple-500/50'
-                                                }`}
+                                                    }`}
                                             >
-                                                <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
-                                                    isScheduled ? 'bg-purple-500' : 'bg-card'
-                                                }`}>
-                                                    <Clock className={`w-6 h-6 ${
-                                                        isScheduled ? 'text-white' : 'text-muted-foreground'
-                                                    }`} />
+                                                <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${isScheduled ? 'bg-purple-500' : 'bg-card'
+                                                    }`}>
+                                                    <Clock className={`w-6 h-6 ${isScheduled ? 'text-white' : 'text-muted-foreground'
+                                                        }`} />
                                                 </div>
                                                 <div className="text-lg font-bold text-foreground mb-1">
                                                     {isArabic ? 'جدولة' : 'Schedule'}
@@ -805,7 +786,7 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
                                                         <div className="flex items-center gap-2 text-purple-400">
                                                             <AlertCircle className="w-5 h-5" />
                                                             <span className="text-sm font-semibold">
-                                                                {isArabic 
+                                                                {isArabic
                                                                     ? `سيتم النشر في ${new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString(isArabic ? 'ar-EG' : 'en-US')}`
                                                                     : `Will be posted on ${new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString('en-US')}`
                                                                 }
@@ -918,7 +899,7 @@ export default function UploadMediaModal({ isOpen, onClose, isArabic = false, ex
                                                 ) : (
                                                     <>
                                                         <Check className="w-5 h-5" />
-                                                        {isScheduled 
+                                                        {isScheduled
                                                             ? (isArabic ? 'جدولة المنشور' : 'Schedule Post')
                                                             : (isArabic ? 'نشر الآن' : 'Post Now')
                                                         }

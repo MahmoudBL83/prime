@@ -395,28 +395,28 @@ function DashboardContent() {
                                 {/* Subscription Status Badge */}
                                 {userProfile.subscriptionStatus && (
                                     <div className={`inline-flex items-center gap-2 backdrop-blur-sm border rounded-full px-6 py-3 ${userProfile.subscriptionStatus === 'ACTIVE'
-                                            ? 'bg-green-500/20 border-green-500/30'
-                                            : userProfile.subscriptionStatus === 'EXPIRED'
-                                                ? 'bg-orange-500/20 border-orange-500/30'
-                                                : userProfile.subscriptionStatus === 'CANCELLED'
-                                                    ? 'bg-red-500/20 border-red-500/30'
-                                                    : 'bg-white/10 border-white/20'
+                                        ? 'bg-green-500/20 border-green-500/30'
+                                        : userProfile.subscriptionStatus === 'EXPIRED'
+                                            ? 'bg-orange-500/20 border-orange-500/30'
+                                            : userProfile.subscriptionStatus === 'CANCELLED'
+                                                ? 'bg-red-500/20 border-red-500/30'
+                                                : 'bg-white/10 border-white/20'
                                         }`}>
                                         <Crown className={`w-5 h-5 ${userProfile.subscriptionStatus === 'ACTIVE'
-                                                ? 'text-green-400'
-                                                : userProfile.subscriptionStatus === 'EXPIRED'
-                                                    ? 'text-orange-400'
-                                                    : userProfile.subscriptionStatus === 'CANCELLED'
-                                                        ? 'text-red-400'
-                                                        : 'text-white/60'
+                                            ? 'text-green-400'
+                                            : userProfile.subscriptionStatus === 'EXPIRED'
+                                                ? 'text-orange-400'
+                                                : userProfile.subscriptionStatus === 'CANCELLED'
+                                                    ? 'text-red-400'
+                                                    : 'text-white/60'
                                             }`} />
                                         <span className={`font-medium ${userProfile.subscriptionStatus === 'ACTIVE'
-                                                ? 'text-green-300'
-                                                : userProfile.subscriptionStatus === 'EXPIRED'
-                                                    ? 'text-orange-300'
-                                                    : userProfile.subscriptionStatus === 'CANCELLED'
-                                                        ? 'text-red-300'
-                                                        : 'text-white/70'
+                                            ? 'text-green-300'
+                                            : userProfile.subscriptionStatus === 'EXPIRED'
+                                                ? 'text-orange-300'
+                                                : userProfile.subscriptionStatus === 'CANCELLED'
+                                                    ? 'text-red-300'
+                                                    : 'text-white/70'
                                             }`}>
                                             {userProfile.subscriptionStatus === 'ACTIVE'
                                                 ? (isArabic ? 'اشتراك نشط' : 'Active Subscription')
@@ -1099,7 +1099,7 @@ function DashboardContent() {
                                                 <Button
                                                     variant="ghost"
                                                     className="w-full mt-4 text-yellow-300 hover:text-yellow-200 hover:bg-yellow-500/20"
-                                                    onClick={() => toast.success(isArabic ? 'قريباً!' : 'Coming soon!')}
+                                                    onClick={() => toast.success(isArabic ? 'تفاصيل الإنجازات قادمة في التحديث القادم' : 'Achievement gallery will be available in the next update')}
                                                 >
                                                     {isArabic ? `عرض الكل (${learningStats.achievements.length})` : `View all (${learningStats.achievements.length})`}
                                                 </Button>

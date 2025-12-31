@@ -208,8 +208,11 @@ export default function FeatureFlagsManager({ className = '' }: FeatureFlagsMana
 
             {/* Create Form */}
             {showCreateForm && (
-                <div className="bg-gray-800/50 rounded-xl p-4 mb-6 border border-gray-700">
-                    <h3 className="font-medium text-white mb-4">Create New Flag</h3>
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 mb-8 border border-white/20 shadow-xl animate-in fade-in slide-in-from-top-4 duration-300">
+                    <div className="flex items-center gap-2 mb-6 text-purple-400">
+                        <Plus className="w-5 h-5" />
+                        <h3 className="text-lg font-bold text-white">Create New Flag</h3>
+                    </div>
                     <div className="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label className="text-sm text-gray-400 block mb-1">Key</label>
@@ -267,8 +270,8 @@ export default function FeatureFlagsManager({ className = '' }: FeatureFlagsMana
                                             setNewFlag({ ...newFlag, targetRoles: newRoles })
                                         }}
                                         className={`px-3 py-1 rounded-full text-sm ${newFlag.targetRoles.includes(role)
-                                                ? 'bg-purple-600 text-white'
-                                                : 'bg-gray-700 text-gray-300'
+                                            ? 'bg-purple-600 text-white'
+                                            : 'bg-gray-700 text-gray-300'
                                             }`}
                                     >
                                         {role}
@@ -289,82 +292,86 @@ export default function FeatureFlagsManager({ className = '' }: FeatureFlagsMana
                 </div>
             )}
 
-            {/* Flags List */}
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {flags.map(flag => (
                     <div
                         key={flag.id}
-                        className={`bg-gray-800/50 rounded-xl p-4 border ${flag.enabled ? 'border-green-500/30' : 'border-gray-700'
+                        className={`group relative overflow-hidden bg-white/5 backdrop-blur-xl rounded-2xl p-5 border transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:bg-white/10 ${flag.enabled ? 'border-purple-500/30 shadow-purple-500/5' : 'border-white/10'
                             }`}
                     >
-                        <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-1">
-                                    <h3 className="font-medium text-white">{flag.name}</h3>
-                                    <code className="text-xs px-2 py-0.5 bg-gray-700 rounded text-gray-300">
+                        <div className="flex flex-col h-full">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="space-y-1">
+                                    <h3 className="text-lg font-bold text-white group-hover:text-purple-400 transition-colors">{flag.name}</h3>
+                                    <code className="text-[10px] px-2 py-0.5 bg-white/10 rounded-md text-gray-400 font-mono">
                                         {flag.key}
                                     </code>
-                                    {flag.enabled ? (
-                                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                                            Enabled
-                                        </Badge>
-                                    ) : (
-                                        <Badge variant="outline" className="text-gray-400">
-                                            Disabled
-                                        </Badge>
-                                    )}
                                 </div>
-                                {flag.description && (
-                                    <p className="text-sm text-gray-400 mb-2">{flag.description}</p>
-                                )}
-                                <div className="flex items-center gap-4 text-sm">
-                                    <div className="flex items-center gap-1 text-gray-400">
-                                        <Percent className="w-4 h-4" />
-                                        <span>{flag.rolloutPercentage}% rollout</span>
-                                    </div>
-                                    {flag.targetRoles.length > 0 && (
-                                        <div className="flex items-center gap-1 text-gray-400">
-                                            <Users className="w-4 h-4" />
-                                            <span>{flag.targetRoles.join(', ')}</span>
-                                        </div>
+                                <div className="flex items-center gap-2">
+                                    {flag.enabled ? (
+                                        <div className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                                    ) : (
+                                        <div className="flex h-2 w-2 rounded-full bg-gray-500" />
                                     )}
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
-                                {/* Rollout slider */}
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="100"
-                                    value={flag.rolloutPercentage}
-                                    onChange={(e) => updateRollout(flag, parseInt(e.target.value))}
-                                    className="w-24 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                                    disabled={!flag.enabled}
-                                />
+                            {flag.description && (
+                                <p className="text-sm text-gray-400 mb-6 flex-1 line-clamp-2">{flag.description}</p>
+                            )}
 
-                                {/* Toggle */}
-                                <button
-                                    onClick={() => toggleFlag(flag)}
-                                    className={`p-2 rounded-lg transition-colors ${flag.enabled
-                                            ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-                                            : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
-                                        }`}
-                                >
-                                    {flag.enabled ? (
-                                        <ToggleRight className="w-5 h-5" />
-                                    ) : (
-                                        <ToggleLeft className="w-5 h-5" />
-                                    )}
-                                </button>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between text-xs">
+                                    <div className="flex items-center gap-1.5 text-gray-400">
+                                        <Percent className="w-3.5 h-3.5" />
+                                        <span>{flag.rolloutPercentage}% Rollout</span>
+                                    </div>
+                                    <span className={flag.enabled ? 'text-green-400 font-bold' : 'text-gray-500'}>
+                                        {flag.enabled ? 'Active' : 'Disabled'}
+                                    </span>
+                                </div>
 
-                                {/* Delete */}
-                                <button
-                                    onClick={() => deleteFlag(flag)}
-                                    className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                                <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full transition-all duration-500 ${flag.enabled ? 'bg-gradient-to-r from-purple-500 to-pink-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]' : 'bg-white/10'}`}
+                                        style={{ width: `${flag.rolloutPercentage}%` }}
+                                    />
+                                </div>
+
+                                <div className="flex items-center justify-between pt-2">
+                                    <div className="flex -space-x-2">
+                                        {flag.targetRoles.map(role => (
+                                            <div
+                                                key={role}
+                                                className="w-6 h-6 rounded-full bg-purple-600 border-2 border-[#0a0a14] flex items-center justify-center text-[8px] font-bold text-white shadow-lg"
+                                                title={role}
+                                            >
+                                                {role[0]}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <button
+                                            onClick={() => toggleFlag(flag)}
+                                            className={`p-2 rounded-xl transition-all ${flag.enabled
+                                                ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
+                                                : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                                                }`}
+                                        >
+                                            {flag.enabled ? (
+                                                <ToggleRight className="w-5 h-5" />
+                                            ) : (
+                                                <ToggleLeft className="w-5 h-5" />
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={() => deleteFlag(flag)}
+                                            className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -126,7 +126,7 @@ export default function CreateRewardModal({ isOpen, onClose, onSuccess }: Create
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-gray-900 to-gray-800 border border-purple-500/30 rounded-2xl shadow-2xl"
+                        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-background/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl"
                     >
                         {/* Header */}
                         <div className="sticky top-0 z-10 bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-xl border-b border-purple-500/30 p-6">
@@ -202,8 +202,8 @@ export default function CreateRewardModal({ isOpen, onClose, onSuccess }: Create
                                             type="button"
                                             onClick={() => setFormData(prev => ({ ...prev, type: type.value }))}
                                             className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${formData.type === type.value
-                                                    ? 'border-purple-500 bg-purple-500/20'
-                                                    : 'border-border bg-white/5 hover:bg-white/10'
+                                                ? 'border-purple-500 bg-purple-500/20'
+                                                : 'border-border bg-white/5 hover:bg-white/10'
                                                 }`}
                                         >
                                             <type.icon className={`w-6 h-6 ${formData.type === type.value ? 'text-purple-400' : 'text-muted-foreground'}`} />

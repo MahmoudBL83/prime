@@ -62,6 +62,7 @@ import { MentorPaymentModal } from '@/components/modals/MentorPaymentModal'
 import { useAuthModal } from '@/contexts/AuthModalContext'
 import { CredentialsDisplay, CredentialsSection, Credential } from '@/components/credentials/CredentialsSection'
 import UploadMediaModal from '@/components/modals/UploadMediaModal'
+import { PostMenuDropdown } from '@/components/posts/PostMenuDropdown'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'edge'
@@ -155,6 +156,8 @@ export default function OnlyFansMentorProfilePage() {
     const [postComments, setPostComments] = useState<{ [key: string]: any[] }>({})
     const [newComment, setNewComment] = useState<{ [key: string]: string }>({})
     const [commentLoading, setCommentLoading] = useState<{ [key: string]: boolean }>({})
+    const [openPostMenuId, setOpenPostMenuId] = useState<string | null>(null)
+    const [activeCarouselIndex, setActiveCarouselIndex] = useState(0)
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
     const [archivedSessions, setArchivedSessions] = useState<any[]>([])
     const [sessionFilter, setSessionFilter] = useState<'all' | 'workshop' | 'qa' | 'oneOnOne'>('all')
@@ -173,6 +176,8 @@ export default function OnlyFansMentorProfilePage() {
     const [sortBy, setSortBy] = useState<'recent' | 'popular'>('recent')
     const [isCreatorView, setIsCreatorView] = useState(false)
     const [creatorStats, setCreatorStats] = useState<any>(null)
+    const [showStickyHeader, setShowStickyHeader] = useState(false)
+    const [showProfileMenu, setShowProfileMenu] = useState(false)
 
     // Content Management States
     const [contentManagementTab, setContentManagementTab] = useState<'posts' | 'media' | 'calendar' | 'scheduled'>('posts')
@@ -208,6 +213,8 @@ export default function OnlyFansMentorProfilePage() {
     const [realArchivedSessions, setRealArchivedSessions] = useState<any[]>([])
     const [realCommunityPosts, setRealCommunityPosts] = useState<any[]>([])
     const [creatorCredentials, setCreatorCredentials] = useState<Credential[]>([])
+    const [hiddenUserIds, setHiddenUserIds] = useState<string[]>([])
+    const [userLists, setUserLists] = useState<any[]>([])
 
     // Additional Community Management States (non-duplicate)
     const [memberFilter, setMemberFilter] = useState<'all' | 'vip' | 'premium' | 'basic'>('all')
@@ -318,7 +325,7 @@ export default function OnlyFansMentorProfilePage() {
 
     // Fetch user subscription status
     const fetchUserSubscriptionStatus = useCallback(async () => {
-        if (!session?.user?.id || !mentor?.id) return
+        if (!(session?.user as any)?.id || !mentor?.id) return
 
         try {
             const response = await fetch('/api/subscriptions/status')
@@ -459,9 +466,23 @@ export default function OnlyFansMentorProfilePage() {
         }
     }, [params.id, fetchMentorData, fetchUserSubscriptionStatus])
 
+    // Scroll listener for sticky header
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                setShowStickyHeader(true)
+            } else {
+                setShowStickyHeader(false)
+            }
+        }
+
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
+
     // Refetch subscription status when user session changes
     useEffect(() => {
-        if (session?.user?.id && mentor?.id) {
+        if ((session?.user as any)?.id && mentor?.id) {
             fetchUserSubscriptionStatus()
         }
     }, [session, mentor, fetchUserSubscriptionStatus])
@@ -499,10 +520,10 @@ export default function OnlyFansMentorProfilePage() {
     useEffect(() => {
         // Check if current user is the creator/mentor
         if (session?.user && mentor?.user) {
-            setIsCreatorView(session.user.id === mentor.user.id)
+            setIsCreatorView((session.user as any).id === mentor.user.id)
 
             // Fetch creator stats if this is the creator's own page
-            if (session.user.id === mentor.user.id) {
+            if ((session.user as any).id === mentor.user.id) {
                 fetchCreatorStats()
             }
         }
@@ -1316,7 +1337,7 @@ export default function OnlyFansMentorProfilePage() {
                     titleAr: newCommunityPost.titleAr || newCommunityPost.title,
                     isPinned: newCommunityPost.isPinned,
                     isAnnouncement: newCommunityPost.isAnnouncement,
-                    authorId: session?.user?.id
+                    authorId: (session?.user as any)?.id
                 })
             })
 
@@ -1867,14 +1888,13 @@ export default function OnlyFansMentorProfilePage() {
         }
     }, [isGerman])
 
-    // Initialize data on component mount
     useEffect(() => {
         if (mentor) {
             fetchUpcomingSessionsFromAPI()
             fetchArchivedSessionsFromAPI()
-            fetchCommunityData()
+            fetchCommunityPostsFromAPI()
             fetchSuggestedCreators()
-            fetchResources()
+            fetchResourcesFromAPI()
             fetchFeedbackTokens()
 
             // Load saved posts from localStorage (only custom posts created by user)
@@ -2220,12 +2240,95 @@ export default function OnlyFansMentorProfilePage() {
         setUploadPreview(null)
     }, [])
 
-    const handleDeletePost = useCallback((postId: string) => {
-        if (confirm(isGerman ? 'هل أنت متأكد من حذف هذا المنشور؟' : 'Are you sure you want to delete this post?')) {
-            setPosts(posts.filter(p => p.id !== postId))
-            toast.success(isGerman ? '🗑️ تم حذف المنشور' : '🗑️ Post deleted')
+    const handleDeletePost = useCallback(async (postId: string) => {
+        if (!confirm(isGerman ? 'هل أنت متأكد من حذف هذا المنشور؟' : 'Are you sure you want to delete this post?')) {
+            return
         }
-    }, [posts, isGerman])
+
+        try {
+            const response = await fetch(`/api/scheduled-posts?postId=${postId}`, {
+                method: 'DELETE'
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to delete post')
+            }
+
+            toast.success(isGerman ? '🗑️ تم حذف المنشور' : '🗑️ Post deleted')
+            setPosts(prev => prev.filter(p => p.id !== postId))
+        } catch (error) {
+            console.error('Delete post error:', error)
+            toast.error(isGerman ? 'فشل حذف المنشور' : 'Failed to delete post')
+        }
+    }, [isGerman])
+
+    const fetchHiddenUsers = useCallback(async () => {
+        try {
+            const response = await fetch('/api/user/hidden-users')
+            if (response.ok) {
+                const data = await response.json()
+                setHiddenUserIds(data.hiddenUserIds || [])
+            }
+        } catch (error) {
+            console.error('Error fetching hidden users:', error)
+        }
+    }, [])
+
+    const handleHideUser = useCallback(async (userId: string) => {
+        try {
+            const response = await fetch('/api/user/hidden-users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId })
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                if (data.hidden) {
+                    setHiddenUserIds(prev => [...prev, userId])
+                    toast.success(isGerman ? 'تم إخفاء منشورات هذا المستخدم' : "User's posts hidden")
+                } else {
+                    setHiddenUserIds(prev => prev.filter(id => id !== userId))
+                    toast.success(isGerman ? 'تم إلغاء إخفاء منشورات هذا المستخدم' : "User's posts unhidden")
+                }
+                setOpenPostMenuId(null)
+            }
+        } catch (error) {
+            console.error('Error hiding user:', error)
+            toast.error(isGerman ? 'فشل في إخفاء المستخدم' : 'Failed to hide user')
+        }
+    }, [isGerman])
+
+    const fetchUserLists = useCallback(async () => {
+        try {
+            const response = await fetch('/api/user/lists')
+            if (response.ok) {
+                const data = await response.json()
+                setUserLists(data.lists || [])
+            }
+        } catch (error) {
+            console.error('Error fetching lists:', error)
+        }
+    }, [])
+
+    const handleSaveToList = useCallback(async (postId: string, listId?: string, listName?: string) => {
+        try {
+            const response = await fetch('/api/user/lists', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ postId, listId, name: listName })
+            })
+
+            if (response.ok) {
+                toast.success(isGerman ? 'تمت الإضافة إلى القائمة' : 'Added to list')
+                fetchUserLists()
+                setOpenPostMenuId(null)
+            }
+        } catch (error) {
+            console.error('Error saving to list:', error)
+            toast.error(isGerman ? 'فشل في الحفظ في القائمة' : 'Failed to save to list')
+        }
+    }, [isGerman, fetchUserLists])
 
     const handlePublishNow = useCallback((postId: string) => {
         setPosts(posts.map(post => {
@@ -2282,7 +2385,122 @@ export default function OnlyFansMentorProfilePage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#1f1f1f] text-foreground transition-colors">
+        <div className="min-h-screen bg-[#1f1f1f] text-foreground transition-colors overflow-x-hidden">
+            {/* Sticky Header - OnlyFans Style */}
+            <AnimatePresence>
+                {showStickyHeader && (
+                    <motion.div
+                        initial={{ y: -70, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -70, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="fixed top-0 left-0 right-0 z-50 bg-[#121212]/95 backdrop-blur-xl border-b border-white/10"
+                    >
+                        <div className="max-w-screen-xl mx-auto px-4 h-16 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <button
+                                    onClick={() => router.back()}
+                                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                                >
+                                    <ArrowLeft className="w-6 h-6 text-foreground" />
+                                </button>
+                                <div>
+                                    <h2 className="text-lg font-bold text-foreground leading-tight">
+                                        {getMentorName()}
+                                    </h2>
+                                    <p className="text-xs text-muted-foreground">
+                                        {mentor?.stats.totalPosts} {isGerman ? 'منشور' : 'posts'} • {mediaPosts.length} {isGerman ? 'وسائط' : 'media'}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {!isCreatorView && !currentSubscription && (
+                                    <Button
+                                        onClick={() => setShowMentorPaymentModal(true)}
+                                        size="sm"
+                                        className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-full font-bold px-4 h-9 hidden sm:flex"
+                                    >
+                                        {isGerman ? 'اشترك' : 'Subscribe'}
+                                    </Button>
+                                )}
+                                <button
+                                    onClick={() => setShowProfileMenu(true)}
+                                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                                >
+                                    <MoreVertical className="w-6 h-6 text-foreground" />
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Profile Menu Dialog */}
+            <AnimatePresence>
+                {showProfileMenu && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                        onClick={() => setShowProfileMenu(false)}
+                    >
+                        <motion.div
+                            initial={{ y: 100, opacity: 0, scale: 0.95 }}
+                            animate={{ y: 0, opacity: 1, scale: 1 }}
+                            exit={{ y: 100, opacity: 0, scale: 0.95 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-[#1a1a1a] border border-white/10 rounded-[24px] w-full max-w-sm overflow-hidden shadow-2xl"
+                        >
+                            <div className="p-2">
+                                <button
+                                    onClick={() => {
+                                        handleShare()
+                                        setShowProfileMenu(false)
+                                    }}
+                                    className="w-full flex items-center gap-4 px-4 py-4 hover:bg-white/5 text-foreground transition-all rounded-xl"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                                        <Share2 className="w-5 h-5 text-[#0a84ff]" />
+                                    </div>
+                                    <span className="text-lg font-semibold">{isGerman ? 'مشاركة' : 'Share profile'}</span>
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(window.location.href)
+                                        toast.success(isGerman ? 'تم نسخ الرابط' : 'Link copied')
+                                        setShowProfileMenu(false)
+                                    }}
+                                    className="w-full flex items-center gap-4 px-4 py-4 hover:bg-white/5 text-foreground transition-all rounded-xl"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                                        <Copy className="w-5 h-5 text-[#0a84ff]" />
+                                    </div>
+                                    <span className="text-lg font-semibold">{isGerman ? 'نسخ الرابط' : 'Copy link to profile'}</span>
+                                </button>
+                                <div className="h-[1px] bg-white/5 my-1" />
+                                <button
+                                    onClick={() => setShowProfileMenu(false)}
+                                    className="w-full flex items-center gap-4 px-4 py-4 hover:bg-white/5 text-red-500 transition-all rounded-xl"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
+                                        <UserX className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-lg font-semibold">{isGerman ? 'إبلاغ' : 'Report profile'}</span>
+                                </button>
+                                <div className="h-[1px] bg-white/5 my-1" />
+                                <button
+                                    onClick={() => setShowProfileMenu(false)}
+                                    className="w-full py-4 text-muted-foreground font-semibold hover:text-foreground transition-colors text-center"
+                                >
+                                    {isGerman ? 'إلغاء' : 'Cancel'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
                 <div
@@ -2818,13 +3036,39 @@ export default function OnlyFansMentorProfilePage() {
                                                                         });
                                                                     })()}
                                                                 </span>
-                                                                <button className="p-1 hover:bg-white/10 rounded-full">
-                                                                    <svg className="w-5 h-5 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24">
-                                                                        <circle cx="12" cy="6" r="1.5" />
-                                                                        <circle cx="12" cy="12" r="1.5" />
-                                                                        <circle cx="12" cy="18" r="1.5" />
-                                                                    </svg>
-                                                                </button>
+                                                                <div className="relative">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation()
+                                                                            setOpenPostMenuId(openPostMenuId === post.id ? null : post.id)
+                                                                        }}
+                                                                        className="p-1 hover:bg-white/10 rounded-full"
+                                                                    >
+                                                                        <svg className="w-5 h-5 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24">
+                                                                            <circle cx="12" cy="6" r="1.5" />
+                                                                            <circle cx="12" cy="12" r="1.5" />
+                                                                            <circle cx="12" cy="18" r="1.5" />
+                                                                        </svg>
+                                                                    </button>
+
+                                                                    <PostMenuDropdown
+                                                                        postId={post.id}
+                                                                        creatorId={mentor.user.id}
+                                                                        creatorName={mentor.user.name}
+                                                                        locale={locale}
+                                                                        isArabic={isGerman}
+                                                                        isOpen={openPostMenuId === post.id}
+                                                                        onClose={() => setOpenPostMenuId(null)}
+                                                                        isHidden={hiddenUserIds.includes(mentor.user.id)}
+                                                                        onHideToggle={(hidden) => {
+                                                                            if (hidden) {
+                                                                                setHiddenUserIds(prev => [...prev, mentor.user.id])
+                                                                            } else {
+                                                                                setHiddenUserIds(prev => prev.filter(id => id !== mentor.user.id))
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                </div>
                                                             </div>
                                                         </div>
 
@@ -6883,73 +7127,139 @@ export default function OnlyFansMentorProfilePage() {
                             )}
 
 
-                            {/* Suggested Creators */}
-                            <div className="bg-[#1a1a1a] dark:bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl">
-                                <div className="p-4 border-b border-white/10">
-                                    <h3 className="font-bold text-white">{isGerman ? 'منشئون آخرون' : 'Other Creators'}</h3>
-                                </div>
-                                {suggestedCreators.length > 0 ? (
-                                    <div className="divide-y divide-white/5">
-                                        {suggestedCreators.map((creator: any) => (
+                            {/* Suggested Creators Section */}
+                            <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+                                <div className="px-5 py-3 border-b border-white/10 flex items-center justify-between">
+                                    <h3 className="font-bold text-sm tracking-wider text-white/90 uppercase">
+                                        {isGerman ? 'اقتراحات' : 'SUGGESTIONS'}
+                                    </h3>
+                                    <div className="flex items-center gap-4 text-white/50">
+                                        <button className="hover:text-white transition-colors" title="Hide">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                                        </button>
+                                        <button className="hover:text-white transition-colors" title="Refresh">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                        </button>
+                                        <div className="flex items-center gap-2">
                                             <button
-                                                key={creator.id}
-                                                onClick={() => router.push(`/${locale}/mentors/${creator.id}`)}
-                                                className="w-full p-4 hover:bg-white/5 active:bg-white/10 transition-all duration-200 text-left group"
+                                                onClick={() => setActiveCarouselIndex(prev => (prev > 0 ? prev - 1 : suggestedCreators.length - 1))}
+                                                className="hover:text-white transition-colors"
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    {creator.user?.profileImage ? (
-                                                        <Image
-                                                            src={creator.user.profileImage}
-                                                            alt={creator.user.name}
-                                                            width={40}
-                                                            height={40}
-                                                            className="rounded-full object-cover w-10 h-10 ring-2 ring-white/10 group-hover:ring-[#0a84ff]/50 transition-all"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0a84ff] to-[#0066cc] flex items-center justify-center flex-shrink-0 ring-2 ring-white/10 group-hover:ring-[#0a84ff]/50 transition-all">
-                                                            <span className="text-sm font-bold text-white">
-                                                                {creator.user?.name?.[0] || 'C'}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-1 mb-1">
-                                                            <h4 className="font-semibold text-white text-sm truncate group-hover:text-[#0a84ff] transition-colors">
-                                                                {isGerman ? creator.user?.arabicName || creator.user?.name : creator.user?.name}
-                                                            </h4>
-                                                            {creator.averageRating >= 4.5 && (
-                                                                <CheckCircle className="w-3 h-3 text-[#0a84ff] fill-[#0a84ff] flex-shrink-0" />
-                                                            )}
-                                                        </div>
-                                                        <p className="text-xs text-white/60 truncate">
-                                                            {creator.expertise || ''}
-                                                        </p>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <div className="flex items-center gap-1">
-                                                                <Users className="w-3 h-3 text-white/40" />
-                                                                <span className="text-xs text-white/50">
-                                                                    {(creator.totalSubscribers || 0) > 1000
-                                                                        ? `${((creator.totalSubscribers || 0) / 1000).toFixed(1)}K`
-                                                                        : creator.totalSubscribers || 0}
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                            </button>
+                                            <button
+                                                onClick={() => setActiveCarouselIndex(prev => (prev < suggestedCreators.length - 1 ? prev + 1 : 0))}
+                                                className="hover:text-white transition-colors"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 relative group/carousel">
+                                    <div className="overflow-hidden">
+                                        <div
+                                            className="flex transition-transform duration-500 ease-out"
+                                            style={{ transform: `translateX(-${activeCarouselIndex * 100}%)` }}
+                                        >
+                                            {suggestedCreators.length > 0 ? (
+                                                suggestedCreators.map((creator: any) => (
+                                                    <div key={creator.id} className="w-full flex-shrink-0 px-1">
+                                                        <div
+                                                            className="group/card cursor-pointer relative rounded-2xl overflow-hidden bg-black/40 h-44 border border-white/5"
+                                                            onClick={() => router.push(`/${locale}/mentors/${creator.id}`)}
+                                                        >
+                                                            {/* Cover Background */}
+                                                            <div className="absolute inset-0 z-0">
+                                                                {creator.user?.profileImage ? (
+                                                                    <Image
+                                                                        src={creator.user.profileImage}
+                                                                        alt=""
+                                                                        fill
+                                                                        className="object-cover blur-[0.5px] opacity-60 group-hover/card:scale-105 transition-transform duration-700"
+                                                                        unoptimized
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-full h-full bg-gradient-to-br from-[#0a84ff]/20 to-purple-600/20" />
+                                                                )}
+                                                                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/90" />
+                                                            </div>
+
+                                                            {/* Header Badges */}
+                                                            <div className="absolute top-3 left-3 z-20">
+                                                                <span className="px-2 py-0.5 bg-black/50 backdrop-blur-md text-white text-[10px] font-bold rounded-md">
+                                                                    {isGerman ? 'مجاني' : 'Free'}
                                                                 </span>
                                                             </div>
-                                                            <div className="flex items-center gap-1">
-                                                                <Star className="w-3 h-3 text-[#ffd60a] fill-[#ffd60a]" />
-                                                                <span className="text-xs text-white/50">
-                                                                    {creator.averageRating?.toFixed(1) || '0.0'}
-                                                                </span>
+                                                            <button className="absolute top-3 right-3 z-20 p-1 text-white hover:bg-black/20 rounded-full transition-colors">
+                                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg>
+                                                            </button>
+
+                                                            {/* Avatar Overlay */}
+                                                            <div className="absolute bottom-4 left-4 z-20">
+                                                                <div className="relative">
+                                                                    <div className="w-20 h-20 rounded-full border-[3px] border-[#1a1a1a] overflow-hidden bg-[#1a1a1a] shadow-xl">
+                                                                        {creator.user?.profileImage ? (
+                                                                            <Image
+                                                                                src={creator.user.profileImage}
+                                                                                alt={creator.user.name}
+                                                                                fill
+                                                                                className="object-cover"
+                                                                                unoptimized
+                                                                            />
+                                                                        ) : (
+                                                                            <div className="w-full h-full flex items-center justify-center bg-slate-800 text-xl font-bold text-white">
+                                                                                {creator.user.name[0]}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                    {creator.isOnline && (
+                                                                        <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-[3px] border-[#1a1a1a]" />
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Labels Overlay */}
+                                                            <div className="absolute bottom-6 left-28 right-4 z-20">
+                                                                <div className="flex items-center gap-1.5 mb-0.5">
+                                                                    <h4 className="font-bold text-white text-base leading-tight truncate">
+                                                                        {isGerman ? creator.user?.arabicName || creator.user?.name : creator.user?.name}
+                                                                    </h4>
+                                                                    {creator.averageRating >= 4.5 && (
+                                                                        <svg className="w-4 h-4 text-[#0a84ff] fill-[#0a84ff]" viewBox="0 0 20 20" fill="currentColor">
+                                                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                                        </svg>
+                                                                    )}
+                                                                </div>
+                                                                <p className="text-white/60 text-xs font-medium truncate">
+                                                                    @{creator.user?.name?.toLowerCase().replace(/\s+/g, '_')}
+                                                                </p>
                                                             </div>
                                                         </div>
                                                     </div>
+                                                ))
+                                            ) : (
+                                                <div className="w-full p-4 h-44 flex items-center justify-center text-sm text-white/50 bg-white/5 rounded-2xl">
+                                                    {isGerman ? 'جاري التحميل...' : 'Loading...'}
                                                 </div>
-                                            </button>
-                                        ))}
+                                            )}
+                                        </div>
                                     </div>
-                                ) : (
-                                    <div className="p-4 text-center text-sm text-white/50">
-                                        {isGerman ? 'جاري التحميل...' : 'Loading...'}
-                                    </div>
-                                )}
+
+                                    {/* Pagination Dots */}
+                                    {suggestedCreators.length > 1 && (
+                                        <div className="flex justify-center gap-1.5 mt-3">
+                                            {suggestedCreators.slice(0, 5).map((_: any, i: number) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => setActiveCarouselIndex(i)}
+                                                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${activeCarouselIndex === i ? 'bg-[#0a84ff] w-4' : 'bg-white/20 hover:bg-white/40'}`}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -9541,53 +9851,73 @@ export default function OnlyFansMentorProfilePage() {
                 )}
             </AnimatePresence>
             {/* Mobile Bottom Navigation - Profile Tabs */}
-            <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-[#1f1f1f]/95 backdrop-blur-xl border-t border-white/10 safe-area-bottom">
-                <div className="flex items-center justify-around py-2 px-1">
+            <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 safe-area-bottom">
+                <div className="flex items-center justify-around py-3 px-2">
+                    {/* Home/Feed */}
                     <button
-                        onClick={handleSetPostsTab}
-                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeTab === 'posts' ? 'text-[#0a84ff]' : 'text-white/60 hover:text-white'
-                            }`}
+                        onClick={() => router.push(`/${locale}/mentors`)}
+                        className="p-2 text-white/60 hover:text-white transition-all"
                     >
-                        <MessageCircle className="w-6 h-6" />
-                        <span className="text-[10px] font-medium">{isGerman ? 'المنشورات' : 'Posts'}</span>
+                        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
                     </button>
 
+                    {/* Notifications */}
                     <button
-                        onClick={handleSetMediaTab}
-                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeTab === 'media' ? 'text-[#0a84ff]' : 'text-white/60 hover:text-white'
-                            }`}
+                        onClick={() => router.push(`/${locale}/notifications`)}
+                        className="p-2 text-white/60 hover:text-white transition-all"
                     >
-                        <ImageIcon className="w-6 h-6" />
-                        <span className="text-[10px] font-medium">{isGerman ? 'الوسائط' : 'Media'}</span>
+                        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
                     </button>
 
+                    {/* Create/Add (Large Plus) */}
                     <button
-                        onClick={handleSetSessionsTab}
-                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeTab === 'sessions' ? 'text-[#0a84ff]' : 'text-white/60 hover:text-white'
-                            }`}
+                        onClick={() => setShowUploadModal(true)}
+                        className="p-2 text-white/60 hover:text-white transition-all transform active:scale-90"
                     >
-                        <Calendar className="w-6 h-6" />
-                        <span className="text-[10px] font-medium">{isGerman ? 'الجلسات' : 'Sessions'}</span>
+                        <div className="w-9 h-9 border-2 border-current rounded-xl flex items-center justify-center">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </div>
                     </button>
 
+                    {/* Messages */}
                     <button
-                        onClick={() => setActiveTab('about')}
-                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeTab === 'about' ? 'text-[#0a84ff]' : 'text-white/60 hover:text-white'
-                            }`}
+                        onClick={() => router.push(`/${locale}/messaging`)}
+                        className="p-2 text-white/60 hover:text-white transition-all"
                     >
-                        <Globe className="w-6 h-6" />
-                        <span className="text-[10px] font-medium">{isGerman ? 'حول' : 'About'}</span>
+                        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
                     </button>
 
-                    {session && (
-                        <button
-                            onClick={() => router.push(`/${locale}/notifications`)}
-                            className="flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all text-white/60 hover:text-white"
-                        >
-                            <Bell className="w-6 h-6" />
-                            <span className="text-[10px] font-medium">{isGerman ? 'إشعارات' : 'Alerts'}</span>
-                        </button>
-                    )}
+                    {/* Profile (Self) */}
+                    <button
+                        onClick={() => {
+                            // In OnlyFans, this normally goes to the user's own profile settings
+                            // For now we can refresh the current page if it is the user's profile, or go to their own
+                            router.push(`/${locale}/mentors`) // Or specific profile path
+                        }}
+                        className="p-1.5 rounded-full border-2 border-transparent transition-all"
+                    >
+                        {session?.user?.image ? (
+                            <Image
+                                src={session.user.image}
+                                alt="Profile"
+                                width={28}
+                                height={28}
+                                className="rounded-full object-cover w-7 h-7"
+                            />
+                        ) : (
+                            <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white">
+                                {session?.user?.name?.[0] || 'U'}
+                            </div>
+                        )}
+                    </button>
                 </div>
             </div>
         </div>

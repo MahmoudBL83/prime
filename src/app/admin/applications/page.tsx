@@ -1,7 +1,7 @@
 'use client'
 
-import EnhancedCreatorApplicationReview from '@/components/admin/EnhancedCreatorApplicationReview'
+import CreatorApplicationReview from '@/components/admin/CreatorApplicationReview'
 
 export default function ApplicationsReviewPage() {
-    return <EnhancedCreatorApplicationReview />
+    return <CreatorApplicationReview />
 }

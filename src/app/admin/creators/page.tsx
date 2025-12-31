@@ -45,7 +45,6 @@ interface Creator {
         name: string
         email: string
         phone: string | null
-        arabicName: string | null
         emailVerified: string | null
         onboardingCompleted: boolean
         createdAt: string
@@ -106,6 +105,7 @@ export default function CreatorsPage() {
         pages: 1
     })
     const [stats, setStats] = useState<CreatorStatistics | null>(null)
+    const [currency, setCurrency] = useState<'E£' | '$'>('E£')
     const [refreshKey, setRefreshKey] = useState(0)
 
     // Create new creator modal states
@@ -116,7 +116,6 @@ export default function CreatorsPage() {
         email: '',
         password: '',
         phone: '',
-        arabicName: '',
         expertise: '',
         teachingGoals: '',
         kycStatus: 'NOT_STARTED',
@@ -227,10 +226,7 @@ export default function CreatorsPage() {
     }
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('de-DE', {
-            style: 'currency',
-            currency: 'EUR'
-        }).format(amount)
+        return `${currency}${amount.toLocaleString()}`
     }
 
     const getKycStatusIcon = (status: Creator['kycStatus']) => {
@@ -275,7 +271,7 @@ export default function CreatorsPage() {
         }
 
         const password = newCreatorForm.password || generatePassword()
-        
+
         setCreating(true)
         try {
             const response = await fetch('/api/admin/creators', {
@@ -308,7 +304,6 @@ export default function CreatorsPage() {
             email: '',
             password: '',
             phone: '',
-            arabicName: '',
             expertise: '',
             teachingGoals: '',
             kycStatus: 'NOT_STARTED',
@@ -322,9 +317,9 @@ export default function CreatorsPage() {
             setExporting(true)
             const response = await fetch('/api/admin/creators?limit=1000')
             const data = await response.json()
-            
+
             if (!data.creators) throw new Error('No data')
-            
+
             const headers = ['ID', 'User ID', 'Name', 'Email', 'KYC Status', 'Expertise', 'Courses', 'Subscribers', 'Earnings (EUR)', 'Contract Signed', 'Joined']
             const rows = data.creators.map((c: Creator) => [
                 c.id,
@@ -339,9 +334,9 @@ export default function CreatorsPage() {
                 c.contractSigned ? 'Yes' : 'No',
                 new Date(c.createdAt).toISOString().split('T')[0]
             ])
-            
+
             const csvContent = [headers.join(','), ...rows.map((row: (string | number)[]) => row.map(cell => `"${cell}"`).join(','))].join('\n')
-            
+
             const blob = new Blob([csvContent], { type: 'text/csv' })
             const url = window.URL.createObjectURL(blob)
             const a = document.createElement('a')
@@ -389,7 +384,7 @@ export default function CreatorsPage() {
                     <p className="text-gray-400 mt-1">Manage creator applications, KYC verification, and performance</p>
                 </div>
                 <div className="flex gap-2">
-                    <button 
+                    <button
                         onClick={() => {
                             resetCreateForm()
                             setShowCreateModal(true)
@@ -399,7 +394,7 @@ export default function CreatorsPage() {
                         <UserPlus className="w-4 h-4" />
                         Add Creator
                     </button>
-                    <button 
+                    <button
                         onClick={handleExport}
                         disabled={exporting}
                         className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white hover:bg-white/10 transition-colors backdrop-blur-sm disabled:opacity-50"
@@ -407,7 +402,7 @@ export default function CreatorsPage() {
                         {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                         {exporting ? 'Exporting...' : 'Export'}
                     </button>
-                    <Link 
+                    <Link
                         href="/admin/applications"
                         className="flex items-center gap-2 bg-purple-600 text-white rounded-lg px-4 py-2 hover:bg-purple-700 transition-colors"
                     >
@@ -417,54 +412,69 @@ export default function CreatorsPage() {
                 </div>
             </div>
 
+            {/* Currency Selector */}
+            <div className="flex justify-end">
+                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-1 flex gap-1 shadow-lg">
+                    <button
+                        onClick={() => setCurrency('E£')}
+                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${currency === 'E£' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'text-gray-400 hover:text-white'}`}
+                    >
+                        EGP
+                    </button>
+                    <button
+                        onClick={() => setCurrency('$')}
+                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${currency === '$' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'text-gray-400 hover:text-white'}`}
+                    >
+                        USD
+                    </button>
+                </div>
+            </div>
+
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-white/5 rounded-lg border border-white/10 p-4 backdrop-blur-sm">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-400">Total Creators</p>
-                            <p className="text-2xl font-semibold text-white">{totalCreators.toLocaleString()}</p>
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 group hover:bg-white/10 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="bg-blue-500/20 rounded-xl p-2.5">
+                            <Users className="w-6 h-6 text-blue-400" />
                         </div>
-                        <Users className="w-8 h-8 text-blue-400" />
                     </div>
+                    <div className="text-2xl font-bold text-white mb-1">{totalCreators.toLocaleString()}</div>
+                    <div className="text-sm text-gray-400 font-medium tracking-wide uppercase text-[10px]">Total Creators</div>
                 </div>
-                <div className="bg-white/5 rounded-lg border border-white/10 p-4 backdrop-blur-sm">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-400">KYC Verified</p>
-                            <p className="text-2xl font-semibold text-white">
-                                {kycVerifiedCount.toLocaleString()}
-                            </p>
+
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 group hover:bg-white/10 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="bg-green-500/20 rounded-xl p-2.5">
+                            <Shield className="w-6 h-6 text-green-400" />
                         </div>
-                        <Shield className="w-8 h-8 text-green-400" />
                     </div>
+                    <div className="text-2xl font-bold text-white mb-1">{kycVerifiedCount.toLocaleString()}</div>
+                    <div className="text-sm text-gray-400 font-medium tracking-wide uppercase text-[10px]">KYC Verified</div>
                 </div>
-                <div className="bg-white/5 rounded-lg border border-white/10 p-4 backdrop-blur-sm">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-400">Active Creators</p>
-                            <p className="text-2xl font-semibold text-white">
-                                {activeCreatorsCount.toLocaleString()}
-                            </p>
+
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 group hover:bg-white/10 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="bg-purple-500/20 rounded-xl p-2.5">
+                            <BookOpen className="w-6 h-6 text-purple-400" />
                         </div>
-                        <BookOpen className="w-8 h-8 text-purple-400" />
                     </div>
+                    <div className="text-2xl font-bold text-white mb-1">{activeCreatorsCount.toLocaleString()}</div>
+                    <div className="text-sm text-gray-400 font-medium tracking-wide uppercase text-[10px]">Active Creators</div>
                 </div>
-                <div className="bg-white/5 rounded-lg border border-white/10 p-4 backdrop-blur-sm">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-400">Total Earnings</p>
-                            <p className="text-2xl font-semibold text-white">
-                                {formatCurrency(totalEarnings)}
-                            </p>
+
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 group hover:bg-white/10 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="bg-green-500/20 rounded-xl p-2.5">
+                            <DollarSign className="w-6 h-6 text-green-400" />
                         </div>
-                        <DollarSign className="w-8 h-8 text-green-400" />
                     </div>
+                    <div className="text-2xl font-bold text-white mb-1">{formatCurrency(totalEarnings)}</div>
+                    <div className="text-sm text-gray-400 font-medium tracking-wide uppercase text-[10px]">Total Earnings</div>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="bg-white/5 rounded-lg border border-white/10 p-4 backdrop-blur-sm">
+            <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 shadow-xl transition-all duration-500">
                 <div className="flex flex-col lg:flex-row gap-4">
                     {/* Search */}
                     <div className="flex-1">
@@ -536,7 +546,7 @@ export default function CreatorsPage() {
             </div>
 
             {/* Creators Table */}
-            <div className="bg-white/5 rounded-lg border border-white/10 overflow-hidden backdrop-blur-sm">
+            <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden shadow-2xl transition-all duration-500">
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-white/5 border-b border-white/10">
@@ -556,9 +566,6 @@ export default function CreatorsPage() {
                                         <div>
                                             <div className="font-medium text-white">{creator.user.name}</div>
                                             <div className="text-sm text-gray-400">{creator.user.email}</div>
-                                            {creator.user.arabicName && (
-                                                <div className="text-sm text-gray-400">{creator.user.arabicName}</div>
-                                            )}
                                             {creator.expertise && (
                                                 <div className="text-xs text-blue-400 mt-1">{creator.expertise}</div>
                                             )}
@@ -607,7 +614,7 @@ export default function CreatorsPage() {
                                             >
                                                 <Eye className="w-4 h-4" />
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={() => handleEditCreator(creator.id)}
                                                 className="p-1 text-gray-400 hover:text-green-400 hover:bg-green-500/10 rounded transition-colors"
                                                 title="Edit Creator"
@@ -615,7 +622,7 @@ export default function CreatorsPage() {
                                                 <Edit className="w-4 h-4" />
                                             </button>
                                             {creator.kycStatus === 'PENDING' && (
-                                                <button 
+                                                <button
                                                     onClick={() => handleKycReview(creator.id)}
                                                     className="p-1 text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 rounded transition-colors"
                                                     title="Review KYC"
@@ -772,34 +779,18 @@ export default function CreatorsPage() {
                             ) : (
                                 // Show form
                                 <form onSubmit={handleCreateCreator} className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm text-gray-400 mb-1">
-                                                Name <span className="text-red-400">*</span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={newCreatorForm.name}
-                                                onChange={(e) => setNewCreatorForm(prev => ({ ...prev, name: e.target.value }))}
-                                                className="w-full px-3 py-2 bg-[#0a0a14] border border-white/10 rounded-lg text-white focus:border-purple-500 focus:outline-none"
-                                                required
-                                                placeholder="John Doe"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm text-gray-400 mb-1">
-                                                Arabic Name
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={newCreatorForm.arabicName}
-                                                onChange={(e) => setNewCreatorForm(prev => ({ ...prev, arabicName: e.target.value }))}
-                                                className="w-full px-3 py-2 bg-[#0a0a14] border border-white/10 rounded-lg text-white focus:border-purple-500 focus:outline-none"
-                                                placeholder="الاسم بالعربية"
-                                                dir="rtl"
-                                            />
-                                        </div>
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-1">
+                                            Name <span className="text-red-400">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={newCreatorForm.name}
+                                            onChange={(e) => setNewCreatorForm(prev => ({ ...prev, name: e.target.value }))}
+                                            className="w-full px-3 py-2 bg-[#0a0a14] border border-white/10 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                                            required
+                                            placeholder="John Doe"
+                                        />
                                     </div>
 
                                     <div>

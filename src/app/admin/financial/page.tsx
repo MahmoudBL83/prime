@@ -400,7 +400,7 @@ export default function FinancialManagementPage() {
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-xl font-bold text-foreground">Top Creator Earnings</h3>
                         <Button
-                            onClick={() => router.push('/admin/financial/creators')}
+                            onClick={() => router.push('/admin/creators')}
                             className="bg-white/10 hover:bg-white/20 text-foreground text-xs"
                         >
                             View All

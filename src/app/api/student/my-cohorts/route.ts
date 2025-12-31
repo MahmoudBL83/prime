@@ -62,6 +62,18 @@ export async function GET(request: NextRequest) {
                 sessions: true,
                 announcements: true,
                 milestones: true,
+                members: true,
+              },
+            },
+            members: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    profileImage: true,
+                  },
+                },
               },
             },
           },
@@ -106,7 +118,7 @@ export async function GET(request: NextRequest) {
     const enrichedMemberships = memberships.map((membership: any) => {
       const nextSession = upcomingSessionMap.get(membership.cohortId);
       const unreadCount = unreadMap.get(membership.cohortId) || 0;
-      
+
       const now = new Date();
       const startDate = new Date(membership.cohort.startDate);
       const endDate = new Date(membership.cohort.endDate);
@@ -140,17 +152,23 @@ export async function GET(request: NextRequest) {
           sessionsCount: membership.cohort._count.sessions,
           announcementsCount: membership.cohort._count.announcements,
           milestonesCount: membership.cohort._count.milestones,
+          membersCount: membership.cohort._count.members,
+          students: membership.cohort.members.map((m: any) => ({
+            id: m.userId,
+            name: m.user.name,
+            profileImage: m.user.profileImage,
+          })),
           unreadAnnouncements: unreadCount,
           totalDays,
           elapsedDays,
           daysRemaining,
           nextSession: nextSession
             ? {
-                id: nextSession.id,
-                title: nextSession.title,
-                scheduledAt: nextSession.scheduledAt,
-                type: nextSession.type,
-              }
+              id: nextSession.id,
+              title: nextSession.title,
+              scheduledAt: nextSession.scheduledAt,
+              type: nextSession.type,
+            }
             : null,
         },
       };

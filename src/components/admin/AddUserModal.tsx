@@ -16,7 +16,6 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
         password: '',
         confirmPassword: '',
         role: 'LEARNER' as 'LEARNER' | 'CREATOR' | 'ADMIN',
-        arabicName: '',
         bio: '',
         sendWelcomeEmail: true,
         emailVerified: false
@@ -80,7 +79,6 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
                     email: formData.email.trim().toLowerCase(),
                     password: formData.password,
                     role: formData.role,
-                    arabicName: formData.arabicName.trim() || null,
                     bio: formData.bio.trim() || null,
                     sendWelcomeEmail: formData.sendWelcomeEmail,
                     emailVerified: formData.emailVerified
@@ -112,7 +110,6 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
             password: '',
             confirmPassword: '',
             role: 'LEARNER',
-            arabicName: '',
             bio: '',
             sendWelcomeEmail: true,
             emailVerified: false
@@ -126,21 +123,18 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <div 
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                onClick={handleClose}
-            />
-            
-            {/* Modal */}
-            <div className="relative w-full max-w-lg bg-gray-900 rounded-xl shadow-2xl border border-white/10 max-h-[90vh] overflow-y-auto">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
+            <div className="bg-background/80 backdrop-blur-xl rounded-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col border border-white/20 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative z-10 animate-in fade-in zoom-in duration-200">
                 {/* Header */}
-                <div className="sticky top-0 bg-gray-900 px-6 py-4 border-b border-white/10 flex items-center justify-between z-10">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-500/20 rounded-lg">
-                            <User className="w-5 h-5 text-blue-400" />
+                <div className="p-6 border-b border-border/50 flex items-center justify-between bg-white/5">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+                            <User className="text-white w-6 h-6" />
                         </div>
-                        <h2 className="text-xl font-semibold text-white">Add New User</h2>
+                        <div>
+                            <h2 className="text-2xl font-bold text-white tracking-tight">Add New User</h2>
+                            <p className="text-sm text-gray-400">Create a new administrative or platform account</p>
+                        </div>
                     </div>
                     <button
                         onClick={handleClose}
@@ -186,24 +180,6 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
                         </div>
                     </div>
 
-                    {/* Arabic Name */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                            Arabic Name (Optional)
-                        </label>
-                        <div className="relative">
-                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                            <input
-                                type="text"
-                                name="arabicName"
-                                value={formData.arabicName}
-                                onChange={handleChange}
-                                placeholder="الاسم بالعربية"
-                                dir="rtl"
-                                className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                        </div>
-                    </div>
 
                     {/* Email */}
                     <div>

@@ -207,49 +207,59 @@ export default function SafetyEnhancementsPage() {
         <div className="space-y-6">
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div className="bg-background rounded-lg border border-border p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <Shield className="w-8 h-8 text-purple-600" />
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 group hover:bg-white/10 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="bg-purple-500/20 rounded-xl p-2.5">
+                            <Shield className="w-6 h-6 text-purple-400" />
+                        </div>
                     </div>
-                    <div className="text-2xl font-semibold text-foreground">{stats.totalKeywords}</div>
-                    <div className="text-sm text-muted-foreground">Keyword Rules</div>
+                    <div className="text-2xl font-bold text-white mb-1">{stats.totalKeywords}</div>
+                    <div className="text-sm text-gray-400 font-medium tracking-wide uppercase text-[10px]">Keyword Rules</div>
                 </div>
 
-                <div className="bg-background rounded-lg border border-border p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <CheckCircle className="w-8 h-8 text-green-600" />
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 group hover:bg-white/10 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="bg-green-500/20 rounded-xl p-2.5">
+                            <CheckCircle className="w-6 h-6 text-green-400" />
+                        </div>
                     </div>
-                    <div className="text-2xl font-semibold text-foreground">{stats.activeKeywords}</div>
-                    <div className="text-sm text-muted-foreground">Active Rules</div>
+                    <div className="text-2xl font-bold text-white mb-1">{stats.activeKeywords}</div>
+                    <div className="text-sm text-gray-400 font-medium tracking-wide uppercase text-[10px]">Active Rules</div>
                 </div>
 
-                <div className="bg-background rounded-lg border border-border p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <TrendingUp className="w-8 h-8 text-blue-600" />
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 group hover:bg-white/10 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="bg-blue-500/20 rounded-xl p-2.5">
+                            <TrendingUp className="w-6 h-6 text-blue-400" />
+                        </div>
                     </div>
-                    <div className="text-2xl font-semibold text-foreground">{stats.totalMatches.toLocaleString()}</div>
-                    <div className="text-sm text-muted-foreground">Total Matches</div>
+                    <div className="text-2xl font-bold text-white mb-1">{stats.totalMatches.toLocaleString()}</div>
+                    <div className="text-sm text-gray-400 font-medium tracking-wide uppercase text-[10px]">Total Matches</div>
                 </div>
 
-                <div className="bg-background rounded-lg border border-border p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <Filter className="w-8 h-8 text-orange-600" />
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 group hover:bg-white/10 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="bg-orange-500/20 rounded-xl p-2.5">
+                            <Filter className="w-6 h-6 text-orange-400" />
+                        </div>
                     </div>
-                    <div className="text-2xl font-semibold text-foreground">{stats.activeFilters}</div>
-                    <div className="text-sm text-muted-foreground">Active Filters</div>
+                    <div className="text-2xl font-bold text-white mb-1">{stats.activeFilters}</div>
+                    <div className="text-sm text-gray-400 font-medium tracking-wide uppercase text-[10px]">Active Filters</div>
                 </div>
 
-                <div className="bg-background rounded-lg border border-border p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <Lock className="w-8 h-8 text-red-600" />
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 group hover:bg-white/10 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="bg-red-500/20 rounded-xl p-2.5">
+                            <Lock className="w-6 h-6 text-red-400" />
+                        </div>
                     </div>
-                    <div className="text-2xl font-semibold text-foreground">{stats.ageRestrictedFeatures}</div>
-                    <div className="text-sm text-muted-foreground">Age Controls</div>
+                    <div className="text-2xl font-bold text-white mb-1">{stats.ageRestrictedFeatures}</div>
+                    <div className="text-sm text-gray-400 font-medium tracking-wide uppercase text-[10px]">Age Controls</div>
                 </div>
             </div>
 
             {/* Main Content */}
-            <div className="bg-background rounded-lg border border-border">
+            <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden shadow-2xl transition-all duration-500">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <div className="border-b border-border px-6">
                         <TabsList className="bg-transparent">
@@ -353,11 +363,10 @@ export default function SafetyEnhancementsPage() {
                                                 <td className="py-3 px-4 text-center">
                                                     <button
                                                         onClick={() => toggleKeyword(keyword.id)}
-                                                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
-                                                            keyword.enabled
+                                                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${keyword.enabled
                                                                 ? 'bg-green-100 text-green-800 border border-green-200'
                                                                 : 'bg-muted text-gray-800 border border-border'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {keyword.enabled ? (
                                                             <>
@@ -432,11 +441,10 @@ export default function SafetyEnhancementsPage() {
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     onClick={() => toggleFilter(filter.id)}
-                                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                                        filter.enabled
+                                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter.enabled
                                                             ? 'bg-green-100 text-green-800 border border-green-200'
                                                             : 'bg-muted text-gray-800 border border-border'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {filter.enabled ? (
                                                         <>
@@ -499,11 +507,10 @@ export default function SafetyEnhancementsPage() {
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     onClick={() => toggleAgeControl(control.id)}
-                                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                                        control.enabled
+                                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${control.enabled
                                                             ? 'bg-green-100 text-green-800 border border-green-200'
                                                             : 'bg-muted text-gray-800 border border-border'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {control.enabled ? (
                                                         <>
@@ -526,15 +533,26 @@ export default function SafetyEnhancementsPage() {
                                 ))}
                             </div>
 
-                            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                <div className="flex items-start gap-3">
-                                    <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
+                            <div className="mt-6 p-5 bg-purple-500/10 border border-purple-500/20 rounded-2xl backdrop-blur-md">
+                                <div className="flex items-start gap-4">
+                                    <div className="bg-purple-500/20 rounded-full p-2 mt-1">
+                                        <Shield className="w-5 h-5 text-purple-400" />
+                                    </div>
                                     <div>
-                                        <h4 className="font-semibold text-blue-900 mb-1">Enforcement Levels</h4>
-                                        <ul className="text-sm text-blue-800 space-y-1">
-                                            <li><strong>Soft:</strong> Users see a warning but can proceed</li>
-                                            <li><strong>Hard:</strong> Users are blocked from accessing the feature</li>
-                                            <li><strong>Verified Only:</strong> Requires age verification (ID document)</li>
+                                        <h4 className="font-bold text-purple-400 mb-2">Enforcement Standards</h4>
+                                        <ul className="text-sm text-gray-300 space-y-2">
+                                            <li className="flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                                                <span><strong>Soft Enforcement:</strong> Users receive real-time warnings but can still proceed with caution.</span>
+                                            </li>
+                                            <li className="flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-orange-400" />
+                                                <span><strong>Hard Enforcement:</strong> Critical features are strictly blocked for users not meeting requirements.</span>
+                                            </li>
+                                            <li className="flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                                                <span><strong>Verified Exclusive:</strong> Access is granted only after formal identity and age verification.</span>
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>

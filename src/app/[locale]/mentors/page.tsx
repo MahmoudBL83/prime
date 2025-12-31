@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback, memo, lazy, Suspense } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +10,7 @@ import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { AvatarPlaceholder } from '@/components/ui/avatar-placeholder'
 import { CredentialsDisplay, Credential } from '@/components/credentials/CredentialsSection'
+import { PostMenuDropdown } from '@/components/posts/PostMenuDropdown'
 
 // Dynamic imports for heavy components
 const SubscribeModal = lazy(() => import('@/components/modals/SubscribeModal'))
@@ -310,6 +311,7 @@ interface Creator {
 
 export default function OnlyFansStyleMentorsPage() {
     const router = useRouter()
+    const pathname = usePathname()
     const params = useParams()
     const { data: session } = useSession()
     const locale = (params.locale as string) || 'en'
@@ -322,6 +324,7 @@ export default function OnlyFansStyleMentorsPage() {
     const [searchQuery, setSearchQuery] = useState('')
     const [filterType, setFilterType] = useState<'all' | 'trending' | 'new' | 'top'>('all')
     const [activeView, setActiveView] = useState<'feed' | 'subscriptions' | 'bookmarks' | 'creators' | 'profile'>('feed')
+    const [activeCarouselIndex, setActiveCarouselIndex] = useState(0)
     const [posts, setPosts] = useState<any[]>([])
     const [profileTab, setProfileTab] = useState<'posts' | 'media' | 'videos' | 'likes' | 'stats' | 'calendar'>('posts')
     const [mediaView, setMediaView] = useState<'grid' | 'list'>('grid')
@@ -348,6 +351,14 @@ export default function OnlyFansStyleMentorsPage() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false) // Mobile menu state
     const [bookmarkedPostIds, setBookmarkedPostIds] = useState<string[]>([]) // Array of post IDs that are bookmarked
     const [creatorCredentials, setCreatorCredentials] = useState<Credential[]>([]) // Creator qualifications
+    const [likedPostIds, setLikedPostIds] = useState<string[]>([]) // Array of post IDs that the user liked
+    const [expandedCommentsPostId, setExpandedCommentsPostId] = useState<string | null>(null) // Which post is showing comments
+    const [postComments, setPostComments] = useState<{ [key: string]: any[] }>({}) // Cached comments per post
+    const [isFetchingComments, setIsFetchingComments] = useState<string | null>(null) // Which post is currently loading comments
+    const [commentText, setCommentText] = useState('') // Current comment input text
+    const [openPostMenuId, setOpenPostMenuId] = useState<string | null>(null) // Which post's three-dot menu is open
+    const [hiddenUserIds, setHiddenUserIds] = useState<string[]>([]) // Users whose posts are hidden
+    const [userLists, setUserLists] = useState<any[]>([]) // User's custom lists
 
     useEffect(() => {
         fetchCreators()
@@ -355,6 +366,9 @@ export default function OnlyFansStyleMentorsPage() {
         if (session?.user) {
             fetchUserSubscriptions()
             fetchUserBookmarks()
+            fetchUserLikes()
+            fetchHiddenUsers()
+            fetchUserLists()
         }
     }, [filterType, session])
 
@@ -388,6 +402,22 @@ export default function OnlyFansStyleMentorsPage() {
             }
         } catch (error) {
             console.error('Error fetching bookmarks:', error)
+        }
+    }, [session])
+
+    // Fetch user's likes from API
+    const fetchUserLikes = useCallback(async () => {
+        if (!session?.user?.id) return
+
+        try {
+            // Using a generic likes endpoint or checking against posts
+            const response = await fetch('/api/user/likes')
+            if (response.ok) {
+                const data = await response.json()
+                setLikedPostIds(data.likedPostIds || [])
+            }
+        } catch (error) {
+            console.error('Error fetching likes:', error)
         }
     }, [session])
 
@@ -428,6 +458,131 @@ export default function OnlyFansStyleMentorsPage() {
             return false
         }
     }, [session, isArabic, fetchUserBookmarks])
+
+    // Fetch comments for a post
+    const fetchPostComments = useCallback(async (postId: string) => {
+        setIsFetchingComments(postId)
+        try {
+            const response = await fetch(`/api/posts/${postId}/comments`)
+            if (response.ok) {
+                const data = await response.json()
+                setPostComments(prev => ({ ...prev, [postId]: data.comments }))
+            }
+        } catch (error) {
+            console.error('Error fetching comments:', error)
+        } finally {
+            setIsFetchingComments(null)
+        }
+    }, [])
+
+    // Add a comment to a post
+    const handleAddComment = useCallback(async (postId: string) => {
+        if (!session?.user?.id) {
+            toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
+            return
+        }
+
+        if (!commentText.trim()) return
+
+        try {
+            const response = await fetch(`/api/posts/${postId}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: commentText })
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                // Update comments list
+                setPostComments(prev => ({
+                    ...prev,
+                    [postId]: [data.comment, ...(prev[postId] || [])]
+                }))
+                setCommentText('')
+                // Update post count
+                setPosts(prev => prev.map(p => {
+                    if (p.id === postId) {
+                        return {
+                            ...p,
+                            _count: { ...p._count, comments: (p._count?.comments || 0) + 1 }
+                        }
+                    }
+                    return p
+                }))
+                toast.success(isArabic ? 'تم إضافة التعليق' : 'Comment added')
+            } else {
+                const data = await response.json()
+                toast.error(isArabic ? (data.error || 'فشل إضافة التعليق') : (data.error || 'Failed to add comment'))
+            }
+        } catch (error) {
+            console.error('Add comment error:', error)
+            toast.error(isArabic ? 'حدث خطأ ما' : 'An error occurred')
+        }
+    }, [session, isArabic, commentText])
+
+    // Handle like toggle
+    const handleLike = useCallback(async (postId: string) => {
+        if (!session?.user?.id) {
+            toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
+            return
+        }
+
+        const isCurrentlyLiked = likedPostIds.includes(postId)
+
+        // Optimistic update
+        setLikedPostIds(prev =>
+            isCurrentlyLiked ? prev.filter(id => id !== postId) : [...prev, postId]
+        )
+
+        // Update posts state optimistically
+        setPosts(prevPosts => prevPosts.map(p => {
+            if (p.id === postId) {
+                const currentLikes = p._count?.likes || 0
+                return {
+                    ...p,
+                    _count: {
+                        ...p._count,
+                        likes: isCurrentlyLiked ? Math.max(0, currentLikes - 1) : currentLikes + 1
+                    }
+                }
+            }
+            return p
+        }))
+
+        try {
+            const response = await fetch(`/api/posts/${postId}/like`, {
+                method: isCurrentlyLiked ? 'DELETE' : 'POST',
+            })
+
+            if (!response.ok) {
+                // Rollback on error
+                setLikedPostIds(prev =>
+                    isCurrentlyLiked ? [...prev, postId] : prev.filter(id => id !== postId)
+                )
+                setPosts(prevPosts => prevPosts.map(p => {
+                    if (p.id === postId) {
+                        const currentLikes = p._count?.likes || 0
+                        return {
+                            ...p,
+                            _count: {
+                                ...p._count,
+                                likes: isCurrentlyLiked ? currentLikes + 1 : Math.max(0, currentLikes - 1)
+                            }
+                        }
+                    }
+                    return p
+                }))
+                toast.error(isArabic ? 'فشل في تحديث الإعجاب' : 'Failed to update like')
+            }
+        } catch (error) {
+            console.error('Like error:', error)
+            // Rollback on error
+            setLikedPostIds(prev =>
+                isCurrentlyLiked ? [...prev, postId] : prev.filter(id => id !== postId)
+            )
+            toast.error(isArabic ? 'فشل في تحديث الإعجاب' : 'Failed to update like')
+        }
+    }, [session, isArabic, likedPostIds])
 
     // Update creators with subscription status when subscriptions change
     useEffect(() => {
@@ -849,7 +1004,7 @@ export default function OnlyFansStyleMentorsPage() {
         }
 
         try {
-            const response = await fetch(`/api/scheduled-posts/${postId}`, {
+            const response = await fetch(`/api/scheduled-posts?postId=${postId}`, {
                 method: 'DELETE'
             })
 
@@ -860,6 +1015,9 @@ export default function OnlyFansStyleMentorsPage() {
             toast.success(isArabic ? 'تم حذف المنشور' : 'Post deleted')
 
             // Refresh posts
+            if (activeView === 'feed') {
+                fetchPosts()
+            }
             if (selectedCreator?.id) {
                 fetchCreatorPostsByCreatorId(selectedCreator.id)
             }
@@ -867,7 +1025,75 @@ export default function OnlyFansStyleMentorsPage() {
             console.error('Delete post error:', error)
             toast.error(isArabic ? 'فشل حذف المنشور' : 'Failed to delete post')
         }
-    }, [isArabic, selectedCreator])
+    }, [isArabic, selectedCreator, activeView, fetchPosts])
+
+    const fetchHiddenUsers = useCallback(async () => {
+        try {
+            const response = await fetch('/api/user/hidden-users')
+            if (response.ok) {
+                const data = await response.json()
+                setHiddenUserIds(data.hiddenUserIds || [])
+            }
+        } catch (error) {
+            console.error('Error fetching hidden users:', error)
+        }
+    }, [])
+
+    const handleHideUser = useCallback(async (userId: string) => {
+        try {
+            const response = await fetch('/api/user/hidden-users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId })
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                if (data.hidden) {
+                    setHiddenUserIds(prev => [...prev, userId])
+                    toast.success(isArabic ? 'تم إخفاء منشورات هذا المستخدم' : "User's posts hidden")
+                } else {
+                    setHiddenUserIds(prev => prev.filter(id => id !== userId))
+                    toast.success(isArabic ? 'تم إلغاء إخفاء منشورات هذا المستخدم' : "User's posts unhidden")
+                }
+                setOpenPostMenuId(null)
+            }
+        } catch (error) {
+            console.error('Error hiding user:', error)
+            toast.error(isArabic ? 'فشل في إخفاء المستخدم' : 'Failed to hide user')
+        }
+    }, [isArabic])
+
+    const fetchUserLists = useCallback(async () => {
+        try {
+            const response = await fetch('/api/user/lists')
+            if (response.ok) {
+                const data = await response.json()
+                setUserLists(data.lists || [])
+            }
+        } catch (error) {
+            console.error('Error fetching lists:', error)
+        }
+    }, [])
+
+    const handleSaveToList = useCallback(async (postId: string, listId?: string, listName?: string) => {
+        try {
+            const response = await fetch('/api/user/lists', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ postId, listId, name: listName })
+            })
+
+            if (response.ok) {
+                toast.success(isArabic ? 'تمت الإضافة إلى القائمة' : 'Added to list')
+                fetchUserLists()
+                setOpenPostMenuId(null)
+            }
+        } catch (error) {
+            console.error('Error saving to list:', error)
+            toast.error(isArabic ? 'فشل في الحفظ في القائمة' : 'Failed to save to list')
+        }
+    }, [isArabic, fetchUserLists])
 
     // Memoize send message handler
     const handleSendMessage = useCallback(async (message: string, type: string) => {
@@ -911,6 +1137,18 @@ export default function OnlyFansStyleMentorsPage() {
     const handleSetCreatorsView = useCallback(() => setActiveView('creators'), [])
     const handleSetProfileView = useCallback(() => setActiveView('profile'), [])
 
+    const handlePostComment = useCallback((postId: string, e: React.MouseEvent) => {
+        e.stopPropagation()
+        if (expandedCommentsPostId === postId) {
+            setExpandedCommentsPostId(null)
+        } else {
+            setExpandedCommentsPostId(postId)
+            if (!postComments[postId]) {
+                fetchPostComments(postId)
+            }
+        }
+    }, [expandedCommentsPostId, postComments, fetchPostComments])
+
     const handleSetSubscriptionsView = useCallback(() => {
         if (session) {
             setActiveView('subscriptions')
@@ -939,16 +1177,8 @@ export default function OnlyFansStyleMentorsPage() {
     const handleSetStatsTab = useCallback(() => setProfileTab('stats'), [])
     const handleSetCalendarTab = useCallback(() => setProfileTab('calendar'), [])
 
-    // Memoize post interaction handlers
-    const handlePostComment = useCallback((postId: string, e: React.MouseEvent) => {
-        e.stopPropagation()
-        router.push(`/${locale}/posts/${postId}`)
-    }, [locale, router])
 
-    const handlePostRepost = useCallback((e: React.MouseEvent) => {
-        e.stopPropagation()
-        toast.success(isArabic ? 'تم إعادة النشر!' : 'Reposted!')
-    }, [isArabic])
+
 
     const handlePostLike = useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
@@ -1326,13 +1556,40 @@ export default function OnlyFansStyleMentorsPage() {
                                                     day: 'numeric'
                                                 })}
                                             </span>
-                                            <button className="p-1 hover:bg-white/10 rounded-full">
-                                                <svg className="w-5 h-5 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24">
-                                                    <circle cx="12" cy="6" r="1.5" />
-                                                    <circle cx="12" cy="12" r="1.5" />
-                                                    <circle cx="12" cy="18" r="1.5" />
-                                                </svg>
-                                            </button>
+                                            <div className="relative">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        setOpenPostMenuId(openPostMenuId === post.id ? null : post.id)
+                                                    }}
+                                                    className="p-1 hover:bg-white/10 rounded-full"
+                                                >
+                                                    <svg className="w-5 h-5 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24">
+                                                        <circle cx="12" cy="6" r="1.5" />
+                                                        <circle cx="12" cy="12" r="1.5" />
+                                                        <circle cx="12" cy="18" r="1.5" />
+                                                    </svg>
+                                                </button>
+
+                                                {/* Post Options Dropdown */}
+                                                <PostMenuDropdown
+                                                    postId={post.id}
+                                                    creatorId={post.channel.creator.userId}
+                                                    creatorName={post.channel.creator.user.name}
+                                                    locale={locale}
+                                                    isArabic={isArabic}
+                                                    isOpen={openPostMenuId === post.id}
+                                                    onClose={() => setOpenPostMenuId(null)}
+                                                    isHidden={hiddenUserIds.includes(post.channel.creator.userId)}
+                                                    onHideToggle={(hidden) => {
+                                                        if (hidden) {
+                                                            setHiddenUserIds(prev => [...prev, post.channel.creator.userId])
+                                                        } else {
+                                                            setHiddenUserIds(prev => prev.filter(id => id !== post.channel.creator.userId))
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
 
@@ -1482,23 +1739,20 @@ export default function OnlyFansStyleMentorsPage() {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation()
-                                                const target = e.currentTarget
-                                                target.classList.toggle('text-pink-500')
-                                                const icon = target.querySelector('.heart-icon')
-                                                icon?.classList.toggle('fill-pink-500')
+                                                handleLike(post.id)
                                             }}
-                                            className="hover:text-pink-400 transition-colors"
+                                            className={`transition-colors flex items-center gap-1 ${likedPostIds.includes(post.id) ? 'text-pink-500' : 'hover:text-pink-400'}`}
                                         >
-                                            <DynamicIcon name="Heart" className="w-6 h-6 heart-icon transition-all" />
+                                            <DynamicIcon
+                                                name="Heart"
+                                                className={`w-6 h-6 transition-all ${likedPostIds.includes(post.id) ? 'fill-pink-500' : ''}`}
+                                            />
                                         </button>
 
                                         {/* Comment Button */}
                                         <button
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                router.push(`/${locale}/posts/${post.id}`)
-                                            }}
-                                            className="hover:text-purple-400 transition-colors"
+                                            onClick={(e) => handlePostComment(post.id, e)}
+                                            className={`hover:text-purple-400 transition-colors ${expandedCommentsPostId === post.id ? 'text-purple-400' : ''}`}
                                         >
                                             <DynamicIcon name="MessageCircle" className="w-6 h-6" />
                                         </button>
@@ -1545,12 +1799,100 @@ export default function OnlyFansStyleMentorsPage() {
                                         )}
                                     </div>
 
-                                    {/* Like Count */}
-                                    <div className="mt-2">
+                                    {/* Like & Comment Count */}
+                                    <div className="mt-2 flex items-center gap-4">
                                         <span className="font-bold text-foreground text-sm">
                                             {post._count?.likes || 0} {isArabic ? 'إعجاب' : 'likes'}
                                         </span>
+                                        <button
+                                            onClick={(e) => handlePostComment(post.id, e)}
+                                            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+                                        >
+                                            {post._count?.comments || 0} {isArabic ? 'تعليق' : 'comments'}
+                                        </button>
                                     </div>
+
+                                    {/* Inline Comment Section */}
+                                    {expandedCommentsPostId === post.id && (
+                                        <div className="mt-4 border-t border-white/10 pt-4 animate-in slide-in-from-top-2 duration-200">
+                                            {/* Comment Input */}
+                                            <div className="flex gap-3 mb-4">
+                                                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center flex-shrink-0">
+                                                    <span className="text-xs font-bold text-white">
+                                                        {session?.user?.name?.[0] || 'U'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex-1 flex gap-2">
+                                                    <textarea
+                                                        value={commentText}
+                                                        onChange={(e) => setCommentText(e.target.value)}
+                                                        placeholder={isArabic ? 'اكتب تعليقاً...' : 'Write a comment...'}
+                                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-purple-500/50 resize-none h-12"
+                                                    />
+                                                    <Button
+                                                        onClick={() => handleAddComment(post.id)}
+                                                        disabled={!commentText.trim()}
+                                                        size="sm"
+                                                        className="bg-purple-600 hover:bg-purple-700 h-fit self-end"
+                                                    >
+                                                        {isArabic ? 'نشر' : 'Post'}
+                                                    </Button>
+                                                </div>
+                                            </div>
+
+                                            {/* Comments List */}
+                                            {isFetchingComments === post.id ? (
+                                                <div className="flex justify-center py-4">
+                                                    <div className="w-6 h-6 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                                    {(postComments[post.id] || []).length > 0 ? (
+                                                        (postComments[post.id] || []).map((comment) => (
+                                                            <div key={comment.id} className="flex gap-3">
+                                                                <div className="flex-shrink-0">
+                                                                    {comment.user.profileImage ? (
+                                                                        <Image
+                                                                            src={comment.user.profileImage}
+                                                                            alt=""
+                                                                            width={32}
+                                                                            height={32}
+                                                                            className="rounded-full object-cover"
+                                                                        />
+                                                                    ) : (
+                                                                        <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                                                                            <span className="text-xs font-bold text-white">
+                                                                                {comment.user.name?.[0]}
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <div className="bg-white/5 rounded-2xl px-3 py-2">
+                                                                        <div className="flex items-center justify-between mb-0.5">
+                                                                            <span className="font-bold text-sm text-foreground">
+                                                                                {isArabic && comment.user.arabicName ? comment.user.arabicName : comment.user.name}
+                                                                            </span>
+                                                                            <span className="text-[10px] text-muted-foreground">
+                                                                                {new Date(comment.createdAt).toLocaleDateString(isArabic ? 'ar-EG' : 'en-US')}
+                                                                            </span>
+                                                                        </div>
+                                                                        <p className="text-sm text-foreground/90 leading-relaxed italic">
+                                                                            {comment.content}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <p className="text-center text-muted-foreground py-4 text-sm">
+                                                            {isArabic ? 'لا توجد تعليقات بعد. كن أول من يعلق!' : 'No comments yet. Be the first to comment!'}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
 
@@ -2013,14 +2355,26 @@ export default function OnlyFansStyleMentorsPage() {
                                                                 {/* Actions */}
                                                                 <div className="flex items-center justify-between text-muted-foreground text-sm">
                                                                     <div className="flex items-center gap-6">
-                                                                        <button className="flex items-center gap-2 hover:text-pink-400 transition-colors group">
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation()
+                                                                                handleLike(post.id)
+                                                                            }}
+                                                                            className={`flex items-center gap-2 hover:text-pink-400 transition-colors group ${likedPostIds.includes(post.id) ? 'text-pink-500' : ''}`}
+                                                                        >
                                                                             <div className="p-2 rounded-full group-hover:bg-pink-500/10">
-                                                                                <DynamicIcon name="Heart" className="w-4 h-4" />
+                                                                                <DynamicIcon
+                                                                                    name="Heart"
+                                                                                    className={`w-4 h-4 ${likedPostIds.includes(post.id) ? 'fill-pink-500' : ''}`}
+                                                                                />
                                                                             </div>
                                                                             <span>{post._count?.likes || 0}</span>
                                                                         </button>
 
-                                                                        <button className="flex items-center gap-2 hover:text-blue-400 transition-colors group">
+                                                                        <button
+                                                                            onClick={(e) => handlePostComment(post.id, e)}
+                                                                            className={`flex items-center gap-2 hover:text-blue-400 transition-colors group ${expandedCommentsPostId === post.id ? 'text-blue-400' : ''}`}
+                                                                        >
                                                                             <div className="p-2 rounded-full group-hover:bg-blue-500/10">
                                                                                 <DynamicIcon name="MessageCircle" className="w-4 h-4" />
                                                                             </div>
@@ -2042,6 +2396,88 @@ export default function OnlyFansStyleMentorsPage() {
                                                                         </button>
                                                                     </div>
                                                                 </div>
+
+                                                                {/* Inline Comment Section */}
+                                                                {expandedCommentsPostId === post.id && (
+                                                                    <div className="mt-4 border-t border-white/10 pt-4 animate-in slide-in-from-top-2 duration-200">
+                                                                        {/* Comment Input */}
+                                                                        <div className="flex gap-3 mb-4">
+                                                                            <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center flex-shrink-0">
+                                                                                <span className="text-xs font-bold text-white">
+                                                                                    {session?.user?.name?.[0] || 'U'}
+                                                                                </span>
+                                                                            </div>
+                                                                            <div className="flex-1 flex gap-2">
+                                                                                <textarea
+                                                                                    value={commentText}
+                                                                                    onChange={(e) => setCommentText(e.target.value)}
+                                                                                    placeholder={isArabic ? 'اكتب تعليقاً...' : 'Write a comment...'}
+                                                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-purple-500/50 resize-none h-12"
+                                                                                />
+                                                                                <Button
+                                                                                    onClick={() => handleAddComment(post.id)}
+                                                                                    disabled={!commentText.trim()}
+                                                                                    size="sm"
+                                                                                    className="bg-purple-600 hover:bg-purple-700 h-fit self-end"
+                                                                                >
+                                                                                    {isArabic ? 'نشر' : 'Post'}
+                                                                                </Button>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {/* Comments List */}
+                                                                        {isFetchingComments === post.id ? (
+                                                                            <div className="flex justify-center py-4">
+                                                                                <div className="w-6 h-6 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                                                                {(postComments[post.id] || []).length > 0 ? (
+                                                                                    (postComments[post.id] || []).map((comment) => (
+                                                                                        <div key={comment.id} className="flex gap-3">
+                                                                                            <div className="flex-shrink-0">
+                                                                                                {comment.user.profileImage ? (
+                                                                                                    <Image
+                                                                                                        src={comment.user.profileImage}
+                                                                                                        alt=""
+                                                                                                        width={32}
+                                                                                                        height={32}
+                                                                                                        className="rounded-full object-cover"
+                                                                                                    />
+                                                                                                ) : (
+                                                                                                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                                                                                                        <span className="text-xs font-bold text-white">
+                                                                                                            {comment.user.name?.[0]}
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                )}
+                                                                                            </div>
+                                                                                            <div className="flex-1">
+                                                                                                <div className="bg-white/5 rounded-2xl px-3 py-2">
+                                                                                                    <div className="flex items-center justify-between mb-0.5">
+                                                                                                        <span className="font-bold text-sm text-foreground">
+                                                                                                            {isArabic && comment.user.arabicName ? comment.user.arabicName : comment.user.name}
+                                                                                                        </span>
+                                                                                                        <span className="text-[10px] text-muted-foreground">
+                                                                                                            {new Date(comment.createdAt).toLocaleDateString(isArabic ? 'ar-EG' : 'en-US')}
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                    <p className="text-sm text-foreground/90 leading-relaxed italic">
+                                                                                                        {comment.content}
+                                                                                                    </p>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    ))
+                                                                                ) : (
+                                                                                    <p className="text-center text-muted-foreground py-4 text-sm">
+                                                                                        {isArabic ? 'لا توجد تعليقات بعد. كن أول من يعلق!' : 'No comments yet. Be the first to comment!'}
+                                                                                    </p>
+                                                                                )}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </motion.div>
@@ -2487,14 +2923,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                         {isArabic ? 'إدارة محتواك والأرباح والمشتركين' : 'Manage your content, earnings, and subscribers'}
                                                     </p>
                                                 </div>
-                                                <Button
-                                                    onClick={() => toast.success(isArabic ? 'قريباً!' : 'Coming soon!')}
-                                                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-foreground font-bold text-sm sm:text-base w-full sm:w-auto"
-                                                >
-                                                    <DynamicIcon name="Crown" className="w-4 h-4 mr-2" />
-                                                    <span className="hidden sm:inline">{isArabic ? 'ترقية الحساب' : 'Upgrade Account'}</span>
-                                                    <span className="sm:hidden">{isArabic ? 'ترقية' : 'Upgrade'}</span>
-                                                </Button>
+
                                             </div>
                                             {/* Quick Stats Bar */}
                                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
@@ -2885,7 +3314,8 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                         variant="outline"
                                                                                         onClick={(e) => {
                                                                                             e.stopPropagation()
-                                                                                            toast.success(isArabic ? 'قريباً' : 'Coming soon')
+                                                                                            setSelectedPost(post)
+                                                                                            setUploadModalOpen(true)
                                                                                         }}
                                                                                     >
                                                                                         <DynamicIcon name="Edit" className="w-3 h-3 mr-1" />
@@ -2897,7 +3327,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                                         className="text-red-400 hover:text-red-500"
                                                                                         onClick={(e) => {
                                                                                             e.stopPropagation()
-                                                                                            toast.success(isArabic ? 'قريباً' : 'Coming soon')
+                                                                                            handleDeletePost(post.id)
                                                                                         }}
                                                                                     >
                                                                                         <DynamicIcon name="Trash2" className="w-3 h-3 mr-1" />
@@ -3695,96 +4125,149 @@ export default function OnlyFansStyleMentorsPage() {
                                 </div>
                             </div>
 
-                            {/* Suggested Creators */}
-                            <div className="bg-transparent border border-white/10 rounded-2xl overflow-hidden">
-                                <div className="p-5 border-b border-white/10">
-                                    <h3 className="font-bold text-xl text-white flex items-center gap-2">
-                                        <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                        {isArabic ? 'منشئون مقترحون' : 'Suggested Creators'}
+                            {/* Suggested Creators Section */}
+                            <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+                                <div className="px-5 py-3 border-b border-white/10 flex items-center justify-between">
+                                    <h3 className="font-bold text-sm tracking-wider text-white/90">
+                                        {isArabic ? 'اقتراحات' : 'SUGGESTIONS'}
                                     </h3>
-                                </div>
-                                <div className="p-4 space-y-3">
-                                    {/* Show skeleton loading while creators are being fetched */}
-                                    {loading ? (
-                                        <>
-                                            {Array.from({ length: 5 }).map((_, i) => (
-                                                <CreatorCardSkeleton key={i} />
-                                            ))}
-                                        </>
-                                    ) : filteredCreators.length === 0 ? (
-                                        <div className="text-center py-8 text-muted-foreground">
-                                            {searchQuery ? (isArabic ? 'لا توجد نتائج' : 'No results found') : (isArabic ? 'لا يوجد منشئون' : 'No creators yet')}
+                                    <div className="flex items-center gap-4 text-white/50">
+                                        <button className="hover:text-white transition-colors" title="Hide">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                                        </button>
+                                        <button className="hover:text-white transition-colors" title="Refresh" onClick={() => fetchCreators()}>
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <button className="hover:text-white transition-colors opacity-30 cursor-not-allowed">
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                            </button>
+                                            <button className="hover:text-white transition-colors opacity-30 cursor-not-allowed">
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                            </button>
                                         </div>
-                                    ) : (
-                                        filteredCreators.slice(0, 5).map((creator, idx) => (
-                                            <div
-                                                key={creator.id}
-                                                className="group cursor-pointer animate-fade-in border border-white/[.16] rounded-[10px] overflow-hidden relative"
-                                                style={{
-                                                    animationDelay: `${idx * 50}ms`
-                                                }}
-                                                onClick={() => handleCreatorClick(creator.id)}
-                                            >
-                                                {/* Lockup Scrim Overlay */}
-                                                <div
-                                                    className="absolute inset-0 bg-[rgba(51,51,51,.3)] opacity-0 group-hover:opacity-100 transition-opacity duration-100 pointer-events-none z-10"
+                                    </div>
+                                </div>
+                                <div className="p-4 relative group/carousel">
+                                    {/* Carousel Container */}
+                                    <div className="overflow-hidden">
+                                        <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(-${activeCarouselIndex * 100}%)` }}>
+                                            {loading ? (
+                                                <div className="w-full flex-shrink-0 h-44 bg-white/5 animate-pulse rounded-2xl" />
+                                            ) : filteredCreators.length === 0 ? (
+                                                <div className="w-full flex-shrink-0 text-center py-8 text-muted-foreground">
+                                                    {isArabic ? 'لا يوجد منشئون' : 'No creators yet'}
+                                                </div>
+                                            ) : (
+                                                filteredCreators.slice(0, 5).map((creator, idx) => (
+                                                    <div key={creator.id} className="w-full flex-shrink-0 px-1">
+                                                        <div
+                                                            className="group/card cursor-pointer relative rounded-2xl overflow-hidden bg-black/40 h-44 border border-white/5"
+                                                            onClick={() => handleCreatorClick(creator.id)}
+                                                        >
+                                                            {/* Cover Background */}
+                                                            <div className="absolute inset-0 z-0">
+                                                                {creator.user?.profileImage ? (
+                                                                    <Image
+                                                                        src={creator.user.profileImage}
+                                                                        alt=""
+                                                                        fill
+                                                                        className="object-cover blur-[0.5px] opacity-60 group-hover/card:scale-105 transition-transform duration-700"
+                                                                        unoptimized
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-full h-full bg-gradient-to-br from-[#0a84ff]/20 to-purple-600/20" />
+                                                                )}
+                                                                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/90" />
+                                                            </div>
+
+                                                            {/* Header Badges */}
+                                                            <div className="absolute top-3 left-3 z-20">
+                                                                <span className="px-2 py-0.5 bg-black/50 backdrop-blur-md text-white text-[10px] font-bold rounded-md">
+                                                                    {isArabic ? 'مجاني' : 'Free'}
+                                                                </span>
+                                                            </div>
+                                                            <button className="absolute top-3 right-3 z-20 p-1 text-white hover:bg-black/20 rounded-full transition-colors">
+                                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg>
+                                                            </button>
+
+                                                            {/* Avatar Overlay */}
+                                                            <div className="absolute bottom-4 left-4 z-20">
+                                                                <div className="relative">
+                                                                    <div className="w-20 h-20 rounded-full border-[3px] border-[#1a1a1a] overflow-hidden bg-[#1a1a1a] shadow-xl">
+                                                                        {creator.user?.profileImage ? (
+                                                                            <Image
+                                                                                src={creator.user.profileImage}
+                                                                                alt={creator.user.name}
+                                                                                fill
+                                                                                className="object-cover"
+                                                                                unoptimized
+                                                                            />
+                                                                        ) : (
+                                                                            <div className="w-full h-full flex items-center justify-center bg-slate-800 text-xl font-bold text-white">
+                                                                                {creator.user.name[0]}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                    {creator.isOnline && (
+                                                                        <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-[3px] border-[#1a1a1a]" />
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Labels Overlay */}
+                                                            <div className="absolute bottom-6 left-28 right-4 z-20">
+                                                                <div className="flex items-center gap-1.5 mb-0.5">
+                                                                    <h4 className="font-bold text-white text-base leading-tight truncate">
+                                                                        {creator.user.name}
+                                                                    </h4>
+                                                                    {creator.stats.averageRating >= 4.5 && (
+                                                                        <svg className="w-4 h-4 text-[#0a84ff] fill-[#0a84ff]" viewBox="0 0 20 20" fill="currentColor">
+                                                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                                        </svg>
+                                                                    )}
+                                                                </div>
+                                                                <p className="text-white/60 text-xs font-medium truncate">
+                                                                    @{creator.user.name.toLowerCase().replace(/\s+/g, '_')}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Pagination Dots */}
+                                    {!loading && filteredCreators.length > 1 && (
+                                        <div className="flex justify-center gap-1.5 mt-3">
+                                            {filteredCreators.slice(0, 5).map((_, i) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => setActiveCarouselIndex(i)}
+                                                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${activeCarouselIndex === i ? 'bg-[#0a84ff] w-4' : 'bg-white/20 hover:bg-white/40'}`}
                                                 />
+                                            ))}
+                                        </div>
+                                    )}
 
-                                                {/* Image Container with Profile Photo */}
-                                                <div className="relative w-full h-28 overflow-hidden bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600">
-                                                    {creator.user?.profileImage ? (
-                                                        <Image
-                                                            src={creator.user.profileImage}
-                                                            alt={creator.user?.name || 'Creator'}
-                                                            fill
-                                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                                            unoptimized
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center">
-                                                            <AvatarPlaceholder
-                                                                name={creator.user?.name || 'Creator'}
-                                                                size={56}
-                                                                className="shadow-lg"
-                                                            />
-                                                        </div>
-                                                    )}
-
-                                                    {/* Online Status - Top Right */}
-                                                    {creator.isOnline && (
-                                                        <div className="absolute top-1.5 right-1.5 z-20">
-                                                            <div className="w-2 h-2 bg-[#0a84ff] rounded-full border border-white/50" />
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {/* Content - Bottom */}
-                                                <div className="relative p-2.5 bg-transparent">
-                                                    <div className="flex items-center gap-1.5 mb-1">
-                                                        <h4 className="font-semibold text-white text-xs truncate flex-1">
-                                                            {creator.user?.name || 'Creator'}
-                                                        </h4>
-                                                        {creator.stats.averageRating >= 4.5 && (
-                                                            <DynamicIcon name="CheckCircle" className="w-3.5 h-3.5 text-[#0a84ff] fill-[#0a84ff] flex-shrink-0" />
-                                                        )}
-                                                    </div>
-
-                                                    <div className="flex items-center justify-between text-[10px] text-white/50">
-                                                        <span>
-                                                            {creator.totalSubscribers >= 1000
-                                                                ? `${(creator.totalSubscribers / 1000).toFixed(1)}K`
-                                                                : creator.totalSubscribers
-                                                            } {isArabic ? 'مشترك' : 'subs'}
-                                                        </span>
-                                                        <span className="font-semibold text-white/80">
-                                                            €{creator.monthlyPrice || 0}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )))}
+                                    {/* Navigation Arrows (Optional, but good for UX) */}
+                                    {!loading && filteredCreators.length > 1 && (
+                                        <>
+                                            <button
+                                                onClick={() => setActiveCarouselIndex(prev => (prev > 0 ? prev - 1 : 4))}
+                                                className="absolute left-6 top-[40%] -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-black/60 z-30"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                            </button>
+                                            <button
+                                                onClick={() => setActiveCarouselIndex(prev => (prev < 4 ? prev + 1 : 0))}
+                                                className="absolute right-6 top-[40%] -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-black/60 z-30"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                                 <button
                                     className="w-full p-3 text-[#0a84ff] hover:text-white hover:bg-white/5 text-sm font-semibold transition-all text-center border-t border-white/10"
@@ -3955,92 +4438,83 @@ export default function OnlyFansStyleMentorsPage() {
             )}
 
             {/* Mobile Bottom Navigation */}
-            <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-[#1f1f1f]/95 backdrop-blur-xl border-t border-white/10 safe-area-bottom">
-                <div className="flex items-center justify-around py-2 px-1">
+            <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 safe-area-bottom">
+                <div className="flex items-center justify-around py-3 px-2">
+                    {/* Home/Feed */}
                     <button
                         onClick={handleSetFeedView}
-                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeView === 'feed'
+                        className={`p-2 transition-all ${activeView === 'feed'
                             ? 'text-[#0a84ff]'
                             : 'text-white/60 hover:text-white'
                             }`}
                     >
-                        <svg className="w-6 h-6" fill={activeView === 'feed' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeView === 'feed' ? 0 : 2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        <svg className="w-7 h-7" fill={activeView === 'feed' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                         </svg>
-                        <span className="text-[10px] font-medium">{isArabic ? 'الرئيسية' : 'Feed'}</span>
                     </button>
 
+                    {/* Notifications */}
                     <button
-                        onClick={handleSetCreatorsView}
-                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeView === 'creators'
-                            ? 'text-[#0a84ff]'
-                            : 'text-white/60 hover:text-white'
-                            }`}
+                        onClick={() => router.push(`/${locale}/notifications`)}
+                        className={`p-2 transition-all ${pathname?.includes('notifications') ? 'text-[#0a84ff]' : 'text-white/60 hover:text-white'}`}
                     >
-                        <svg className="w-6 h-6" fill={activeView === 'creators' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeView === 'creators' ? 0 : 2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                         </svg>
-                        <span className="text-[10px] font-medium">{isArabic ? 'المبدعون' : 'Creators'}</span>
                     </button>
 
-                    <button
-                        onClick={handleSetSubscriptionsView}
-                        className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeView === 'subscriptions'
-                            ? 'text-[#0a84ff]'
-                            : 'text-white/60 hover:text-white'
-                            }`}
-                    >
-                        <svg className="w-6 h-6" fill={activeView === 'subscriptions' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeView === 'subscriptions' ? 0 : 2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                        </svg>
-                        <span className="text-[10px] font-medium">{isArabic ? 'اشتراكاتي' : 'Subs'}</span>
-                    </button>
-
-                    {session && (
-                        <button
-                            onClick={() => router.push(`/${locale}/notifications`)}
-                            className="flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all text-white/60 hover:text-white"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
-                            <span className="text-[10px] font-medium">{isArabic ? 'إشعارات' : 'Alerts'}</span>
-                        </button>
-                    )}
-
-                    {session && (
-                        <button
-                            onClick={handleSetBookmarksView}
-                            className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${activeView === 'bookmarks'
-                                ? 'text-[#0a84ff]'
-                                : 'text-white/60 hover:text-white'
-                                }`}
-                        >
-                            <svg className="w-6 h-6" fill={activeView === 'bookmarks' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeView === 'bookmarks' ? 0 : 2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                            </svg>
-                            <span className="text-[10px] font-medium">{isArabic ? 'المحفوظات' : 'Saved'}</span>
-                        </button>
-                    )}
-
+                    {/* Create/Add (Large Plus) */}
                     {isCreatorAccount && (
                         <button
-                            onClick={() => {
-                                if (session && isCreatorAccount) {
-                                    const userCreator = creators.find(c => c.userId === session.user?.id)
-                                    if (userCreator) {
-                                        router.push(`/${locale}/mentors/${userCreator.id}`)
-                                    }
-                                }
-                            }}
-                            className="flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all text-white/60 hover:text-white"
+                            onClick={() => setUploadModalOpen(true)}
+                            className="p-2 text-white/60 hover:text-white transition-all transform active:scale-90"
                         >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <span className="text-[10px] font-medium">{isArabic ? 'حسابي' : 'Profile'}</span>
+                            <div className="w-9 h-9 border-2 border-current rounded-xl flex items-center justify-center">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                </svg>
+                            </div>
                         </button>
                     )}
+
+                    {/* Messages */}
+                    <button
+                        onClick={() => router.push(`/${locale}/messaging`)}
+                        className={`p-2 transition-all ${pathname?.includes('messaging') ? 'text-[#0a84ff]' : 'text-white/60 hover:text-white'}`}
+                    >
+                        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                    </button>
+
+                    {/* Profile */}
+                    <button
+                        onClick={() => {
+                            if (session && isCreatorAccount) {
+                                const userCreator = creators.find(c => c.userId === session.user?.id)
+                                if (userCreator) {
+                                    router.push(`/${locale}/mentors/${userCreator.id}`)
+                                }
+                            } else {
+                                handleSetProfileView()
+                            }
+                        }}
+                        className={`p-1.5 rounded-full border-2 transition-all ${activeView === 'profile' ? 'border-[#0a84ff]' : 'border-transparent'}`}
+                    >
+                        {session?.user?.image ? (
+                            <Image
+                                src={session.user.image}
+                                alt="Profile"
+                                width={28}
+                                height={28}
+                                className="rounded-full object-cover w-7 h-7"
+                            />
+                        ) : (
+                            <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white">
+                                {session?.user?.name?.[0] || 'U'}
+                            </div>
+                        )}
+                    </button>
                 </div>
             </div>
 

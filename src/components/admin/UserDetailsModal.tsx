@@ -28,7 +28,6 @@ interface UserDetails {
     name: string
     email: string
     phone?: string
-    arabicName?: string
     bio?: string
     role: 'ADMIN' | 'CREATOR' | 'LEARNER'
     emailVerified: string | null
@@ -58,7 +57,6 @@ interface UserDetails {
         createdAt: string
         course: {
             title: string
-            titleAr: string
         }
     }>
     blockedUsers?: Array<{ blocked: { id: string; name: string; email: string } }>
@@ -78,7 +76,6 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
     const [isEditing, setIsEditing] = useState(false)
     const [editForm, setEditForm] = useState({
         name: '',
-        arabicName: '',
         phone: '',
         bio: '',
         role: 'LEARNER' as 'ADMIN' | 'CREATOR' | 'LEARNER'
@@ -105,7 +102,6 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
             setUser(data.user)
             setEditForm({
                 name: data.user.name || '',
-                arabicName: data.user.arabicName || '',
                 phone: data.user.phone || '',
                 bio: data.user.bio || '',
                 role: data.user.role
@@ -209,11 +205,20 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-[#1a1a2e] rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden border border-white/10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+            <div className="bg-background/80 backdrop-blur-xl rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col border border-white/20 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative z-10 animate-in fade-in zoom-in duration-200">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-white/10">
-                    <h2 className="text-xl font-semibold text-white">User Details</h2>
+                <div className="p-6 border-b border-border/50 flex items-center justify-between bg-white/5">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+                            <User className="text-white w-6 h-6" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold text-white tracking-tight">User Details</h2>
+                            <p className="text-sm text-gray-400">Manage user account and permissions</p>
+                        </div>
+                    </div>
                     <div className="flex items-center gap-2">
                         {!isEditing && (
                             <button
@@ -255,21 +260,12 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {isEditing ? (
                                         <>
-                                            <div>
+                                            <div className="md:col-span-2">
                                                 <label className="block text-sm font-medium text-gray-300 mb-1">Name</label>
                                                 <input
                                                     type="text"
                                                     value={editForm.name}
                                                     onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-300 mb-1">Arabic Name</label>
-                                                <input
-                                                    type="text"
-                                                    value={editForm.arabicName}
-                                                    onChange={(e) => setEditForm({ ...editForm, arabicName: e.target.value })}
                                                     className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white"
                                                 />
                                             </div>
@@ -302,7 +298,6 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
                                                 <div>
                                                     <p className="text-sm text-gray-400">Name</p>
                                                     <p className="font-medium text-white">{user.name}</p>
-                                                    {user.arabicName && <p className="text-sm text-gray-400">{user.arabicName}</p>}
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
@@ -668,9 +663,6 @@ export default function UserDetailsModal({ userId, isOpen, onClose, onUserUpdate
                                             <div key={enrollment.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                                                 <div>
                                                     <p className="font-medium text-white">{enrollment.course.title}</p>
-                                                    {enrollment.course.titleAr && (
-                                                        <p className="text-sm text-gray-400">{enrollment.course.titleAr}</p>
-                                                    )}
                                                 </div>
                                                 <div className="text-right">
                                                     <p className="text-sm font-medium text-white">{enrollment.progress}% complete</p>

@@ -87,6 +87,7 @@ export default function FinancialEnhancements() {
     const [taxReports, setTaxReports] = useState<TaxReport[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedPeriod, setSelectedPeriod] = useState('current_month')
+    const [currency, setCurrency] = useState<'E£' | '$'>('E£')
 
     useEffect(() => {
         fetchFinancialData()
@@ -128,7 +129,7 @@ export default function FinancialEnhancements() {
     }
 
     const formatCurrency = (amount: number) => {
-        return `E£${amount.toLocaleString()}`
+        return `${currency}${amount.toLocaleString()}`
     }
 
     const formatDate = (dateString: string) => {
@@ -157,43 +158,73 @@ export default function FinancialEnhancements() {
 
     return (
         <div className="space-y-6">
+            {/* Currency Selector */}
+            <div className="flex justify-end">
+                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-1 flex gap-1">
+                    <button
+                        onClick={() => setCurrency('E£')}
+                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${currency === 'E£' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'text-gray-400 hover:text-white'}`}
+                    >
+                        EGP
+                    </button>
+                    <button
+                        onClick={() => setCurrency('$')}
+                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${currency === '$' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'text-gray-400 hover:text-white'}`}
+                    >
+                        USD
+                    </button>
+                </div>
+            </div>
+
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-background rounded-lg border border-border p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <CreditCard className="w-8 h-8 text-blue-600" />
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 group hover:bg-white/10 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="bg-blue-500/20 rounded-xl p-2.5">
+                            <CreditCard className="w-6 h-6 text-blue-400" />
+                        </div>
+                        <div className="h-1.5 w-1.5 rounded-full bg-blue-500 group-hover:animate-ping" />
                     </div>
-                    <div className="text-2xl font-semibold text-foreground">{formatCurrency(arStats.total)}</div>
-                    <div className="text-sm text-muted-foreground">Total AR</div>
+                    <div className="text-2xl font-bold text-white mb-1">{formatCurrency(arStats.total)}</div>
+                    <div className="text-sm text-gray-400">Total Accounts Receivable</div>
                 </div>
 
-                <div className="bg-background rounded-lg border border-border p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <AlertCircle className="w-8 h-8 text-red-600" />
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 group hover:bg-white/10 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="bg-red-500/20 rounded-xl p-2.5">
+                            <AlertCircle className="w-6 h-6 text-red-400" />
+                        </div>
+                        <div className="h-1.5 w-1.5 rounded-full bg-red-500 group-hover:animate-ping" />
                     </div>
-                    <div className="text-2xl font-semibold text-foreground">{formatCurrency(arStats.overdue)}</div>
-                    <div className="text-sm text-muted-foreground">Overdue Amount</div>
+                    <div className="text-2xl font-bold text-white mb-1">{formatCurrency(arStats.overdue)}</div>
+                    <div className="text-sm text-gray-400">Overdue Amount</div>
                 </div>
 
-                <div className="bg-background rounded-lg border border-border p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <BarChart3 className="w-8 h-8 text-green-600" />
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 group hover:bg-white/10 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="bg-green-500/20 rounded-xl p-2.5">
+                            <BarChart3 className="w-6 h-6 text-green-400" />
+                        </div>
+                        <div className="h-1.5 w-1.5 rounded-full bg-green-500 group-hover:animate-ping" />
                     </div>
-                    <div className="text-2xl font-semibold text-foreground">{formatCurrency(ledgerStats.currentBalance)}</div>
-                    <div className="text-sm text-muted-foreground">Current Balance</div>
+                    <div className="text-2xl font-bold text-white mb-1">{formatCurrency(ledgerStats.currentBalance)}</div>
+                    <div className="text-sm text-gray-400">Current Balance</div>
                 </div>
 
-                <div className="bg-background rounded-lg border border-border p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <Receipt className="w-8 h-8 text-purple-600" />
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 group hover:bg-white/10 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="bg-purple-500/20 rounded-xl p-2.5">
+                            <Receipt className="w-6 h-6 text-purple-400" />
+                        </div>
+                        <div className="h-1.5 w-1.5 rounded-full bg-purple-500 group-hover:animate-ping" />
                     </div>
-                    <div className="text-2xl font-semibold text-foreground">{formatCurrency(taxStats.totalTaxLiability)}</div>
-                    <div className="text-sm text-muted-foreground">Tax Liability</div>
+                    <div className="text-2xl font-bold text-white mb-1">{formatCurrency(taxStats.totalTaxLiability)}</div>
+                    <div className="text-sm text-gray-400">Tax Liability</div>
                 </div>
             </div>
 
             {/* Main Content */}
-            <div className="bg-background rounded-lg border border-border">
+            <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden shadow-2xl transition-all duration-500">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <div className="border-b border-border px-6">
                         <TabsList className="bg-transparent">
@@ -517,14 +548,16 @@ export default function FinancialEnhancements() {
                                 ))}
                             </div>
 
-                            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                <div className="flex items-start gap-3">
-                                    <Building className="w-5 h-5 text-blue-600 mt-0.5" />
+                            <div className="mt-6 p-5 bg-blue-500/10 border border-blue-500/20 rounded-2xl backdrop-blur-md">
+                                <div className="flex items-start gap-4">
+                                    <div className="bg-blue-500/20 rounded-full p-2 mt-1">
+                                        <Building className="w-5 h-5 text-blue-400" />
+                                    </div>
                                     <div>
-                                        <h4 className="font-semibold text-blue-900 mb-1">Egyptian Tax Compliance</h4>
-                                        <p className="text-sm text-blue-800">
-                                            All reports are prepared according to Egyptian Tax Authority (ETA) requirements.
-                                            VAT at 15%, Creator withholding tax at 5%, and quarterly filing schedules are automatically applied.
+                                        <h4 className="font-bold text-blue-400 mb-2">Tax Compliance Information</h4>
+                                        <p className="text-sm text-gray-300 leading-relaxed">
+                                            All reports are prepared according to regional tax authority requirements.
+                                            VAT, Income tax, and withholding tax models are automatically applied based on creator and transaction jurisdiction.
                                         </p>
                                     </div>
                                 </div>

@@ -48,9 +48,7 @@ interface CreatorDetailsModalProps {
 interface ChannelPost {
     id: string
     title?: string
-    titleAr?: string
     content: string
-    contentAr?: string
     type: 'TEXT' | 'VIDEO' | 'IMAGE' | 'DOCUMENT' | 'POLL' | 'ANNOUNCEMENT'
     tier: string
     mediaUrl?: string
@@ -115,7 +113,6 @@ interface CreatorDetails {
         name: string
         email: string
         phone?: string
-        arabicName?: string
         bio?: string
         profileImage?: string
         emailVerified?: string
@@ -125,7 +122,6 @@ interface CreatorDetails {
     courses: Array<{
         id: string
         title: string
-        titleAr: string
         status: string
         totalEnrollments: number
         rating: number
@@ -136,11 +132,8 @@ interface CreatorDetails {
         id: string
         type: string
         title: string
-        titleAr?: string
         institution: string
-        institutionAr?: string
         description?: string
-        descriptionAr?: string
         issueDate?: string
         expiryDate?: string
         credentialId?: string
@@ -192,11 +185,8 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
     const [credentialForm, setCredentialForm] = useState({
         type: 'CERTIFICATE',
         title: '',
-        titleAr: '',
         institution: '',
-        institutionAr: '',
         description: '',
-        descriptionAr: '',
         issueDate: '',
         expiryDate: '',
         credentialId: '',
@@ -206,15 +196,13 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
         isPublic: true,
         sortOrder: 0
     })
-    
+
     // Posts management state
     const [showPostModal, setShowPostModal] = useState(false)
     const [editingPost, setEditingPost] = useState<ChannelPost | null>(null)
     const [postForm, setPostForm] = useState({
         title: '',
-        titleAr: '',
         content: '',
-        contentAr: '',
         type: 'TEXT' as 'TEXT' | 'VIDEO' | 'IMAGE' | 'DOCUMENT' | 'POLL' | 'ANNOUNCEMENT',
         mediaUrl: '',
         thumbnailUrl: '',
@@ -225,7 +213,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
     const [uploadingMedia, setUploadingMedia] = useState(false)
     const [uploadingThumbnail, setUploadingThumbnail] = useState(false)
     const [uploadingProfileImage, setUploadingProfileImage] = useState(false)
-    
+
     // Comprehensive edit form for creator
     const [editForm, setEditForm] = useState({
         expertise: '',
@@ -242,15 +230,39 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
         kycStatus: 'NOT_STARTED' as CreatorDetails['kycStatus'],
         contractSigned: false
     })
-    
+
     // User profile edit form
     const [profileEdit, setProfileEdit] = useState({
         name: '',
         email: '',
         phone: '',
-        arabicName: '',
         bio: ''
     })
+
+    const handleApiResponse = async (response: Response, errorMessage: string) => {
+        const contentType = response.headers.get('content-type')
+        const isJson = contentType && contentType.includes('application/json')
+
+        if (!response.ok) {
+            if (isJson) {
+                const errorData = await response.json()
+                throw new Error(errorData.error || `${errorMessage} (Status: ${response.status})`)
+            } else {
+                if (response.status === 413) {
+                    throw new Error('Payload too large. The file or data is too big for the server.')
+                } else {
+                    const text = await response.text()
+                    const snippet = text.substring(0, 100).replace(/<[^>]*>?/gm, '').trim()
+                    throw new Error(`${errorMessage} (Status: ${response.status}). The server returned a non-JSON response: "${snippet}..."`)
+                }
+            }
+        }
+
+        if (isJson) {
+            return await response.json()
+        }
+        return null
+    }
 
     useEffect(() => {
         if (isOpen && creatorId) {
@@ -279,7 +291,6 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                 name: creator.user.name || '',
                 email: creator.user.email || '',
                 phone: creator.user.phone || '',
-                arabicName: creator.user.arabicName || '',
                 bio: creator.user.bio || ''
             })
         }
@@ -287,13 +298,13 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
 
     // File upload handler
     const handleFileUpload = async (
-        file: File, 
+        file: File,
         type: 'media' | 'thumbnail' | 'profile'
     ): Promise<string | null> => {
-        const setUploading = type === 'media' 
-            ? setUploadingMedia 
-            : type === 'thumbnail' 
-                ? setUploadingThumbnail 
+        const setUploading = type === 'media'
+            ? setUploadingMedia
+            : type === 'thumbnail'
+                ? setUploadingThumbnail
                 : setUploadingProfileImage
 
         setUploading(true)
@@ -307,13 +318,8 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                 body: formData
             })
 
-            if (!response.ok) {
-                const error = await response.json()
-                throw new Error(error.error || 'Upload failed')
-            }
-
-            const data = await response.json()
-            return data.url
+            const data = await handleApiResponse(response, 'Upload failed')
+            return data?.url || null
         } catch (error) {
             console.error('Upload error:', error)
             toast.error(error instanceof Error ? error.message : 'Failed to upload file')
@@ -326,6 +332,14 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
     const handleMediaFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
+
+        // Validate file size (max 500MB for videos, 10MB for images)
+        const isVideo = file.type.startsWith('video/')
+        const maxSize = isVideo ? 500 * 1024 * 1024 : 10 * 1024 * 1024
+        if (file.size > maxSize) {
+            toast.error(`File too large. Max size is ${isVideo ? '500MB' : '10MB'}`)
+            return
+        }
 
         const url = await handleFileUpload(file, 'media')
         if (url) {
@@ -361,13 +375,21 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                         image: url
                     })
                 })
-                
-                if (!response.ok) throw new Error('Failed to update profile image')
-                
+
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type')
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json()
+                        throw new Error(errorData.error || 'Failed to update profile image')
+                    }
+                    throw new Error(`Failed to update profile image (Status: ${response.status})`)
+                }
+
                 toast.success('Profile image updated successfully')
                 fetchCreatorDetails()
             } catch (error) {
-                toast.error('Failed to update profile image')
+                console.error('Profile image update error:', error)
+                toast.error(error instanceof Error ? error.message : 'Failed to update profile image')
             }
         }
     }
@@ -377,11 +399,8 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
         setError(null)
         try {
             const response = await fetch(`/api/admin/creators/${creatorId}`)
-            if (!response.ok) {
-                throw new Error('Failed to fetch creator details')
-            }
-            const data = await response.json()
-            setCreator(data.creator || data)
+            const data = await handleApiResponse(response, 'Failed to fetch creator details')
+            setCreator(data?.creator || data)
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred')
         } finally {
@@ -399,10 +418,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                 body: JSON.stringify({ action, reason })
             })
 
-            if (!response.ok) {
-                const errorData = await response.json()
-                throw new Error(errorData.error || 'Failed to update KYC status')
-            }
+            await handleApiResponse(response, 'Failed to update KYC status')
 
             await fetchCreatorDetails()
             onCreatorUpdated()
@@ -419,7 +435,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     action: 'updateAll',
                     expertise: editForm.expertise,
                     teachingGoals: editForm.teachingGoals,
@@ -436,17 +452,13 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                     contractSigned: editForm.contractSigned,
                     user: {
                         name: profileEdit.name,
-                        arabicName: profileEdit.arabicName,
                         phone: profileEdit.phone,
                         bio: profileEdit.bio
                     }
                 })
             })
 
-            if (!response.ok) {
-                const errorData = await response.json()
-                throw new Error(errorData.error || 'Failed to update creator')
-            }
+            await handleApiResponse(response, 'Failed to update creator')
 
             await fetchCreatorDetails()
             onCreatorUpdated()
@@ -467,10 +479,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                 method: 'DELETE'
             })
 
-            if (!response.ok) {
-                const errorData = await response.json()
-                throw new Error(errorData.error || 'Failed to delete creator')
-            }
+            await handleApiResponse(response, 'Failed to delete creator')
 
             onCreatorUpdated()
             onClose()
@@ -494,22 +503,20 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                 body: JSON.stringify({
                     action: 'updateProfile',
                     name: profileEdit.name,
-                    arabicName: profileEdit.arabicName,
                     phone: profileEdit.phone,
                     email: profileEdit.email
                 })
             })
 
-            if (!response.ok) {
-                const errorData = await response.json()
-                throw new Error(errorData.error || 'Failed to update mentor profile')
-            }
+            await handleApiResponse(response, 'Failed to update mentor profile')
 
             await fetchCreatorDetails()
             onCreatorUpdated()
             setIsEditing(false)
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred')
+            console.error('User profile update error:', err)
+            toast.error(err instanceof Error ? err.message : 'Failed to update profile')
         }
     }
 
@@ -538,20 +545,21 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 bg-background bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-background rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden border border-border">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+            <div className="bg-background/80 backdrop-blur-xl rounded-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col border border-white/20 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative z-10 animate-in fade-in zoom-in duration-200">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-border">
+                <div className="p-6 border-b border-border/50 flex items-center justify-between bg-white/5">
                     <div className="flex items-center gap-4">
-                        <h2 className="text-xl font-semibold text-foreground">
-                            Creator Details
-                        </h2>
-                        {creator && (
-                            <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${kycStatusColors[creator.kycStatus]}`}>
-                                {getKycStatusIcon(creator.kycStatus)}
-                                KYC {kycStatusLabels[creator.kycStatus]}
-                            </span>
-                        )}
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+                            <User className="text-white w-6 h-6" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold text-foreground tracking-tight">
+                                {creator?.user.name || 'Creator Details'}
+                            </h2>
+                            <p className="text-sm text-muted-foreground">Manage creator profile and verification</p>
+                        </div>
                     </div>
                     <div className="flex items-center gap-2">
                         {!isEditing && (
@@ -686,15 +694,15 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                             <User className="w-5 h-5" />
                                             User Profile
                                         </h3>
-                                        
+
                                         {/* Profile Image Upload */}
                                         <div className="mb-6 flex items-center gap-4">
                                             <div className="relative">
                                                 <div className="w-24 h-24 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
                                                     {creator.user.profileImage ? (
-                                                        <img 
-                                                            src={creator.user.profileImage} 
-                                                            alt={creator.user.name} 
+                                                        <img
+                                                            src={creator.user.profileImage}
+                                                            alt={creator.user.name}
                                                             className="w-full h-full object-cover"
                                                         />
                                                     ) : (
@@ -734,16 +742,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                     className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
                                                 />
                                             </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-foreground mb-1">Arabic Name</label>
-                                                <input
-                                                    type="text"
-                                                    value={profileEdit.arabicName}
-                                                    onChange={(e) => setProfileEdit({ ...profileEdit, arabicName: e.target.value })}
-                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
-                                                    dir="rtl"
-                                                />
-                                            </div>
+
                                             <div>
                                                 <label className="block text-sm font-medium text-foreground mb-1">Email (Read-only)</label>
                                                 <input
@@ -876,7 +875,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                     type="text"
                                                     value={editForm.bankName}
                                                     onChange={(e) => setEditForm({ ...editForm, bankName: e.target.value })}
-                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background/50 text-foreground"
                                                 />
                                             </div>
                                             <div>
@@ -885,7 +884,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                     type="text"
                                                     value={editForm.bankAccountIBAN}
                                                     onChange={(e) => setEditForm({ ...editForm, bankAccountIBAN: e.target.value })}
-                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background/50 text-foreground"
                                                 />
                                             </div>
                                         </div>
@@ -903,7 +902,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                 <select
                                                     value={editForm.kycStatus}
                                                     onChange={(e) => setEditForm({ ...editForm, kycStatus: e.target.value as CreatorDetails['kycStatus'] })}
-                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background/50 text-foreground"
                                                 >
                                                     <option value="NOT_STARTED">Not Started</option>
                                                     <option value="PENDING">Pending</option>
@@ -926,7 +925,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                     type="number"
                                                     value={editForm.totalEarnings}
                                                     onChange={(e) => setEditForm({ ...editForm, totalEarnings: e.target.value })}
-                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background/50 text-foreground"
                                                 />
                                             </div>
                                             <div>
@@ -935,7 +934,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                     type="number"
                                                     value={editForm.totalSubscribers}
                                                     onChange={(e) => setEditForm({ ...editForm, totalSubscribers: e.target.value })}
-                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background text-foreground"
+                                                    className="w-full border border-border rounded-lg px-3 py-2 bg-background/50 text-foreground"
                                                 />
                                             </div>
                                         </div>
@@ -956,7 +955,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                     <div>
                                                         <p className="text-sm text-muted-foreground">Name</p>
                                                         <p className="font-medium text-foreground">{creator.user.name}</p>
-                                                        {creator.user.arabicName && <p className="text-sm text-muted-foreground">{creator.user.arabicName}</p>}
+
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-3">
@@ -1162,9 +1161,6 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                             <div className="flex items-center justify-between">
                                                 <div>
                                                     <h4 className="font-medium text-foreground">{course.title}</h4>
-                                                    {course.titleAr && (
-                                                        <p className="text-sm text-muted-foreground">{course.titleAr}</p>
-                                                    )}
                                                     <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                                                         <span>{course.totalEnrollments} enrollments</span>
                                                         <span>★ {course.rating.toFixed(1)}</span>
@@ -1321,11 +1317,8 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                         setCredentialForm({
                                             type: 'CERTIFICATION',
                                             title: '',
-                                            titleAr: '',
                                             institution: '',
-                                            institutionAr: '',
                                             description: '',
-                                            descriptionAr: '',
                                             issueDate: '',
                                             expiryDate: '',
                                             credentialId: '',
@@ -1368,7 +1361,6 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                             {cred.type}
                                                         </span>
                                                     </div>
-                                                    {cred.titleAr && <p className="text-sm text-muted-foreground">{cred.titleAr}</p>}
                                                     <p className="text-sm text-foreground mt-1">{cred.institution}</p>
                                                     {cred.description && <p className="text-sm text-muted-foreground mt-2">{cred.description}</p>}
                                                     <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
@@ -1406,11 +1398,8 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                             setCredentialForm({
                                                                 type: cred.type,
                                                                 title: cred.title,
-                                                                titleAr: cred.titleAr || '',
                                                                 institution: cred.institution,
-                                                                institutionAr: cred.institutionAr || '',
                                                                 description: cred.description || '',
-                                                                descriptionAr: cred.descriptionAr || '',
                                                                 issueDate: cred.issueDate ? new Date(cred.issueDate).toISOString().split('T')[0] : '',
                                                                 expiryDate: cred.expiryDate ? new Date(cred.expiryDate).toISOString().split('T')[0] : '',
                                                                 credentialId: cred.credentialId || '',
@@ -1468,9 +1457,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                         setEditingPost(null)
                                         setPostForm({
                                             title: '',
-                                            titleAr: '',
                                             content: '',
-                                            contentAr: '',
                                             type: 'TEXT',
                                             mediaUrl: '',
                                             thumbnailUrl: '',
@@ -1534,12 +1521,11 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                                 Pinned
                                                             </span>
                                                         )}
-                                                        <span className={`px-2 py-0.5 text-xs rounded-full ${
-                                                            post.type === 'VIDEO' ? 'bg-purple-100 text-purple-700' :
+                                                        <span className={`px-2 py-0.5 text-xs rounded-full ${post.type === 'VIDEO' ? 'bg-purple-100 text-purple-700' :
                                                             post.type === 'IMAGE' ? 'bg-blue-100 text-blue-700' :
-                                                            post.type === 'ANNOUNCEMENT' ? 'bg-red-100 text-red-700' :
-                                                            'bg-gray-100 text-gray-700'
-                                                        }`}>
+                                                                post.type === 'ANNOUNCEMENT' ? 'bg-red-100 text-red-700' :
+                                                                    'bg-gray-100 text-gray-700'
+                                                            }`}>
                                                             {post.type}
                                                         </span>
 
@@ -1551,7 +1537,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                     </div>
                                                     <h4 className="font-semibold text-foreground mt-2">{post.title || 'Untitled Post'}</h4>
                                                     <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{post.content}</p>
-                                                    
+
                                                     {post.mediaUrl && (
                                                         <div className="mt-2">
                                                             {post.type === 'VIDEO' ? (
@@ -1564,7 +1550,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                             ) : null}
                                                         </div>
                                                     )}
-                                                    
+
                                                     <div className="flex gap-4 mt-3 text-xs text-muted-foreground">
                                                         <span className="flex items-center gap-1">
                                                             <Eye className="w-3 h-3" /> {post.viewCount} views
@@ -1588,12 +1574,11 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                                         headers: { 'Content-Type': 'application/json' },
                                                                         body: JSON.stringify({ action: 'publishPost', postId: post.id })
                                                                     })
-                                                                    if (response.ok) {
-                                                                        toast.success('Post published')
-                                                                        fetchCreatorDetails()
-                                                                    }
+                                                                    await handleApiResponse(response, 'Failed to publish post')
+                                                                    toast.success('Post published')
+                                                                    fetchCreatorDetails()
                                                                 } catch (err) {
-                                                                    toast.error('Failed to publish post')
+                                                                    toast.error(err instanceof Error ? err.message : 'Failed to publish post')
                                                                 }
                                                             }}
                                                             className="p-2 text-green-600 hover:bg-green-50 rounded"
@@ -1610,12 +1595,11 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                                     headers: { 'Content-Type': 'application/json' },
                                                                     body: JSON.stringify({ action: 'pinPost', postId: post.id, isPinned: !post.isPinned })
                                                                 })
-                                                                if (response.ok) {
-                                                                    toast.success(post.isPinned ? 'Post unpinned' : 'Post pinned')
-                                                                    fetchCreatorDetails()
-                                                                }
+                                                                await handleApiResponse(response, 'Failed to update pin status')
+                                                                toast.success(post.isPinned ? 'Post unpinned' : 'Post pinned')
+                                                                fetchCreatorDetails()
                                                             } catch (err) {
-                                                                toast.error('Failed to update pin status')
+                                                                toast.error(err instanceof Error ? err.message : 'Failed to update pin status')
                                                             }
                                                         }}
                                                         className={`p-2 ${post.isPinned ? 'text-amber-600' : 'text-gray-400'} hover:bg-amber-50 rounded`}
@@ -1628,9 +1612,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                             setEditingPost(post)
                                                             setPostForm({
                                                                 title: post.title || '',
-                                                                titleAr: post.titleAr || '',
                                                                 content: post.content,
-                                                                contentAr: post.contentAr || '',
                                                                 type: post.type,
                                                                 mediaUrl: post.mediaUrl || '',
                                                                 thumbnailUrl: post.thumbnailUrl || '',
@@ -1654,12 +1636,11 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                                     headers: { 'Content-Type': 'application/json' },
                                                                     body: JSON.stringify({ action: 'deletePost', postId: post.id })
                                                                 })
-                                                                if (response.ok) {
-                                                                    toast.success('Post deleted')
-                                                                    fetchCreatorDetails()
-                                                                }
+                                                                await handleApiResponse(response, 'Failed to delete post')
+                                                                toast.success('Post deleted')
+                                                                fetchCreatorDetails()
                                                             } catch (err) {
-                                                                toast.error('Failed to delete post')
+                                                                toast.error(err instanceof Error ? err.message : 'Failed to delete post')
                                                             }
                                                         }}
                                                         className="p-2 text-red-600 hover:bg-red-50 rounded"
@@ -1680,7 +1661,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
 
             {/* Credential Add/Edit Modal */}
             {showCredentialModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-60">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
                     <div className="bg-background rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-border">
                         <div className="p-6 border-b border-border">
                             <h3 className="text-lg font-semibold text-foreground">
@@ -1727,16 +1708,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                         required
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-foreground mb-1">Title (Arabic)</label>
-                                    <input
-                                        type="text"
-                                        value={credentialForm.titleAr}
-                                        onChange={(e) => setCredentialForm({ ...credentialForm, titleAr: e.target.value })}
-                                        className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground"
-                                        dir="rtl"
-                                    />
-                                </div>
+
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -1749,16 +1721,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                         required
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-foreground mb-1">Institution (Arabic)</label>
-                                    <input
-                                        type="text"
-                                        value={credentialForm.institutionAr}
-                                        onChange={(e) => setCredentialForm({ ...credentialForm, institutionAr: e.target.value })}
-                                        className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground"
-                                        dir="rtl"
-                                    />
-                                </div>
+
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-foreground mb-1">Description (English)</label>
@@ -1854,11 +1817,8 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                 credentialId: editingCredential?.id,
                                                 type: credentialForm.type,
                                                 title: credentialForm.title,
-                                                titleAr: credentialForm.titleAr,
                                                 institution: credentialForm.institution,
-                                                institutionAr: credentialForm.institutionAr,
                                                 description: credentialForm.description,
-                                                descriptionAr: credentialForm.descriptionAr,
                                                 issueDate: credentialForm.issueDate,
                                                 expiryDate: credentialForm.expiryDate,
                                                 credentialUrl: credentialForm.credentialUrl,
@@ -1868,14 +1828,10 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                 sortOrder: credentialForm.sortOrder
                                             })
                                         })
-                                        if (response.ok) {
-                                            toast.success(editingCredential ? 'Credential updated' : 'Credential added')
-                                            setShowCredentialModal(false)
-                                            fetchCreatorDetails()
-                                        } else {
-                                            const error = await response.json()
-                                            throw new Error(error.error || 'Failed to save')
-                                        }
+                                        await handleApiResponse(response, 'Failed to save credential')
+                                        toast.success(editingCredential ? 'Credential updated' : 'Credential added')
+                                        setShowCredentialModal(false)
+                                        fetchCreatorDetails()
                                     } catch (err) {
                                         toast.error(err instanceof Error ? err.message : 'Failed to save credential')
                                     }
@@ -1891,7 +1847,7 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
 
             {/* Post Add/Edit Modal */}
             {showPostModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-60">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
                     <div className="bg-background rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-border">
                         <div className="p-6 border-b border-border">
                             <h3 className="text-lg font-semibold text-foreground">
@@ -1916,27 +1872,15 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                 </div>
 
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-foreground mb-1">Title (English)</label>
-                                    <input
-                                        type="text"
-                                        value={postForm.title}
-                                        onChange={(e) => setPostForm({ ...postForm, title: e.target.value })}
-                                        className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground"
-                                        placeholder="Optional title..."
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-foreground mb-1">Title (Arabic)</label>
-                                    <input
-                                        type="text"
-                                        value={postForm.titleAr}
-                                        onChange={(e) => setPostForm({ ...postForm, titleAr: e.target.value })}
-                                        className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground"
-                                        dir="rtl"
-                                    />
-                                </div>
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-foreground mb-1">Title (English)</label>
+                                <input
+                                    type="text"
+                                    value={postForm.title}
+                                    onChange={(e) => setPostForm({ ...postForm, title: e.target.value })}
+                                    className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground"
+                                    placeholder="Optional title..."
+                                />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-foreground mb-1">Content (English) *</label>
@@ -1947,16 +1891,6 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                     rows={4}
                                     placeholder="Write your post content..."
                                     required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-foreground mb-1">Content (Arabic)</label>
-                                <textarea
-                                    value={postForm.contentAr}
-                                    onChange={(e) => setPostForm({ ...postForm, contentAr: e.target.value })}
-                                    className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground"
-                                    rows={3}
-                                    dir="rtl"
                                 />
                             </div>
                             {(postForm.type === 'VIDEO' || postForm.type === 'IMAGE' || postForm.type === 'DOCUMENT') && (
@@ -2096,9 +2030,9 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                 action: editingPost ? 'updatePost' : 'addPost',
                                                 postId: editingPost?.id,
                                                 title: postForm.title,
-                                                titleAr: postForm.titleAr,
+
                                                 content: postForm.content,
-                                                contentAr: postForm.contentAr,
+
                                                 type: postForm.type,
                                                 mediaUrl: postForm.mediaUrl,
                                                 thumbnailUrl: postForm.thumbnailUrl,
@@ -2107,14 +2041,10 @@ export default function CreatorDetailsModal({ creatorId, isOpen, onClose, onCrea
                                                 scheduledAt: postForm.scheduledAt
                                             })
                                         })
-                                        if (response.ok) {
-                                            toast.success(editingPost ? 'Post updated' : 'Post created')
-                                            setShowPostModal(false)
-                                            fetchCreatorDetails()
-                                        } else {
-                                            const error = await response.json()
-                                            throw new Error(error.error || 'Failed to save')
-                                        }
+                                        await handleApiResponse(response, 'Failed to save post')
+                                        toast.success(editingPost ? 'Post updated' : 'Post created')
+                                        setShowPostModal(false)
+                                        fetchCreatorDetails()
                                     } catch (err) {
                                         toast.error(err instanceof Error ? err.message : 'Failed to save post')
                                     }

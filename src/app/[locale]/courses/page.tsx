@@ -130,11 +130,11 @@ export default function CoursesPage() {
 
     const onTouchEnd = () => {
         if (!touchStart || !touchEnd) return;
-        
+
         const distance = touchStart - touchEnd;
         const isLeftSwipe = distance > minSwipeDistance;
         const isRightSwipe = distance < -minSwipeDistance;
-        
+
         if (isLeftSwipe && heroIndex < courses.length - 1) {
             setHeroIndex(heroIndex + 1);
         }
@@ -157,13 +157,13 @@ export default function CoursesPage() {
     const onMouseUp = () => {
         if (!isDragging) return;
         setIsDragging(false);
-        
+
         if (!mouseStart || !mouseEnd) return;
-        
+
         const distance = mouseStart - mouseEnd;
         const isLeftSwipe = distance > minSwipeDistance;
         const isRightSwipe = distance < -minSwipeDistance;
-        
+
         if (isLeftSwipe && heroIndex < courses.length - 1) {
             setHeroIndex(heroIndex + 1);
         }
@@ -204,8 +204,7 @@ export default function CoursesPage() {
     const heroCourse = courses[heroIndex] || courseList[0];
 
     const handleCourseClick = (courseId: string) => {
-        // Show launching soon modal instead of navigating to course detail
-        setShowLaunchingModal(true);
+        router.push(`/${locale}/courses/${courseId}`);
     };
 
     const { openAuthModal } = useAuthModal();
@@ -229,13 +228,14 @@ export default function CoursesPage() {
     const scroll = (direction: 'left' | 'right', containerId: string) => {
         const container = document.getElementById(containerId);
         if (container) {
-            // Card width (180px) + gap (12px = 3 in Tailwind)
-            const cardWidth = 180 + 12;
+            // Adjusted to match w-[280px] on mobile and w-[240px] on desktop with gap-4 (16px)
+            const isMobile = window.innerWidth < 768;
+            const cardWidth = isMobile ? (280 + 16) : (240 + 16);
             const scrollAmount = cardWidth;
-            const newPosition = direction === 'left' 
-                ? container.scrollLeft - scrollAmount 
+            const newPosition = direction === 'left'
+                ? container.scrollLeft - scrollAmount
                 : container.scrollLeft + scrollAmount;
-            
+
             container.scrollTo({
                 left: newPosition,
                 behavior: 'smooth'
@@ -248,12 +248,12 @@ export default function CoursesPage() {
         if (container) {
             const { scrollLeft, scrollWidth, clientWidth } = container;
             const hasOverflow = scrollWidth > clientWidth;
-            
+
             setShowLeftArrow(prev => ({
                 ...prev,
                 [containerId]: hasOverflow && scrollLeft > 10
             }));
-            
+
             setShowRightArrow(prev => ({
                 ...prev,
                 [containerId]: hasOverflow && scrollLeft < scrollWidth - clientWidth - 10
@@ -286,7 +286,7 @@ export default function CoursesPage() {
                             <p className="text-xs opacity-90">Hundreds of exclusive Prime Originals. Now 50% off.</p>
                         </div>
                         <div className="flex flex-col items-end gap-2">
-                            <button 
+                            <button
                                 onClick={handleAcceptOffer}
                                 className="bg-white text-black font-semibold text-sm hover:bg-white/90 transition-all whitespace-nowrap text-center"
                                 style={{
@@ -311,7 +311,7 @@ export default function CoursesPage() {
             )}
 
             {/* Hero Section - Featured Course */}
-            <div 
+            <div
                 className="relative h-screen w-full overflow-hidden mb-12 cursor-grab active:cursor-grabbing"
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
@@ -344,7 +344,7 @@ export default function CoursesPage() {
                         <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight">
                             {getCourseTitle(heroCourse)}
                         </h1>
-                        
+
                         {/* Metadata - Category • Thriller • Drama • 18+ */}
                         <div className={`flex items-center text-sm text-white/90 gap-2 flex-wrap ${isArabic ? 'flex-row-reverse justify-end' : 'justify-center md:justify-start'}`}>
                             <div className={`flex items-center gap-1.5 ${isArabic ? 'flex-row-reverse' : ''}`}>
@@ -367,13 +367,13 @@ export default function CoursesPage() {
 
                         {/* Buttons - Mobile: centered, full width pill */}
                         <div className={`flex items-center gap-3 pt-3 ${isArabic ? 'flex-row-reverse justify-end' : 'justify-center md:justify-start'}`}>
-                            <button 
+                            <button
                                 onClick={handleAcceptOffer}
                                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-3.5 font-semibold text-base text-black bg-white rounded-full min-w-[180px] max-w-[280px] md:max-w-[340px] transition-transform duration-100 ease-in hover:scale-[1.02] active:scale-[0.98]"
                             >
                                 Accept Free Trial
                             </button>
-                            <button 
+                            <button
                                 onClick={handleAcceptOffer}
                                 className="w-12 h-12 md:w-10 md:h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all backdrop-blur-sm flex-shrink-0"
                             >
@@ -394,9 +394,8 @@ export default function CoursesPage() {
                         <button
                             key={index}
                             onClick={() => setHeroIndex(index)}
-                            className={`w-2 h-2 rounded-full transition-all ${
-                                index === heroIndex ? 'bg-white w-6' : 'bg-white/40'
-                            }`}
+                            className={`w-2 h-2 rounded-full transition-all ${index === heroIndex ? 'bg-white w-6' : 'bg-white/40'
+                                }`}
                         />
                     ))}
                 </div>
@@ -415,7 +414,7 @@ export default function CoursesPage() {
                             </svg>
                         </div>
                     </div>
-                    
+
                     <div className="relative -mx-8 px-8">
                         {/* Navigation Arrows */}
                         {showLeftArrow['top-10-scroll'] && (
@@ -438,99 +437,105 @@ export default function CoursesPage() {
                                 </svg>
                             </button>
                         )}
-                    
-                        <div 
-                            id="top-10-scroll" 
+
+                        <div
+                            id="top-10-scroll"
                             className="overflow-x-auto overflow-hidden scrollbar-hide"
                             onScroll={() => handleScroll('top-10-scroll')}
                         >
-                        <div className="flex gap-3" style={{ width: 'max-content' }}>
-                            {topCourses.slice(0, 8).map((course, index) => (
-                            <div 
-                                key={course.id} 
-                                className="relative group cursor-pointer w-[180px] flex-shrink-0" 
-                                onMouseEnter={() => setHoveredCard(course.id)}
-                                onMouseLeave={() => {
-                                    setHoveredCard(null);
-                                    setShowMenu(null);
-                                }}
-                            >
-                                {/* Course Thumbnail */}
-                                <div className="relative aspect-[2/3] overflow-hidden" onClick={() => handleCourseClick(course.id)} style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
-                                    {/* Rank Number - Apple TV Style */}
-                                    <div 
-                                        className={`absolute top-1 ${rankBadgePositionClass} z-10 text-white font-bold pointer-events-none select-none`}
-                                        style={{
-                                            fontSize: '40px',
-                                            fontWeight: 700,
-                                            marginTop: '4px',
-                                            WebkitMask: 'linear-gradient(180deg, #fff 0, #fff 50%, hsla(0, 0%, 100%, .12))',
-                                            mask: 'linear-gradient(180deg, #fff 0, #fff 50%, hsla(0, 0%, 100%, .12))'
-                                        }}
-                                    >
-                                        {index + 1}
-                                    </div>
-                                    <Image
-                                        src={course.thumbnail || '/placeholder.jpg'}
-                                        alt={course.title}
-                                        fill
-                                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            <div className="flex gap-4 pb-4" style={{ width: 'max-content' }}>
+                                {topCourses.slice(0, 10).map((course, index) => (
+                                    <div
                                         key={course.id}
-                                    />
-                                    {/* Three Dots Button - Apple TV Style */}
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setShowMenu(showMenu === course.id ? null : course.id);
+                                        className="relative group cursor-pointer w-[280px] md:w-[240px] flex-shrink-0"
+                                        onMouseEnter={() => setHoveredCard(course.id)}
+                                        onMouseLeave={() => {
+                                            setHoveredCard(null);
+                                            setShowMenu(null);
                                         }}
-                                        className={`absolute bottom-2 ${cardMenuPositionClass} w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center transition-all z-10`}
                                     >
-                                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 16 16">
-                                            <circle cx="3" cy="8" r="1.5"/>
-                                            <circle cx="8" cy="8" r="1.5"/>
-                                            <circle cx="13" cy="8" r="1.5"/>
-                                        </svg>
-                                    </button>
-
-                                    {/* Actions Dropdown Menu */}
-                                    {showMenu === course.id && (
-                                        <div className={`absolute bottom-12 ${cardMenuPositionClass} bg-neutral-800/95 dark:bg-neutral-800/95 backdrop-blur-md overflow-hidden shadow-xl z-20 w-[140px]`} style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
+                                        {/* Course Thumbnail - Landscape (Apple TV Style) */}
+                                        <div className="relative aspect-video overflow-hidden mb-3" onClick={() => handleCourseClick(course.id)} style={{ borderRadius: '12px', border: '1px solid hsla(0,0%,100%,.12)' }}>
+                                            <Image
+                                                src={course.thumbnail || '/placeholder.jpg'}
+                                                alt={course.title}
+                                                fill
+                                                className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                                                key={course.id}
+                                            />
+                                            {/* Three Dots Button */}
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    setShowMenu(null);
+                                                    setShowMenu(showMenu === course.id ? null : course.id);
                                                 }}
-                                                className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 dark:text-white/90 hover:bg-white/10 dark:hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
+                                                className={`absolute bottom-2 ${cardMenuPositionClass} w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center transition-all z-10`}
                                             >
-                                                <span>Share</span>
-                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-                                                </svg>
-                                            </button>
-                                            <div className="h-[0.5px] bg-white/10 mx-2"></div>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    navigator.clipboard.writeText(`${window.location.origin}/${locale}/courses/${course.id}`);
-                                                    setShowMenu(null);
-                                                }}
-                                                className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 dark:text-white/90 hover:bg-white/10 dark:hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
-                                            >
-                                                <span>Copy Link</span>
-                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+                                                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 16 16">
+                                                    <circle cx="3" cy="8" r="1.5" />
+                                                    <circle cx="8" cy="8" r="1.5" />
+                                                    <circle cx="13" cy="8" r="1.5" />
                                                 </svg>
                                             </button>
                                         </div>
-                                    )}
-                                </div>
+
+                                        {/* Info Below Card with Rank */}
+                                        <div className={`flex items-start gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                            <div className="flex items-center justify-center">
+                                                <span
+                                                    className="text-[72px] leading-[0.8] font-bold text-white/30 tracking-tighter"
+                                                    style={{
+                                                        fontFamily: 'SF Pro Display, system-ui',
+                                                        WebkitTextStroke: '1px rgba(255,255,255,0.1)'
+                                                    }}
+                                                >
+                                                    {index + 1}
+                                                </span>
+                                            </div>
+                                            <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                <h3 className="text-sm md:text-base font-semibold text-white/95 truncate mb-1">
+                                                    {getCourseTitle(course)}
+                                                </h3>
+                                                <p className="text-[12px] text-white/50 font-medium truncate uppercase tracking-wide">
+                                                    {getCategoryLabel(course.category)}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Dropdown Menu */}
+                                        {showMenu === course.id && (
+                                            <div className={`absolute bottom-20 ${cardMenuPositionClass} bg-neutral-900/95 backdrop-blur-xl overflow-hidden shadow-2xl z-20 w-[160px] border border-white/10 rounded-xl`}>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setShowMenu(null);
+                                                    }}
+                                                    className={`w-full px-4 py-3 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/5 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
+                                                >
+                                                    <span>Share</span>
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                                                </button>
+                                                <div className="h-[1px] bg-white/5 mx-2"></div>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigator.clipboard.writeText(`${window.location.origin}/${locale}/courses/${course.id}`);
+                                                        setShowMenu(null);
+                                                    }}
+                                                    className={`w-full px-4 py-3 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/5 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
+                                                >
+                                                    <span>Copy Link</span>
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                        </div>
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Separator Line */}
                 <div className="max-w-screen-2xl mx-auto px-8 mt-8">
                     <div className="h-[1px] bg-white/10"></div>
@@ -555,7 +560,7 @@ export default function CoursesPage() {
                                     </svg>
                                 </div>
                             </div>
-                            
+
                             <div className="relative -mx-8 px-8">
                                 {/* Navigation Arrows */}
                                 {showLeftArrow[`category-${category.replace(/\s+/g, '-').toLowerCase()}`] && (
@@ -578,86 +583,88 @@ export default function CoursesPage() {
                                         </svg>
                                     </button>
                                 )}
-                            
-                                <div 
-                                    id={`category-${category.replace(/\s+/g, '-').toLowerCase()}`} 
+
+                                <div
+                                    id={`category-${category.replace(/\s+/g, '-').toLowerCase()}`}
                                     className="overflow-x-auto overflow-hidden scrollbar-hide"
                                     onScroll={() => handleScroll(`category-${category.replace(/\s+/g, '-').toLowerCase()}`)}
                                 >
-                                <div className="flex gap-3" style={{ width: 'max-content' }}>
-                                    {categoryCourses.map((course) => (
-                                    <div 
-                                        key={course.id} 
-                                        className="relative group cursor-pointer w-[180px] flex-shrink-0" 
-                                        onMouseEnter={() => setHoveredCard(course.id)}
-                                        onMouseLeave={() => {
-                                            setHoveredCard(null);
-                                            setShowMenu(null);
-                                        }}
-                                    >
-                                        {/* Course Thumbnail */}
-                                        <div className="relative aspect-[2/3] overflow-hidden" onClick={() => handleCourseClick(course.id)} style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
-                                            <Image
-                                                src={course.thumbnail || '/placeholder.jpg'}
-                                                alt={course.title}
-                                                fill
-                                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                    <div className="flex gap-4 pb-4" style={{ width: 'max-content' }}>
+                                        {categoryCourses.map((course) => (
+                                            <div
                                                 key={course.id}
-                                            />
-                                            {/* Three Dots Button - Apple TV Style */}
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setShowMenu(showMenu === course.id ? null : course.id);
+                                                className="relative group cursor-pointer w-[280px] md:w-[240px] flex-shrink-0"
+                                                onMouseEnter={() => setHoveredCard(course.id)}
+                                                onMouseLeave={() => {
+                                                    setHoveredCard(null);
+                                                    setShowMenu(null);
                                                 }}
-                                                className={`absolute bottom-2 ${cardMenuPositionClass} w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center transition-all z-10`}
                                             >
-                                                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 16 16">
-                                                    <circle cx="3" cy="8" r="1.5"/>
-                                                    <circle cx="8" cy="8" r="1.5"/>
-                                                    <circle cx="13" cy="8" r="1.5"/>
-                                                </svg>
-                                            </button>
-
-                                            {/* Actions Dropdown Menu */}
-                                            {showMenu === course.id && (
-                                                <div className={`absolute bottom-12 ${cardMenuPositionClass} bg-neutral-800/95 dark:bg-neutral-800/95 backdrop-blur-md overflow-hidden shadow-xl z-20 w-[140px]`} style={{ borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
+                                                {/* Course Thumbnail - Landscape (Apple TV Style) */}
+                                                <div className="relative aspect-video overflow-hidden mb-2" onClick={() => handleCourseClick(course.id)} style={{ borderRadius: '12px', border: '1px solid hsla(0,0%,100%,.12)' }}>
+                                                    <Image
+                                                        src={course.thumbnail || '/placeholder.jpg'}
+                                                        alt={course.title}
+                                                        fill
+                                                        className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                                                        key={course.id}
+                                                    />
+                                                    {/* Three Dots Button */}
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            setShowMenu(null);
+                                                            setShowMenu(showMenu === course.id ? null : course.id);
                                                         }}
-                                                        className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 dark:text-white/90 hover:bg-white/10 dark:hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
+                                                        className={`absolute bottom-2 ${cardMenuPositionClass} w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center transition-all z-10`}
                                                     >
-                                                        <span>Share</span>
-                                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-                                                        </svg>
-                                                    </button>
-                                                    <div className="h-[0.5px] bg-white/10 mx-2"></div>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            navigator.clipboard.writeText(`${window.location.origin}/${locale}/courses/${course.id}`);
-                                                            setShowMenu(null);
-                                                        }}
-                                                        className={`w-full px-3 py-2.5 ${dropdownTextAlign} text-[13px] text-white/90 dark:text-white/90 hover:bg-white/10 dark:hover:bg-white/10 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
-                                                    >
-                                                        <span>Copy Link</span>
-                                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+                                                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 16 16">
+                                                            <circle cx="3" cy="8" r="1.5" />
+                                                            <circle cx="8" cy="8" r="1.5" />
+                                                            <circle cx="13" cy="8" r="1.5" />
                                                         </svg>
                                                     </button>
                                                 </div>
-                                            )}
-                                        </div>
+
+                                                <div className={`min-w-0 px-0.5 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                                    <h3 className="text-sm font-semibold text-white/95 truncate">
+                                                        {getCourseTitle(course)}
+                                                    </h3>
+                                                </div>
+
+                                                {/* Dropdown Menu */}
+                                                {showMenu === course.id && (
+                                                    <div className={`absolute bottom-16 ${cardMenuPositionClass} bg-neutral-900/95 backdrop-blur-xl overflow-hidden shadow-2xl z-20 w-[160px] border border-white/10 rounded-xl`}>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setShowMenu(null);
+                                                            }}
+                                                            className={`w-full px-4 py-3 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/5 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
+                                                        >
+                                                            <span>Share</span>
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                                                        </button>
+                                                        <div className="h-[1px] bg-white/5 mx-2"></div>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                navigator.clipboard.writeText(`${window.location.origin}/${locale}/courses/${course.id}`);
+                                                                setShowMenu(null);
+                                                            }}
+                                                            className={`w-full px-4 py-3 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/5 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
+                                                        >
+                                                            <span>Copy Link</span>
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                                </div>
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Separator Line */}
                         <div className="max-w-screen-2xl mx-auto px-8 mt-8">
                             <div className="h-[1px] bg-white/10"></div>
@@ -697,7 +704,7 @@ export default function CoursesPage() {
                                     />
                                     <span className="text-white text-2xl font-semibold">Prime</span>
                                 </div>
-                                
+
                                 {/* Title */}
                                 <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight" style={{ fontSize: '22px' }}>
                                     {isArabic ? 'عرض لفترة محدودة. €28.99/Mo For 12 Months' : 'Limited-time offer. €28.99/Mo For 12 Months'}
@@ -705,7 +712,7 @@ export default function CoursesPage() {
 
                                 {/* CTA Button */}
                                 <div className={`flex items-center gap-3 pt-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                    <button 
+                                    <button
                                         onClick={handleAcceptOffer}
                                         className="bg-white hover:bg-white/90 text-black font-semibold px-8 py-3 rounded-full transition-all"
                                     >
@@ -715,15 +722,15 @@ export default function CoursesPage() {
 
                                 {/* Offer Details */}
                                 <p className="text-xs text-white/70 leading-relaxed">
-                                    {isArabic 
-                                        ? '€28.99/Mo For 12 Months' 
+                                    {isArabic
+                                        ? '€28.99/Mo For 12 Months'
                                         : '€28.99/Mo For 12 Months'}
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Separator Line */}
                 <div className="max-w-screen-2xl mx-auto px-8 mt-8">
                     <div className="h-[1px] bg-white/10"></div>
@@ -743,7 +750,7 @@ export default function CoursesPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                             </svg>
                         </a>
-                        
+
                         {/* Device Icons */}
                         <div className="flex items-center justify-center gap-12 mt-12 flex-wrap">
                             <div className="flex flex-col items-center gap-2">
@@ -755,7 +762,7 @@ export default function CoursesPage() {
                                 </div>
                                 <span className="text-sm text-black">iPhone</span>
                             </div>
-                            
+
                             <div className="flex flex-col items-center gap-2">
                                 <div className="w-12 h-12 flex items-center justify-center">
                                     <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" stroke="black" strokeWidth="1.5">
@@ -765,7 +772,7 @@ export default function CoursesPage() {
                                 </div>
                                 <span className="text-sm text-black">iPad</span>
                             </div>
-                            
+
                             <div className="flex flex-col items-center gap-2">
                                 <div className="w-12 h-12 flex items-center justify-center">
                                     <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" stroke="black" strokeWidth="1.5">
@@ -776,7 +783,7 @@ export default function CoursesPage() {
                                 <span className="text-sm text-black">Mac & Windows</span>
                             </div>
 
-                            
+
                             <div className="flex flex-col items-center gap-2">
                                 <div className="w-12 h-12 flex items-center justify-center">
                                     <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" stroke="black" strokeWidth="1.5">
@@ -787,7 +794,7 @@ export default function CoursesPage() {
                                 </div>
                                 <span className="text-sm text-black">AirPlay</span>
                             </div>
-                            
+
                             <div className="flex flex-col items-center gap-2">
                                 <div className="w-12 h-12 flex items-center justify-center">
                                     <svg className="w-10 h-12" viewBox="0 0 40 48" fill="none" stroke="black" strokeWidth="1.5">
@@ -797,7 +804,7 @@ export default function CoursesPage() {
                                 </div>
                                 <span className="text-sm text-black">Android</span>
                             </div>
-                            
+
                             <div className="flex flex-col items-center gap-2">
                                 <div className="w-12 h-12 flex items-center justify-center">
                                     <svg className="w-10 h-10" viewBox="0 0 40 40" fill="none" stroke="black" strokeWidth="1.5">
@@ -810,7 +817,7 @@ export default function CoursesPage() {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Separator Line */}
                 <div className="max-w-screen-2xl mx-auto px-8 mt-8">
                     <div className="h-[1px] bg-black/10"></div>
@@ -821,22 +828,22 @@ export default function CoursesPage() {
             <div className="relative z-10 pb-12 bg-white">
                 <div className="max-w-4xl mx-auto px-8">
                     <h2 className="text-4xl font-bold text-black text-center mb-12">Questions? Answers.</h2>
-                    
+
                     <div className="space-y-0">
                         {/* FAQ Item 1 */}
                         <div className="border-b border-black/10">
-                            <button 
+                            <button
                                 onClick={() => setExpandedFAQ(expandedFAQ === 0 ? null : 0)}
                                 className="w-full py-6 flex items-center justify-between text-left hover:opacity-70 transition-opacity"
                             >
                                 <span className="text-xl font-semibold text-black">What is Prime ?</span>
                                 <svg className="w-4 h-2 text-black" viewBox="0 0 17 8.85">
-                                    <polyline 
-                                        stroke="currentColor" 
-                                        strokeLinecap="round" 
-                                        strokeLinejoin="round" 
-                                        fill="none" 
-                                        fillRule="evenodd" 
+                                    <polyline
+                                        stroke="currentColor"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        fill="none"
+                                        fillRule="evenodd"
                                         points={expandedFAQ === 0 ? "15 7.72 8.5 1.13 2 7.72" : "15 1.13 8.5 7.72 2 1.13"}
                                         className="transition-all duration-300"
                                     />
@@ -851,18 +858,18 @@ export default function CoursesPage() {
 
                         {/* FAQ Item 2 */}
                         <div className="border-b border-black/10">
-                            <button 
+                            <button
                                 onClick={() => setExpandedFAQ(expandedFAQ === 1 ? null : 1)}
                                 className="w-full py-6 flex items-center justify-between text-left hover:opacity-70 transition-opacity"
                             >
                                 <span className="text-xl font-semibold text-black">How much does a Prime subscription cost?</span>
                                 <svg className="w-4 h-2 text-black" viewBox="0 0 17 8.85">
-                                    <polyline 
-                                        stroke="currentColor" 
-                                        strokeLinecap="round" 
-                                        strokeLinejoin="round" 
-                                        fill="none" 
-                                        fillRule="evenodd" 
+                                    <polyline
+                                        stroke="currentColor"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        fill="none"
+                                        fillRule="evenodd"
                                         points={expandedFAQ === 1 ? "15 7.72 8.5 1.13 2 7.72" : "15 1.13 8.5 7.72 2 1.13"}
                                         className="transition-all duration-300"
                                     />
@@ -877,18 +884,18 @@ export default function CoursesPage() {
 
                         {/* FAQ Item 3 */}
                         <div className="border-b border-black/10">
-                            <button 
+                            <button
                                 onClick={() => setExpandedFAQ(expandedFAQ === 2 ? null : 2)}
                                 className="w-full py-6 flex items-center justify-between text-left hover:opacity-70 transition-opacity"
                             >
                                 <span className="text-xl font-semibold text-black">Can I get a Prime subscription for free?</span>
                                 <svg className="w-4 h-2 text-black" viewBox="0 0 17 8.85">
-                                    <polyline 
-                                        stroke="currentColor" 
-                                        strokeLinecap="round" 
-                                        strokeLinejoin="round" 
-                                        fill="none" 
-                                        fillRule="evenodd" 
+                                    <polyline
+                                        stroke="currentColor"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        fill="none"
+                                        fillRule="evenodd"
                                         points={expandedFAQ === 2 ? "15 7.72 8.5 1.13 2 7.72" : "15 1.13 8.5 7.72 2 1.13"}
                                         className="transition-all duration-300"
                                     />
@@ -947,77 +954,6 @@ export default function CoursesPage() {
                 price="€28.99/Mo For 12 Months"
             />
 
-            {/* Launching Soon Modal */}
-            {showLaunchingModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-                    <div className="relative bg-[#1f1f1f] rounded-2xl p-8 max-w-md w-full mx-4 border border-white/10 shadow-2xl">
-                        {/* Close button */}
-                        <button
-                            onClick={() => setShowLaunchingModal(false)}
-                            className="absolute top-4 right-4 text-white/60 hover:text-white hover:bg-white/5 transition-colors w-8 h-8 flex items-center justify-center rounded-lg"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-
-                        {/* Rocket Icon */}
-                        <div className="flex justify-center mb-6">
-                            <div className="w-20 h-20 bg-[#0a84ff]/10 rounded-full flex items-center justify-center border border-[#0a84ff]/30">
-                                <span className="text-4xl">🚀</span>
-                            </div>
-                        </div>
-
-                        {/* Title */}
-                        <h2 className="text-2xl font-bold text-white text-center mb-3">
-                            {getLocalizedText(
-                                'Launching Soon!',
-                                'قريباً!',
-                                'Bald verfügbar!'
-                            )}
-                        </h2>
-
-                        {/* Description */}
-                        <p className="text-white/70 text-center mb-6">
-                            {getLocalizedText(
-                                'Sign up now to get 50% off when we launch!',
-                                'سجل الآن واحصل على خصم 50% عند الإطلاق!',
-                                'Melden Sie sich jetzt an und erhalten Sie 50% Rabatt beim Start!'
-                            )}
-                        </p>
-
-                        {/* Offer Badge */}
-                        <div className="bg-[#0a84ff]/15 border border-[#0a84ff]/30 text-[#0a84ff] font-semibold text-sm py-3 px-6 rounded-lg text-center mb-6">
-                            {getLocalizedText(
-                                '🎉 50% OFF Early Bird Offer',
-                                '🎉 عرض الحجز المبكر - خصم 50%',
-                                '🎉 50% Frühbucher-Rabatt'
-                            )}
-                        </div>
-
-                        {/* CTA Button */}
-                        <button
-                            onClick={handleLaunchingModalRegister}
-                            className="w-full bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white font-semibold py-3 px-6 rounded-lg transition-all"
-                        >
-                            {getLocalizedText(
-                                'Sign Up Now',
-                                'سجل الآن',
-                                'Jetzt anmelden'
-                            )}
-                        </button>
-
-                        {/* Secondary text */}
-                        <p className="text-white/50 text-sm text-center mt-4">
-                            {getLocalizedText(
-                                'Be the first to know when courses go live!',
-                                'كن أول من يعلم عند إطلاق الدورات!',
-                                'Seien Sie der Erste, der erfährt, wenn Kurse starten!'
-                            )}
-                        </p>
-                    </div>
-                </div>
-            )}
 
             {/* Footer */}
             <Footer />

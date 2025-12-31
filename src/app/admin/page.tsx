@@ -197,11 +197,17 @@ export default function AdminDashboard() {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Button className="bg-white/10 hover:bg-white/20 text-white border border-white/10">
+                    <Button 
+                        onClick={() => router.push('/admin/platform-status')}
+                        className="bg-white/10 hover:bg-white/20 text-white border border-white/10"
+                    >
                         <Activity className="w-4 h-4 mr-2" />
                         Platform Status
                     </Button>
-                    <Button className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white">
+                    <Button 
+                        onClick={() => router.push('/admin/security-center')}
+                        className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white"
+                    >
                         <Shield className="w-4 h-4 mr-2" />
                         Security Center
                     </Button>

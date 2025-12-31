@@ -225,7 +225,7 @@ export default function PayoutsPage() {
                     <Button
                         onClick={fetchPayouts}
                         disabled={loading}
-                        className="bg-white/10 hover:bg-white/20 text-white"
+                        className="bg-white/10 hover:bg-white/20 text-foreground"
                     >
                         <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                         Refresh
@@ -345,7 +345,7 @@ export default function PayoutsPage() {
                                                     <Button
                                                         size="sm"
                                                         onClick={() => setSelectedPayout(payout)}
-                                                        className="bg-white/10 hover:bg-white/20 text-white"
+                                                        className="bg-white/10 hover:bg-white/20 text-foreground"
                                                     >
                                                         <Eye className="w-4 h-4" />
                                                     </Button>
@@ -384,7 +384,7 @@ export default function PayoutsPage() {
                                 size="sm"
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
-                                className="bg-white/10 hover:bg-white/20 text-white"
+                                className="bg-white/10 hover:bg-white/20 text-foreground"
                             >
                                 <ChevronLeft className="w-4 h-4" />
                             </Button>
@@ -392,7 +392,7 @@ export default function PayoutsPage() {
                                 size="sm"
                                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                                 disabled={page === totalPages}
-                                className="bg-white/10 hover:bg-white/20 text-white"
+                                className="bg-white/10 hover:bg-white/20 text-foreground"
                             >
                                 <ChevronRight className="w-4 h-4" />
                             </Button>
@@ -410,14 +410,14 @@ export default function PayoutsPage() {
                         className="bg-gray-900 border border-border rounded-2xl p-6 max-w-lg w-full"
                     >
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold text-white">Payout Details</h3>
+                            <h3 className="text-xl font-bold text-foreground">Payout Details</h3>
                             <Button
                                 size="sm"
                                 onClick={() => {
                                     setSelectedPayout(null)
                                     setFailReason('')
                                 }}
-                                className="bg-white/10 hover:bg-white/20 text-white"
+                                className="bg-white/10 hover:bg-white/20 text-foreground"
                             >
                                 <XCircle className="w-4 h-4" />
                             </Button>
@@ -430,7 +430,7 @@ export default function PayoutsPage() {
                                     <User className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <div className="font-semibold text-white">{selectedPayout.creatorName}</div>
+                                    <div className="font-semibold text-foreground">{selectedPayout.creatorName}</div>
                                     <div className="text-sm text-muted-foreground">{selectedPayout.email}</div>
                                 </div>
                             </div>
@@ -439,7 +439,7 @@ export default function PayoutsPage() {
                             <div className="p-4 bg-white/5 rounded-xl space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Gross Earnings</span>
-                                    <span className="text-white font-medium">{formatPrice(selectedPayout.totalEarnings)}</span>
+                                    <span className="text-foreground font-medium">{formatPrice(selectedPayout.totalEarnings)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Platform Fee (15%)</span>
@@ -450,7 +450,7 @@ export default function PayoutsPage() {
                                     <span className="text-red-400">-{formatPrice(selectedPayout.processingFee)}</span>
                                 </div>
                                 <div className="pt-2 border-t border-white/10 flex justify-between items-center text-lg font-bold">
-                                    <span className="text-white">Net Payout</span>
+                                    <span className="text-foreground">Net Payout</span>
                                     <span className="text-green-400">{formatPrice(selectedPayout.netPayout)}</span>
                                 </div>
                             </div>
@@ -459,13 +459,13 @@ export default function PayoutsPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-3 bg-white/5 rounded-xl">
                                     <div className="text-xs text-muted-foreground mb-1">Status</div>
-                                    <div className="text-white font-medium">
+                                    <div className="text-foreground font-medium">
                                         {selectedPayout.status.toUpperCase()}
                                     </div>
                                 </div>
                                 <div className="p-3 bg-white/5 rounded-xl">
                                     <div className="text-xs text-muted-foreground mb-1">Created</div>
-                                    <div className="text-white font-medium">
+                                    <div className="text-foreground font-medium">
                                         {formatDate(selectedPayout.createdAt)}
                                     </div>
                                 </div>
@@ -473,7 +473,7 @@ export default function PayoutsPage() {
 
                             <div className="p-3 bg-white/5 rounded-xl">
                                 <div className="text-xs text-muted-foreground mb-1">Period</div>
-                                <div className="text-white font-medium">
+                                <div className="text-foreground font-medium">
                                     {formatDate(selectedPayout.periodStart)} - {formatDate(selectedPayout.periodEnd)}
                                 </div>
                             </div>
@@ -499,7 +499,7 @@ export default function PayoutsPage() {
                                             value={failReason}
                                             onChange={(e) => setFailReason(e.target.value)}
                                             placeholder="Reason for failure"
-                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50 resize-none"
+                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50 resize-none"
                                             rows={2}
                                         />
                                     </div>

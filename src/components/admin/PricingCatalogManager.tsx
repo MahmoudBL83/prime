@@ -29,7 +29,6 @@ import { motion } from 'framer-motion'
 interface Product {
     id: string
     name: string
-    nameAr: string
     type: 'subscription' | 'course' | 'channel'
     category: 'A' | 'B' | 'C'
     basePrice: number
@@ -154,49 +153,49 @@ export default function PricingCatalogManager() {
         <div className="space-y-6">
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div className="bg-background rounded-lg border border-border p-4">
+                <div className="bg-background/40 backdrop-blur-md rounded-xl border border-white/10 p-4 shadow-lg">
                     <div className="flex items-center justify-between mb-2">
-                        <Package className="w-8 h-8 text-blue-600" />
+                        <Package className="w-8 h-8 text-blue-400" />
                     </div>
-                    <div className="text-2xl font-semibold text-foreground">{stats.totalProducts}</div>
-                    <div className="text-sm text-muted-foreground">Total Products</div>
+                    <div className="text-2xl font-bold text-white">{stats.totalProducts}</div>
+                    <div className="text-sm text-gray-400">Total Products</div>
                 </div>
 
-                <div className="bg-background rounded-lg border border-border p-4">
+                <div className="bg-background/40 backdrop-blur-md rounded-xl border border-white/10 p-4 shadow-lg">
                     <div className="flex items-center justify-between mb-2">
-                        <CheckCircle className="w-8 h-8 text-green-600" />
+                        <CheckCircle className="w-8 h-8 text-green-400" />
                     </div>
-                    <div className="text-2xl font-semibold text-foreground">{stats.activeProducts}</div>
-                    <div className="text-sm text-muted-foreground">Active Products</div>
+                    <div className="text-2xl font-bold text-white">{stats.activeProducts}</div>
+                    <div className="text-sm text-gray-400">Active Products</div>
                 </div>
 
-                <div className="bg-background rounded-lg border border-border p-4">
+                <div className="bg-background/40 backdrop-blur-md rounded-xl border border-white/10 p-4 shadow-lg">
                     <div className="flex items-center justify-between mb-2">
-                        <DollarSign className="w-8 h-8 text-purple-600" />
+                        <DollarSign className="w-8 h-8 text-purple-400" />
                     </div>
-                    <div className="text-2xl font-semibold text-foreground">{formatCurrency(stats.totalRevenue)}</div>
-                    <div className="text-sm text-muted-foreground">Total Revenue</div>
+                    <div className="text-2xl font-bold text-white">{formatCurrency(stats.totalRevenue)}</div>
+                    <div className="text-sm text-gray-400">Total Revenue</div>
                 </div>
 
-                <div className="bg-background rounded-lg border border-border p-4">
+                <div className="bg-background/40 backdrop-blur-md rounded-xl border border-white/10 p-4 shadow-lg">
                     <div className="flex items-center justify-between mb-2">
-                        <Tag className="w-8 h-8 text-orange-600" />
+                        <Tag className="w-8 h-8 text-orange-400" />
                     </div>
-                    <div className="text-2xl font-semibold text-foreground">{stats.activePromotions}</div>
-                    <div className="text-sm text-muted-foreground">Active Promos</div>
+                    <div className="text-2xl font-bold text-white">{stats.activePromotions}</div>
+                    <div className="text-sm text-gray-400">Active Promos</div>
                 </div>
 
-                <div className="bg-background rounded-lg border border-border p-4">
+                <div className="bg-background/40 backdrop-blur-md rounded-xl border border-white/10 p-4 shadow-lg">
                     <div className="flex items-center justify-between mb-2">
-                        <Globe className="w-8 h-8 text-teal-600" />
+                        <Globe className="w-8 h-8 text-teal-400" />
                     </div>
-                    <div className="text-2xl font-semibold text-foreground">{stats.localizedMarkets}</div>
-                    <div className="text-sm text-muted-foreground">Markets</div>
+                    <div className="text-2xl font-bold text-white">{stats.localizedMarkets}</div>
+                    <div className="text-sm text-gray-400">Markets</div>
                 </div>
             </div>
 
             {/* Main Content */}
-            <div className="bg-background rounded-lg border border-border">
+            <div className="bg-background/40 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <div className="border-b border-border px-6">
                         <TabsList className="bg-transparent">
@@ -246,7 +245,6 @@ export default function PricingCatalogManager() {
                                                 <td className="py-3 px-4">
                                                     <div>
                                                         <div className="font-medium text-foreground">{product.name}</div>
-                                                        <div className="text-sm text-muted-foreground">{product.nameAr}</div>
                                                         {product.billingCycle && (
                                                             <Badge className="mt-1 bg-blue-100 text-blue-800 border-blue-200 text-xs">
                                                                 {product.billingCycle}
@@ -288,11 +286,10 @@ export default function PricingCatalogManager() {
                                                 <td className="py-3 px-4 text-center">
                                                     <button
                                                         onClick={() => toggleProduct(product.id)}
-                                                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
-                                                            product.enabled
+                                                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${product.enabled
                                                                 ? 'bg-green-100 text-green-800 border border-green-200'
                                                                 : 'bg-muted text-gray-800 border border-border'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {product.enabled ? (
                                                             <>
@@ -385,11 +382,10 @@ export default function PricingCatalogManager() {
                                             <div className="flex items-center gap-2 ml-4">
                                                 <button
                                                     onClick={() => toggleLocalizedPrice(price.id)}
-                                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${
-                                                        price.enabled
+                                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${price.enabled
                                                             ? 'bg-green-100 text-green-800 border border-green-200'
                                                             : 'bg-muted text-gray-800 border border-border'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {price.enabled ? (
                                                         <>
@@ -504,11 +500,10 @@ export default function PricingCatalogManager() {
                                                 <div className="flex items-center gap-2 ml-4">
                                                     <button
                                                         onClick={() => togglePromotion(promo.id)}
-                                                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${
-                                                            promo.enabled
+                                                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${promo.enabled
                                                                 ? 'bg-green-100 text-green-800 border border-green-200'
                                                                 : 'bg-muted text-gray-800 border border-border'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {promo.enabled ? (
                                                             <>

@@ -645,7 +645,7 @@ export default function CreatorSettings() {
                                         </div>
                                         <Button
                                             variant="outline"
-                                            onClick={() => toast.success(isArabic ? 'سيتم تفعيل 2FA قريباً' : '2FA setup coming soon')}
+                                            onClick={() => toast.success(isArabic ? 'ميزة المصادقة الثنائية قيد التطوير حالياً لتحسين أمان حسابك' : 'Two-factor authentication is currently in development to enhance your account security')}
                                         >
                                             {isArabic ? 'تفعيل' : 'Enable'}
                                         </Button>

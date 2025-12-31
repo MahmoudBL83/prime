@@ -93,7 +93,7 @@ export function Navigation() {
                         <div className="flex items-center">
                             {/* Prime Logo */}
                             <button
-                                onClick={() => navigateWithLoading(`/${locale}/courses`, 'nav-home')}
+                                onClick={() => navigateWithLoading(`/${locale}/mentors`, 'nav-home')}
                                 disabled={isLoading('nav-home')}
                                 className="hover:opacity-80 transition-opacity"
                             >
@@ -203,9 +203,18 @@ export function Navigation() {
                             <div className="max-w-screen-2xl mx-auto px-8 py-6">
                                 {/* Header */}
                                 <div className="flex items-center justify-between mb-6">
-                                    <span className="text-2xl font-bold text-foreground dark:text-white">
-                                        Prime
-                                    </span>
+                                    <button
+                                        onClick={() => {
+                                            navigateWithLoading(`/${locale}/mentors`, 'nav-home-mobile');
+                                            setIsMobileMenuOpen(false);
+                                        }}
+                                        disabled={isLoading('nav-home-mobile')}
+                                        className="hover:opacity-80 transition-opacity"
+                                    >
+                                        <span className="text-2xl font-bold text-foreground dark:text-white">
+                                            Prime
+                                        </span>
+                                    </button>
                                     <button
                                         onClick={() => setIsMobileMenuOpen(false)}
                                         className="text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white transition-colors"

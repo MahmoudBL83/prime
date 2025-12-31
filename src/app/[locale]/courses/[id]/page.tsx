@@ -7,6 +7,7 @@ import { useLocaleSafe } from '@/hooks/useTranslationsSafe';
 import { Play, Plus, Clock, Star, Check } from 'lucide-react';
 import Image from 'next/image';
 import { PaymentModal } from '@/components/PaymentModal';
+import SubscriptionModal from '@/components/course/SubscriptionModal';
 import { toast } from 'react-hot-toast';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { courseMap } from '@/data/courses';
@@ -382,6 +383,7 @@ export default function CourseDetailPage() {
     const [selectedSeason, setSelectedSeason] = useState(1);
     const [showMenu, setShowMenu] = useState<string | null>(null);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
     const [isInList, setIsInList] = useState(false);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -414,6 +416,18 @@ export default function CourseDetailPage() {
         setCourse(coursesData['lost-bus-german-survival'] || courseMap['lost-bus-german-survival'] || null);
     }, [params.id]);
 
+    const handleGetAccess = () => {
+        if (!session) {
+            openAuthModal('signin', {
+                onSuccess: () => setShowSubscriptionModal(true),
+            });
+            return;
+        }
+
+        // Show subscription modal which explains benefits
+        setShowSubscriptionModal(true);
+    };
+
     const handleAcceptOffer = () => {
         if (session) {
             setShowPaymentModal(true);
@@ -443,7 +457,7 @@ export default function CourseDetailPage() {
             // });
 
             toast.success(
-                newState 
+                newState
                     ? (isArabic ? 'تمت الإضافة إلى قائمتك' : 'Added to your list')
                     : (isArabic ? 'تمت الإزالة من قائمتك' : 'Removed from your list'),
                 {
@@ -481,11 +495,11 @@ export default function CourseDetailPage() {
 
     const onTouchEnd = () => {
         if (!touchStart || !touchEnd) return;
-        
+
         const distance = touchStart - touchEnd;
         const isLeftSwipe = distance > minSwipeDistance;
         const isRightSwipe = distance < -minSwipeDistance;
-        
+
         // TODO: Navigate to next/previous course
         if (isLeftSwipe) {
             console.log('Swipe left - next course');
@@ -509,13 +523,13 @@ export default function CourseDetailPage() {
     const onMouseUp = () => {
         if (!isDragging) return;
         setIsDragging(false);
-        
+
         if (!mouseStart || !mouseEnd) return;
-        
+
         const distance = mouseStart - mouseEnd;
         const isLeftSwipe = distance > minSwipeDistance;
         const isRightSwipe = distance < -minSwipeDistance;
-        
+
         // TODO: Navigate to next/previous course
         if (isLeftSwipe) {
             console.log('Mouse drag left - next course');
@@ -538,7 +552,7 @@ export default function CourseDetailPage() {
     return (
         <div className="min-h-screen bg-background" style={{ backgroundColor: '#000000' }}>
             {/* Hero Section */}
-            <div 
+            <div
                 className="relative h-screen w-full overflow-hidden mb-12 cursor-grab active:cursor-grabbing"
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
@@ -570,7 +584,7 @@ export default function CourseDetailPage() {
                         <h1 className="text-5xl font-bold text-white tracking-tight leading-tight">
                             {isArabic && course.titleAr ? course.titleAr : course.title}
                         </h1>
-                        
+
                         {/* Metadata */}
                         <div className="flex items-center space-x-3 text-sm text-white/90">
                             <div className="flex items-center space-x-1">
@@ -589,15 +603,15 @@ export default function CourseDetailPage() {
 
                         {/* Description */}
                         <p className="text-base text-white/90 leading-relaxed max-w-md">
-                            {isArabic && course.descriptionAr 
-                                ? course.descriptionAr 
+                            {isArabic && course.descriptionAr
+                                ? course.descriptionAr
                                 : course.description}
                         </p>
 
                         {/* Buttons */}
                         <div className="flex items-center space-x-3 pt-2">
-                            <button 
-                                onClick={handleAcceptOffer}
+                            <button
+                                onClick={handleGetAccess}
                                 className="apple-tv-button relative flex items-center justify-center gap-2 px-8 py-3 font-semibold text-base text-black rounded-full min-w-[100px] max-w-[340px] w-auto transition-transform duration-100 ease-in hover:scale-[1.02] active:scale-[0.98] z-10"
                                 style={{
                                     height: '48px',
@@ -606,9 +620,9 @@ export default function CourseDetailPage() {
                             >
                                 <span className="absolute inset-0 bg-white rounded-full -z-10"></span>
                                 <Play className="w-5 h-5" fill="currentColor" />
-                                Play
+                                {isArabic ? 'مشاهدة' : 'Watch Now'}
                             </button>
-                            <button 
+                            <button
                                 onClick={handleAddToList}
                                 className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all backdrop-blur-sm"
                             >
@@ -654,7 +668,7 @@ export default function CourseDetailPage() {
                                     fill
                                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
-                                
+
                                 {/* Play Button Overlay */}
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
                                     <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
@@ -676,9 +690,9 @@ export default function CourseDetailPage() {
                                     className="absolute top-2 right-2 w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center transition-all z-10"
                                 >
                                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 16 16">
-                                        <circle cx="3" cy="8" r="1.5"/>
-                                        <circle cx="8" cy="8" r="1.5"/>
-                                        <circle cx="13" cy="8" r="1.5"/>
+                                        <circle cx="3" cy="8" r="1.5" />
+                                        <circle cx="8" cy="8" r="1.5" />
+                                        <circle cx="13" cy="8" r="1.5" />
                                     </svg>
                                 </button>
 
@@ -781,7 +795,7 @@ export default function CourseDetailPage() {
             {/* About Section */}
             <div className="max-w-screen-2xl mx-auto px-8 pb-20">
                 <h2 className="text-xl font-semibold text-white mb-6">About</h2>
-                
+
                 <div className="bg-neutral-900/50 rounded-2xl p-8 space-y-8">
                     {/* Course Description */}
                     <div>
@@ -797,23 +811,23 @@ export default function CourseDetailPage() {
                         {/* Information Column */}
                         <div className="space-y-4">
                             <h4 className="text-white font-semibold text-sm">Information</h4>
-                            
+
                             <div className="space-y-3 text-sm">
                                 <div>
                                     <p className="text-white/60 mb-1">Released</p>
                                     <p className="text-white">{course.year}</p>
                                 </div>
-                                
+
                                 <div>
                                     <p className="text-white/60 mb-1">Run Time</p>
                                     <p className="text-white">{course.duration}</p>
                                 </div>
-                                
+
                                 <div>
                                     <p className="text-white/60 mb-1">Rated</p>
                                     <p className="text-white">R</p>
                                 </div>
-                                
+
                                 <div>
                                     <p className="text-white/60 mb-1">Region of Origin</p>
                                     <p className="text-white">United States</p>
@@ -824,20 +838,20 @@ export default function CourseDetailPage() {
                         {/* Languages Column */}
                         <div className="space-y-4">
                             <h4 className="text-white font-semibold text-sm">Languages</h4>
-                            
+
                             <div className="space-y-3 text-sm">
                                 <div>
                                     <p className="text-white/60 mb-1">Original Audio</p>
                                     <p className="text-white">English</p>
                                 </div>
-                                
+
                                 <div>
                                     <p className="text-white/60 mb-1">Audio</p>
                                     <p className="text-white/80 leading-relaxed">
                                         English (AD, AAC, Dolby Atmos, Dolby 5.1), French (Canada) (AD, AAC, Dolby Atmos, Dolby 5.1), French (France) (AD, AAC, Dolby Atmos, Dolby 5.1), German (AD, AAC, Dolby Atmos, Dolby 5.1), Italian (AD, AAC, Dolby Atmos, Dolby 5.1)
                                     </p>
                                 </div>
-                                
+
                                 <div>
                                     <p className="text-white/60 mb-1">Subtitles</p>
                                     <p className="text-white/80 leading-relaxed">
@@ -851,7 +865,7 @@ export default function CourseDetailPage() {
                         {/* Accessibility Column */}
                         <div className="space-y-4">
                             <h4 className="text-white font-semibold text-sm">Accessibility</h4>
-                            
+
                             <div className="space-y-3 text-sm">
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
@@ -862,7 +876,7 @@ export default function CourseDetailPage() {
                                         Closed captions refer to subtitles in available languages with the addition of relevant non-dialogue information.
                                     </p>
                                 </div>
-                                
+
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className="px-1.5 py-0.5 bg-white/20 text-white text-[10px] font-semibold rounded">AD</span>
@@ -893,6 +907,13 @@ export default function CourseDetailPage() {
                 onClose={() => setShowPaymentModal(false)}
                 courseTitle={course.title}
                 price="€28.99/Mo For 12 Months"
+            />
+
+            {/* Subscription Modal */}
+            <SubscriptionModal
+                isOpen={showSubscriptionModal}
+                onClose={() => setShowSubscriptionModal(false)}
+                courseTitle={course.title}
             />
         </div>
     );

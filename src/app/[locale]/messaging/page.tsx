@@ -921,10 +921,15 @@ function MessengerPage() {
 
     const fetchCohorts = async () => {
         try {
-            const response = await fetch('/api/cohorts/my-cohorts')
+            const response = await fetch('/api/student/my-cohorts')
             if (response.ok) {
                 const data = await response.json()
-                setCohorts(data.cohorts || [])
+                const mappedCohorts = data.memberships?.map((m: any) => ({
+                    id: m.cohort.id,
+                    name: m.cohort.courseTitle,
+                    students: m.cohort.students || []
+                })) || []
+                setCohorts(mappedCohorts)
             }
         } catch (error) {
             console.error('Failed to fetch cohorts:', error)

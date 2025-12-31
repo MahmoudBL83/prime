@@ -47,7 +47,7 @@ export default function MessagesPage() {
                         <ArrowLeft className="w-4 h-4 mr-2" />
                         {tCommon('back')}
                     </Button>
-                    
+
                     <h1 className="text-3xl font-bold text-white mb-2">
                         Messages
                     </h1>
@@ -61,10 +61,10 @@ export default function MessagesPage() {
                 <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-8 text-center">
                     <MessageCircle className="w-16 h-16 mx-auto mb-6 text-purple-400" />
                     <h2 className="text-2xl font-bold text-white mb-4">
-                        Messaging System Coming Soon!
+                        Messaging System is being integrated
                     </h2>
                     <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                        We're working hard to bring you a comprehensive messaging system to connect with instructors and fellow learners.
+                        We're currently building a secure, real-time messaging platform to enhance your interaction with instructors and the community.
                     </p>
                     <div className="space-y-4 text-left max-w-md mx-auto">
                         <div className="flex items-center gap-3 text-gray-300">

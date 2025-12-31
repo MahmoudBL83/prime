@@ -53,7 +53,7 @@ interface DynamicIconProps {
 
 const DynamicIcon: React.FC<DynamicIconProps> = ({ name, className, ...props }) => {
     const IconComponent = IconComponents[name]
-    
+
     return (
         <Suspense fallback={<div className={className} />}>
             <IconComponent className={className} {...props} />
@@ -281,7 +281,7 @@ export default function EditCourse() {
                     // Load enrollment settings
                     setMaxStudents(courseData.maxStudents || null)
                     setEnrollmentEndDate(
-                        courseData.enrollmentEndDate 
+                        courseData.enrollmentEndDate
                             ? new Date(courseData.enrollmentEndDate).toISOString().split('T')[0]
                             : ''
                     )
@@ -327,7 +327,7 @@ export default function EditCourse() {
             formData.append('language', language)
             formData.append('contentCategory', contentCategory)
             formData.append('price', price.toString())
-            
+
             if (thumbnail) {
                 formData.append('thumbnail', thumbnail)
             }
@@ -390,7 +390,7 @@ export default function EditCourse() {
             setLessonVideo(file)
             const url = URL.createObjectURL(file)
             setLessonVideoPreview(url)
-            
+
             // Get video duration
             const video = document.createElement('video')
             video.preload = 'metadata'
@@ -620,10 +620,10 @@ export default function EditCourse() {
                 questions: quizQuestions
             }
 
-            const url = editingQuiz 
+            const url = editingQuiz
                 ? `/api/creator/courses/${courseId}/quizzes/${editingQuiz.id}`
                 : `/api/creator/courses/${courseId}/quizzes`
-            
+
             const method = editingQuiz ? 'PATCH' : 'POST'
 
             const response = await fetch(url, {
@@ -633,8 +633,8 @@ export default function EditCourse() {
             })
 
             if (response.ok) {
-                toast.success(editingQuiz 
-                    ? (isArabic ? 'تم تحديث الاختبار!' : 'Quiz updated!') 
+                toast.success(editingQuiz
+                    ? (isArabic ? 'تم تحديث الاختبار!' : 'Quiz updated!')
                     : (isArabic ? 'تم إنشاء الاختبار!' : 'Quiz created!')
                 )
                 setShowAddQuiz(false)
@@ -768,10 +768,10 @@ export default function EditCourse() {
                 requireFile: assignmentRequireFile
             }
 
-            const url = editingAssignment 
+            const url = editingAssignment
                 ? `/api/creator/courses/${courseId}/assignments/${editingAssignment.id}`
                 : `/api/creator/courses/${courseId}/assignments`
-            
+
             const method = editingAssignment ? 'PATCH' : 'POST'
 
             const response = await fetch(url, {
@@ -781,8 +781,8 @@ export default function EditCourse() {
             })
 
             if (response.ok) {
-                toast.success(editingAssignment 
-                    ? (isArabic ? 'تم تحديث الواجب!' : 'Assignment updated!') 
+                toast.success(editingAssignment
+                    ? (isArabic ? 'تم تحديث الواجب!' : 'Assignment updated!')
                     : (isArabic ? 'تم إنشاء الواجب!' : 'Assignment created!')
                 )
                 setShowAddAssignment(false)
@@ -992,66 +992,60 @@ export default function EditCourse() {
                 <div className="flex gap-2 mb-8 border-b border-border">
                     <button
                         onClick={() => setActiveTab('details')}
-                        className={`px-6 py-3 font-semibold transition-all ${
-                            activeTab === 'details'
+                        className={`px-6 py-3 font-semibold transition-all ${activeTab === 'details'
                                 ? 'border-b-2 border-purple-500 text-foreground'
                                 : 'text-muted-foreground hover:text-foreground'
-                        }`}
+                            }`}
                     >
                         <DynamicIcon name="FileText" className="w-4 h-4 inline mr-2" />
                         {isArabic ? 'التفاصيل' : 'Details'}
                     </button>
                     <button
                         onClick={() => setActiveTab('content')}
-                        className={`px-6 py-3 font-semibold transition-all ${
-                            activeTab === 'content'
+                        className={`px-6 py-3 font-semibold transition-all ${activeTab === 'content'
                                 ? 'border-b-2 border-purple-500 text-foreground'
                                 : 'text-muted-foreground hover:text-foreground'
-                        }`}
+                            }`}
                     >
                         <DynamicIcon name="Video" className="w-4 h-4 inline mr-2" />
                         {isArabic ? 'المحتوى' : 'Content'}
                     </button>
                     <button
                         onClick={() => setActiveTab('quizzes')}
-                        className={`px-6 py-3 font-semibold transition-all ${
-                            activeTab === 'quizzes'
+                        className={`px-6 py-3 font-semibold transition-all ${activeTab === 'quizzes'
                                 ? 'border-b-2 border-purple-500 text-foreground'
                                 : 'text-muted-foreground hover:text-foreground'
-                        }`}
+                            }`}
                     >
                         <DynamicIcon name="FileText" className="w-4 h-4 inline mr-2" />
                         {isArabic ? 'الاختبارات' : 'Quizzes'}
                     </button>
                     <button
                         onClick={() => setActiveTab('assignments')}
-                        className={`px-6 py-3 font-semibold transition-all ${
-                            activeTab === 'assignments'
+                        className={`px-6 py-3 font-semibold transition-all ${activeTab === 'assignments'
                                 ? 'border-b-2 border-purple-500 text-foreground'
                                 : 'text-muted-foreground hover:text-foreground'
-                        }`}
+                            }`}
                     >
                         <DynamicIcon name="ClipboardList" className="w-4 h-4 inline mr-2" />
                         {isArabic ? 'الواجبات' : 'Assignments'}
                     </button>
                     <button
                         onClick={() => setActiveTab('students')}
-                        className={`px-6 py-3 font-semibold transition-all ${
-                            activeTab === 'students'
+                        className={`px-6 py-3 font-semibold transition-all ${activeTab === 'students'
                                 ? 'border-b-2 border-purple-500 text-foreground'
                                 : 'text-muted-foreground hover:text-foreground'
-                        }`}
+                            }`}
                     >
                         <DynamicIcon name="GraduationCap" className="w-4 h-4 inline mr-2" />
                         {isArabic ? 'الطلاب' : 'Students'}
                     </button>
                     <button
                         onClick={() => setActiveTab('grading')}
-                        className={`px-6 py-3 font-semibold transition-all ${
-                            activeTab === 'grading'
+                        className={`px-6 py-3 font-semibold transition-all ${activeTab === 'grading'
                                 ? 'border-b-2 border-purple-500 text-foreground'
                                 : 'text-muted-foreground hover:text-foreground'
-                        }`}
+                            }`}
                     >
                         <DynamicIcon name="CheckCircle" className="w-4 h-4 inline mr-2" />
                         {isArabic ? 'التقييم' : 'Grading'}
@@ -1063,11 +1057,10 @@ export default function EditCourse() {
                     </button>
                     <button
                         onClick={() => setActiveTab('settings')}
-                        className={`px-6 py-3 font-semibold transition-all ${
-                            activeTab === 'settings'
+                        className={`px-6 py-3 font-semibold transition-all ${activeTab === 'settings'
                                 ? 'border-b-2 border-purple-500 text-foreground'
                                 : 'text-muted-foreground hover:text-foreground'
-                        }`}
+                            }`}
                     >
                         <DynamicIcon name="Settings" className="w-4 h-4 inline mr-2" />
                         {isArabic ? 'الإعدادات' : 'Settings'}
@@ -1086,7 +1079,7 @@ export default function EditCourse() {
                             <h2 className="text-xl font-bold mb-6">
                                 {isArabic ? 'المعلومات الأساسية' : 'Basic Information'}
                             </h2>
-                            
+
                             <div className="space-y-6">
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <div>
@@ -1216,7 +1209,7 @@ export default function EditCourse() {
                             <h2 className="text-xl font-bold mb-6">
                                 {isArabic ? 'صورة الدورة' : 'Course Thumbnail'}
                             </h2>
-                            
+
                             <div className="space-y-4">
                                 {thumbnailPreview && (
                                     <div className="relative w-full max-w-md h-48 rounded-lg overflow-hidden">
@@ -1228,7 +1221,7 @@ export default function EditCourse() {
                                         />
                                     </div>
                                 )}
-                                
+
                                 <div>
                                     <input
                                         type="file"
@@ -1254,7 +1247,7 @@ export default function EditCourse() {
                             <h2 className="text-xl font-bold mb-6">
                                 {isArabic ? 'التسعير' : 'Pricing'}
                             </h2>
-                            
+
                             <div className="space-y-6">
                                 <div>
                                     <label className="block text-sm font-semibold mb-2">
@@ -1311,7 +1304,7 @@ export default function EditCourse() {
                             <div className="bg-card border border-border rounded-xl p-6">
                                 <div className="flex items-center justify-between mb-6">
                                     <h2 className="text-xl font-bold">
-                                        {editingLesson 
+                                        {editingLesson
                                             ? (isArabic ? 'تعديل الدرس' : 'Edit Lesson')
                                             : (isArabic ? 'إضافة درس جديد' : 'Add New Lesson')
                                         }
@@ -1357,17 +1350,17 @@ export default function EditCourse() {
                                         <label className="block text-sm font-semibold mb-2">
                                             {isArabic ? 'فيديو الدرس' : 'Lesson Video'} *
                                         </label>
-                                        
+
                                         {lessonVideoPreview && (
                                             <div className="mb-4">
-                                                <video 
-                                                    src={lessonVideoPreview} 
-                                                    controls 
+                                                <video
+                                                    src={lessonVideoPreview}
+                                                    controls
                                                     className="w-full max-w-md rounded-lg"
                                                 />
                                             </div>
                                         )}
-                                        
+
                                         <input
                                             type="file"
                                             accept="video/*"
@@ -1379,7 +1372,7 @@ export default function EditCourse() {
                                             <div className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:bg-accent transition-colors">
                                                 <DynamicIcon name="Upload" className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                                                 <p className="text-sm font-semibold mb-1">
-                                                    {lessonVideo 
+                                                    {lessonVideo
                                                         ? lessonVideo.name
                                                         : (isArabic ? 'انقر لرفع الفيديو' : 'Click to upload video')
                                                     }
@@ -1475,7 +1468,7 @@ export default function EditCourse() {
                                                     {isArabic ? 'جاري الرفع...' : 'Uploading...'}
                                                 </>
                                             ) : (
-                                                editingLesson 
+                                                editingLesson
                                                     ? (isArabic ? 'تحديث الدرس' : 'Update Lesson')
                                                     : (isArabic ? 'إضافة الدرس' : 'Add Lesson')
                                             )}
@@ -1599,7 +1592,7 @@ export default function EditCourse() {
                             <h2 className="text-xl font-bold mb-6">
                                 {isArabic ? 'الحالة والرؤية' : 'Status & Visibility'}
                             </h2>
-                            
+
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-semibold mb-2">
@@ -1622,11 +1615,10 @@ export default function EditCourse() {
                                                     toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
                                                 }
                                             }}
-                                            className={`px-4 py-2 rounded-lg border-2 transition-all ${
-                                                course?.status === 'DRAFT'
+                                            className={`px-4 py-2 rounded-lg border-2 transition-all ${course?.status === 'DRAFT'
                                                     ? 'border-yellow-500 bg-yellow-500/20 text-yellow-600'
                                                     : 'border-border hover:bg-accent'
-                                            }`}
+                                                }`}
                                         >
                                             {isArabic ? 'مسودة' : 'Draft'}
                                         </button>
@@ -1646,11 +1638,10 @@ export default function EditCourse() {
                                                     toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
                                                 }
                                             }}
-                                            className={`px-4 py-2 rounded-lg border-2 transition-all ${
-                                                course?.status === 'PUBLISHED'
+                                            className={`px-4 py-2 rounded-lg border-2 transition-all ${course?.status === 'PUBLISHED'
                                                     ? 'border-green-500 bg-green-500/20 text-green-600'
                                                     : 'border-border hover:bg-accent'
-                                            }`}
+                                                }`}
                                         >
                                             {isArabic ? 'منشور' : 'Published'}
                                         </button>
@@ -1670,23 +1661,22 @@ export default function EditCourse() {
                                                     toast.error(isArabic ? 'حدث خطأ' : 'An error occurred')
                                                 }
                                             }}
-                                            className={`px-4 py-2 rounded-lg border-2 transition-all ${
-                                                course?.status === 'ARCHIVED'
+                                            className={`px-4 py-2 rounded-lg border-2 transition-all ${course?.status === 'ARCHIVED'
                                                     ? 'border-gray-500 bg-gray-500/20 text-gray-600'
                                                     : 'border-border hover:bg-accent'
-                                            }`}
+                                                }`}
                                         >
                                             {isArabic ? 'مؤرشف' : 'Archived'}
                                         </button>
                                     </div>
                                     <p className="text-sm text-muted-foreground mt-2">
-                                        {course?.status === 'DRAFT' && (isArabic 
+                                        {course?.status === 'DRAFT' && (isArabic
                                             ? 'الدورة مخفية عن الطلاب ويمكنك العمل عليها'
                                             : 'Course is hidden from students and you can work on it')}
-                                        {course?.status === 'PUBLISHED' && (isArabic 
+                                        {course?.status === 'PUBLISHED' && (isArabic
                                             ? 'الدورة مرئية للطلاب ويمكنهم التسجيل فيها'
                                             : 'Course is visible to students and they can enroll')}
-                                        {course?.status === 'ARCHIVED' && (isArabic 
+                                        {course?.status === 'ARCHIVED' && (isArabic
                                             ? 'الدورة مؤرشفة ولا يمكن للطلاب الجدد التسجيل فيها'
                                             : 'Course is archived and new students cannot enroll')}
                                     </p>
@@ -1699,7 +1689,7 @@ export default function EditCourse() {
                             <h2 className="text-xl font-bold mb-6">
                                 {isArabic ? 'إعدادات SEO' : 'SEO Settings'}
                             </h2>
-                            
+
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-semibold mb-2">
@@ -1726,7 +1716,7 @@ export default function EditCourse() {
                                         placeholder={isArabic ? 'وصف الدورة' : 'Course description'}
                                     />
                                     <p className="text-sm text-muted-foreground mt-1">
-                                        {isArabic 
+                                        {isArabic
                                             ? 'يستخدم هذا الوصف في نتائج محركات البحث'
                                             : 'This description is used in search engine results'}
                                     </p>
@@ -1739,7 +1729,7 @@ export default function EditCourse() {
                             <h2 className="text-xl font-bold mb-6">
                                 {isArabic ? 'إعدادات التسجيل' : 'Enrollment Settings'}
                             </h2>
-                            
+
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between p-4 bg-accent/50 rounded-lg">
                                     <div>
@@ -1806,11 +1796,11 @@ export default function EditCourse() {
                                 {isArabic ? 'منطقة الخطر' : 'Danger Zone'}
                             </h2>
                             <p className="text-sm text-muted-foreground mb-6">
-                                {isArabic 
+                                {isArabic
                                     ? 'هذه الإجراءات دائمة ولا يمكن التراجع عنها'
                                     : 'These actions are permanent and cannot be undone'}
                             </p>
-                            
+
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between p-4 bg-red-500/10 rounded-lg border border-red-500/20">
                                     <div>
@@ -1818,7 +1808,7 @@ export default function EditCourse() {
                                             {isArabic ? 'حذف الدورة' : 'Delete Course'}
                                         </h3>
                                         <p className="text-sm text-muted-foreground">
-                                            {isArabic 
+                                            {isArabic
                                                 ? 'حذف نهائي للدورة وجميع الدروس والبيانات'
                                                 : 'Permanently delete course with all lessons and data'}
                                         </p>
@@ -1827,7 +1817,7 @@ export default function EditCourse() {
                                         variant="outline"
                                         className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
                                         onClick={async () => {
-                                            if (confirm(isArabic 
+                                            if (confirm(isArabic
                                                 ? 'هل أنت متأكد من حذف هذه الدورة؟ لا يمكن التراجع عن هذا الإجراء!'
                                                 : 'Are you sure you want to delete this course? This action cannot be undone!')) {
                                                 try {
@@ -1869,7 +1859,7 @@ export default function EditCourse() {
                                     {isArabic ? 'الاختبارات' : 'Quizzes'}
                                 </h2>
                                 <p className="text-muted-foreground">
-                                    {isArabic 
+                                    {isArabic
                                         ? 'أضف اختبارات لتقييم معرفة الطلاب'
                                         : 'Add quizzes to assess student knowledge'}
                                 </p>
@@ -1894,7 +1884,7 @@ export default function EditCourse() {
                                     {isArabic ? 'لا توجد اختبارات' : 'No Quizzes Yet'}
                                 </h3>
                                 <p className="text-muted-foreground mb-6">
-                                    {isArabic 
+                                    {isArabic
                                         ? 'قم بإنشاء أول اختبار لتقييم فهم الطلاب'
                                         : 'Create your first quiz to assess student understanding'}
                                 </p>
@@ -1931,8 +1921,8 @@ export default function EditCourse() {
                                                     <div className="flex items-center gap-2">
                                                         <DynamicIcon name="Clock" className="w-4 h-4 text-blue-500" />
                                                         <span>
-                                                            {quiz.timeLimit 
-                                                                ? `${quiz.timeLimit} ${isArabic ? 'دقيقة' : 'min'}` 
+                                                            {quiz.timeLimit
+                                                                ? `${quiz.timeLimit} ${isArabic ? 'دقيقة' : 'min'}`
                                                                 : (isArabic ? 'بدون حد زمني' : 'No time limit')}
                                                         </span>
                                                     </div>
@@ -1975,7 +1965,7 @@ export default function EditCourse() {
                                 <div className="bg-card border border-border rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                                     <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between">
                                         <h3 className="text-2xl font-bold">
-                                            {editingQuiz 
+                                            {editingQuiz
                                                 ? (isArabic ? 'تعديل الاختبار' : 'Edit Quiz')
                                                 : (isArabic ? 'إنشاء اختبار جديد' : 'Create New Quiz')}
                                         </h3>
@@ -2196,7 +2186,7 @@ export default function EditCourse() {
                                                             value={question.correctAnswer}
                                                             onChange={(e) => updateQuestion(index, 'correctAnswer', e.target.value)}
                                                             className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                                            placeholder={question.type === 'MULTIPLE_CHOICE' 
+                                                            placeholder={question.type === 'MULTIPLE_CHOICE'
                                                                 ? (isArabic ? 'مثال: A أو 1' : 'e.g., A or 1')
                                                                 : (isArabic ? 'أدخل الإجابة الصحيحة' : 'Enter correct answer')}
                                                         />
@@ -2251,7 +2241,7 @@ export default function EditCourse() {
                                     {isArabic ? 'الواجبات' : 'Assignments'}
                                 </h2>
                                 <p className="text-muted-foreground">
-                                    {isArabic 
+                                    {isArabic
                                         ? 'أضف واجبات لتقييم المهارات العملية للطلاب'
                                         : 'Add assignments to assess student practical skills'}
                                 </p>
@@ -2276,7 +2266,7 @@ export default function EditCourse() {
                                     {isArabic ? 'لا توجد واجبات' : 'No Assignments Yet'}
                                 </h3>
                                 <p className="text-muted-foreground mb-6">
-                                    {isArabic 
+                                    {isArabic
                                         ? 'قم بإنشاء أول واجب لتقييم المهارات العملية'
                                         : 'Create your first assignment to assess practical skills'}
                                 </p>
@@ -2358,7 +2348,7 @@ export default function EditCourse() {
                                 <div className="bg-card border border-border rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
                                     <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between">
                                         <h3 className="text-2xl font-bold">
-                                            {editingAssignment 
+                                            {editingAssignment
                                                 ? (isArabic ? 'تعديل الواجب' : 'Edit Assignment')
                                                 : (isArabic ? 'إنشاء واجب جديد' : 'Create New Assignment')}
                                         </h3>
@@ -2436,7 +2426,7 @@ export default function EditCourse() {
                                                     onChange={(e) => setAssignmentInstructions(e.target.value)}
                                                     rows={6}
                                                     className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                                    placeholder={isArabic 
+                                                    placeholder={isArabic
                                                         ? 'أضف تعليمات خطوة بخطوة، متطلبات، ومعايير التقييم...'
                                                         : 'Add step-by-step instructions, requirements, and grading criteria...'}
                                                 />
@@ -2474,14 +2464,14 @@ export default function EditCourse() {
                                                 <h4 className="font-semibold">
                                                     {isArabic ? 'الإعدادات' : 'Settings'}
                                                 </h4>
-                                                
+
                                                 <div className="flex items-center justify-between p-4 bg-accent/50 rounded-lg">
                                                     <div>
                                                         <h5 className="font-medium">
                                                             {isArabic ? 'السماح بالتسليم المتأخر' : 'Allow Late Submission'}
                                                         </h5>
                                                         <p className="text-sm text-muted-foreground">
-                                                            {isArabic 
+                                                            {isArabic
                                                                 ? 'السماح للطلاب بالتسليم بعد الموعد النهائي'
                                                                 : 'Allow students to submit after the due date'}
                                                         </p>
@@ -2503,7 +2493,7 @@ export default function EditCourse() {
                                                             {isArabic ? 'مطلوب ملف' : 'Require File Upload'}
                                                         </h5>
                                                         <p className="text-sm text-muted-foreground">
-                                                            {isArabic 
+                                                            {isArabic
                                                                 ? 'يجب على الطلاب تحميل ملف للتسليم'
                                                                 : 'Students must upload a file to submit'}
                                                         </p>
@@ -2566,7 +2556,7 @@ export default function EditCourse() {
                                 {isArabic ? 'تقدم الطلاب' : 'Student Progress'}
                             </h2>
                             <p className="text-muted-foreground">
-                                {isArabic 
+                                {isArabic
                                     ? 'تتبع أداء الطلاب والواجبات والاختبارات'
                                     : 'Track student performance, assignments, and quiz attempts'}
                             </p>
@@ -2628,7 +2618,7 @@ export default function EditCourse() {
                                     {isArabic ? 'لا يوجد طلاب مسجلين' : 'No Students Enrolled Yet'}
                                 </h3>
                                 <p className="text-muted-foreground">
-                                    {isArabic 
+                                    {isArabic
                                         ? 'سيظهر الطلاب هنا بمجرد تسجيلهم في الدورة'
                                         : 'Students will appear here once they enroll in your course'}
                                 </p>
@@ -2683,7 +2673,7 @@ export default function EditCourse() {
 
                                                 {/* Progress Bar */}
                                                 <div className="w-full bg-accent rounded-full h-2 mb-4">
-                                                    <div 
+                                                    <div
                                                         className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all"
                                                         style={{ width: `${student.stats.overallProgress}%` }}
                                                     />
@@ -2761,14 +2751,14 @@ export default function EditCourse() {
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => toast(isArabic ? 'قريباً' : 'Coming soon')}
+                                                        onClick={() => toast(isArabic ? 'عرض التفاصيل متاح قريباً في تحديث لوحة التحكم القادم' : 'Student details view will be available in the next dashboard update')}
                                                     >
                                                         {isArabic ? 'عرض التفاصيل' : 'View Details'}
                                                     </Button>
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => toast(isArabic ? 'قريباً' : 'Coming soon')}
+                                                        onClick={() => toast(isArabic ? 'نظام المراسلة قيد التطوير حالياً وسيتم دمجه قريباً' : 'Messaging system is currently in development and will be integrated soon')}
                                                     >
                                                         {isArabic ? 'إرسال رسالة' : 'Send Message'}
                                                     </Button>
@@ -2852,8 +2842,8 @@ export default function EditCourse() {
                                             ? 'جميع التسليمات تم تصحيحها'
                                             : 'لم يتم تسليم أي واجبات بعد'
                                         : gradingFilter === 'ungraded'
-                                        ? 'All submissions have been graded'
-                                        : 'No assignments have been submitted yet'}
+                                            ? 'All submissions have been graded'
+                                            : 'No assignments have been submitted yet'}
                                 </p>
                             </div>
                         )}

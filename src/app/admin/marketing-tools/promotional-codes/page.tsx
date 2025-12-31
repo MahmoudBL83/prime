@@ -1,0 +1,341 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import {
+    Ticket,
+    Plus,
+    Copy,
+    Eye,
+    Edit,
+    Trash2,
+    RefreshCw,
+    Users,
+    DollarSign,
+    Calendar,
+    Percent
+} from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+
+interface PromotionalCode {
+    id: string
+    code: string
+    description: string
+    discountType: 'percentage' | 'fixed'
+    discountValue: number
+    maxUses?: number
+    currentUses: number
+    validFrom: string
+    validUntil?: string
+    isActive: boolean
+    createdAt: string
+    createdBy: string
+}
+
+export default function PromotionalCodesPage() {
+    const [codes, setCodes] = useState<PromotionalCode[]>([])
+    const [loading, setLoading] = useState(true)
+    const [showCreateModal, setShowCreateModal] = useState(false)
+
+    useEffect(() => {
+        fetchCodes()
+    }, [])
+
+    const fetchCodes = async () => {
+        try {
+            const response = await fetch('/api/admin/marketing-tools/promotional-codes')
+            if (response.ok) {
+                const data = await response.json()
+                setCodes(data)
+            }
+        } catch (error) {
+            console.error('Failed to fetch codes:', error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleCreateCode = async (codeData: Partial<PromotionalCode>) => {
+        try {
+            const response = await fetch('/api/admin/marketing-tools/promotional-codes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(codeData)
+            })
+            if (response.ok) {
+                await fetchCodes()
+                setShowCreateModal(false)
+            }
+        } catch (error) {
+            console.error('Failed to create code:', error)
+        }
+    }
+
+    const handleDeleteCode = async (codeId: string) => {
+        if (!confirm('Are you sure you want to delete this promotional code?')) {
+            return
+        }
+
+        try {
+            const response = await fetch(`/api/admin/marketing-tools/promotional-codes/${codeId}`, {
+                method: 'DELETE'
+            })
+            if (response.ok) {
+                await fetchCodes()
+            }
+        } catch (error) {
+            console.error('Failed to delete code:', error)
+        }
+    }
+
+    const handleCopyCode = (code: string) => {
+        navigator.clipboard.writeText(code)
+        // Could add a toast notification here
+    }
+
+    const getStatusColor = (code: PromotionalCode) => {
+        if (!code.isActive) return 'bg-gray-500/20 text-gray-400'
+        if (code.validUntil && new Date(code.validUntil) < new Date()) return 'bg-red-500/20 text-red-400'
+        if (code.maxUses && code.currentUses >= code.maxUses) return 'bg-orange-500/20 text-orange-400'
+        return 'bg-green-500/20 text-green-400'
+    }
+
+    const getStatusText = (code: PromotionalCode) => {
+        if (!code.isActive) return 'Inactive'
+        if (code.validUntil && new Date(code.validUntil) < new Date()) return 'Expired'
+        if (code.maxUses && code.currentUses >= code.maxUses) return 'Max Uses Reached'
+        return 'Active'
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen p-8">
+                <div className="animate-pulse space-y-6">
+                    <div className="h-12 bg-white/5 rounded-lg w-1/3"></div>
+                    <div className="space-y-4">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="h-24 bg-white/5 rounded-2xl"></div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <div className="min-h-screen p-8 space-y-8">
+            {/* Header */}
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+            >
+                <div>
+                    <h1 className="text-4xl font-bold text-foreground mb-2">
+                        Promotional Codes
+                    </h1>
+                    <p className="text-muted-foreground">
+                        Create and manage discount codes for marketing campaigns
+                    </p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <Button
+                        onClick={fetchCodes}
+                        className="bg-white/10 hover:bg-white/20 text-foreground"
+                    >
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Refresh
+                    </Button>
+                    <Button
+                        onClick={() => setShowCreateModal(true)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create Code
+                    </Button>
+                </div>
+            </motion.div>
+
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-6"
+                >
+                    <div className="flex items-center gap-3 mb-2">
+                        <Ticket className="w-8 h-8 text-blue-400" />
+                        <div>
+                            <p className="text-2xl font-bold text-foreground">24</p>
+                            <p className="text-sm text-muted-foreground">Active Codes</p>
+                        </div>
+                    </div>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 }}
+                    className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-6"
+                >
+                    <div className="flex items-center gap-3 mb-2">
+                        <Users className="w-8 h-8 text-green-400" />
+                        <div>
+                            <p className="text-2xl font-bold text-foreground">1,247</p>
+                            <p className="text-sm text-muted-foreground">Total Uses</p>
+                        </div>
+                    </div>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-6"
+                >
+                    <div className="flex items-center gap-3 mb-2">
+                        <DollarSign className="w-8 h-8 text-purple-400" />
+                        <div>
+                            <p className="text-2xl font-bold text-foreground">$12,450</p>
+                            <p className="text-sm text-muted-foreground">Revenue Impact</p>
+                        </div>
+                    </div>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-6"
+                >
+                    <div className="flex items-center gap-3 mb-2">
+                        <Percent className="w-8 h-8 text-orange-400" />
+                        <div>
+                            <p className="text-2xl font-bold text-foreground">18.5%</p>
+                            <p className="text-sm text-muted-foreground">Avg Discount</p>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+
+            {/* Codes List */}
+            <div className="space-y-4">
+                {codes.length === 0 ? (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-12 text-center"
+                    >
+                        <Ticket className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-xl font-bold text-foreground mb-2">No Promotional Codes</h3>
+                        <p className="text-muted-foreground mb-6">
+                            Create your first promotional code to start offering discounts.
+                        </p>
+                        <Button
+                            onClick={() => setShowCreateModal(true)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create Code
+                        </Button>
+                    </motion.div>
+                ) : (
+                    codes.map((code, index) => (
+                        <motion.div
+                            key={code.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="bg-white/5 backdrop-blur-xl border border-border rounded-2xl p-6"
+                        >
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                                        <Ticket className="w-5 h-5 text-blue-400" />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <code className="text-lg font-mono font-bold text-foreground bg-white/10 px-2 py-1 rounded">
+                                                {code.code}
+                                            </code>
+                                            <Button
+                                                size="sm"
+                                                onClick={() => handleCopyCode(code.code)}
+                                                className="bg-white/10 hover:bg-white/20 text-foreground"
+                                            >
+                                                <Copy className="w-4 h-4" />
+                                            </Button>
+                                            <Badge className={getStatusColor(code)}>
+                                                {getStatusText(code)}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">{code.description}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        size="sm"
+                                        onClick={() => {/* Edit code */}}
+                                        className="bg-white/10 hover:bg-white/20 text-foreground"
+                                    >
+                                        <Edit className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        onClick={() => handleDeleteCode(code.id)}
+                                        className="bg-red-500/20 hover:bg-red-500/30 text-red-400"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="p-3 bg-white/5 rounded-lg">
+                                    <div className="text-xs text-muted-foreground mb-1">Discount</div>
+                                    <div className="text-sm font-medium text-foreground">
+                                        {code.discountType === 'percentage'
+                                            ? `${code.discountValue}%`
+                                            : `$${code.discountValue}`
+                                        }
+                                    </div>
+                                </div>
+                                <div className="p-3 bg-white/5 rounded-lg">
+                                    <div className="text-xs text-muted-foreground mb-1">Uses</div>
+                                    <div className="text-sm font-medium text-foreground">
+                                        {code.currentUses}{code.maxUses ? `/${code.maxUses}` : ''}
+                                    </div>
+                                </div>
+                                <div className="p-3 bg-white/5 rounded-lg">
+                                    <div className="text-xs text-muted-foreground mb-1">Valid From</div>
+                                    <div className="text-sm font-medium text-foreground">
+                                        {new Date(code.validFrom).toLocaleDateString()}
+                                    </div>
+                                </div>
+                                <div className="p-3 bg-white/5 rounded-lg">
+                                    <div className="text-xs text-muted-foreground mb-1">Valid Until</div>
+                                    <div className="text-sm font-medium text-foreground">
+                                        {code.validUntil ? new Date(code.validUntil).toLocaleDateString() : 'No expiry'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
+                                <div className="text-xs text-muted-foreground">
+                                    Created: {new Date(code.createdAt).toLocaleDateString()} by {code.createdBy}
+                                </div>
+                                <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-foreground">
+                                    <Eye className="w-4 h-4 mr-1" />
+                                    View Usage
+                                </Button>
+                            </div>
+                        </motion.div>
+                    ))
+                )}
+            </div>
+
+            {/* Create Code Modal would go here */}
+        </div>
+    )
+}
