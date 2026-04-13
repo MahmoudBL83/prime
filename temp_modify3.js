@@ -1333,7 +1333,6 @@ export default function OnlyFansStyleMentorsPage() {
 
             {/* Twitter-Style Feed */}
             <div className="max-w-[1225px] mx-auto w-full flex justify-center">
-                <div className="flex w-full">
                     {/* Left Sidebar - Navigation */}
                     <div className={`fixed z-50 p-3 sm:p-4 bg-card lg:bg-transparent transform transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static w-[275px] lg:sticky lg:top-0 h-[100dvh] overflow-y-auto`}>
                         <div className="lg:sticky lg:top-24">
@@ -1458,18 +1457,6 @@ export default function OnlyFansStyleMentorsPage() {
                                         {isArabic ? 'كن منشئاً' : 'Become Creator'}
                                     </Button>
                                 )}
-                            {/* Theme Toggle */}
-                            <div className="mt-4 border-t border-border pt-4">
-                                <Button 
-                                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                                    variant="outline" 
-                                    className="w-full text-left justify-start border-border text-foreground hover:bg-accent hover:text-accent-foreground"
-                                >
-                                    <DynamicIcon name={theme === 'dark' ? 'Sun' : 'Moon'} className="w-5 h-5 mr-3" />
-                                    <span className="text-lg font-medium">Toggle Theme</span>
-                                </Button>
-                            </div>
-
                             </nav>
 
                             {/* User Profile Card (if logged in) */}

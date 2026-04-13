@@ -1333,7 +1333,6 @@ export default function OnlyFansStyleMentorsPage() {
 
             {/* Twitter-Style Feed */}
             <div className="max-w-[1225px] mx-auto w-full flex justify-center">
-                <div className="flex w-full">
                     {/* Left Sidebar - Navigation */}
                     <div className={`fixed z-50 p-3 sm:p-4 bg-card lg:bg-transparent transform transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static w-[275px] lg:sticky lg:top-0 h-[100dvh] overflow-y-auto`}>
                         <div className="lg:sticky lg:top-24">

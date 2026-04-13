@@ -1333,7 +1333,6 @@ export default function OnlyFansStyleMentorsPage() {
 
             {/* Twitter-Style Feed */}
             <div className="max-w-[1225px] mx-auto w-full flex justify-center">
-                <div className="flex w-full">
                     {/* Left Sidebar - Navigation */}
                     <div className={`fixed z-50 p-3 sm:p-4 bg-card lg:bg-transparent transform transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static w-[275px] lg:sticky lg:top-0 h-[100dvh] overflow-y-auto`}>
                         <div className="lg:sticky lg:top-24">
@@ -1447,7 +1446,7 @@ export default function OnlyFansStyleMentorsPage() {
                                 )}
 
                                 {/* Divider */}
-                                <div className="h-[0.5px] bg-border my-4" />
+                                <div className="h-[0.5px] bg-white/10 my-4" />
 
                                 {/* Become Creator Button - Only show for non-creators */}
                                 {session && !isCreatorAccount && (
@@ -1458,18 +1457,6 @@ export default function OnlyFansStyleMentorsPage() {
                                         {isArabic ? 'كن منشئاً' : 'Become Creator'}
                                     </Button>
                                 )}
-                            {/* Theme Toggle */}
-                            <div className="mt-4 border-t border-border pt-4">
-                                <Button 
-                                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                                    variant="outline" 
-                                    className="w-full text-left justify-start border-border text-foreground hover:bg-accent hover:text-accent-foreground"
-                                >
-                                    <DynamicIcon name={theme === 'dark' ? 'Sun' : 'Moon'} className="w-5 h-5 mr-3" />
-                                    <span className="text-lg font-medium">Toggle Theme</span>
-                                </Button>
-                            </div>
-
                             </nav>
 
                             {/* User Profile Card (if logged in) */}
@@ -1496,7 +1483,7 @@ export default function OnlyFansStyleMentorsPage() {
                     </div>
 
                     {/* Main Feed - Twitter Style */}
-                    <div className="flex-grow w-full max-w-[600px] border-l border-r border-border min-h-screen">
+                    <div className="lg:col-span-6 min-h-screen" style={{ borderLeft: '0.5px solid hsla(0,0%,100%,.1)', borderRight: '0.5px solid hsla(0,0%,100%,.1)' }}>
                         {/* Header */}
                         <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl px-3 sm:px-4 py-3 transition-colors" style={{ borderBottom: '0.5px solid hsla(0,0%,100%,.1)' }}>
                             <div className="flex items-center gap-2">
@@ -2077,7 +2064,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                                             e.stopPropagation()
                                                                             handleCreatorClick(creator.id)
                                                                         }}
-                                                                        className="bg-border hover:bg-accent hover:text-accent-foreground text-foreground font-semibold px-6 py-2 rounded-full"
+                                                                        className="bg-white/10 hover:bg-accent hover:text-accent-foreground text-foreground font-semibold px-6 py-2 rounded-full"
                                                                     >
                                                                         {isArabic ? 'عرض القناة' : 'View Channel'}
                                                                     </Button>
