@@ -1,8 +1,8 @@
 # Vercel Environment Variables Configuration
 # Copy these to your Vercel project settings
 
-# Database (Required) - Use Neon, PlanetScale, or Railway PostgreSQL
-DATABASE_URL=postgresql://username:password@hostname:5432/database_name
+# Database (Required) - Neon PostgreSQL (pooler URL)
+DATABASE_URL=postgresql://username:password@hostname/neondb?sslmode=require&channel_binding=require
 
 # NextAuth.js (Required)
 NEXTAUTH_URL=https://your-app-name.vercel.app

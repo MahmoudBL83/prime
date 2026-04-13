@@ -82,7 +82,7 @@ async function main() {
           channelId: channel.id,
           content: `Welcome to my channel! Post #${i + 1}. I'm excited to share exclusive content and insights with you. Stay tuned for more updates!`,
           contentAr: `مرحباً بكم في قناتي! المنشور #${i + 1}. أنا متحمس لمشاركة المحتوى والرؤى الحصرية معكم. ترقبوا المزيد من التحديثات!`,
-          mediaType: i % 3 === 0 ? 'IMAGE' : null,
+          type: i % 3 === 0 ? 'IMAGE' : 'TEXT',
           mediaUrl: i % 3 === 0 ? '/images/demo-post-image.jpg' : null,
           createdAt: new Date(Date.now() - (postCount - i) * 24 * 60 * 60 * 1000), // Spread posts over days
         },

@@ -548,6 +548,8 @@ function buildSyllabus(title: string, category: string) {
 async function main() {
     console.log('🌱 Seeding mentors/creators and courses from CSV + courses page list...')
 
+    await prisma.channelPost.deleteMany();
+    await prisma.creatorChannel.deleteMany();
     await prisma.lesson.deleteMany()
     await prisma.enrollment.deleteMany()
     await prisma.course.deleteMany()

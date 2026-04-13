@@ -5,7 +5,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -21,7 +21,7 @@ model User {
   emailVerified             DateTime?
   phoneVerified             DateTime?
   arabicName                String?
-  profileImage              String?                    @db.LongText
+  profileImage              String?                    @db.Text
   bio                       String?                    @db.Text
   loginDisabled             Boolean                    @default(false)
   passwordResetRequired     Boolean                    @default(false)
@@ -29,7 +29,7 @@ model User {
   age                       String?
   birthDate                 DateTime?
   country                   String?
-  avatar                    String?                    @db.LongText
+  avatar                    String?                    @db.Text
   interests                 String?
   goals                     String?
   skillLevel                String?
@@ -140,9 +140,9 @@ model Creator {
   userId                 String                   @unique
   kycStatus              KYCStatus                @default(NOT_STARTED)
   nationalId             String?
-  nationalIdImage        String?                  @db.LongText
-  selfieImage            String?                  @db.LongText
-  addressProof           String?                  @db.LongText
+  nationalIdImage        String?                  @db.Text
+  selfieImage            String?                  @db.Text
+  addressProof           String?                  @db.Text
   bankAccountIBAN        String?
   bankName               String?
   stripeConnectAccountId String?
@@ -285,7 +285,7 @@ model Course {
   description        String
   descriptionAr      String?
   descriptionDe      String?
-  thumbnail          String?                  @db.LongText
+  thumbnail          String?                  @db.Text
   creatorId          String
   contentType        ContentType              @default(SERIES)
   runtime            Int?
@@ -479,7 +479,7 @@ model CreatorChannel {
   description          String
   descriptionAr        String?
   descriptionDe        String?
-  coverImage           String?               @db.LongText
+  coverImage           String?               @db.Text
   tiers                Json
   totalSubscribers     Int                   @default(0)
   createdAt            DateTime              @default(now())
@@ -749,7 +749,7 @@ model StudyWorkspace {
   matchId         String              @unique
   name            String
   description     String?
-  coverImage      String?             @db.LongText
+  coverImage      String?             @db.Text
   isActive        Boolean             @default(true)
   settings        Json?
   lastActivityAt  DateTime            @default(now())
@@ -845,7 +845,7 @@ model CoWatchSession {
   initiatedBy    String
   videoUrl       String
   videoTitle     String
-  videoThumbnail String?        @db.LongText
+  videoThumbnail String?        @db.Text
   currentTime    Float          @default(0)
   duration       Float?
   isPlaying      Boolean        @default(false)
@@ -896,7 +896,7 @@ model SupportTicketMessage {
   authorId       String
   content        String
   isInternal     Boolean       @default(false)
-  attachmentUrls String?       @db.LongText
+  attachmentUrls String?       @db.Text
   createdAt      DateTime      @default(now())
   author         User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   ticket         SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
@@ -970,7 +970,7 @@ model Achievement {
   titleAr       String?
   description   String
   descriptionAr String?
-  icon          String?         @db.LongText
+  icon          String?         @db.Text
   points        Int             @default(0)
   courseId      String?
   unlockedAt    DateTime        @default(now())
@@ -1027,7 +1027,7 @@ model BadgeDefinition {
   titleAr       String?
   description   String
   descriptionAr String?
-  icon          String          @db.LongText
+  icon          String          @db.Text
   color         String        @default("#8B5CF6")
   rarity        BadgeRarity   @default(COMMON)
   xpReward      Int           @default(0)
@@ -1075,7 +1075,7 @@ model Reward {
   startDate     DateTime?
   endDate       DateTime?
   isActive      Boolean        @default(true)
-  imageUrl      String?        @db.LongText
+  imageUrl      String?        @db.Text
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   course        Course?        @relation(fields: [courseId], references: [id])
@@ -1186,7 +1186,7 @@ model VideoAsset {
   frameRate        Float?
   fileSize         Int?
   originalFilename String?
-  thumbnailUrl     String?             @db.LongText
+  thumbnailUrl     String?             @db.Text
   creatorId        String
   courseId         String?
   lessonId         String?
@@ -1416,7 +1416,7 @@ model Conversation {
   type         ConversationType
   title        String?
   description  String?
-  avatar       String?                   @db.LongText
+  avatar       String?                   @db.Text
   createdAt    DateTime                  @default(now())
   updatedAt    DateTime                  @updatedAt
   participants ConversationParticipant[]
@@ -1480,8 +1480,8 @@ model MessageAttachment {
   fileName     String
   fileSize     Int
   fileType     String
-  fileUrl      String          @db.LongText
-  thumbnailUrl String?         @db.LongText
+  fileUrl      String          @db.Text
+  thumbnailUrl String?         @db.Text
   createdAt    DateTime @default(now())
   message      Message  @relation(fields: [messageId], references: [id])
 
@@ -1750,8 +1750,8 @@ model ChannelPost {
   content      String         @db.Text
   contentAr    String?        @db.Text
   type         PostType       @default(TEXT)
-  mediaUrl     String?        @db.LongText
-  thumbnailUrl String?        @db.LongText
+  mediaUrl     String?        @db.Text
+  thumbnailUrl String?        @db.Text
   duration     Int?
   scheduledAt  DateTime?
   publishedAt  DateTime?
@@ -1787,7 +1787,7 @@ model PostComment {
   postId    String
   userId    String
   content   String      @db.Text
-  imageUrl  String?     @db.LongText
+  imageUrl  String?     @db.Text
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   post      ChannelPost @relation(fields: [postId], references: [id], onDelete: Cascade)

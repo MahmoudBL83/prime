@@ -440,22 +440,22 @@ export default function CoursesPage() {
 
                         <div
                             id="top-10-scroll"
-                            className="overflow-x-auto overflow-hidden scrollbar-hide"
+                            className="overflow-x-auto scrollbar-hide"
                             onScroll={() => handleScroll('top-10-scroll')}
                         >
-                            <div className="flex gap-4 pb-4" style={{ width: 'max-content' }}>
+                            <div className="flex gap-4 pb-4">
                                 {topCourses.slice(0, 10).map((course, index) => (
                                     <div
                                         key={course.id}
-                                        className="relative group cursor-pointer w-[280px] md:w-[240px] flex-shrink-0"
+                                        className="relative group cursor-pointer w-[calc(50%-8px)] md:w-[calc(25%-12px)] lg:w-[calc(16.666%-13.33px)] xl:w-[calc(12.5%-14px)] flex-shrink-0"
                                         onMouseEnter={() => setHoveredCard(course.id)}
                                         onMouseLeave={() => {
                                             setHoveredCard(null);
                                             setShowMenu(null);
                                         }}
                                     >
-                                        {/* Course Thumbnail - Landscape (Apple TV Style) */}
-                                        <div className="relative aspect-video overflow-hidden mb-3" onClick={() => handleCourseClick(course.id)} style={{ borderRadius: '12px', border: '1px solid hsla(0,0%,100%,.12)' }}>
+                                        {/* Course Thumbnail - Portrait (Apple TV Poster Style) */}
+                                        <div className="relative aspect-[2/3] overflow-hidden mb-3" onClick={() => handleCourseClick(course.id)} style={{ borderRadius: '12px', border: '1px solid hsla(0,0%,100%,.12)' }}>
                                             <Image
                                                 src={course.thumbnail || '/placeholder.jpg'}
                                                 alt={course.title}
@@ -463,6 +463,27 @@ export default function CoursesPage() {
                                                 className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
                                                 key={course.id}
                                             />
+                                            
+                                            {/* Rank Number on Card (Apple TV Style) */}
+                                            <div className={`absolute top-0 bottom-0 left-0 right-0 z-10 pointer-events-none flex flex-col ${isArabic ? 'items-end' : 'items-start'}`}>
+                                                <span 
+                                                    style={{ 
+                                                        alignSelf: 'start',
+                                                        color: '#fff',
+                                                        fontSize: '40px',
+                                                        fontWeight: 700,
+                                                        justifySelf: 'start',
+                                                        marginTop: '4px',
+                                                        marginInlineStart: '12px',
+                                                        fontFamily: 'SF Pro Display, system-ui',
+                                                        WebkitMask: 'linear-gradient(180deg, #fff 0, #fff 50%, hsla(0, 0%, 100%, .12))',
+                                                        mask: 'linear-gradient(180deg, #fff 0, #fff 50%, hsla(0, 0%, 100%, .12))'
+                                                    }}
+                                                >
+                                                    {index + 1}
+                                                </span>
+                                            </div>
+
                                             {/* Three Dots Button */}
                                             <button
                                                 onClick={(e) => {
@@ -479,27 +500,11 @@ export default function CoursesPage() {
                                             </button>
                                         </div>
 
-                                        {/* Info Below Card with Rank */}
-                                        <div className={`flex items-start gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                            <div className="flex items-center justify-center">
-                                                <span
-                                                    className="text-[72px] leading-[0.8] font-bold text-white/30 tracking-tighter"
-                                                    style={{
-                                                        fontFamily: 'SF Pro Display, system-ui',
-                                                        WebkitTextStroke: '1px rgba(255,255,255,0.1)'
-                                                    }}
-                                                >
-                                                    {index + 1}
-                                                </span>
-                                            </div>
-                                            <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                <h3 className="text-sm md:text-base font-semibold text-white/95 truncate mb-1">
-                                                    {getCourseTitle(course)}
-                                                </h3>
-                                                <p className="text-[12px] text-white/50 font-medium truncate uppercase tracking-wide">
-                                                    {getCategoryLabel(course.category)}
-                                                </p>
-                                            </div>
+                                        {/* Info Below Card - Genre Only */}
+                                        <div className="text-center px-1 mt-1">
+                                            <p className="text-[13px] text-white/70 font-medium truncate tracking-wide">
+                                                {getCategoryLabel(course.category)}
+                                            </p>
                                         </div>
 
                                         {/* Dropdown Menu */}
@@ -586,22 +591,22 @@ export default function CoursesPage() {
 
                                 <div
                                     id={`category-${category.replace(/\s+/g, '-').toLowerCase()}`}
-                                    className="overflow-x-auto overflow-hidden scrollbar-hide"
+                                    className="overflow-x-auto scrollbar-hide"
                                     onScroll={() => handleScroll(`category-${category.replace(/\s+/g, '-').toLowerCase()}`)}
                                 >
-                                    <div className="flex gap-4 pb-4" style={{ width: 'max-content' }}>
+                                    <div className="flex gap-4 pb-4">
                                         {categoryCourses.map((course) => (
                                             <div
                                                 key={course.id}
-                                                className="relative group cursor-pointer w-[280px] md:w-[240px] flex-shrink-0"
+                                                className="relative group cursor-pointer w-[calc(50%-8px)] md:w-[calc(25%-12px)] lg:w-[calc(16.666%-13.33px)] xl:w-[calc(12.5%-14px)] flex-shrink-0"
                                                 onMouseEnter={() => setHoveredCard(course.id)}
                                                 onMouseLeave={() => {
                                                     setHoveredCard(null);
                                                     setShowMenu(null);
                                                 }}
                                             >
-                                                {/* Course Thumbnail - Landscape (Apple TV Style) */}
-                                                <div className="relative aspect-video overflow-hidden mb-2" onClick={() => handleCourseClick(course.id)} style={{ borderRadius: '12px', border: '1px solid hsla(0,0%,100%,.12)' }}>
+                                                {/* Course Thumbnail - Portrait (Apple TV Poster Style) */}
+                                                <div className="relative aspect-[2/3] overflow-hidden mb-2" onClick={() => handleCourseClick(course.id)} style={{ borderRadius: '12px', border: '1px solid hsla(0,0%,100%,.12)' }}>
                                                     <Image
                                                         src={course.thumbnail || '/placeholder.jpg'}
                                                         alt={course.title}
@@ -623,12 +628,6 @@ export default function CoursesPage() {
                                                             <circle cx="13" cy="8" r="1.5" />
                                                         </svg>
                                                     </button>
-                                                </div>
-
-                                                <div className={`min-w-0 px-0.5 ${isArabic ? 'text-right' : 'text-left'}`}>
-                                                    <h3 className="text-sm font-semibold text-white/95 truncate">
-                                                        {getCourseTitle(course)}
-                                                    </h3>
                                                 </div>
 
                                                 {/* Dropdown Menu */}
