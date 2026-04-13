@@ -1458,17 +1458,6 @@ export default function OnlyFansStyleMentorsPage() {
                                         {isArabic ? 'كن منشئاً' : 'Become Creator'}
                                     </Button>
                                 )}
-                            {/* Theme Toggle */}
-                            <div className="mt-4 border-t border-border pt-4">
-                                <Button 
-                                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                                    variant="outline" 
-                                    className="w-full text-left justify-start border-border text-foreground hover:bg-accent hover:text-accent-foreground"
-                                >
-                                    <DynamicIcon name={theme === 'dark' ? 'Sun' : 'Moon'} className="w-5 h-5 mr-3" />
-                                    <span className="text-lg font-medium">Toggle Theme</span>
-                                </Button>
-                            </div>
 
                             </nav>
 

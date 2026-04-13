@@ -13,7 +13,10 @@ import {
     Crown,
     MessageCircle,
     User,
+    Sun,
+    Moon,
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { NavigationAuthSection } from '@/components/navigation/NavigationAuthSection';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { useLocaleSafe } from '@/hooks/useTranslationsSafe';
@@ -24,6 +27,7 @@ import GlobalSearch from '@/components/search/GlobalSearch';
 export function Navigation() {
     const session = useSession();
     const pathname = usePathname();
+    const { theme, setTheme } = useTheme();
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
@@ -130,6 +134,14 @@ export function Navigation() {
                                     placeholder={locale === 'de' ? 'Suchen...' : 'Search...'}
                                 />
                             </div>
+
+                            <button
+                                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                                className="hidden lg:flex items-center justify-center text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white transition-colors"
+                                aria-label="Toggle Theme"
+                            >
+                                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                            </button>
 
                             <div className="relative hidden lg:block">
                                 <button
@@ -244,8 +256,17 @@ export function Navigation() {
                                     })}
 
                                     <div className="pt-4 border-t border-border dark:border-white/10">
-                                        <p className="text-xs uppercase tracking-wide text-muted-foreground dark:text-white/60 mb-2">Language</p>
-                                        <LanguageSwitcher locales={['en', 'de']} />
+                                        <p className="text-xs uppercase tracking-wide text-muted-foreground dark:text-white/60 mb-2">Language & Theme</p>
+                                        <div className="flex items-center justify-between">
+                                            <LanguageSwitcher locales={['en', 'de']} />
+                                            <button
+                                                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                                                className="p-2 rounded-full border border-border dark:border-white/10 text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white transition-colors"
+                                                aria-label="Toggle Theme"
+                                            >
+                                                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div className="pt-4 border-t border-border dark:border-white/10">
