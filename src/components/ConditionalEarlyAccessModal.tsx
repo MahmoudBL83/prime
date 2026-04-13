@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import EarlyAccessModal from './EarlyAccessModal';
 
 export function ConditionalEarlyAccessModal() {
+    // Temporarily disabled for testing
+    return null;
+
     const [showModal, setShowModal] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
