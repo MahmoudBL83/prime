@@ -1,5 +1,7 @@
 # Prime
 
+[Live app on Vercel](https://prime-six-self.vercel.app)
+
 Prime is an Egyptian learning platform with courses, creator and mentor workspaces, quizzes, study groups, messaging, and learner progress. The application supports Arabic and English and includes optional payment, email, and video integrations.
 
 ## Stack
