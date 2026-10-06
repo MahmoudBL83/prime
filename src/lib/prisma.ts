@@ -4,9 +4,11 @@ const globalForPrisma = globalThis as unknown as {
     prisma: PrismaClient | undefined
 }
 
-// Use a dummy DATABASE_URL during build time if not provided
-// This prevents build-time errors on Vercel
-const databaseUrl = process.env.DATABASE_URL || 'file:./dummy.db'
+const databaseUrl = process.env.DATABASE_URL
+
+if (!databaseUrl) {
+    throw new Error('DATABASE_URL is required')
+}
 
 // Create Prisma Client with explicit configuration for serverless
 const createPrismaClient = () => {

@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
         // Verify the token
         let decoded: any
         try {
-            decoded = verify(token, process.env.NEXTAUTH_SECRET || 'fallback_secret')
+            decoded = verify(token, process.env.NEXTAUTH_SECRET!)
         } catch (error) {
             return NextResponse.json({ message: 'Invalid or expired token' }, { status: 400 })
         }

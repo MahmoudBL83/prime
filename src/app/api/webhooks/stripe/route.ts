@@ -4,14 +4,20 @@ import { prisma } from '@/lib/prisma'
 import Stripe from 'stripe'
 import { sendEmail } from '@/lib/email'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-09-30.clover',
-})
-
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
-
 export async function POST(request: Request) {
   try {
+    const secretKey = process.env.STRIPE_SECRET_KEY
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+    if (!secretKey || !webhookSecret) {
+      return NextResponse.json(
+        { error: 'Stripe webhook is not configured' },
+        { status: 503 }
+      )
+    }
+
+    const stripe = new Stripe(secretKey, {
+      apiVersion: '2025-09-30.clover',
+    })
     const body = await request.text()
     const headersList = await headers()
     const signature = headersList.get('stripe-signature')

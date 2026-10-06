@@ -1,75 +1,42 @@
-# Egyptian EdTech Platform
+# Prime
 
-A comprehensive educational technology platform built with Next.js, featuring:
+Prime is an Egyptian learning platform with courses, creator and mentor workspaces, quizzes, study groups, messaging, and learner progress. The application supports Arabic and English and includes optional payment, email, and video integrations.
 
-## 🚀 Features
-- **Multi-language support** (Arabic/English)
-- **Course management system** with video streaming
-- **Creator dashboard** with analytics
-- **Student learning paths** and progress tracking
-- **OnlyFans-style social features** with comments and media
-- **Quiz and assessment system**
-- **Subscription and payment integration**
-- **Dark/Light mode** with modern UI
+## Stack
 
-## 🛠 Tech Stack
-- **Frontend:** Next.js 15, React 19, TypeScript, Tailwind CSS
-- **Backend:** Next.js API routes, Prisma ORM
-- **Database:** PostgreSQL (SQLite for development)
-- **Authentication:** NextAuth.js
-- **Payments:** Stripe integration
-- **UI:** Radix UI, Lucide icons, Framer Motion
-- **Internationalization:** next-intl
+- Next.js 15 App Router, React 19, TypeScript, and Tailwind CSS
+- NextAuth.js for sign-in
+- Prisma 6 with PostgreSQL
+- `next-intl` for localization
+- Stripe, Paymob, Mux, and Resend integration code
 
-## 🚀 Quick Deploy
+## Run locally
 
-### Option 1: Vercel (Recommended)
-1. Fork this repository
-2. Connect to [Vercel](https://vercel.com)
-3. Set environment variables
-4. Deploy!
-
-### Option 2: Railway
-1. Connect to [Railway](https://railway.app)
-2. Auto-deploy with free PostgreSQL
-3. $5/month credit included
-
-## 🔧 Local Development
+Requirements: Node.js 20 or newer and a PostgreSQL database.
 
 ```bash
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.example .env.local
-
-# Run database migrations
-npx prisma migrate dev
-
-# Seed the database
-npm run db:seed
-
-# Start development server
+cp .env.example .env
+npm ci
+npm run db:push
 npm run dev
 ```
 
-## 📱 Demo Features
-- Responsive design for all devices
-- Real-time notifications
-- Video streaming capabilities
-- Social learning features
-- Progress tracking and analytics
+Set `DATABASE_URL` and a unique `NEXTAUTH_SECRET` in `.env` before starting. `db:push` applies the schema to the database named in `DATABASE_URL`; use a disposable database for local work. Open [http://localhost:3000](http://localhost:3000).
 
-## 🌍 Internationalization
-- Arabic (ar) - العربية
-- English (en)
+The repository does not include production credentials or personal seed data. Create accounts through the application after setting up your own database. Payment, email, and video features need their respective provider credentials.
 
-## 📄 License
-MIT License
+## Validate
 
-## 🤝 Contributing
-Pull requests are welcome! Please read our contributing guidelines.
+```bash
+npx prisma generate
+npx tsc --noEmit
+npm run build
+```
 
----
+The build generates the Prisma client and compiles Next.js. It does not change the database schema. For a new deployment, prepare the target database separately with `npm run db:push` after reviewing the schema changes.
 
-Built with ❤️ for the Egyptian educational community
+## Deploy to Vercel
+
+Connect this repository to a Vercel project using the Next.js preset. Set `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and `NEXT_PUBLIC_APP_URL` for the target environment. Add integration credentials only for features you enable. The build command is `npm run build`.
+
+Never commit `.env` files. Rotate any credential that was previously published in repository history.
