@@ -1,5 +1,7 @@
 'use client'
 
+import { Bell as LucideBell, Bookmark as LucideBookmark, Calendar as LucideCalendar, CalendarCheck as LucideCalendarCheck, CheckCircle as LucideCheckCircle, Crown as LucideCrown, Edit as LucideEdit, Eye as LucideEye, Film as LucideFilm, Grid as LucideGrid, Heart as LucideHeart, Home as LucideHome, ImageIcon as LucideImageIcon, List as LucideList, MessageCircle as LucideMessageCircle, MessageSquare as LucideMessageSquare, Play as LucidePlay, Search as LucideSearch, Sparkles as LucideSparkles, Star as LucideStar, TrendingUp as LucideTrendingUp, Upload as LucideUpload, Users as LucideUsers, Video as LucideVideo, X as LucideX, BarChart3 as LucideBarChart3, Trash2 as LucideTrash2, Loader2 as LucideLoader2 } from 'lucide-react'
+
 import { useState, useEffect, useMemo, useCallback, memo, lazy, Suspense } from 'react'
 import { useRouter, useParams, usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
@@ -12,6 +14,7 @@ import toast from 'react-hot-toast'
 import { AvatarPlaceholder } from '@/components/ui/avatar-placeholder'
 import { CredentialsDisplay, Credential } from '@/components/credentials/CredentialsSection'
 import { PostMenuDropdown } from '@/components/posts/PostMenuDropdown'
+import { useAuthModal } from '@/contexts/AuthModalContext'
 
 // Dynamic imports for heavy components
 const SubscribeModal = lazy(() => import('@/components/modals/SubscribeModal'))
@@ -23,47 +26,50 @@ const TipModal = lazy(() => import('@/components/creator/TipModal'))
 const DirectMessageModal = lazy(() => import('@/components/creator/DirectMessageModal'))
 const ContentCalendar = lazy(() => import('@/components/creator/ContentCalendar'))
 
-// Cached icon imports - only load what we need when we need it
-const iconCache = new Map()
-const loadIcon = async (iconName: string) => {
-    if (iconCache.has(iconName)) {
-        return iconCache.get(iconName)
-    }
+// Static icon map: icons are tree-shaken at build time and render instantly
+// (they used to be fetched at runtime by importing the whole lucide-react package)
+const ICONS = {
+    Bell: LucideBell,
+    Bookmark: LucideBookmark,
+    Calendar: LucideCalendar,
+    CalendarCheck: LucideCalendarCheck,
+    CheckCircle: LucideCheckCircle,
+    Crown: LucideCrown,
+    Edit: LucideEdit,
+    Eye: LucideEye,
+    Film: LucideFilm,
+    Grid: LucideGrid,
+    Heart: LucideHeart,
+    Home: LucideHome,
+    ImageIcon: LucideImageIcon,
+    List: LucideList,
+    MessageCircle: LucideMessageCircle,
+    MessageSquare: LucideMessageSquare,
+    Play: LucidePlay,
+    Search: LucideSearch,
+    Sparkles: LucideSparkles,
+    Star: LucideStar,
+    TrendingUp: LucideTrendingUp,
+    Upload: LucideUpload,
+    Users: LucideUsers,
+    Video: LucideVideo,
+    X: LucideX,
+    BarChart3: LucideBarChart3,
+    Trash2: LucideTrash2,
+    Loader2: LucideLoader2,
+} as const
 
-    try {
-        const iconModule = await import('lucide-react')
-        const IconComponent = iconModule[iconName as keyof typeof iconModule]
-        if (IconComponent) {
-            iconCache.set(iconName, IconComponent)
-            return IconComponent
-        }
-    } catch (error) {
-        console.warn(`Failed to load icon: ${iconName}`)
-    }
-    return null
-}
-
-// Dynamic Icon component
 const DynamicIcon = memo(({
     name,
     className = "w-4 h-4",
     ...props
 }: {
-    name: string
+    name: keyof typeof ICONS
     className?: string
     [key: string]: any
 }) => {
-    const [IconComponent, setIconComponent] = useState<any>(null)
-
-    useEffect(() => {
-        loadIcon(name).then(setIconComponent)
-    }, [name])
-
-    if (!IconComponent) {
-        return <div className={`${className} animate-pulse bg-muted rounded`} />
-    }
-
-    return <IconComponent className={className} {...props} />
+    const IconComponent = ICONS[name]
+    return IconComponent ? <IconComponent className={className} {...props} /> : null
 })
 
 DynamicIcon.displayName = 'DynamicIcon'
@@ -316,6 +322,8 @@ export default function OnlyFansStyleMentorsPage() {
     const pathname = usePathname()
     const params = useParams()
     const { data: session } = useSession()
+    const viewerId = session?.user?.id
+    const { openAuthModal } = useAuthModal()
     const locale = (params.locale as string) || 'en'
     const isArabic = locale === 'ar'
 
@@ -372,7 +380,8 @@ export default function OnlyFansStyleMentorsPage() {
             fetchHiddenUsers()
             fetchUserLists()
         }
-    }, [filterType, session])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filterType, viewerId])
 
     // Filter creators based on search query
     useEffect(() => {
@@ -405,7 +414,7 @@ export default function OnlyFansStyleMentorsPage() {
         } catch (error) {
             console.error('Error fetching bookmarks:', error)
         }
-    }, [session])
+    }, [viewerId])
 
     // Fetch user's likes from API
     const fetchUserLikes = useCallback(async () => {
@@ -421,7 +430,7 @@ export default function OnlyFansStyleMentorsPage() {
         } catch (error) {
             console.error('Error fetching likes:', error)
         }
-    }, [session])
+    }, [viewerId])
 
     // Handle bookmark toggle
     const handleBookmark = useCallback(async (postId: string): Promise<boolean> => {
@@ -682,7 +691,7 @@ export default function OnlyFansStyleMentorsPage() {
                 setIsCreatorAccount(hasCreatorRole)
             }
         }
-    }, [creators, session])
+    }, [creators, viewerId, session?.user?.role])
 
     const fetchCreatorStats = useCallback(async (creatorId: string) => {
         // Check cache first
@@ -709,8 +718,7 @@ export default function OnlyFansStyleMentorsPage() {
     // Memoize subscribe click handler
     const handleSubscribeClick = useCallback((creator: Creator) => {
         if (!session) {
-            toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
-            router.push(`/${locale}/login`)
+            openAuthModal('signin')
             return
         }
         setSelectedCreator(creator)
@@ -718,17 +726,17 @@ export default function OnlyFansStyleMentorsPage() {
     }, [session, isArabic, locale, router])
 
     const fetchCreators = useCallback(async () => {
-        // Check cache first
-        const cacheKey = `${CACHE_KEYS.CREATORS}_${filterType}`
+        // Show the cached list instantly, then refresh it in the background
+        const cacheKey = `${CACHE_KEYS.CREATORS}_${filterType}_${viewerId || 'guest'}`
         const cachedData = getCachedData(cacheKey)
         if (cachedData) {
             setCreators(cachedData)
             setLoading(false)
-            return
+        } else {
+            setLoading(true)
         }
 
         try {
-            setLoading(true)
             const response = await fetch(`/api/creators?limit=50&filter=${filterType}`)
             if (response.ok) {
                 const data = await response.json()
@@ -746,26 +754,27 @@ export default function OnlyFansStyleMentorsPage() {
         } finally {
             setLoading(false)
         }
-    }, [filterType, isArabic])
+    }, [filterType, isArabic, viewerId])
 
     const fetchPosts = useCallback(async () => {
-        // Check cache first
-        const cachedData = getCachedData(CACHE_KEYS.POSTS)
+        // Show the cached feed instantly, then refresh it in the background
+        const cacheKey = `${CACHE_KEYS.POSTS}_${viewerId || 'guest'}`
+        const cachedData = getCachedData(cacheKey)
         if (cachedData) {
             setPosts(cachedData)
             setLoadingPosts(false)
-            return
+        } else {
+            setLoadingPosts(true)
         }
 
         try {
-            setLoadingPosts(true)
             const response = await fetch('/api/channel-posts/feed')
             if (response.ok) {
                 const data = await response.json()
                 const postsData = data.posts || []
                 setPosts(postsData)
                 // Cache the response
-                setCachedData(CACHE_KEYS.POSTS, postsData)
+                setCachedData(cacheKey, postsData)
             }
         } catch (error) {
             console.error('Failed to fetch posts:', error)
@@ -786,7 +795,7 @@ export default function OnlyFansStyleMentorsPage() {
         } catch (error) {
             console.error('Failed to fetch user subscriptions:', error)
         }
-    }, [session])
+    }, [viewerId])
 
     const fetchCreatorPosts = async (channelId: string) => {
         setLoadingCreatorPosts(true)
@@ -1312,14 +1321,6 @@ export default function OnlyFansStyleMentorsPage() {
     ))
 
     CreatorCard.displayName = 'CreatorCard'
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-card flex items-center justify-center">
-                <div className="w-16 h-16 border-4 border-[#0a84ff]/30 border-t-[#0a84ff] rounded-full animate-spin" />
-            </div>
-        )
-    }
 
     return (
         <div className="min-h-screen bg-card text-foreground transition-colors">
@@ -2522,6 +2523,8 @@ export default function OnlyFansStyleMentorsPage() {
                                             />
                                         </div>
                                     </div>
+
+                                    {loading && creators.length === 0 && <CreatorGridSkeleton />}
 
                                     {/* No Results Message */}
                                     {filteredCreators.length === 0 && searchQuery && (

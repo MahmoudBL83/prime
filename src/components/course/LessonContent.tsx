@@ -180,27 +180,27 @@ export default function LessonContent({
     const truncatedTranscript = currentTranscript ? truncateText(currentTranscript, 300) : ''
 
     return (
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-lg p-6">
+        <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-6">
             {/* Lesson Title */}
-            <h2 className="text-2xl font-bold mb-4 text-[var(--foreground)]">
+            <h2 className="text-2xl font-bold mb-4 text-[hsl(var(--foreground))]">
                 {currentTitle}
             </h2>
 
             {/* Lesson Description */}
             {currentDescription && (
-                <p className="text-[var(--muted-foreground)] mb-6 leading-relaxed">
+                <p className="text-[hsl(var(--muted-foreground))] mb-6 leading-relaxed">
                     {currentDescription}
                 </p>
             )}
 
             {/* Tabs */}
-            <div className="border-b border-[var(--border)] mb-6">
+            <div className="border-b border-[hsl(var(--border))] mb-6">
                 <nav className="-mb-px flex space-x-8">
                     <button
                         onClick={() => setActiveTab('overview')}
                         className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'overview'
-                            ? 'border-[var(--accent)] text-[var(--accent)]'
-                            : 'border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--border)]'
+                            ? 'border-[hsl(var(--accent))] text-[hsl(var(--accent))]'
+                            : 'border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:border-[hsl(var(--border))]'
                             }`}
                     >
                         {currentT.overview}
@@ -209,8 +209,8 @@ export default function LessonContent({
                         <button
                             onClick={() => setActiveTab('resources')}
                             className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'resources'
-                                ? 'border-[var(--accent)] text-[var(--accent)]'
-                                : 'border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--border)]'
+                                ? 'border-[hsl(var(--accent))] text-[hsl(var(--accent))]'
+                                : 'border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:border-[hsl(var(--border))]'
                                 }`}
                         >
                             {currentT.resources} ({resources.length})
@@ -220,8 +220,8 @@ export default function LessonContent({
                         <button
                             onClick={() => setActiveTab('transcript')}
                             className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'transcript'
-                                ? 'border-[var(--accent)] text-[var(--accent)]'
-                                : 'border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--border)]'
+                                ? 'border-[hsl(var(--accent))] text-[hsl(var(--accent))]'
+                                : 'border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:border-[hsl(var(--border))]'
                                 }`}
                         >
                             {currentT.transcript}
@@ -231,8 +231,8 @@ export default function LessonContent({
                         <button
                             onClick={() => setActiveTab('related')}
                             className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'related'
-                                ? 'border-[var(--accent)] text-[var(--accent)]'
-                                : 'border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--border)]'
+                                ? 'border-[hsl(var(--accent))] text-[hsl(var(--accent))]'
+                                : 'border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:border-[hsl(var(--border))]'
                                 }`}
                         >
                             {currentT.related}
@@ -248,18 +248,18 @@ export default function LessonContent({
                         {/* Learning Objectives */}
                         {objectives.length > 0 && (
                             <div>
-                                <h3 className="text-lg font-semibold mb-3 text-[var(--foreground)]">
+                                <h3 className="text-lg font-semibold mb-3 text-[hsl(var(--foreground))]">
                                     {currentT.learningObjectives}
                                 </h3>
                                 <div className="space-y-2">
                                     {objectives.map((objective) => (
                                         <div key={objective.id} className="flex items-start space-x-3">
                                             <div className="flex-shrink-0 mt-1">
-                                                <svg className="w-5 h-5 text-[var(--accent)]" fill="currentColor" viewBox="0 0 20 20">
+                                                <svg className="w-5 h-5 text-[hsl(var(--accent))]" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                 </svg>
                                             </div>
-                                            <p className="text-[var(--foreground)]">
+                                            <p className="text-[hsl(var(--foreground))]">
                                                 {objective.text}
                                             </p>
                                         </div>
@@ -270,55 +270,55 @@ export default function LessonContent({
 
                         {/* Quick Stats */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="bg-[var(--secondary)] rounded-lg p-4">
+                            <div className="bg-[hsl(var(--secondary))] rounded-lg p-4">
                                 <div className="flex items-center space-x-3">
                                     <div className="flex-shrink-0">
-                                        <svg className="w-8 h-8 text-[var(--accent)]" fill="currentColor" viewBox="0 0 20 20">
+                                        <svg className="w-8 h-8 text-[hsl(var(--accent))]" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                                             <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
                                         </svg>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-[var(--muted-foreground)]">
+                                        <p className="text-sm text-[hsl(var(--muted-foreground))]">
                                             {currentT.views}
                                         </p>
-                                        <p className="text-lg font-semibold text-[var(--foreground)]">
+                                        <p className="text-lg font-semibold text-[hsl(var(--foreground))]">
                                             1,234
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-[var(--secondary)] rounded-lg p-4">
+                            <div className="bg-[hsl(var(--secondary))] rounded-lg p-4">
                                 <div className="flex items-center space-x-3">
                                     <div className="flex-shrink-0">
-                                        <svg className="w-8 h-8 text-[var(--accent)]" fill="currentColor" viewBox="0 0 20 20">
+                                        <svg className="w-8 h-8 text-[hsl(var(--accent))]" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                                         </svg>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-[var(--muted-foreground)]">
+                                        <p className="text-sm text-[hsl(var(--muted-foreground))]">
                                             {currentT.duration}
                                         </p>
-                                        <p className="text-lg font-semibold text-[var(--foreground)]">
+                                        <p className="text-lg font-semibold text-[hsl(var(--foreground))]">
                                             15:30
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-[var(--secondary)] rounded-lg p-4">
+                            <div className="bg-[hsl(var(--secondary))] rounded-lg p-4">
                                 <div className="flex items-center space-x-3">
                                     <div className="flex-shrink-0">
-                                        <svg className="w-8 h-8 text-[var(--accent)]" fill="currentColor" viewBox="0 0 20 20">
+                                        <svg className="w-8 h-8 text-[hsl(var(--accent))]" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
                                         </svg>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-[var(--muted-foreground)]">
+                                        <p className="text-sm text-[hsl(var(--muted-foreground))]">
                                             {currentT.students}
                                         </p>
-                                        <p className="text-lg font-semibold text-[var(--foreground)]">
+                                        <p className="text-lg font-semibold text-[hsl(var(--foreground))]">
                                             856
                                         </p>
                                     </div>
@@ -327,14 +327,14 @@ export default function LessonContent({
                         </div>
 
                         {/* Placeholder for future features */}
-                        <div className="bg-[var(--secondary)] border-2 border-dashed border-[var(--border)] rounded-lg p-8 text-center">
-                            <svg className="w-12 h-12 text-[var(--muted-foreground)] mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                        <div className="bg-[hsl(var(--secondary))] border-2 border-dashed border-[hsl(var(--border))] rounded-lg p-8 text-center">
+                            <svg className="w-12 h-12 text-[hsl(var(--muted-foreground))] mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                             </svg>
-                            <h4 className="text-lg font-medium text-[var(--foreground)] mb-2">
+                            <h4 className="text-lg font-medium text-[hsl(var(--foreground))] mb-2">
                                 {currentT.discussionPractice}
                             </h4>
-                            <p className="text-[var(--muted-foreground)]">
+                            <p className="text-[hsl(var(--muted-foreground))]">
                                 {currentT.comingSoon}
                             </p>
                         </div>
@@ -343,27 +343,27 @@ export default function LessonContent({
 
                 {activeTab === 'resources' && (
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold mb-4 text-[var(--foreground)]">
+                        <h3 className="text-lg font-semibold mb-4 text-[hsl(var(--foreground))]">
                             {currentT.lessonResources}
                         </h3>
                         {resources.map((resource) => (
                             <div
                                 key={resource.id}
-                                className="flex items-center justify-between p-4 border border-[var(--border)] rounded-lg hover:bg-[var(--secondary)] transition-colors"
+                                className="flex items-center justify-between p-4 border border-[hsl(var(--border))] rounded-lg hover:bg-[hsl(var(--secondary))] transition-colors"
                             >
                                 <div className="flex items-center space-x-4">
                                     {getResourceIcon(resource.type)}
                                     <div>
-                                        <h4 className="font-medium text-[var(--foreground)]">
+                                        <h4 className="font-medium text-[hsl(var(--foreground))]">
                                             {resource.title}
                                         </h4>
                                         {(resource.description || resource.descriptionAr) && (
-                                            <p className="text-sm text-[var(--muted-foreground)]">
+                                            <p className="text-sm text-[hsl(var(--muted-foreground))]">
                                                 {resource.description}
                                             </p>
                                         )}
                                         {resource.size && (
-                                            <p className="text-xs text-[var(--muted-foreground)] mt-1">
+                                            <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
                                                 {formatFileSize(resource.size)}
                                             </p>
                                         )}
@@ -373,7 +373,7 @@ export default function LessonContent({
                                     href={resource.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="px-4 py-2 bg-[var(--accent)] text-[var(--accent-foreground)] rounded-lg hover:bg-[var(--primary)] transition-colors text-sm font-medium"
+                                    className="px-4 py-2 bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] rounded-lg hover:bg-[hsl(var(--primary))] transition-colors text-sm font-medium"
                                 >
                                     {currentT.download}
                                 </a>
@@ -384,17 +384,17 @@ export default function LessonContent({
 
                 {activeTab === 'transcript' && currentTranscript && (
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold mb-4 text-[var(--foreground)]">
+                        <h3 className="text-lg font-semibold mb-4 text-[hsl(var(--foreground))]">
                             {currentT.videoTranscript}
                         </h3>
-                        <div className="bg-[var(--secondary)] rounded-lg p-4">
-                            <p className="text-[var(--foreground)] leading-relaxed whitespace-pre-wrap">
+                        <div className="bg-[hsl(var(--secondary))] rounded-lg p-4">
+                            <p className="text-[hsl(var(--foreground))] leading-relaxed whitespace-pre-wrap">
                                 {showFullTranscript ? currentTranscript : truncatedTranscript}
                             </p>
                             {currentTranscript.length > 300 && (
                                 <button
                                     onClick={() => setShowFullTranscript(!showFullTranscript)}
-                                    className="mt-4 text-[var(--accent)] hover:text-[var(--primary)] transition-colors font-medium"
+                                    className="mt-4 text-[hsl(var(--accent))] hover:text-[hsl(var(--primary))] transition-colors font-medium"
                                 >
                                     {showFullTranscript
                                         ? currentT.showLess
@@ -403,7 +403,7 @@ export default function LessonContent({
                                 </button>
                             )}
                         </div>
-                        <div className="flex items-center space-x-2 text-sm text-[var(--muted-foreground)]">
+                        <div className="flex items-center space-x-2 text-sm text-[hsl(var(--muted-foreground))]">
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                             </svg>
@@ -416,7 +416,7 @@ export default function LessonContent({
 
                 {activeTab === 'related' && (
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold mb-4 text-[var(--foreground)]">
+                        <h3 className="text-lg font-semibold mb-4 text-[hsl(var(--foreground))]">
                             {currentT.relatedLessons}
                         </h3>
                         <div className="grid gap-4">
@@ -424,23 +424,23 @@ export default function LessonContent({
                                 <div
                                     key={relatedLesson.id}
                                     onClick={() => onRelatedLessonClick?.(relatedLesson.id)}
-                                    className="p-4 border border-[var(--border)] rounded-lg hover:bg-[var(--secondary)] transition-colors cursor-pointer"
+                                    className="p-4 border border-[hsl(var(--border))] rounded-lg hover:bg-[hsl(var(--secondary))] transition-colors cursor-pointer"
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-3">
-                                            <span className="w-8 h-8 bg-[var(--muted)] rounded-full flex items-center justify-center text-sm font-medium text-[var(--foreground)]">
+                                            <span className="w-8 h-8 bg-[hsl(var(--muted))] rounded-full flex items-center justify-center text-sm font-medium text-[hsl(var(--foreground))]">
                                                 {relatedLesson.order + 1}
                                             </span>
                                             <div>
-                                                <h4 className="font-medium text-[var(--foreground)]">
+                                                <h4 className="font-medium text-[hsl(var(--foreground))]">
                                                     {relatedLesson.title}
                                                 </h4>
-                                                <p className="text-sm text-[var(--muted-foreground)]">
+                                                <p className="text-sm text-[hsl(var(--muted-foreground))]">
                                                     {currentT.lesson} {relatedLesson.order + 1}
                                                 </p>
                                             </div>
                                         </div>
-                                        <svg className="w-5 h-5 text-[var(--muted-foreground)]" fill="currentColor" viewBox="0 0 20 20">
+                                        <svg className="w-5 h-5 text-[hsl(var(--muted-foreground))]" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                                         </svg>
                                     </div>

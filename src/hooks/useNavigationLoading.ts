@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 
 /**
- * Custom hook for handling navigation with loading states
+ * Custom hook for handling navigation with loading states.
+ *
+ * Navigation starts immediately; the loading key only drives button spinners
+ * while the next route streams in. (An artificial delay used to be inserted
+ * here, which made every click feel ~300ms slower.)
  */
 export function useNavigationLoading() {
     const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({})
@@ -15,44 +19,44 @@ export function useNavigationLoading() {
         setLoadingStates({})
     }, [pathname])
 
-    const navigateWithLoading = async (
-        path: string, 
+    const navigateWithLoading = useCallback(async (
+        path: string,
         loadingKey: string = 'default',
-        delay: number = 300
+        delay: number = 0
     ) => {
         try {
-            // Set loading state
+            if (path === pathname) return
+
             setLoadingStates(prev => ({ ...prev, [loadingKey]: true }))
-            
-            // Add small delay to show loading animation
-            await new Promise(resolve => setTimeout(resolve, delay))
-            
-            // Navigate
+
+            if (delay > 0) {
+                await new Promise(resolve => setTimeout(resolve, delay))
+            }
+
             router.push(path)
-            
+
             // Fallback timeout to clear loading state if navigation doesn't complete
             setTimeout(() => {
                 setLoadingStates(prev => ({ ...prev, [loadingKey]: false }))
-            }, 5000) // 5 second fallback
+            }, 5000)
         } catch (error) {
             console.error('Navigation error:', error)
             toast.error('Navigation failed')
-            // Reset loading state on error
             setLoadingStates(prev => ({ ...prev, [loadingKey]: false }))
         }
-    }
+    }, [router, pathname])
 
-    const isLoading = (loadingKey: string = 'default'): boolean => {
+    const isLoading = useCallback((loadingKey: string = 'default'): boolean => {
         return loadingStates[loadingKey] || false
-    }
+    }, [loadingStates])
 
-    const resetLoading = (loadingKey?: string) => {
+    const resetLoading = useCallback((loadingKey?: string) => {
         if (loadingKey) {
             setLoadingStates(prev => ({ ...prev, [loadingKey]: false }))
         } else {
             setLoadingStates({})
         }
-    }
+    }, [])
 
     return {
         navigateWithLoading,

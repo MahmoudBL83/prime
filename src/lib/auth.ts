@@ -16,6 +16,9 @@ const loginSchema = {
     }
 }
 
+// How long the creator/KYC status cached in the JWT is trusted before re-checking the DB
+const CREATOR_STATUS_TTL_MS = 5 * 60 * 1000
+
 export const authOptions: NextAuthOptions = {
     session: {
         strategy: "jwt",
@@ -103,25 +106,29 @@ export const authOptions: NextAuthOptions = {
                 token.country = (user as any).country ?? null
             }
 
-            // Always check creator status (on sign-in and subsequent requests)
-            if (token.id) {
+            // This callback runs on every session read (every API route and every
+            // useSession refresh), so only re-check creator status on sign-in, on an
+            // explicit session update, or when the cached value is stale.
+            const checkedAt = typeof token.creatorCheckedAt === 'number' ? token.creatorCheckedAt : 0
+            const isStale = Date.now() - checkedAt > CREATOR_STATUS_TTL_MS
+            if (token.id && (user || trigger === 'update' || isStale)) {
                 try {
                     const { prisma } = await import("@/lib/prisma")
 
-                    // Check if user has creator profile
-                    const creator = await prisma.creator.findUnique({
-                        where: { userId: token.id as string },
-                        select: { id: true, kycStatus: true }
-                    })
+                    const [creator, application] = await Promise.all([
+                        prisma.creator.findUnique({
+                            where: { userId: token.id as string },
+                            select: { id: true, kycStatus: true }
+                        }),
+                        prisma.creatorApplication.findUnique({
+                            where: { userId: token.id as string },
+                            select: { status: true }
+                        }),
+                    ])
                     token.isCreator = !!creator
                     token.kycStatus = creator?.kycStatus || null
-
-                    // Check creator application status
-                    const application = await prisma.creatorApplication.findUnique({
-                        where: { userId: token.id as string },
-                        select: { status: true }
-                    })
                     token.applicationStatus = application?.status || null
+                    token.creatorCheckedAt = Date.now()
                 } catch (error) {
                     console.error("Error checking creator status:", error)
                 }
@@ -147,5 +154,5 @@ export const authOptions: NextAuthOptions = {
     },
     // Add performance optimizations
     useSecureCookies: process.env.NODE_ENV === "production",
-    debug: process.env.NODE_ENV === "development",
+    debug: process.env.NEXTAUTH_DEBUG === "true",
 }

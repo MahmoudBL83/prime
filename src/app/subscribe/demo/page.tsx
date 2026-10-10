@@ -21,7 +21,6 @@ import {
 import { toast } from 'react-hot-toast'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'
 
 export default function DemoSubscribePage() {
     const { data: session, status } = useSession()

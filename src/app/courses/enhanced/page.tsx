@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge'
 
 // Prevent static generation for auth-required pages
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'
 
 interface Course {
     id: string
@@ -213,12 +212,12 @@ export default function EnhancedCoursesPage() {
 
     if (status === 'loading') {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+            <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--background))]">
                 <div className="text-center">
-                    <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">
+                    <h2 className="text-2xl font-bold text-[hsl(var(--foreground))] mb-4">
                         {lang === 'de' ? 'جاري التحميل...' : 'Loading...'}
                     </h2>
-                    <p className="text-[var(--muted-foreground)]">
+                    <p className="text-[hsl(var(--muted-foreground))]">
                         {lang === 'de' ? 'يرجى الانتظار' : 'Please wait'}
                     </p>
                 </div>
@@ -228,12 +227,12 @@ export default function EnhancedCoursesPage() {
 
     if (!session) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+            <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--background))]">
                 <div className="text-center">
-                    <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">
+                    <h2 className="text-2xl font-bold text-[hsl(var(--foreground))] mb-4">
                         {lang === 'de' ? 'مطلوب تسجيل الدخول' : 'Sign In Required'}
                     </h2>
-                    <p className="text-[var(--muted-foreground)] mb-6">
+                    <p className="text-[hsl(var(--muted-foreground))] mb-6">
                         {lang === 'de' ? 'يرجى تسجيل الدخول لعرض الدورات' : 'Please sign in to view courses'}
                     </p>
                     <Button onClick={() => router.push('/auth/login')}>
@@ -249,22 +248,22 @@ export default function EnhancedCoursesPage() {
     const inProgressCourses = myCourses.filter(course => course.userProgress && course.userProgress > 0 && course.userProgress < 100)
 
     return (
-        <div className="min-h-screen bg-[var(--background)]">
+        <div className="min-h-screen bg-[hsl(var(--background))]">
             {/* Header */}
-            <div className="bg-[var(--card)] border-b border-[var(--border)]">
+            <div className="bg-[hsl(var(--card))] border-b border-[hsl(var(--border))]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
                         <div>
-                            <h1 className="text-3xl font-bold text-[var(--foreground)]">
+                            <h1 className="text-3xl font-bold text-[hsl(var(--foreground))]">
                                 {currentT.title}
                             </h1>
-                            <p className="text-[var(--muted-foreground)] mt-1">
+                            <p className="text-[hsl(var(--muted-foreground))] mt-1">
                                 {currentT.subtitle}
                             </p>
                         </div>
                         <div className="flex items-center gap-4">
                             {/* View mode toggle */}
-                            <div className="flex items-center bg-[var(--background)] rounded-lg p-1">
+                            <div className="flex items-center bg-[hsl(var(--background))] rounded-lg p-1">
                                 <Button
                                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                                     size="sm"
@@ -285,7 +284,7 @@ export default function EnhancedCoursesPage() {
 
                             <button
                                 onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
-                                className="px-4 py-2 border border-[var(--border)] rounded-md text-sm text-[var(--foreground)] hover:bg-[var(--secondary)] transition-colors"
+                                className="px-4 py-2 border border-[hsl(var(--border))] rounded-md text-sm text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))] transition-colors"
                             >
                                 {lang === 'en' ? 'Deutsch' : 'English'}
                             </button>
@@ -296,16 +295,16 @@ export default function EnhancedCoursesPage() {
 
             {/* Continue Learning Section */}
             {inProgressCourses.length > 0 && (
-                <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-b border-[var(--border)]">
+                <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-b border-[hsl(var(--border))]">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                        <h2 className="text-xl font-semibold text-[var(--foreground)] mb-4">
+                        <h2 className="text-xl font-semibold text-[hsl(var(--foreground))] mb-4">
                             {currentT.continueLearning}
                         </h2>
                         <div className="flex gap-4 overflow-x-auto pb-2">
                             {inProgressCourses.slice(0, 3).map((course) => (
                                 <div
                                     key={course.id}
-                                    className="flex-shrink-0 w-80 bg-[var(--card)] rounded-lg p-4 border border-[var(--border)] cursor-pointer hover:border-blue-500 transition-colors"
+                                    className="flex-shrink-0 w-80 bg-[hsl(var(--card))] rounded-lg p-4 border border-[hsl(var(--border))] cursor-pointer hover:border-blue-500 transition-colors"
                                     onClick={() => handleCourseClick(course.id)}
                                 >
                                     <div className="flex items-center gap-3">
@@ -315,10 +314,10 @@ export default function EnhancedCoursesPage() {
                                             className="w-16 h-16 rounded-lg object-cover"
                                         />
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="font-semibold text-[var(--foreground)] text-sm truncate">
+                                            <h3 className="font-semibold text-[hsl(var(--foreground))] text-sm truncate">
                                                 {lang === 'de' ? course.titleAr : course.title}
                                             </h3>
-                                            <p className="text-xs text-[var(--muted-foreground)] mb-2">
+                                            <p className="text-xs text-[hsl(var(--muted-foreground))] mb-2">
                                                 {course.userProgress}% {currentT.myProgress}
                                             </p>
                                             <div className="w-full bg-gray-700 rounded-full h-2">
@@ -338,17 +337,17 @@ export default function EnhancedCoursesPage() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Search and Filters */}
-                <div className="bg-[var(--card)] rounded-xl shadow-sm border border-[var(--border)] p-6 mb-8">
+                <div className="bg-[hsl(var(--card))] rounded-xl shadow-sm border border-[hsl(var(--border))] p-6 mb-8">
                     {/* Main search bar */}
                     <form onSubmit={handleSearch} className="mb-6">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]" />
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[hsl(var(--muted-foreground))]" />
                             <input
                                 type="text"
                                 placeholder={currentT.search}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full border border-[var(--border)] rounded-lg pl-12 pr-4 py-3 bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full border border-[hsl(var(--border))] rounded-lg pl-12 pr-4 py-3 bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
                         </div>
                     </form>
@@ -364,7 +363,7 @@ export default function EnhancedCoursesPage() {
                             {showFilters ? currentT.hideFilters : currentT.showFilters}
                         </Button>
 
-                        <div className="flex items-center gap-4 text-sm text-[var(--muted-foreground)]">
+                        <div className="flex items-center gap-4 text-sm text-[hsl(var(--muted-foreground))]">
                             <span>{courses.length} {currentT.coursesFound}</span>
                         </div>
                     </div>
@@ -378,16 +377,16 @@ export default function EnhancedCoursesPage() {
                         }}
                         className="overflow-hidden"
                     >
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-[var(--border)]">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-[hsl(var(--border))]">
                             {/* Category Filter */}
                             <div>
-                                <label className="block text-sm font-medium mb-2 text-[var(--foreground)]">
+                                <label className="block text-sm font-medium mb-2 text-[hsl(var(--foreground))]">
                                     {currentT.category}
                                 </label>
                                 <select
                                     value={selectedCategory}
                                     onChange={(e) => setSelectedCategory(e.target.value)}
-                                    className="w-full border border-[var(--border)] rounded-lg px-3 py-2 bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2 bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <option value="">{lang === 'de' ? 'الكل' : 'All'}</option>
                                     {CATEGORIES.map((category) => (
@@ -400,13 +399,13 @@ export default function EnhancedCoursesPage() {
 
                             {/* Skill Level Filter */}
                             <div>
-                                <label className="block text-sm font-medium mb-2 text-[var(--foreground)]">
+                                <label className="block text-sm font-medium mb-2 text-[hsl(var(--foreground))]">
                                     {currentT.skillLevel}
                                 </label>
                                 <select
                                     value={selectedSkillLevel}
                                     onChange={(e) => setSelectedSkillLevel(e.target.value)}
-                                    className="w-full border border-[var(--border)] rounded-lg px-3 py-2 bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2 bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <option value="">{lang === 'de' ? 'الكل' : 'All'}</option>
                                     {SKILL_LEVELS.map((level) => (
@@ -419,13 +418,13 @@ export default function EnhancedCoursesPage() {
 
                             {/* Sort By */}
                             <div>
-                                <label className="block text-sm font-medium mb-2 text-[var(--foreground)]">
+                                <label className="block text-sm font-medium mb-2 text-[hsl(var(--foreground))]">
                                     {currentT.sortBy}
                                 </label>
                                 <select
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value)}
-                                    className="w-full border border-[var(--border)] rounded-lg px-3 py-2 bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2 bg-[hsl(var(--background))] text-[hsl(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <option value="newest">{currentT.newest}</option>
                                     <option value="popular">{currentT.popular}</option>
@@ -453,26 +452,26 @@ export default function EnhancedCoursesPage() {
                 {loading ? (
                     <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
                         {Array.from({ length: 8 }).map((_, index) => (
-                            <div key={index} className="bg-[var(--card)] rounded-xl shadow border border-[var(--border)] animate-pulse">
-                                <div className="aspect-video bg-[var(--muted)] rounded-t-xl"></div>
+                            <div key={index} className="bg-[hsl(var(--card))] rounded-xl shadow border border-[hsl(var(--border))] animate-pulse">
+                                <div className="aspect-video bg-[hsl(var(--muted))] rounded-t-xl"></div>
                                 <div className="p-5 space-y-3">
-                                    <div className="h-4 bg-[var(--muted)] rounded w-3/4"></div>
-                                    <div className="h-3 bg-[var(--muted)] rounded w-full"></div>
-                                    <div className="h-3 bg-[var(--muted)] rounded w-2/3"></div>
-                                    <div className="h-10 bg-[var(--muted)] rounded w-full"></div>
+                                    <div className="h-4 bg-[hsl(var(--muted))] rounded w-3/4"></div>
+                                    <div className="h-3 bg-[hsl(var(--muted))] rounded w-full"></div>
+                                    <div className="h-3 bg-[hsl(var(--muted))] rounded w-2/3"></div>
+                                    <div className="h-10 bg-[hsl(var(--muted))] rounded w-full"></div>
                                 </div>
                             </div>
                         ))}
                     </div>
                 ) : courses.length === 0 ? (
-                    <div className="bg-[var(--card)] rounded-xl shadow p-12 text-center border border-[var(--border)]">
-                        <div className="w-24 h-24 bg-[var(--muted)] rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Search className="w-12 h-12 text-[var(--muted-foreground)]" />
+                    <div className="bg-[hsl(var(--card))] rounded-xl shadow p-12 text-center border border-[hsl(var(--border))]">
+                        <div className="w-24 h-24 bg-[hsl(var(--muted))] rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Search className="w-12 h-12 text-[hsl(var(--muted-foreground))]" />
                         </div>
-                        <h3 className="text-xl font-semibold mb-2 text-[var(--foreground)]">
+                        <h3 className="text-xl font-semibold mb-2 text-[hsl(var(--foreground))]">
                             {currentT.noCourses}
                         </h3>
-                        <p className="text-[var(--muted-foreground)] mb-6">
+                        <p className="text-[hsl(var(--muted-foreground))] mb-6">
                             {currentT.tryDifferent}
                         </p>
                         <Button onClick={clearFilters}>

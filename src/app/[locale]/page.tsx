@@ -1,22 +1,8 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-
-export default function Home() {
-    const router = useRouter();
-    const params = useParams();
-    const locale = params?.locale as string || 'en';
-
-    useEffect(() => {
-        // Redirect to mentors page (main page)
-        router.replace(`/${locale}/mentors`);
-    }, [router, locale]);
-
-    // Show minimal loading state during redirect
-    return (
-        <div className="min-h-screen bg-black flex items-center justify-center">
-            <div className="text-white/70">Loading...</div>
-        </div>
-    );
+// The mentors feed is the landing experience. Redirect on the server so the
+// browser goes straight there instead of rendering a "Loading..." shell first.
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params;
+    redirect(`/${locale}/mentors`);
 }

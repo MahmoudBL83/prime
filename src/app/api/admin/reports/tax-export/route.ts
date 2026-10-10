@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { prisma, INCLUDE_SENSITIVE_CREATOR_FIELDS } from '@/lib/prisma'
 
 /**
  * Tax Reporting Export API
@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
             where: whereClause,
             include: {
                 creator: {
+                    omit: INCLUDE_SENSITIVE_CREATOR_FIELDS,
                     include: {
                         user: {
                             select: {

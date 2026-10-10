@@ -1,4 +1,5 @@
 'use client';
+import { Search as LucideSearch, Play as LucidePlay, Info as LucideInfo, Plus as LucidePlus, Check as LucideCheck, ChevronRight as LucideChevronRight, ChevronLeft as LucideChevronLeft, Crown as LucideCrown, Clock as LucideClock, Loader2 as LucideLoader2 } from 'lucide-react'
 
 import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy, memo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -7,20 +8,19 @@ import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'
 
 // Icon Components with lazy loading
 const IconComponents = {
-  Search: lazy(() => import('lucide-react').then(mod => ({ default: mod.Search }))),
-  Play: lazy(() => import('lucide-react').then(mod => ({ default: mod.Play }))),
-  Info: lazy(() => import('lucide-react').then(mod => ({ default: mod.Info }))),
-  Plus: lazy(() => import('lucide-react').then(mod => ({ default: mod.Plus }))),
-  Check: lazy(() => import('lucide-react').then(mod => ({ default: mod.Check }))),
-  ChevronRight: lazy(() => import('lucide-react').then(mod => ({ default: mod.ChevronRight }))),
-  ChevronLeft: lazy(() => import('lucide-react').then(mod => ({ default: mod.ChevronLeft }))),
-  Crown: lazy(() => import('lucide-react').then(mod => ({ default: mod.Crown }))),
-  Clock: lazy(() => import('lucide-react').then(mod => ({ default: mod.Clock }))),
-  Loader2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Loader2 })))
+  Search: LucideSearch,
+  Play: LucidePlay,
+  Info: LucideInfo,
+  Plus: LucidePlus,
+  Check: LucideCheck,
+  ChevronRight: LucideChevronRight,
+  ChevronLeft: LucideChevronLeft,
+  Crown: LucideCrown,
+  Clock: LucideClock,
+  Loader2: LucideLoader2
 }
 
 // Dynamic Icon Component

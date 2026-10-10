@@ -49,5 +49,6 @@ declare module "next-auth/jwt" {
         isCreator?: boolean
         applicationStatus?: string | null
         kycStatus?: string | null
+        creatorCheckedAt?: number
     }
 }

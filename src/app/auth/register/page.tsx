@@ -148,7 +148,7 @@ function RegisterContent() {
                             <h1 className="text-4xl md:text-5xl font-bold mb-2 text-foreground">
                                 {locale === 'ar' ? 'برايم' : 'Prime'}
                             </h1>
-                            <div className="w-16 h-1 mx-auto rounded-full" style={{ backgroundColor: 'var(--accent)' }}></div>
+                            <div className="w-16 h-1 mx-auto rounded-full" style={{ backgroundColor: 'hsl(var(--accent))' }}></div>
                         </motion.div>
 
                         <motion.h2
@@ -188,7 +188,7 @@ function RegisterContent() {
                                     type="email"
                                     placeholder={locale === 'ar' ? 'أدخل بريدك الإلكتروني' : 'Enter your email'}
                                     className="w-full bg-gray-800/50 border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:border-transparent transition-all placeholder-gray-500"
-                                    style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                                    style={{ '--tw-ring-color': 'hsl(var(--accent))' } as React.CSSProperties}
                                     disabled={isLoading}
                                 />
                                 {errors.email && (
@@ -207,7 +207,7 @@ function RegisterContent() {
                                         type="text"
                                         placeholder={locale === 'ar' ? 'الاسم الأول' : 'First name'}
                                         className="w-full bg-gray-800/50 border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:border-transparent transition-all placeholder-gray-500"
-                                        style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                                        style={{ '--tw-ring-color': 'hsl(var(--accent))' } as React.CSSProperties}
                                         disabled={isLoading}
                                     />
                                     {errors.firstName && (
@@ -223,7 +223,7 @@ function RegisterContent() {
                                         type="text"
                                         placeholder={locale === 'ar' ? 'اسم العائلة' : 'Last name'}
                                         className="w-full bg-gray-800/50 border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:border-transparent transition-all placeholder-gray-500"
-                                        style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                                        style={{ '--tw-ring-color': 'hsl(var(--accent))' } as React.CSSProperties}
                                         disabled={isLoading}
                                     />
                                     {errors.lastName && (
@@ -241,7 +241,7 @@ function RegisterContent() {
                                         {...register('birthDate')}
                                         type="date"
                                         className="w-full bg-gray-800/50 border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:border-transparent transition-all"
-                                        style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                                        style={{ '--tw-ring-color': 'hsl(var(--accent))' } as React.CSSProperties}
                                         disabled={isLoading}
                                     />
                                     {errors.birthDate && (
@@ -255,7 +255,7 @@ function RegisterContent() {
                                     <select
                                         {...register('country')}
                                         className="w-full bg-gray-800/50 border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:border-transparent transition-all"
-                                        style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                                        style={{ '--tw-ring-color': 'hsl(var(--accent))' } as React.CSSProperties}
                                         disabled={isLoading}
                                     >
                                         <option value="">
@@ -285,7 +285,7 @@ function RegisterContent() {
                                             type={showPassword ? 'text' : 'password'}
                                             placeholder={locale === 'ar' ? 'أدخل كلمة المرور' : 'Enter password'}
                                             className="w-full bg-gray-800/50 border border-border text-foreground rounded-lg px-4 py-3 pr-12 focus:ring-2 focus:border-transparent transition-all placeholder-gray-500"
-                                            style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                                            style={{ '--tw-ring-color': 'hsl(var(--accent))' } as React.CSSProperties}
                                             disabled={isLoading}
                                         />
                                         <button
@@ -311,7 +311,7 @@ function RegisterContent() {
                                             type={showConfirmPassword ? 'text' : 'password'}
                                             placeholder={locale === 'ar' ? 'أكد كلمة المرور' : 'Confirm password'}
                                             className="w-full bg-gray-800/50 border border-border text-foreground rounded-lg px-4 py-3 pr-12 focus:ring-2 focus:border-transparent transition-all placeholder-gray-500"
-                                            style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                                            style={{ '--tw-ring-color': 'hsl(var(--accent))' } as React.CSSProperties}
                                             disabled={isLoading}
                                         />
                                         <button
@@ -333,7 +333,7 @@ function RegisterContent() {
                                 type="submit"
                                 disabled={isLoading}
                                 className="w-full text-foreground py-4 px-6 rounded-lg font-medium text-lg shadow-lg transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-                                style={{ backgroundColor: 'var(--accent)' }}
+                                style={{ backgroundColor: 'hsl(var(--accent))' }}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                             >
@@ -349,7 +349,7 @@ function RegisterContent() {
                                     <Link
                                         href="/auth/login"
                                         className="font-medium transition-colors hover:opacity-80"
-                                        style={{ color: 'var(--accent)' }}
+                                        style={{ color: 'hsl(var(--accent))' }}
                                     >
                                         {t('login')}
                                     </Link>
@@ -373,4 +373,3 @@ export default function RegisterPage() {
 
 // Prevent static generation for auth pages
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'

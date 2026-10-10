@@ -39,7 +39,6 @@ import { Progress } from '@/components/ui/progress'
 import { useNavigationLoading } from '@/hooks/useNavigationLoading'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'
 
 interface UserProfile {
     id: string

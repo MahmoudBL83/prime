@@ -72,4 +72,3 @@ export default function AuthErrorPage() {
 
 // Prevent static generation for auth pages
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'

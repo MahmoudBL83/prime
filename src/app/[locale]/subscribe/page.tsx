@@ -8,7 +8,6 @@ import { Check, Plus, X, Play } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'
 
 interface Course {
     id: string

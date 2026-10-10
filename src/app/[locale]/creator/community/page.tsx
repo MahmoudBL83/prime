@@ -1,4 +1,5 @@
 'use client'
+import { ArrowLeft as LucideArrowLeft, Home as LucideHome, Play as LucidePlay, Bell as LucideBell, BarChart3 as LucideBarChart3, Video as LucideVideo, TrendingUp as LucideTrendingUp, Users as LucideUsers, DollarSign as LucideDollarSign, Settings as LucideSettings, MessageCircle as LucideMessageCircle, Heart as LucideHeart, Loader2 as LucideLoader2, ThumbsUp as LucideThumbsUp, Reply as LucideReply, CheckCircle as LucideCheckCircle, Trash2 as LucideTrash2 } from 'lucide-react'
 
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
@@ -13,23 +14,23 @@ import { CreatorSidebar, CreatorHeader } from '@/components/creator'
 
 // Icon Components with lazy loading
 const IconComponents = {
-    ArrowLeft: lazy(() => import('lucide-react').then(mod => ({ default: mod.ArrowLeft }))),
-    Home: lazy(() => import('lucide-react').then(mod => ({ default: mod.Home }))),
-    Play: lazy(() => import('lucide-react').then(mod => ({ default: mod.Play }))),
-    Bell: lazy(() => import('lucide-react').then(mod => ({ default: mod.Bell }))),
-    BarChart3: lazy(() => import('lucide-react').then(mod => ({ default: mod.BarChart3 }))),
-    Video: lazy(() => import('lucide-react').then(mod => ({ default: mod.Video }))),
-    TrendingUp: lazy(() => import('lucide-react').then(mod => ({ default: mod.TrendingUp }))),
-    Users: lazy(() => import('lucide-react').then(mod => ({ default: mod.Users }))),
-    DollarSign: lazy(() => import('lucide-react').then(mod => ({ default: mod.DollarSign }))),
-    Settings: lazy(() => import('lucide-react').then(mod => ({ default: mod.Settings }))),
-    MessageCircle: lazy(() => import('lucide-react').then(mod => ({ default: mod.MessageCircle }))),
-    Heart: lazy(() => import('lucide-react').then(mod => ({ default: mod.Heart }))),
-    Loader2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Loader2 }))),
-    ThumbsUp: lazy(() => import('lucide-react').then(mod => ({ default: mod.ThumbsUp }))),
-    Reply: lazy(() => import('lucide-react').then(mod => ({ default: mod.Reply }))),
-    CheckCircle: lazy(() => import('lucide-react').then(mod => ({ default: mod.CheckCircle }))),
-    Trash2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Trash2 })))
+    ArrowLeft: LucideArrowLeft,
+    Home: LucideHome,
+    Play: LucidePlay,
+    Bell: LucideBell,
+    BarChart3: LucideBarChart3,
+    Video: LucideVideo,
+    TrendingUp: LucideTrendingUp,
+    Users: LucideUsers,
+    DollarSign: LucideDollarSign,
+    Settings: LucideSettings,
+    MessageCircle: LucideMessageCircle,
+    Heart: LucideHeart,
+    Loader2: LucideLoader2,
+    ThumbsUp: LucideThumbsUp,
+    Reply: LucideReply,
+    CheckCircle: LucideCheckCircle,
+    Trash2: LucideTrash2
 }
 
 // Dynamic Icon Component

@@ -51,6 +51,8 @@ module.exports = {
           foreground: 'hsl(var(--popover-foreground))',
         },
         ring: 'hsl(var(--ring))',
+        input: 'hsl(var(--input))',
+        brand: 'hsl(var(--brand))',
       },
     },
   },

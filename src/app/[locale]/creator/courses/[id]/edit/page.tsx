@@ -1,4 +1,5 @@
 'use client'
+import { ArrowLeft as LucideArrowLeft, Home as LucideHome, Save as LucideSave, Eye as LucideEye, Upload as LucideUpload, Video as LucideVideo, FileText as LucideFileText, Plus as LucidePlus, Trash2 as LucideTrash2, GripVertical as LucideGripVertical, Loader2 as LucideLoader2, Settings as LucideSettings, Image as LucideImage, Edit as LucideEdit, Play as LucidePlay, Clock as LucideClock, Target as LucideTarget, Users as LucideUsers, X as LucideX, ClipboardList as LucideClipboardList, Calendar as LucideCalendar, GraduationCap as LucideGraduationCap, TrendingUp as LucideTrendingUp, Award as LucideAward, CheckCircle as LucideCheckCircle, AlertCircle as LucideAlertCircle, List as LucideList } from 'lucide-react'
 
 import { useState, useEffect, lazy, Suspense } from 'react'
 import React from 'react'
@@ -13,33 +14,33 @@ import Image from 'next/image'
 
 // Icon Components with lazy loading
 const IconComponents = {
-    ArrowLeft: lazy(() => import('lucide-react').then(mod => ({ default: mod.ArrowLeft }))),
-    Home: lazy(() => import('lucide-react').then(mod => ({ default: mod.Home }))),
-    Save: lazy(() => import('lucide-react').then(mod => ({ default: mod.Save }))),
-    Eye: lazy(() => import('lucide-react').then(mod => ({ default: mod.Eye }))),
-    Upload: lazy(() => import('lucide-react').then(mod => ({ default: mod.Upload }))),
-    Video: lazy(() => import('lucide-react').then(mod => ({ default: mod.Video }))),
-    FileText: lazy(() => import('lucide-react').then(mod => ({ default: mod.FileText }))),
-    Plus: lazy(() => import('lucide-react').then(mod => ({ default: mod.Plus }))),
-    Trash2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Trash2 }))),
-    GripVertical: lazy(() => import('lucide-react').then(mod => ({ default: mod.GripVertical }))),
-    Loader2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Loader2 }))),
-    Settings: lazy(() => import('lucide-react').then(mod => ({ default: mod.Settings }))),
-    ImageIcon: lazy(() => import('lucide-react').then(mod => ({ default: mod.Image }))),
-    Edit: lazy(() => import('lucide-react').then(mod => ({ default: mod.Edit }))),
-    Play: lazy(() => import('lucide-react').then(mod => ({ default: mod.Play }))),
-    Clock: lazy(() => import('lucide-react').then(mod => ({ default: mod.Clock }))),
-    Target: lazy(() => import('lucide-react').then(mod => ({ default: mod.Target }))),
-    Users: lazy(() => import('lucide-react').then(mod => ({ default: mod.Users }))),
-    X: lazy(() => import('lucide-react').then(mod => ({ default: mod.X }))),
-    ClipboardList: lazy(() => import('lucide-react').then(mod => ({ default: mod.ClipboardList }))),
-    Calendar: lazy(() => import('lucide-react').then(mod => ({ default: mod.Calendar }))),
-    GraduationCap: lazy(() => import('lucide-react').then(mod => ({ default: mod.GraduationCap }))),
-    TrendingUp: lazy(() => import('lucide-react').then(mod => ({ default: mod.TrendingUp }))),
-    Award: lazy(() => import('lucide-react').then(mod => ({ default: mod.Award }))),
-    CheckCircle: lazy(() => import('lucide-react').then(mod => ({ default: mod.CheckCircle }))),
-    AlertCircle: lazy(() => import('lucide-react').then(mod => ({ default: mod.AlertCircle }))),
-    List: lazy(() => import('lucide-react').then(mod => ({ default: mod.List })))
+    ArrowLeft: LucideArrowLeft,
+    Home: LucideHome,
+    Save: LucideSave,
+    Eye: LucideEye,
+    Upload: LucideUpload,
+    Video: LucideVideo,
+    FileText: LucideFileText,
+    Plus: LucidePlus,
+    Trash2: LucideTrash2,
+    GripVertical: LucideGripVertical,
+    Loader2: LucideLoader2,
+    Settings: LucideSettings,
+    ImageIcon: LucideImage,
+    Edit: LucideEdit,
+    Play: LucidePlay,
+    Clock: LucideClock,
+    Target: LucideTarget,
+    Users: LucideUsers,
+    X: LucideX,
+    ClipboardList: LucideClipboardList,
+    Calendar: LucideCalendar,
+    GraduationCap: LucideGraduationCap,
+    TrendingUp: LucideTrendingUp,
+    Award: LucideAward,
+    CheckCircle: LucideCheckCircle,
+    AlertCircle: LucideAlertCircle,
+    List: LucideList
 }
 
 // Dynamic Icon Component

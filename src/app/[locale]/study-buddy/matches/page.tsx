@@ -30,7 +30,6 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'
 
 interface StudyBuddyMatch {
   id: string

@@ -199,7 +199,7 @@ export function MostViewedSection({ className, onCourseClick }: MostViewedSectio
                                 className={cn(
                                     "text-sm transition-all duration-200",
                                     activeFilter === filter.id
-                                        ? "bg-[var(--primary)] text-foreground hover:bg-[var(--primary)]/90"
+                                        ? "bg-[hsl(var(--primary))] text-foreground hover:bg-[hsl(var(--primary))]/90"
                                         : "text-muted-foreground hover:text-foreground hover:bg-card"
                                 )}
                                 onClick={() => setActiveFilter(filter.id)}
@@ -336,7 +336,7 @@ function ProfessionalCourseCard({ course, onClick }: ProfessionalCourseCardProps
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-[var(--primary)] to-purple-600 flex items-center justify-center text-foreground font-bold text-sm">
+                                <div className="w-full h-full bg-gradient-to-br from-[hsl(var(--primary))] to-purple-600 flex items-center justify-center text-foreground font-bold text-sm">
                                     {(course.instructorArabic || course.instructor).charAt(0)}
                                 </div>
                             )}
@@ -345,7 +345,7 @@ function ProfessionalCourseCard({ course, onClick }: ProfessionalCourseCardProps
 
                     {/* Instructor Name */}
                     <div className="absolute bottom-4 left-20 text-foreground">
-                        <h3 className="font-semibold text-sm group-hover:text-[var(--primary)] transition-colors duration-300 drop-shadow-md">
+                        <h3 className="font-semibold text-sm group-hover:text-[hsl(var(--primary))] transition-colors duration-300 drop-shadow-md">
                             {locale === 'ar' ? (course.instructorArabic || course.instructor) : course.instructor}
                         </h3>
                         <p className="text-white/90 text-xs drop-shadow-md">
@@ -357,7 +357,7 @@ function ProfessionalCourseCard({ course, onClick }: ProfessionalCourseCardProps
                 {/* Course Details Footer */}
                 <div className="p-4 h-32 flex flex-col justify-between">
                     {/* Course Title */}
-                    <h4 className="text-foreground font-semibold text-sm mb-2 line-clamp-2 group-hover:text-[var(--primary)] transition-colors duration-300">
+                    <h4 className="text-foreground font-semibold text-sm mb-2 line-clamp-2 group-hover:text-[hsl(var(--primary))] transition-colors duration-300">
                         {locale === 'ar' ? course.titleAr : course.title}
                     </h4>
 

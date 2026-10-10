@@ -18,12 +18,12 @@ export default function CourseDetailPage() {
     }, [router, locale, params.id])
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+        <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--background))]">
             <div className="text-center">
-                <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">
+                <h2 className="text-2xl font-bold text-[hsl(var(--foreground))] mb-4">
                     Redirecting...
                 </h2>
-                <p className="text-[var(--muted-foreground)]">
+                <p className="text-[hsl(var(--muted-foreground))]">
                     Please wait while we redirect you to the course page.
                 </p>
             </div>

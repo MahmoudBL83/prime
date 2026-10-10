@@ -60,7 +60,9 @@ function LoginContent() {
             }
 
             toast.success(t('loginSuccess'))
-            router.push(`/${locale}/dashboard`)
+            // Return to the page that required sign-in (only same-site relative paths)
+            const from = new URLSearchParams(window.location.search).get('from')
+            router.push(from && from.startsWith('/') && !from.startsWith('//') ? from : `/${locale}/dashboard`)
             router.refresh()
         } catch (error) {
             toast.error(error instanceof Error ? error.message : t('invalidCredentials'))

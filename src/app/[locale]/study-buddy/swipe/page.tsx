@@ -1,4 +1,5 @@
 'use client'
+import { Heart as LucideHeart, X as LucideX, Sparkles as LucideSparkles, BookOpen as LucideBookOpen, Clock as LucideClock, MessageCircle as LucideMessageCircle, TrendingUp as LucideTrendingUp, Trophy as LucideTrophy, Users as LucideUsers, ArrowLeft as LucideArrowLeft } from 'lucide-react'
 
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
@@ -15,46 +16,16 @@ import Image from 'next/image'
 
 // Dynamic icon imports for better performance
 const IconComponents = {
-  Heart: dynamicImport(() => import('lucide-react').then(mod => ({ default: mod.Heart })), {
-    ssr: false,
-    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
-  }),
-  X: dynamicImport(() => import('lucide-react').then(mod => ({ default: mod.X })), {
-    ssr: false,
-    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
-  }),
-  Sparkles: dynamicImport(() => import('lucide-react').then(mod => ({ default: mod.Sparkles })), {
-    ssr: false,
-    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
-  }),
-  BookOpen: dynamicImport(() => import('lucide-react').then(mod => ({ default: mod.BookOpen })), {
-    ssr: false,
-    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
-  }),
-  Clock: dynamicImport(() => import('lucide-react').then(mod => ({ default: mod.Clock })), {
-    ssr: false,
-    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
-  }),
-  MessageCircle: dynamicImport(() => import('lucide-react').then(mod => ({ default: mod.MessageCircle })), {
-    ssr: false,
-    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
-  }),
-  TrendingUp: dynamicImport(() => import('lucide-react').then(mod => ({ default: mod.TrendingUp })), {
-    ssr: false,
-    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
-  }),
-  Trophy: dynamicImport(() => import('lucide-react').then(mod => ({ default: mod.Trophy })), {
-    ssr: false,
-    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
-  }),
-  Users: dynamicImport(() => import('lucide-react').then(mod => ({ default: mod.Users })), {
-    ssr: false,
-    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
-  }),
-  ArrowLeft: dynamicImport(() => import('lucide-react').then(mod => ({ default: mod.ArrowLeft })), {
-    ssr: false,
-    loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
-  }),
+  Heart: LucideHeart,
+  X: LucideX,
+  Sparkles: LucideSparkles,
+  BookOpen: LucideBookOpen,
+  Clock: LucideClock,
+  MessageCircle: LucideMessageCircle,
+  TrendingUp: LucideTrendingUp,
+  Trophy: LucideTrophy,
+  Users: LucideUsers,
+  ArrowLeft: LucideArrowLeft,
 }
 
 interface SwipeCandidate {
@@ -563,4 +534,3 @@ export default function StudyBuddySwipePage() {
 
 // Prevent static generation for pages that use session data
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'

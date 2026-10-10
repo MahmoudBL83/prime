@@ -12,7 +12,6 @@ import { CheckCircle, ChevronRight, ChevronLeft, User, Phone, Globe, BookOpen, U
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'
 
 const onboardingSchema = z.object({
     interests: z.array(z.string()).min(1, 'اختر مجال واحد على الأقل'),
@@ -395,8 +394,8 @@ export default function OnboardingPage() {
                 return (
                     <div className="space-y-8">
                         <div className="text-center mb-8">
-                            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'var(--accent)', opacity: 0.2 }}>
-                                <User className="w-10 h-10" style={{ color: 'var(--accent)' }} />
+                            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'hsl(var(--accent))', opacity: 0.2 }}>
+                                <User className="w-10 h-10" style={{ color: 'hsl(var(--accent))' }} />
                             </div>
                             <h3 className="text-2xl font-light text-foreground mb-2">
                                 {lang === 'de' ? 'Willkommen bei Prime' : 'Welcome to Prime'}
@@ -417,7 +416,7 @@ export default function OnboardingPage() {
                                         type="text"
                                         placeholder={lang === 'de' ? 'أحمد محمد' : 'Ahmed Mohamed'}
                                         className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-                                        style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                                        style={{ '--tw-ring-color': 'hsl(var(--accent))' } as React.CSSProperties}
                                     />
                                 </div>
                             </div>
@@ -433,7 +432,7 @@ export default function OnboardingPage() {
                                         type="tel"
                                         placeholder={lang === 'de' ? '+20 1XX XXX XXXX' : '+20 1XX XXX XXXX'}
                                         className="w-full bg-card border border-border rounded-lg pl-10 pr-4 py-3 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-                                        style={{ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                                        style={{ '--tw-ring-color': 'hsl(var(--accent))' } as React.CSSProperties}
                                         dir="ltr"
                                     />
                                 </div>
@@ -493,7 +492,7 @@ export default function OnboardingPage() {
                                 ))}
                             </div>
                             {errors.interests && (
-                                <p className="text-sm mt-2" style={{ color: 'var(--accent)' }}>{errors.interests.message}</p>
+                                <p className="text-sm mt-2" style={{ color: 'hsl(var(--accent))' }}>{errors.interests.message}</p>
                             )}
                         </div>
 
@@ -522,7 +521,7 @@ export default function OnboardingPage() {
                                 ))}
                             </div>
                             {errors.goals && (
-                                <p className="text-sm mt-2" style={{ color: 'var(--accent)' }}>{errors.goals.message}</p>
+                                <p className="text-sm mt-2" style={{ color: 'hsl(var(--accent))' }}>{errors.goals.message}</p>
                             )}
                         </div>
                     </div>
@@ -1067,7 +1066,7 @@ export default function OnboardingPage() {
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--accent)' }}>
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'hsl(var(--accent))' }}>
                                 <span className="text-foreground font-bold text-lg">ب</span>
                             </div>
                             <h1 className="text-2xl font-bold text-foreground">
@@ -1092,7 +1091,7 @@ export default function OnboardingPage() {
                                         ? 'text-foreground'
                                         : 'bg-card border-border text-muted-foreground'
                                         }`}
-                                    style={step.id <= currentStep ? { backgroundColor: 'var(--accent)', borderColor: 'var(--accent)' } : undefined}
+                                    style={step.id <= currentStep ? { backgroundColor: 'hsl(var(--accent))', borderColor: 'hsl(var(--accent))' } : undefined}
                                     whileHover={{ scale: 1.05 }}
                                 >
                                     <span className="font-medium">{step.id}</span>
@@ -1101,7 +1100,7 @@ export default function OnboardingPage() {
                                     <div className="flex-1 h-0.5 mx-4">
                                         <motion.div
                                             className={`h-full transition-all duration-300 ${step.id < currentStep ? '' : 'bg-gray-700'}`}
-                                            style={step.id < currentStep ? { backgroundColor: 'var(--accent)' } : undefined}
+                                            style={step.id < currentStep ? { backgroundColor: 'hsl(var(--accent))' } : undefined}
                                             initial={{ width: 0 }}
                                             animate={{ width: step.id < currentStep ? '100%' : '0%' }}
                                             transition={{ duration: 0.5 }}
@@ -1129,7 +1128,7 @@ export default function OnboardingPage() {
                             >
                                 <div className="mb-8 text-center">
                                     <div className="flex items-center justify-center gap-3 mb-4">
-                                        <div className="" style={{ color: 'var(--accent)' }}>
+                                        <div className="" style={{ color: 'hsl(var(--accent))' }}>
                                             {STEPS[currentStep - 1].icon}
                                         </div>
                                         <h2 className="text-3xl font-light text-foreground">
@@ -1165,7 +1164,7 @@ export default function OnboardingPage() {
                                         type="button"
                                         onClick={nextStep}
                                         className="flex items-center gap-2 px-8 py-3 text-foreground rounded-xl hover:opacity-90 transition-all"
-                                        style={{ backgroundColor: 'var(--accent)' }}
+                                        style={{ backgroundColor: 'hsl(var(--accent))' }}
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                     >

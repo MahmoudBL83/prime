@@ -1,4 +1,5 @@
 'use client'
+import { CreditCard as LucideCreditCard, Loader2 as LucideLoader2, CheckCircle as LucideCheckCircle, XCircle as LucideXCircle } from 'lucide-react'
 
 import { useState, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
@@ -10,22 +11,10 @@ import dynamic from 'next/dynamic'
 
 // Dynamic icon imports for better performance
 const IconComponents = {
-    CreditCard: dynamic(() => import('lucide-react').then(mod => ({ default: mod.CreditCard })), {
-        ssr: false,
-        loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
-    }),
-    Loader2: dynamic(() => import('lucide-react').then(mod => ({ default: mod.Loader2 })), {
-        ssr: false,
-        loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
-    }),
-    CheckCircle: dynamic(() => import('lucide-react').then(mod => ({ default: mod.CheckCircle })), {
-        ssr: false,
-        loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
-    }),
-    XCircle: dynamic(() => import('lucide-react').then(mod => ({ default: mod.XCircle })), {
-        ssr: false,
-        loading: () => <div className="w-4 h-4 animate-pulse bg-gray-300 rounded" />
-    }),
+    CreditCard: LucideCreditCard,
+    Loader2: LucideLoader2,
+    CheckCircle: LucideCheckCircle,
+    XCircle: LucideXCircle,
 }
 
 const paymentSchema = z.object({

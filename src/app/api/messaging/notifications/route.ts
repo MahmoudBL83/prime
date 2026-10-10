@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma'
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 
-const prisma = new PrismaClient();
 
 const markReadSchema = z.object({
     notificationIds: z.array(z.string()).optional(),

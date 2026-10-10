@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge'
 import { AvatarPlaceholder } from '@/components/ui/avatar-placeholder'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'
 
 // Icon Components
 const IconComponents = {
@@ -201,12 +200,12 @@ export default function MentorsPage() {
 
     if (!session) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+            <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--background))]">
                 <div className="text-center">
-                    <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">
+                    <h2 className="text-2xl font-bold text-[hsl(var(--foreground))] mb-4">
                         {lang === 'de' ? 'مطلوب تسجيل الدخول' : 'Sign In Required'}
                     </h2>
-                    <p className="text-[var(--muted-foreground)] mb-6">
+                    <p className="text-[hsl(var(--muted-foreground))] mb-6">
                         {lang === 'de' ? 'يرجى تسجيل الدخول لعرض المدربين' : 'Please sign in to view mentors'}
                     </p>
                     <Button onClick={() => router.push('/auth/login')}>
@@ -218,22 +217,22 @@ export default function MentorsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[var(--background)]">
+        <div className="min-h-screen bg-[hsl(var(--background))]">
             {/* Header */}
-            <div className="bg-[var(--card)] border-b border-[var(--border)]">
+            <div className="bg-[hsl(var(--card))] border-b border-[hsl(var(--border))]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
                         <div>
-                            <h1 className="text-3xl font-bold text-[var(--foreground)]">
+                            <h1 className="text-3xl font-bold text-[hsl(var(--foreground))]">
                                 {currentT.title}
                             </h1>
-                            <p className="text-[var(--muted-foreground)] mt-1">
+                            <p className="text-[hsl(var(--muted-foreground))] mt-1">
                                 {currentT.subtitle}
                             </p>
                         </div>
                         <div className="flex items-center gap-4">
                             {/* View mode toggle */}
-                            <div className="flex items-center bg-[var(--background)] rounded-lg p-1">
+                            <div className="flex items-center bg-[hsl(var(--background))] rounded-lg p-1">
                                 <Button
                                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                                     size="sm"
@@ -267,18 +266,18 @@ export default function MentorsPage() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Search and Filters */}
-                <div className="bg-[var(--card)] rounded-lg border border-[var(--border)] p-6 mb-8">
+                <div className="bg-[hsl(var(--card))] rounded-lg border border-[hsl(var(--border))] p-6 mb-8">
                     {/* Search Bar */}
                     <form onSubmit={handleSearch} className="mb-6">
                         <div className="flex flex-col md:flex-row gap-4">
                             <div className="flex-1 relative">
-                                <DynamicIcon name="Search" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--muted-foreground)] w-4 h-4" />
+                                <DynamicIcon name="Search" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[hsl(var(--muted-foreground))] w-4 h-4" />
                                 <input
                                     type="text"
                                     placeholder={currentT.search}
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--ring)] text-[var(--foreground)]"
+                                    className="w-full pl-10 pr-4 py-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))] text-[hsl(var(--foreground))]"
                                 />
                             </div>
                             <Button type="submit" size="lg" className="px-8">
@@ -312,17 +311,17 @@ export default function MentorsPage() {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="border-t border-[var(--border)] pt-4"
+                            className="border-t border-[hsl(var(--border))] pt-4"
                         >
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                                    <label className="block text-sm font-medium text-[hsl(var(--foreground))] mb-2">
                                         {currentT.specialty}
                                     </label>
                                     <select
                                         value={selectedSpecialty}
                                         onChange={(e) => setSelectedSpecialty(e.target.value)}
-                                        className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--ring)] text-[var(--foreground)]"
+                                        className="w-full px-3 py-2 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))] text-[hsl(var(--foreground))]"
                                     >
                                         <option value="">{currentT.allSpecialties}</option>
                                         {SPECIALTIES.map((specialty) => (
@@ -340,17 +339,17 @@ export default function MentorsPage() {
                 {/* Mentors Grid/List */}
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
-                        <div className="text-lg text-[var(--muted-foreground)]">
+                        <div className="text-lg text-[hsl(var(--muted-foreground))]">
                             {lang === 'de' ? 'جاري التحميل...' : 'Loading...'}
                         </div>
                     </div>
                 ) : mentors.length === 0 ? (
-                    <div className="bg-[var(--card)] rounded-lg border border-[var(--border)] p-8 text-center">
-                        <DynamicIcon name="Users" className="w-16 h-16 text-[var(--muted-foreground)] mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2">
+                    <div className="bg-[hsl(var(--card))] rounded-lg border border-[hsl(var(--border))] p-8 text-center">
+                        <DynamicIcon name="Users" className="w-16 h-16 text-[hsl(var(--muted-foreground))] mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-[hsl(var(--foreground))] mb-2">
                             {currentT.noMentors}
                         </h3>
-                        <p className="text-[var(--muted-foreground)] mb-4">
+                        <p className="text-[hsl(var(--muted-foreground))] mb-4">
                             {currentT.tryDifferent}
                         </p>
                         <Button onClick={clearFilters}>
@@ -374,7 +373,7 @@ export default function MentorsPage() {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.3, delay: index * 0.1 }}
-                                    className={`bg-[var(--card)] rounded-lg border border-[var(--border)] hover:border-[var(--primary)] transition-all cursor-pointer group ${viewMode === 'list' ? 'flex items-center p-6' : 'p-6'
+                                    className={`bg-[hsl(var(--card))] rounded-lg border border-[hsl(var(--border))] hover:border-[hsl(var(--primary))] transition-all cursor-pointer group ${viewMode === 'list' ? 'flex items-center p-6' : 'p-6'
                                         }`}
                                     onClick={() => handleMentorClick(mentor.id)}
                                 >
@@ -417,7 +416,7 @@ export default function MentorsPage() {
                                                     className="absolute inset-0 bg-background bg-opacity-70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                                                 >
                                                     <div className="text-center">
-                                                        <div className="w-16 h-16 rounded-full bg-[var(--primary)] flex items-center justify-center mx-auto mb-3">
+                                                        <div className="w-16 h-16 rounded-full bg-[hsl(var(--primary))] flex items-center justify-center mx-auto mb-3">
                                                             <DynamicIcon name="Play" className="w-8 h-8 text-foreground ml-1" />
                                                         </div>
                                                         <span className="text-foreground text-sm font-medium">
@@ -439,35 +438,35 @@ export default function MentorsPage() {
 
                                             {/* Mentor Info */}
                                             <div className="flex items-center justify-between mb-3">
-                                                <h3 className="text-xl font-semibold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
+                                                <h3 className="text-xl font-semibold text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors">
                                                     {lang === 'de' ? mentor.user.arabicName || mentor.user.name : mentor.user.name}
                                                 </h3>
                                                 <div className="flex items-center gap-1">
                                                     <DynamicIcon name="Star" className="w-4 h-4 text-yellow-500 fill-current" />
-                                                    <span className="text-[var(--muted-foreground)] text-sm">{mentor.averageRating.toFixed(1)}</span>
+                                                    <span className="text-[hsl(var(--muted-foreground))] text-sm">{mentor.averageRating.toFixed(1)}</span>
                                                 </div>
                                             </div>
 
-                                            <p className="text-sm font-medium mb-3 text-[var(--primary)]">
+                                            <p className="text-sm font-medium mb-3 text-[hsl(var(--primary))]">
                                                 {mentor.expertise || ''}
                                             </p>
 
                                             {/* Bio */}
                                             {mentor.user.bio && (
-                                                <p className="text-[var(--muted-foreground)] text-sm mb-4 leading-relaxed line-clamp-2">
+                                                <p className="text-[hsl(var(--muted-foreground))] text-sm mb-4 leading-relaxed line-clamp-2">
                                                     {mentor.user.bio}
                                                 </p>
                                             )}
 
                                             {/* Stats */}
                                             <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2 text-[var(--muted-foreground)] text-sm">
+                                                <div className="flex items-center gap-2 text-[hsl(var(--muted-foreground))] text-sm">
                                                     <DynamicIcon name="Users" className="w-4 h-4" />
                                                     <span>{mentor.totalStudents.toLocaleString()} {lang === 'de' ? 'متابع' : 'students'}</span>
                                                 </div>
                                                 <Button
                                                     size="sm"
-                                                    className="text-foreground rounded-sm hover:opacity-90 bg-[var(--primary)]"
+                                                    className="text-foreground rounded-sm hover:opacity-90 bg-[hsl(var(--primary))]"
                                                     onClick={(e) => {
                                                         e.stopPropagation()
                                                         handleMentorClick(mentor.id)
@@ -486,14 +485,14 @@ export default function MentorsPage() {
                                                 </div>
                                                 <div className="flex-1">
                                                     <div className="flex items-center space-x-2 rtl:space-x-reverse mb-1">
-                                                        <h3 className="font-semibold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
+                                                        <h3 className="font-semibold text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors">
                                                             {lang === 'de' ? mentor.user.arabicName || mentor.user.name : mentor.user.name}
                                                         </h3>
                                                         {mentor.verified && (
                                                             <DynamicIcon name="CheckCircle" className="w-4 h-4 text-green-500" />
                                                         )}
                                                     </div>
-                                                    <div className="flex items-center space-x-4 rtl:space-x-reverse text-sm text-[var(--muted-foreground)]">
+                                                    <div className="flex items-center space-x-4 rtl:space-x-reverse text-sm text-[hsl(var(--muted-foreground))]">
                                                         <span>{mentor.totalCourses} {currentT.courses}</span>
                                                         <span>{mentor.totalStudents} {currentT.students}</span>
                                                         {mentor.averageRating > 0 && (

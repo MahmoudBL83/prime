@@ -1,4 +1,5 @@
 'use client'
+import { ArrowLeft as LucideArrowLeft, Home as LucideHome, Play as LucidePlay, Bell as LucideBell, DollarSign as LucideDollarSign, TrendingUp as LucideTrendingUp, Users as LucideUsers, Video as LucideVideo, BarChart3 as LucideBarChart3, Settings as LucideSettings, Loader2 as LucideLoader2, Download as LucideDownload, CreditCard as LucideCreditCard, Wallet as LucideWallet, Calendar as LucideCalendar, CheckCircle as LucideCheckCircle, Clock as LucideClock, X as LucideX } from 'lucide-react'
 
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
@@ -13,24 +14,24 @@ import { CreatorSidebar, CreatorHeader } from '@/components/creator'
 
 // Icon Components with lazy loading
 const IconComponents = {
-    ArrowLeft: lazy(() => import('lucide-react').then(mod => ({ default: mod.ArrowLeft }))),
-    Home: lazy(() => import('lucide-react').then(mod => ({ default: mod.Home }))),
-    Play: lazy(() => import('lucide-react').then(mod => ({ default: mod.Play }))),
-    Bell: lazy(() => import('lucide-react').then(mod => ({ default: mod.Bell }))),
-    DollarSign: lazy(() => import('lucide-react').then(mod => ({ default: mod.DollarSign }))),
-    TrendingUp: lazy(() => import('lucide-react').then(mod => ({ default: mod.TrendingUp }))),
-    Users: lazy(() => import('lucide-react').then(mod => ({ default: mod.Users }))),
-    Video: lazy(() => import('lucide-react').then(mod => ({ default: mod.Video }))),
-    BarChart3: lazy(() => import('lucide-react').then(mod => ({ default: mod.BarChart3 }))),
-    Settings: lazy(() => import('lucide-react').then(mod => ({ default: mod.Settings }))),
-    Loader2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Loader2 }))),
-    Download: lazy(() => import('lucide-react').then(mod => ({ default: mod.Download }))),
-    CreditCard: lazy(() => import('lucide-react').then(mod => ({ default: mod.CreditCard }))),
-    Wallet: lazy(() => import('lucide-react').then(mod => ({ default: mod.Wallet }))),
-    Calendar: lazy(() => import('lucide-react').then(mod => ({ default: mod.Calendar }))),
-    CheckCircle: lazy(() => import('lucide-react').then(mod => ({ default: mod.CheckCircle }))),
-    Clock: lazy(() => import('lucide-react').then(mod => ({ default: mod.Clock }))),
-    X: lazy(() => import('lucide-react').then(mod => ({ default: mod.X })))
+    ArrowLeft: LucideArrowLeft,
+    Home: LucideHome,
+    Play: LucidePlay,
+    Bell: LucideBell,
+    DollarSign: LucideDollarSign,
+    TrendingUp: LucideTrendingUp,
+    Users: LucideUsers,
+    Video: LucideVideo,
+    BarChart3: LucideBarChart3,
+    Settings: LucideSettings,
+    Loader2: LucideLoader2,
+    Download: LucideDownload,
+    CreditCard: LucideCreditCard,
+    Wallet: LucideWallet,
+    Calendar: LucideCalendar,
+    CheckCircle: LucideCheckCircle,
+    Clock: LucideClock,
+    X: LucideX
 }
 
 // Dynamic Icon Component

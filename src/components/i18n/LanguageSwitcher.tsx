@@ -1,8 +1,10 @@
 'use client';
 
+import { useTransition } from 'react';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { routing, localeNames, localeFlags } from '@/i18n/routing';
 import { useLocaleSafe } from '@/hooks/useTranslationsSafe';
+
 const { locales: routingLocales } = routing;
 
 interface LanguageSwitcherProps {
@@ -11,43 +13,32 @@ interface LanguageSwitcherProps {
 
 export function LanguageSwitcher({ locales }: LanguageSwitcherProps = {}) {
     const locale = useLocaleSafe();
-
-    // Safe navigation hooks with fallback
-    let router, pathname;
-    try {
-        router = useRouter();
-        pathname = usePathname();
-    } catch (error) {
-        console.warn('Navigation context not available, using fallbacks');
-        router = { replace: () => { } }; // Fallback router
-        pathname = '/'; // Fallback pathname
-    }
+    const router = useRouter();
+    // next-intl's usePathname returns the path without the locale prefix
+    const pathname = usePathname();
+    const [isPending, startTransition] = useTransition();
 
     const handleLanguageChange = (newLocale: string) => {
-        try {
-            // Remove the current locale from the pathname and add the new one
-            // Use a more specific regex to match locale at the start followed by a slash or end of string
-            const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}(\/|$)/, '/');
-            const newPath = pathWithoutLocale === '/' ? `/${newLocale}` : `/${newLocale}${pathWithoutLocale}`;
-            window.location.href = newPath;
-        } catch (error) {
-            console.error('Language change failed:', error);
-        }
+        if (newLocale === locale) return;
+        const query = typeof window !== 'undefined' ? window.location.search : '';
+        startTransition(() => {
+            router.replace(`${pathname}${query}`, { locale: newLocale as (typeof routingLocales)[number] });
+        });
     };
 
     const availableLocales = locales && locales.length > 0 ? locales : routingLocales;
 
     return (
-        <div className="py-1">
+        <div className={`py-1 ${isPending ? 'opacity-60 pointer-events-none' : ''}`}>
             {availableLocales.map((loc: string) => (
                 <button
                     key={loc}
                     onClick={() => handleLanguageChange(loc)}
-                    className={`block w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                        locale === loc 
-                            ? 'text-white bg-white/10' 
-                            : 'text-white/70 hover:text-white hover:bg-white/5'
-                    }`}
+                    aria-current={locale === loc ? 'true' : undefined}
+                    className={`block w-full text-left px-4 py-2.5 text-sm transition-colors ${locale === loc
+                        ? 'text-foreground bg-foreground/[0.08]'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04]'
+                        }`}
                 >
                     <div className="flex items-center gap-3">
                         <span className="text-lg">{localeFlags[loc as keyof typeof localeFlags]}</span>

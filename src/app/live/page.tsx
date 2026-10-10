@@ -22,7 +22,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'
 
 interface LiveSession {
   id: string;

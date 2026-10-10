@@ -5,138 +5,90 @@ import { routing } from './i18n/routing';
 
 const intlMiddleware = createIntlMiddleware(routing);
 
+// First path segment (after the locale) of pages that guests may browse
+const PUBLIC_SECTIONS = new Set([
+    '',
+    'courses',
+    'signature-courses',
+    'mentors',
+    'creators',
+    'instructors',
+    'channels',
+    'posts',
+    'certificates',
+    'auth',
+    'login',
+    'verify',
+    'subscribe',
+    'payment-success',
+    'leaderboard',
+    'about',
+    'privacy',
+    'terms',
+    'help',
+    'contact',
+]);
+
+// Creator area pages that any signed-in user may open (to apply / finish onboarding)
+const CREATOR_OPEN_PAGES = ['/creator/apply', '/creator/onboarding'];
+
+function splitLocale(pathname: string) {
+    const segments = pathname.split('/').filter(Boolean);
+    const hasLocale = routing.locales.includes(segments[0] as (typeof routing.locales)[number]);
+    const locale = hasLocale ? segments[0] : routing.defaultLocale;
+    const rest = hasLocale ? segments.slice(1) : segments;
+    return { locale, hasLocale, rest, pathWithoutLocale: `/${rest.join('/')}` };
+}
+
 export default withAuth(
     function middleware(req) {
-        const pathname = req.nextUrl.pathname;
-
-        // Skip middleware for API routes entirely
-        if (pathname.startsWith('/api')) {
-            return null;
-        }
-
-        // CRITICAL: Allow admin login page without any checks
-        if (pathname === '/admin/login') {
-            return null;
-        }
-
-        // Skip internationalization for admin routes - they don't use locale
-        if (!pathname.startsWith('/admin')) {
-            const intlResponse = intlMiddleware(req);
-            if (intlResponse) return intlResponse;
-        }
-
-        // Public routes that don't require authentication
-        const publicRoutes = [
-            '/courses',
-            '/signature-courses',
-            '/mentors',
-            '/creators',
-            '/auth',
-            '/verify',
-        ];
-
-        // Check if current path is public
-        const isPublicRoute = publicRoutes.some(route =>
-            pathname.includes(route) || pathname === '/' || pathname.match(/^\/(en|de)?\/?$/)
-        );
-
-        // Then handle authentication
+        const { pathname, search } = req.nextUrl;
         const token = req.nextauth.token;
         const isAuth = !!token;
-        const isAuthPage = pathname.includes('/auth');
 
-        // Extract locale from URL or use default locale
-        const segments = pathname.split('/').filter(Boolean);
-
-        // Determine if the URL already has a locale
-        const hasLocale = routing.locales.includes(segments[0] as any);
-        const locale = hasLocale ? segments[0] : routing.defaultLocale;
-
-        // Handle old routes without locale prefix - redirect to locale-based routes
-        // EXCEPTION: /admin routes should NOT be redirected (they're separate from locale routes)
-        if (!hasLocale && !pathname.startsWith('/admin') && !pathname.startsWith('/api')) {
-            // Handle old routes
-            if (pathname === '/courses') {
-                return NextResponse.redirect(new URL(`/${locale}/courses`, req.url));
-            }
-            if (pathname === '/dashboard') {
-                return NextResponse.redirect(new URL(`/${locale}/dashboard`, req.url));
-            }
-            if (pathname.startsWith('/auth/')) {
-                const authPath = pathname.replace('/auth', '');
-                return NextResponse.redirect(new URL(`/${locale}/auth${authPath}`, req.url));
-            }
-            if (pathname.startsWith('/courses/')) {
-                const courseId = pathname.split('/')[2];
-                return NextResponse.redirect(new URL(`/${locale}/courses/${courseId}`, req.url));
-            }
-            if (pathname === '/onboarding') {
-                return NextResponse.redirect(new URL(`/${locale}/onboarding`, req.url));
-            }
-        }
-
-        if (isAuthPage && !pathname.startsWith('/api')) {
-            if (isAuth) {
-                if (token.role === "ADMIN") {
-                    return NextResponse.redirect(new URL('/admin', req.url));
-                }
-                return NextResponse.redirect(new URL(`/${locale}/dashboard`, req.url));
-            }
-            return null;
-        }
-
-        // Admin routes should not require locale and should not be redirected
+        // Admin console lives outside the locale tree
         if (pathname.startsWith('/admin')) {
-            // Allow access to admin login page - let the page handle sign-out logic
-            if (pathname === '/admin/login') {
-                // Allow everyone to access the login page
-                // The page itself will handle signing out non-admins and redirecting admins
-                return null;
-            }
-
-            // Protect other admin routes
-            if (!isAuth) {
-                return NextResponse.redirect(new URL('/admin/login', req.url));
-            }
-            if (token.role !== "ADMIN") {
-                return NextResponse.redirect(new URL('/en/dashboard', req.url));
-            }
-            return null; // Allow access to admin routes
+            if (pathname === '/admin/login') return NextResponse.next();
+            if (!isAuth) return NextResponse.redirect(new URL('/admin/login', req.url));
+            if (token.role !== 'ADMIN') return NextResponse.redirect(new URL(`/${routing.defaultLocale}/dashboard`, req.url));
+            return NextResponse.next();
         }
 
-        // Only require authentication for non-public routes
-        if (!isAuth && !isPublicRoute) {
-            let from = req.nextUrl.pathname;
-            if (req.nextUrl.search) {
-                from += req.nextUrl.search;
-            }
-            return NextResponse.redirect(
-                new URL(`/${locale}/auth/login?from=${encodeURIComponent(from)}`, req.url)
-            );
+        // Locale negotiation first: add the locale prefix (redirect) when it is missing
+        const intlResponse = intlMiddleware(req);
+        if (intlResponse.headers.has('location')) return intlResponse;
+
+        const { locale, rest, pathWithoutLocale } = splitLocale(pathname);
+        const section = rest[0] ?? '';
+
+        // Signed-in users don't need the login/register screens
+        if (isAuth && (pathWithoutLocale === '/auth/login' || pathWithoutLocale === '/auth/register')) {
+            const target = token.role === 'ADMIN' ? '/admin' : `/${locale}/mentors`;
+            return NextResponse.redirect(new URL(target, req.url));
         }
 
-        if (req.nextUrl.pathname.includes('/creator')) {
-            // Must have CREATOR role
-            if (token && (token as any).role !== "CREATOR") {
-                return NextResponse.redirect(new URL(`/${locale}/dashboard`, req.url));
-            }
+        // Everything outside the public sections requires an account
+        if (!isAuth && !PUBLIC_SECTIONS.has(section)) {
+            const loginUrl = new URL(`/${locale}/auth/login`, req.url);
+            loginUrl.searchParams.set('from', `${pathname}${search}`);
+            return NextResponse.redirect(loginUrl);
+        }
 
-            // Check KYC Status
-            const kycStatus = (token as any).kycStatus;
-            const isVerified = kycStatus === 'VERIFIED';
-
-            // Allow access to specific onboarding/application pages regardless of status
-            const isAhocPage = pathname.includes('/creator/onboarding') || pathname.includes('/creator/apply');
-
-            // If not verified and trying to access restricted pages, redirect to application status page
-            if (!isVerified && !isAhocPage) {
+        // Creator studio: verified creators (and admins) only
+        if (isAuth && section === 'creator' && !CREATOR_OPEN_PAGES.some((page) => pathWithoutLocale.startsWith(page))) {
+            const role = token.role;
+            const isVerifiedCreator = role === 'CREATOR' && token.kycStatus === 'VERIFIED';
+            if (!isVerifiedCreator && role !== 'ADMIN') {
                 return NextResponse.redirect(new URL(`/${locale}/creator/apply`, req.url));
             }
         }
+
+        return intlResponse;
     },
     {
         callbacks: {
-            async authorized() {
+            // Never block in withAuth itself; the middleware above decides per route
+            authorized() {
                 return true;
             },
         },
@@ -145,12 +97,7 @@ export default withAuth(
 
 export const config = {
     matcher: [
+        // Everything except API routes, Next internals and static files
         '/((?!api|_next|_vercel|.*\\..*).*)',
-        '/(en|de)/:path*',
-        '/courses/:path*',
-        '/dashboard',
-        '/admin/:path*',
-        '/onboarding',
-        '/verify/:path*'
-    ]
+    ],
 };

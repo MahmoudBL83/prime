@@ -65,7 +65,6 @@ import UploadMediaModal from '@/components/modals/UploadMediaModal'
 import { PostMenuDropdown } from '@/components/posts/PostMenuDropdown'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'
 
 interface MentorData {
     id: string

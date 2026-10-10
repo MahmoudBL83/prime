@@ -258,8 +258,8 @@ export default function CourseLearningPage() {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mx-auto mb-4"></div>
-                    <p className="text-lg text-[var(--foreground)]">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[hsl(var(--accent))] mx-auto mb-4"></div>
+                    <p className="text-lg text-[hsl(var(--foreground))]">
                         {lang === 'de' ? 'جاري تحميل الدورة...' : 'Loading course...'}
                     </p>
                 </div>
@@ -271,18 +271,18 @@ export default function CourseLearningPage() {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <svg className="w-16 h-16 text-[var(--muted-foreground)] mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-16 h-16 text-[hsl(var(--muted-foreground))] mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>
-                    <h2 className="text-xl font-semibold text-[var(--foreground)] mb-2">
+                    <h2 className="text-xl font-semibold text-[hsl(var(--foreground))] mb-2">
                         {lang === 'de' ? 'الدورة غير موجودة' : 'Course Not Found'}
                     </h2>
-                    <p className="text-[var(--muted-foreground)] mb-4">
+                    <p className="text-[hsl(var(--muted-foreground))] mb-4">
                         {lang === 'de' ? 'الدورة التي تبحث عنها غير متوفرة.' : 'The course you are looking for is not available.'}
                     </p>
                     <button
                         onClick={() => router.push('/courses')}
-                        className="px-4 py-2 bg-[var(--accent)] text-[var(--accent-foreground)] rounded-lg hover:bg-[var(--primary)] transition-colors"
+                        className="px-4 py-2 bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] rounded-lg hover:bg-[hsl(var(--primary))] transition-colors"
                     >
                         {lang === 'de' ? 'العودة إلى الدورات' : 'Back to Courses'}
                     </button>
@@ -296,28 +296,28 @@ export default function CourseLearningPage() {
     const relatedLessons = getRelatedLessons()
 
     return (
-        <div className="min-h-screen bg-[var(--background)]">
+        <div className="min-h-screen bg-[hsl(var(--background))]">
             {/* Header */}
-            <div className="bg-[var(--card)] border-b border-[var(--border)]">
+            <div className="bg-[hsl(var(--card))] border-b border-[hsl(var(--border))]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center space-x-4">
                             <button
                                 onClick={() => router.push(`/courses/${params.id}`)}
-                                className="flex items-center space-x-2 text-[var(--foreground)] hover:text-[var(--accent)] transition-colors"
+                                className="flex items-center space-x-2 text-[hsl(var(--foreground))] hover:text-[hsl(var(--accent))] transition-colors"
                             >
                                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
                                 </svg>
                                 <span>{lang === 'de' ? 'العودة' : 'Back'}</span>
                             </button>
-                            <h1 className="text-xl font-bold text-[var(--foreground)]">
+                            <h1 className="text-xl font-bold text-[hsl(var(--foreground))]">
                                 {lang === 'de' ? course.titleAr : course.title}
                             </h1>
                         </div>
                         <button
                             onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
-                            className="px-4 py-2 border border-[var(--border)] rounded-md text-sm text-[var(--foreground)] hover:bg-[var(--secondary)] transition-colors"
+                            className="px-4 py-2 border border-[hsl(var(--border))] rounded-md text-sm text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))] transition-colors"
                         >
                             {lang === 'en' ? 'Deutsch' : 'English'}
                         </button>

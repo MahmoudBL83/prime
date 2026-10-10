@@ -1,4 +1,5 @@
 'use client';
+import { ArrowLeft as LucideArrowLeft, Volume2 as LucideVolume2, VolumeX as LucideVolumeX, Play as LucidePlay, Pause as LucidePause, Maximize as LucideMaximize, Minimize as LucideMinimize, Settings as LucideSettings, SkipForward as LucideSkipForward, SkipBack as LucideSkipBack, ChevronDown as LucideChevronDown, MessageSquare as LucideMessageSquare, ThumbsUp as LucideThumbsUp, ThumbsDown as LucideThumbsDown, Share2 as LucideShare2, Download as LucideDownload } from 'lucide-react'
 
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -7,22 +8,22 @@ import { toast } from 'react-hot-toast';
 
 // Icon Components with lazy loading
 const IconComponents = {
-  ArrowLeft: lazy(() => import('lucide-react').then(mod => ({ default: mod.ArrowLeft }))),
-  Volume2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Volume2 }))),
-  VolumeX: lazy(() => import('lucide-react').then(mod => ({ default: mod.VolumeX }))),
-  Play: lazy(() => import('lucide-react').then(mod => ({ default: mod.Play }))),
-  Pause: lazy(() => import('lucide-react').then(mod => ({ default: mod.Pause }))),
-  Maximize: lazy(() => import('lucide-react').then(mod => ({ default: mod.Maximize }))),
-  Minimize: lazy(() => import('lucide-react').then(mod => ({ default: mod.Minimize }))),
-  Settings: lazy(() => import('lucide-react').then(mod => ({ default: mod.Settings }))),
-  SkipForward: lazy(() => import('lucide-react').then(mod => ({ default: mod.SkipForward }))),
-  SkipBack: lazy(() => import('lucide-react').then(mod => ({ default: mod.SkipBack }))),
-  ChevronDown: lazy(() => import('lucide-react').then(mod => ({ default: mod.ChevronDown }))),
-  MessageSquare: lazy(() => import('lucide-react').then(mod => ({ default: mod.MessageSquare }))),
-  ThumbsUp: lazy(() => import('lucide-react').then(mod => ({ default: mod.ThumbsUp }))),
-  ThumbsDown: lazy(() => import('lucide-react').then(mod => ({ default: mod.ThumbsDown }))),
-  Share2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Share2 }))),
-  Download: lazy(() => import('lucide-react').then(mod => ({ default: mod.Download })))
+  ArrowLeft: LucideArrowLeft,
+  Volume2: LucideVolume2,
+  VolumeX: LucideVolumeX,
+  Play: LucidePlay,
+  Pause: LucidePause,
+  Maximize: LucideMaximize,
+  Minimize: LucideMinimize,
+  Settings: LucideSettings,
+  SkipForward: LucideSkipForward,
+  SkipBack: LucideSkipBack,
+  ChevronDown: LucideChevronDown,
+  MessageSquare: LucideMessageSquare,
+  ThumbsUp: LucideThumbsUp,
+  ThumbsDown: LucideThumbsDown,
+  Share2: LucideShare2,
+  Download: LucideDownload
 }
 
 // Dynamic Icon Component

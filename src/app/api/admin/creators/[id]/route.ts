@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { prisma, INCLUDE_SENSITIVE_CREATOR_FIELDS } from '@/lib/prisma'
 import { UserRole, KYCStatus, PostType } from '@prisma/client'
 
 export async function GET(
@@ -35,6 +35,7 @@ export async function GET(
         // Get creator details with all related data
         const creator = await prisma.creator.findUnique({
             where: { id: id },
+            omit: INCLUDE_SENSITIVE_CREATOR_FIELDS,
             include: {
                 user: true,
                 courses: {

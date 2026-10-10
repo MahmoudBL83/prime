@@ -1,4 +1,5 @@
 'use client'
+import { Upload as LucideUpload, Video as LucideVideo, BarChart3 as LucideBarChart3, Users as LucideUsers, Settings as LucideSettings, DollarSign as LucideDollarSign, TrendingUp as LucideTrendingUp, Eye as LucideEye, Clock as LucideClock, Bell as LucideBell, Play as LucidePlay, ArrowLeft as LucideArrowLeft, Home as LucideHome, Search as LucideSearch, Filter as LucideFilter, MoreVertical as LucideMoreVertical, Edit as LucideEdit, Trash2 as LucideTrash2, Copy as LucideCopy, Share2 as LucideShare2, Download as LucideDownload, Image as LucideImage, FileText as LucideFileText, Calendar as LucideCalendar, Loader2 as LucideLoader2 } from 'lucide-react'
 
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
@@ -13,31 +14,31 @@ import { CreatorSidebar, CreatorHeader } from '@/components/creator'
 
 // Icon Components with lazy loading
 const IconComponents = {
-    Upload: lazy(() => import('lucide-react').then(mod => ({ default: mod.Upload }))),
-    Video: lazy(() => import('lucide-react').then(mod => ({ default: mod.Video }))),
-    BarChart3: lazy(() => import('lucide-react').then(mod => ({ default: mod.BarChart3 }))),
-    Users: lazy(() => import('lucide-react').then(mod => ({ default: mod.Users }))),
-    Settings: lazy(() => import('lucide-react').then(mod => ({ default: mod.Settings }))),
-    DollarSign: lazy(() => import('lucide-react').then(mod => ({ default: mod.DollarSign }))),
-    TrendingUp: lazy(() => import('lucide-react').then(mod => ({ default: mod.TrendingUp }))),
-    Eye: lazy(() => import('lucide-react').then(mod => ({ default: mod.Eye }))),
-    Clock: lazy(() => import('lucide-react').then(mod => ({ default: mod.Clock }))),
-    Bell: lazy(() => import('lucide-react').then(mod => ({ default: mod.Bell }))),
-    Play: lazy(() => import('lucide-react').then(mod => ({ default: mod.Play }))),
-    ArrowLeft: lazy(() => import('lucide-react').then(mod => ({ default: mod.ArrowLeft }))),
-    Home: lazy(() => import('lucide-react').then(mod => ({ default: mod.Home }))),
-    Search: lazy(() => import('lucide-react').then(mod => ({ default: mod.Search }))),
-    Filter: lazy(() => import('lucide-react').then(mod => ({ default: mod.Filter }))),
-    MoreVertical: lazy(() => import('lucide-react').then(mod => ({ default: mod.MoreVertical }))),
-    Edit: lazy(() => import('lucide-react').then(mod => ({ default: mod.Edit }))),
-    Trash2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Trash2 }))),
-    Copy: lazy(() => import('lucide-react').then(mod => ({ default: mod.Copy }))),
-    Share2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Share2 }))),
-    Download: lazy(() => import('lucide-react').then(mod => ({ default: mod.Download }))),
-    ImageIcon: lazy(() => import('lucide-react').then(mod => ({ default: mod.Image }))),
-    FileText: lazy(() => import('lucide-react').then(mod => ({ default: mod.FileText }))),
-    Calendar: lazy(() => import('lucide-react').then(mod => ({ default: mod.Calendar }))),
-    Loader2: lazy(() => import('lucide-react').then(mod => ({ default: mod.Loader2 })))
+    Upload: LucideUpload,
+    Video: LucideVideo,
+    BarChart3: LucideBarChart3,
+    Users: LucideUsers,
+    Settings: LucideSettings,
+    DollarSign: LucideDollarSign,
+    TrendingUp: LucideTrendingUp,
+    Eye: LucideEye,
+    Clock: LucideClock,
+    Bell: LucideBell,
+    Play: LucidePlay,
+    ArrowLeft: LucideArrowLeft,
+    Home: LucideHome,
+    Search: LucideSearch,
+    Filter: LucideFilter,
+    MoreVertical: LucideMoreVertical,
+    Edit: LucideEdit,
+    Trash2: LucideTrash2,
+    Copy: LucideCopy,
+    Share2: LucideShare2,
+    Download: LucideDownload,
+    ImageIcon: LucideImage,
+    FileText: LucideFileText,
+    Calendar: LucideCalendar,
+    Loader2: LucideLoader2
 }
 
 // Dynamic Icon Component

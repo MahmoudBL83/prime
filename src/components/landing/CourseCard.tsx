@@ -104,7 +104,7 @@ export function CourseCard({ course, onClick, userSubscriptionStatus = 'NONE', c
                         <div className={cn(
                             "w-16 h-16 rounded-full flex items-center justify-center",
                             cta.variant === 'default' ? "bg-opacity-90" : "bg-opacity-80"
-                        )} style={{ backgroundColor: 'var(--accent)' }}>
+                        )} style={{ backgroundColor: 'hsl(var(--accent))' }}>
                             {cta.icon}
                         </div>
                         <span className="text-foreground text-sm font-medium">{cta.text}</span>
@@ -121,7 +121,7 @@ export function CourseCard({ course, onClick, userSubscriptionStatus = 'NONE', c
                             course.level === "متوسط" && "bg-yellow-600 text-foreground hover:bg-yellow-700",
                             course.level === "متقدم" && "hover:opacity-90"
                         )}
-                        style={course.level === "متقدم" ? { backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' } : undefined}
+                        style={course.level === "متقدم" ? { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' } : undefined}
                     >
                         {course.level}
                     </Badge>
@@ -191,7 +191,7 @@ export function CourseCard({ course, onClick, userSubscriptionStatus = 'NONE', c
                             cta.variant === 'default' && "text-foreground hover:opacity-90",
                             cta.variant === 'outline' && "border-gray-600 text-muted-foreground hover:bg-card"
                         )}
-                        style={cta.variant === 'default' ? { backgroundColor: 'var(--accent)' } : undefined}
+                        style={cta.variant === 'default' ? { backgroundColor: 'hsl(var(--accent))' } : undefined}
                         onClick={(e) => {
                             e.stopPropagation();
                             cta.action?.();
@@ -206,7 +206,7 @@ export function CourseCard({ course, onClick, userSubscriptionStatus = 'NONE', c
             {/* MasterClass-style bottom border on hover */}
             <motion.div
                 className="absolute bottom-0 left-0 right-0 h-1"
-                style={{ backgroundColor: 'var(--accent)', transformOrigin: 'left' }}
+                style={{ backgroundColor: 'hsl(var(--accent))', transformOrigin: 'left' }}
                 initial={{ scaleX: 0 }}
                 whileHover={{ scaleX: 1 }}
                 transition={{ duration: 0.3 }}

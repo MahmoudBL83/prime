@@ -103,7 +103,7 @@ export function ProfessionalCourseCard({
             return (
                 <Button
                     size="sm"
-                    className="w-full bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-foreground"
+                    className="w-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90 text-foreground"
                     onClick={(e) => {
                         e.stopPropagation()
                         onClick?.()
@@ -179,7 +179,7 @@ export function ProfessionalCourseCard({
             transition={{ duration: 0.2 }}
             onClick={onClick}
         >
-            <div className="bg-[var(--card)] rounded-xl overflow-hidden shadow-lg border border-[var(--border)] hover:border-[var(--primary)]/50 transition-all duration-300 h-80">
+            <div className="bg-[hsl(var(--card))] rounded-xl overflow-hidden shadow-lg border border-[hsl(var(--border))] hover:border-[hsl(var(--primary))]/50 transition-all duration-300 h-80">
                 {/* Main Instructor Photo Background Area */}
                 <div
                     className="relative h-56 overflow-hidden bg-cover bg-center bg-no-repeat"
@@ -199,7 +199,7 @@ export function ProfessionalCourseCard({
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-[var(--primary)] to-purple-600 flex items-center justify-center text-foreground font-bold text-sm">
+                                <div className="w-full h-full bg-gradient-to-br from-[hsl(var(--primary))] to-purple-600 flex items-center justify-center text-foreground font-bold text-sm">
                                     {(course.creator.user.arabicName || course.creator.user.name).charAt(0)}
                                 </div>
                             )}
@@ -208,7 +208,7 @@ export function ProfessionalCourseCard({
 
                     {/* Instructor Name */}
                     <div className="absolute bottom-4 left-20 text-foreground">
-                        <h3 className="font-semibold text-sm group-hover:text-[var(--primary)] transition-colors duration-300 drop-shadow-md">
+                        <h3 className="font-semibold text-sm group-hover:text-[hsl(var(--primary))] transition-colors duration-300 drop-shadow-md">
                             {effectiveLang === 'ar'
                                 ? course.creator.user.arabicName || course.creator.user.name
                                 : course.creator.user.name
@@ -233,12 +233,12 @@ export function ProfessionalCourseCard({
                 {/* Course Details Footer */}
                 <div className="p-4 flex flex-col justify-between" style={{ minHeight: '100px' }}>
                     {/* Course Title */}
-                    <h4 className="text-[var(--foreground)] font-semibold text-sm mb-2 line-clamp-2 group-hover:text-[var(--primary)] transition-colors duration-300">
+                    <h4 className="text-[hsl(var(--foreground))] font-semibold text-sm mb-2 line-clamp-2 group-hover:text-[hsl(var(--primary))] transition-colors duration-300">
                         {effectiveLang === 'ar' ? course.titleAr : course.title}
                     </h4>
 
                     {/* Course Stats */}
-                    <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)] mb-3">
+                    <div className="flex items-center justify-between text-xs text-[hsl(var(--muted-foreground))] mb-3">
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-1">
                                 <Clock className="w-3 h-3" />

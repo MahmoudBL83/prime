@@ -149,18 +149,18 @@ export default function CourseNavigation({
     const progress = calculateProgress()
 
     return (
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4">
+        <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
             {/* Course Progress */}
             <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-semibold text-[var(--foreground)]">
+                    <h3 className="text-lg font-semibold text-[hsl(var(--foreground))]">
                         Course Progress
                     </h3>
-                    <span className="text-sm font-medium text-[var(--accent)]">{progress}%</span>
+                    <span className="text-sm font-medium text-[hsl(var(--accent))]">{progress}%</span>
                 </div>
-                <div className="w-full bg-[var(--muted)] rounded-full h-2">
+                <div className="w-full bg-[hsl(var(--muted))] rounded-full h-2">
                     <div
-                        className="bg-[var(--accent)] h-2 rounded-full transition-all duration-300"
+                        className="bg-[hsl(var(--accent))] h-2 rounded-full transition-all duration-300"
                         style={{ width: `${progress}%` }}
                     ></div>
                 </div>
@@ -169,15 +169,15 @@ export default function CourseNavigation({
             {/* Modules and Lessons */}
             <div className="space-y-3">
                 {modules.map((module) => (
-                    <div key={module.id} className="border border-[var(--border)] rounded-lg overflow-hidden">
+                    <div key={module.id} className="border border-[hsl(var(--border))] rounded-lg overflow-hidden">
                         {/* Module Header */}
                         <div
-                            className="flex items-center justify-between p-3 bg-[var(--secondary)] cursor-pointer hover:bg-[var(--secondary)]/80 transition-colors"
+                            className="flex items-center justify-between p-3 bg-[hsl(var(--secondary))] cursor-pointer hover:bg-[hsl(var(--secondary))]/80 transition-colors"
                             onClick={() => toggleModule(module.id)}
                         >
                             <div className="flex items-center space-x-3">
                                 <button
-                                    className="text-[var(--foreground)] hover:text-[var(--accent)] transition-colors"
+                                    className="text-[hsl(var(--foreground))] hover:text-[hsl(var(--accent))] transition-colors"
                                     aria-label={expandedModules.has(module.id) ? 'Collapse' : 'Expand'}
                                 >
                                     <svg
@@ -190,17 +190,17 @@ export default function CourseNavigation({
                                     </svg>
                                 </button>
                                 <div>
-                                    <h4 className="font-medium text-[var(--foreground)]">
+                                    <h4 className="font-medium text-[hsl(var(--foreground))]">
                                         {module.title}
                                     </h4>
                                     {module.description && (
-                                        <p className="text-sm text-[var(--muted-foreground)] mt-1">
+                                        <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">
                                             {module.description}
                                         </p>
                                     )}
                                 </div>
                             </div>
-                            <div className="flex items-center space-x-2 text-sm text-[var(--muted-foreground)]">
+                            <div className="flex items-center space-x-2 text-sm text-[hsl(var(--muted-foreground))]">
                                 <span>
                                     {module.lessons.filter(lesson => completedLessons.has(lesson.id)).length}/{module.lessons.length}
                                 </span>
@@ -213,7 +213,7 @@ export default function CourseNavigation({
 
                         {/* Lessons */}
                         {expandedModules.has(module.id) && (
-                            <div className="divide-y divide-[var(--border)]">
+                            <div className="divide-y divide-[hsl(var(--border))]">
                                 {module.lessons.map((lesson) => {
                                     const isCurrent = lesson.id === currentLessonId
                                     const isCompleted = completedLessons.has(lesson.id)
@@ -223,8 +223,8 @@ export default function CourseNavigation({
                                         <div
                                             key={lesson.id}
                                             className={`p-3 cursor-pointer transition-colors ${isCurrent
-                                                ? 'bg-[var(--accent)]/10 border-l-4 border-[var(--accent)]'
-                                                : 'hover:bg-[var(--secondary)]/50'
+                                                ? 'bg-[hsl(var(--accent))]/10 border-l-4 border-[hsl(var(--accent))]'
+                                                : 'hover:bg-[hsl(var(--secondary))]/50'
                                                 }`}
                                             onClick={() => onLessonSelect(lesson.id)}
                                         >
@@ -234,20 +234,20 @@ export default function CourseNavigation({
                                                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${isCompleted
                                                         ? 'bg-green-600 text-foreground'
                                                         : isCurrent
-                                                            ? 'bg-[var(--accent)] text-foreground'
-                                                            : 'bg-[var(--muted)] text-[var(--muted-foreground)]'
+                                                            ? 'bg-[hsl(var(--accent))] text-foreground'
+                                                            : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]'
                                                         }`}>
                                                         {lesson.order + 1}
                                                     </span>
 
                                                     {/* Lesson Info */}
                                                     <div className="flex-1 min-w-0">
-                                                        <h5 className={`font-medium truncate ${isCurrent ? 'text-[var(--accent)]' : 'text-[var(--foreground)]'
+                                                        <h5 className={`font-medium truncate ${isCurrent ? 'text-[hsl(var(--accent))]' : 'text-[hsl(var(--foreground))]'
                                                             }`}>
                                                             {lesson.title}
                                                         </h5>
                                                         {(lesson.description || lesson.descriptionAr) && (
-                                                            <p className="text-sm text-[var(--muted-foreground)] truncate mt-1">
+                                                            <p className="text-sm text-[hsl(var(--muted-foreground))] truncate mt-1">
                                                                 {lesson.description}
                                                             </p>
                                                         )}
@@ -256,7 +256,7 @@ export default function CourseNavigation({
 
                                                 <div className="flex items-center space-x-2">
                                                     {/* Duration */}
-                                                    <span className="text-sm text-[var(--muted-foreground)]">
+                                                    <span className="text-sm text-[hsl(var(--muted-foreground))]">
                                                         {formatDuration(lesson.duration)}
                                                     </span>
 
@@ -266,7 +266,7 @@ export default function CourseNavigation({
                                                         disabled={isUpdating}
                                                         className={`p-1 rounded transition-colors ${isUpdating
                                                             ? 'opacity-50 cursor-not-allowed'
-                                                            : 'hover:bg-[var(--secondary)]'
+                                                            : 'hover:bg-[hsl(var(--secondary))]'
                                                             }`}
                                                         aria-label={isCompleted ? 'Mark incomplete' : 'Mark complete'}
                                                     >
@@ -280,13 +280,13 @@ export default function CourseNavigation({
                                                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                             </svg>
                                                         ) : (
-                                                            <div className="w-4 h-4 border-2 border-[var(--border)] rounded" />
+                                                            <div className="w-4 h-4 border-2 border-[hsl(var(--border))] rounded" />
                                                         )}
                                                     </button>
 
                                                     {/* Play/Pause Indicator */}
                                                     {isCurrent && (
-                                                        <div className="w-2 h-2 bg-[var(--accent)] rounded-full animate-pulse" />
+                                                        <div className="w-2 h-2 bg-[hsl(var(--accent))] rounded-full animate-pulse" />
                                                     )}
                                                 </div>
                                             </div>
