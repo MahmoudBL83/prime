@@ -594,3 +594,36 @@ input[type="reset"] {
     animation: none;
   }
 }
+
+/* Study Buddy "searching" radar pulse */
+@keyframes prime-radar {
+  0% { transform: scale(0.35); opacity: 0.9; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.animate-radar {
+  animation: prime-radar 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-radar {
+    animation: none;
+    opacity: 0.25;
+  }
+}
+
+/* Apple TV hero crossfade */
+@keyframes prime-hero-fade {
+  from { opacity: 0; transform: scale(1.02); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-hero-fade {
+  animation: prime-hero-fade 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-fade {
+    animation: none;
+  }
+}

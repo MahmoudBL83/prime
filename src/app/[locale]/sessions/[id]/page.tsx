@@ -222,7 +222,7 @@ export default function WatchLiveSessionPage() {
                     )}
                     <div className="flex gap-3">
                         <button
-                            onClick={() => router.push(`/creators/${sessionData.creator.id}`)}
+                            onClick={() => router.push(`/${params.locale || 'en'}/mentors/${sessionData.creator.id}`)}
                             className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-xl transition-all"
                         >
                             {tm('subscribeNow')}

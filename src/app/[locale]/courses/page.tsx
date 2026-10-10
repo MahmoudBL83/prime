@@ -7,7 +7,6 @@ import { useLocaleSafe } from '@/hooks/useTranslationsSafe';
 import { Search, Play } from 'lucide-react';
 import Image from 'next/image';
 import { PaymentModal } from '@/components/PaymentModal';
-import { Footer } from '@/components/landing/Footer';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { courses as courseList } from '@/data/courses';
 import type { CourseData } from '@/data/courses';
@@ -50,6 +49,7 @@ const categoryLabels: Record<string, { en: string; ar?: string; de?: string }> =
 export default function CoursesPage() {
     const [courses, setCourses] = useState<Course[]>(courseList);
     const [heroIndex, setHeroIndex] = useState(0);
+    const [heroPaused, setHeroPaused] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const [hoveredCard, setHoveredCard] = useState<string | null>(null);
     const [showMenu, setShowMenu] = useState<string | null>(null);
@@ -96,6 +96,18 @@ export default function CoursesPage() {
     // Minimum swipe distance (in px)
     const minSwipeDistance = 50;
 
+    // Featured hero carousel: first slides rotate automatically like Apple TV
+    const heroSlideCount = Math.max(1, Math.min(5, courses.length));
+    useEffect(() => {
+        if (heroPaused || heroSlideCount < 2) return;
+        const timer = setTimeout(() => {
+            if (document.visibilityState === 'visible') {
+                setHeroIndex((index) => (index + 1) % heroSlideCount);
+            }
+        }, 7000);
+        return () => clearTimeout(timer);
+    }, [heroIndex, heroPaused, heroSlideCount]);
+
     // Categories for course sections
     const categories = [
         'German Language',
@@ -135,11 +147,11 @@ export default function CoursesPage() {
         const isLeftSwipe = distance > minSwipeDistance;
         const isRightSwipe = distance < -minSwipeDistance;
 
-        if (isLeftSwipe && heroIndex < courses.length - 1) {
-            setHeroIndex(heroIndex + 1);
+        if (isLeftSwipe) {
+            setHeroIndex((heroIndex + 1) % heroSlideCount);
         }
-        if (isRightSwipe && heroIndex > 0) {
-            setHeroIndex(heroIndex - 1);
+        if (isRightSwipe) {
+            setHeroIndex((heroIndex - 1 + heroSlideCount) % heroSlideCount);
         }
     };
 
@@ -164,11 +176,11 @@ export default function CoursesPage() {
         const isLeftSwipe = distance > minSwipeDistance;
         const isRightSwipe = distance < -minSwipeDistance;
 
-        if (isLeftSwipe && heroIndex < courses.length - 1) {
-            setHeroIndex(heroIndex + 1);
+        if (isLeftSwipe) {
+            setHeroIndex((heroIndex + 1) % heroSlideCount);
         }
-        if (isRightSwipe && heroIndex > 0) {
-            setHeroIndex(heroIndex - 1);
+        if (isRightSwipe) {
+            setHeroIndex((heroIndex - 1 + heroSlideCount) % heroSlideCount);
         }
     };
 
@@ -276,7 +288,7 @@ export default function CoursesPage() {
     }, [courses]);
 
     return (
-        <div dir={direction} className="min-h-screen bg-[#1f1f1f]">
+        <div dir={direction} className="min-h-screen bg-background dark:bg-[#1d1d1f]">
             {/* Sticky Bottom Banner */}
             {showBottomCTA && (
                 <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0071E3] text-white py-4 px-4">
@@ -319,7 +331,11 @@ export default function CoursesPage() {
                 onMouseDown={onMouseDown}
                 onMouseMove={onMouseMove}
                 onMouseUp={onMouseUp}
-                onMouseLeave={onMouseLeave}
+                onMouseEnter={() => setHeroPaused(true)}
+                onMouseLeave={() => {
+                    onMouseLeave();
+                    setHeroPaused(false);
+                }}
             >
                 {/* Background Image */}
                 <div className="absolute inset-0">
@@ -327,8 +343,9 @@ export default function CoursesPage() {
                         src={heroCourse.thumbnail || '/placeholder.jpg'}
                         alt={heroCourse.title}
                         fill
-                        className="object-cover"
-                        priority
+                        sizes="100vw"
+                        className="object-cover animate-hero-fade"
+                        priority={heroIndex === 0}
                         key={heroCourse.id}
                     />
                     {/* Gradient overlays */}
@@ -353,11 +370,21 @@ export default function CoursesPage() {
                                 </svg>
                                 <span className="font-medium">{getCategoryLabel(heroCourse.category)}</span>
                             </div>
-                            <span className="text-white/60">·</span>
-                            <span>Thriller</span>
-                            <span className="text-white/60">·</span>
-                            <span>Mystery</span>
-                            <span className="px-1.5 py-0.5 border border-white/40 rounded text-xs ml-1">18+</span>
+                            {heroCourse.year && (
+                                <>
+                                    <span className="text-white/60">·</span>
+                                    <span>{heroCourse.year}</span>
+                                </>
+                            )}
+                            {heroCourse.duration && (
+                                <>
+                                    <span className="text-white/60">·</span>
+                                    <span>{heroCourse.duration}</span>
+                                </>
+                            )}
+                            {heroCourse.rating && (
+                                <span className="px-1.5 py-0.5 border border-white/40 rounded text-xs ml-1">★ {heroCourse.rating.toFixed(1)}</span>
+                            )}
                         </div>
 
                         {/* Description */}
@@ -390,9 +417,11 @@ export default function CoursesPage() {
 
                 {/* Pagination Dots - Centered at bottom */}
                 <div className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                    {courses.slice(0, 5).map((_, index) => (
+                    {courses.slice(0, heroSlideCount).map((course, index) => (
                         <button
-                            key={index}
+                            key={course.id}
+                            aria-label={`Show ${getCourseTitle(course)}`}
+                            aria-current={index === heroIndex}
                             onClick={() => setHeroIndex(index)}
                             className={`w-2 h-2 rounded-full transition-all ${index === heroIndex ? 'bg-white w-6' : 'bg-white/40'
                                 }`}
@@ -407,7 +436,7 @@ export default function CoursesPage() {
                     <div className="flex items-center justify-between mb-4">
                         <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse text-right' : ''}`}>
                             <h2 className="text-xl font-semibold text-foreground">
-                                Top 10 TV Shows
+                                {isGerman ? 'Top 10 Kurse' : 'Top 10 Courses'}
                             </h2>
                             <svg className="w-4 h-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
@@ -460,6 +489,7 @@ export default function CoursesPage() {
                                                 src={course.thumbnail || '/placeholder.jpg'}
                                                 alt={course.title}
                                                 fill
+                                                sizes="(min-width: 1280px) 13vw, (min-width: 1024px) 17vw, (min-width: 768px) 25vw, 50vw"
                                                 className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
                                                 key={course.id}
                                             />
@@ -502,7 +532,7 @@ export default function CoursesPage() {
 
                                         {/* Info Below Card - Genre Only */}
                                         <div className="text-center px-1 mt-1">
-                                            <p className="text-[13px] text-white/70 font-medium truncate tracking-wide">
+                                            <p className="text-[13px] text-muted-foreground font-medium truncate tracking-wide">
                                                 {getCategoryLabel(course.category)}
                                             </p>
                                         </div>
@@ -543,7 +573,7 @@ export default function CoursesPage() {
 
                 {/* Separator Line */}
                 <div className="max-w-screen-2xl mx-auto px-8 mt-8">
-                    <div className="h-[1px] bg-white/10"></div>
+                    <div className="h-[1px] bg-border"></div>
                 </div>
             </div>
 
@@ -611,6 +641,7 @@ export default function CoursesPage() {
                                                         src={course.thumbnail || '/placeholder.jpg'}
                                                         alt={course.title}
                                                         fill
+                                                        sizes="(min-width: 1280px) 13vw, (min-width: 1024px) 17vw, (min-width: 768px) 25vw, 50vw"
                                                         className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
                                                         key={course.id}
                                                     />
@@ -666,7 +697,7 @@ export default function CoursesPage() {
 
                         {/* Separator Line */}
                         <div className="max-w-screen-2xl mx-auto px-8 mt-8">
-                            <div className="h-[1px] bg-white/10"></div>
+                            <div className="h-[1px] bg-border"></div>
                         </div>
                     </div>
                 );
@@ -682,8 +713,8 @@ export default function CoursesPage() {
                                 src="/images/courses/courses-hero.jpg"
                                 alt="Courses Hero"
                                 fill
+                                sizes="(min-width: 1536px) 1536px, 100vw"
                                 className="object-cover"
-                                priority
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
                             <div className={`absolute inset-0 ${isArabic ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-black/80 via-transparent to-transparent`} />
@@ -732,7 +763,7 @@ export default function CoursesPage() {
 
                 {/* Separator Line */}
                 <div className="max-w-screen-2xl mx-auto px-8 mt-8">
-                    <div className="h-[1px] bg-white/10"></div>
+                    <div className="h-[1px] bg-border"></div>
                 </div>
 
 
@@ -953,9 +984,6 @@ export default function CoursesPage() {
                 price="€28.99/Mo For 12 Months"
             />
 
-
-            {/* Footer */}
-            <Footer />
         </div>
     );
 }

@@ -94,3 +94,5 @@ export default function LeaderboardPage() {
 
 // Prevent static generation for pages that use session data
 export const dynamic = 'force-dynamic'
+
+export const runtime = 'edge'

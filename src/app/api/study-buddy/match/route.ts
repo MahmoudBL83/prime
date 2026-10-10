@@ -58,13 +58,6 @@ export async function GET(req: NextRequest) {
 
         const { limit } = validation.data
 
-        console.log('🔍 Study Buddy API - Session user:', {
-            id: sessionUser.id,
-            email: sessionUser.email,
-            name: sessionUser.name,
-            role: sessionUser.role
-        })
-
         // Use the enhanced matching service
         const compatibilityScores = await EnhancedMatchingService.findMatches(sessionUser.id, limit)
         
@@ -79,21 +72,32 @@ export async function GET(req: NextRequest) {
             })
         }
 
-        // Get user details for each match
+        // Candidate details and the pool size are independent - fetch together
         const userIds = compatibilityScores.map(score => score.userId)
-        const users = await prisma.user.findMany({
-            where: { id: { in: userIds } },
-            select: {
-                id: true,
-                name: true,
-                arabicName: true,
-                profileImage: true,
-                interests: true,
-                goals: true,
-                skillLevel: true,
-                learningMode: true,
-            }
-        })
+        const [users, totalAvailable] = await Promise.all([
+            prisma.user.findMany({
+                where: { id: { in: userIds } },
+                select: {
+                    id: true,
+                    name: true,
+                    arabicName: true,
+                    profileImage: true,
+                    bio: true,
+                    interests: true,
+                    goals: true,
+                    skillLevel: true,
+                    learningMode: true,
+                }
+            }),
+            prisma.user.count({
+                where: {
+                    id: { not: sessionUser.id },
+                    role: 'LEARNER',
+                    onboardingCompleted: true,
+                }
+            }),
+        ])
+        const usersById = new Map(users.map(user => [user.id, user]))
 
         // Helper function to parse interests/goals that might be JSON or comma-separated strings
         const parseArrayField = (field: string | null): string[] => {
@@ -109,7 +113,7 @@ export async function GET(req: NextRequest) {
 
         // Combine user details with compatibility scores
         const matches = compatibilityScores.map(score => {
-            const user = users.find(u => u.id === score.userId)
+            const user = usersById.get(score.userId)
             if (!user) return null
 
             return {
@@ -121,6 +125,8 @@ export async function GET(req: NextRequest) {
                 skillLevel: user.skillLevel,
                 learningMode: user.learningMode,
                 profileImage: user.profileImage,
+                bio: user.bio,
+                likedYou: score.likedYou ?? false,
                 compatibilityScore: score.totalScore,
                 compatibilityBreakdown: score.breakdown,
                 sharedInterests: score.sharedInterests,
@@ -128,30 +134,6 @@ export async function GET(req: NextRequest) {
                 reasonsForMatch: score.reasonsForMatch,
             }
         }).filter(match => match !== null) // Filter out any missing users
-
-        // Get total available matches count for reference
-        const totalAvailable = await prisma.user.count({
-            where: {
-                id: { not: sessionUser.id },
-                role: 'LEARNER',
-                onboardingCompleted: true,
-                // Exclude existing matches
-                studyBuddyMatches: {
-                    none: {
-                        OR: [
-                            {
-                                user1Id: sessionUser.id,
-                                status: { in: ['pending', 'accepted'] },
-                            },
-                            {
-                                user2Id: sessionUser.id,
-                                status: { in: ['pending', 'accepted'] },
-                            },
-                        ],
-                    },
-                },
-            }
-        })
 
         return NextResponse.json({
             matches,

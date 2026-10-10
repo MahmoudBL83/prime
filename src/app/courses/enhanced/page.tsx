@@ -568,3 +568,5 @@ export default function EnhancedCoursesPage() {
         </div>
     )
 }
+
+export const runtime = 'edge'

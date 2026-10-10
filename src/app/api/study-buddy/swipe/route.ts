@@ -7,7 +7,8 @@ import { NotificationService } from '@/services/NotificationService'
 
 const swipeActionSchema = z.object({
     targetUserId: z.string(),
-    action: z.enum(['like', 'pass']),
+    // superlike = like + the other learner is told right away (like Tinder)
+    action: z.enum(['like', 'superlike', 'pass']),
 })
 
 export async function POST(req: NextRequest) {
@@ -29,111 +30,98 @@ export async function POST(req: NextRequest) {
 
         const { targetUserId, action } = validation.data
 
-        // Check if target user exists and is a learner
-        const targetUser = await prisma.user.findUnique({
-            where: { id: targetUserId, role: 'LEARNER' },
-        })
+        if (targetUserId === session.user.id) {
+            return NextResponse.json({ error: 'You cannot match with yourself' }, { status: 400 })
+        }
+
+        // Target must be a learner; also load any existing match between the two users
+        const [targetUser, existingMatch] = await Promise.all([
+            prisma.user.findUnique({
+                where: { id: targetUserId, role: 'LEARNER' },
+                select: { id: true, name: true },
+            }),
+            prisma.studyBuddyMatch.findFirst({
+                where: {
+                    OR: [
+                        { user1Id: session.user.id, user2Id: targetUserId },
+                        { user1Id: targetUserId, user2Id: session.user.id },
+                    ],
+                },
+            }),
+        ])
 
         if (!targetUser) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 })
         }
 
-        // Check if there's already an existing match
-        const existingMatch = await prisma.studyBuddyMatch.findFirst({
-            where: {
-                OR: [
-                    {
-                        user1Id: session.user.id,
-                        user2Id: targetUserId,
-                    },
-                    {
-                        user1Id: targetUserId,
-                        user2Id: session.user.id,
-                    },
-                ],
-            },
-        })
-
-        if (existingMatch) {
-            return NextResponse.json(
-                { error: 'Match already exists' },
-                { status: 400 }
-            )
-        }
-
         if (action === 'pass') {
-            // Just record the pass action (could be stored in a separate table for analytics)
+            // Passing is remembered on the client so the profile is not shown again;
+            // a pending like from the other user is simply left unanswered.
             return NextResponse.json({
                 message: 'Pass recorded',
                 action: 'pass',
+                isMutual: false,
             })
         }
 
-        if (action === 'like') {
-            // Check if the target user has already liked the current user
-            const mutualLike = await prisma.studyBuddyMatch.findFirst({
-                where: {
-                    user1Id: targetUserId,
-                    user2Id: session.user.id,
-                    status: 'pending',
-                },
-            })
+        // --- like ---
+        if (existingMatch) {
+            const theyLikedFirst = existingMatch.user1Id === targetUserId && existingMatch.user2Id === session.user.id
 
-            if (mutualLike) {
-                // Mutual match! Update the existing match to accepted
+            if (theyLikedFirst && existingMatch.status === 'pending') {
+                // Mutual match! The other user swiped right first.
                 const updatedMatch = await prisma.studyBuddyMatch.update({
-                    where: { id: mutualLike.id },
-                    data: {
-                        status: 'accepted',
-                        sharedSubjects: JSON.stringify([]), // Could be populated with actual shared subjects
-                        sharedGoals: JSON.stringify([]), // Could be populated with actual shared goals
-                    },
+                    where: { id: existingMatch.id },
+                    data: { status: 'accepted' },
                 })
 
-                // Get current user data
-                const currentUser = await prisma.user.findUnique({
-                    where: { id: session.user.id },
-                    select: { name: true }
-                })
-
-                // Send notifications to both users about the mutual match
+                const currentUserName = session.user.name || 'Someone'
                 await Promise.all([
-                    NotificationService.notifyStudyBuddyMatch(
-                        targetUserId,
-                        currentUser?.name || 'Someone',
-                        updatedMatch.id
-                    ),
-                    NotificationService.notifyStudyBuddyMatch(
-                        session.user.id,
-                        targetUser.name,
-                        updatedMatch.id
-                    )
-                ])
+                    NotificationService.notifyStudyBuddyMatch(targetUserId, currentUserName, updatedMatch.id),
+                    NotificationService.notifyStudyBuddyMatch(session.user.id, targetUser.name, updatedMatch.id),
+                ]).catch((error) => console.error('Match notification error:', error))
 
                 return NextResponse.json({
                     message: 'Mutual match created!',
                     match: updatedMatch,
                     isMutual: true,
                 })
-            } else {
-                // Create a pending match
-                const newMatch = await prisma.studyBuddyMatch.create({
-                    data: {
-                        user1Id: session.user.id,
-                        user2Id: targetUserId,
-                        status: 'pending',
-                        sharedSubjects: JSON.stringify([]),
-                        sharedGoals: JSON.stringify([]),
-                    },
-                })
-
-                return NextResponse.json({
-                    message: 'Like sent',
-                    match: newMatch,
-                    isMutual: false,
-                })
             }
+
+            // Already liked, already matched, or blocked: answer idempotently
+            return NextResponse.json({
+                message: existingMatch.status === 'accepted' ? 'Already matched' : 'Like already sent',
+                match: existingMatch,
+                isMutual: existingMatch.status === 'accepted',
+            })
         }
+
+        // First like between these two users: wait for the other side
+        const newMatch = await prisma.studyBuddyMatch.create({
+            data: {
+                user1Id: session.user.id,
+                user2Id: targetUserId,
+                status: 'pending',
+                sharedSubjects: JSON.stringify([]),
+                sharedGoals: JSON.stringify([]),
+            },
+        })
+
+        if (action === 'superlike') {
+            await NotificationService.create({
+                userId: targetUserId,
+                type: 'STUDY_BUDDY_REQUEST',
+                title: 'You got a Super Like ⭐',
+                message: `${session.user.name || 'A learner'} super liked you as a study buddy. Swipe right to match!`,
+                data: { matchId: newMatch.id, actionType: 'superlike', actionUrl: '/study-buddy' },
+            }).catch((error) => console.error('Super like notification error:', error))
+        }
+
+        return NextResponse.json({
+            message: action === 'superlike' ? 'Super Like sent' : 'Like sent',
+            match: newMatch,
+            isMutual: false,
+        })
 
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     } catch (error) {

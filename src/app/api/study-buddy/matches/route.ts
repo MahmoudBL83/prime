@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 interface StudyBuddyMatchWithDetails {
     id: string
     status: string
+    likedByMe: boolean
     sharedSubjects: string[]
     sharedGoals: string[]
     chatRoomId: string | null
@@ -51,25 +52,32 @@ export async function GET(req: NextRequest) {
             orderBy: { updatedAt: 'desc' },
         })
 
+        // Load the other participant of every match in a single query
+        const otherUserIds = [...new Set(matches.map((match) =>
+            match.user1Id === session.user.id ? match.user2Id : match.user1Id
+        ))]
+        const otherUsers = await prisma.user.findMany({
+            where: { id: { in: otherUserIds } },
+            select: {
+                id: true,
+                name: true,
+                arabicName: true,
+                profileImage: true,
+                interests: true,
+                goals: true,
+                skillLevel: true,
+                learningMode: true,
+            },
+        })
+        const otherUsersById = new Map(otherUsers.map((user) => [user.id, user]))
+
         // Enrich matches with other user details
         const enrichedMatches = await Promise.all(
             matches.map(async (match) => {
                 const isUser1 = match.user1Id === session.user.id
                 const otherUserId = isUser1 ? match.user2Id : match.user1Id
 
-                const otherUser = await prisma.user.findUnique({
-                    where: { id: otherUserId },
-                    select: {
-                        id: true,
-                        name: true,
-                        arabicName: true,
-                        profileImage: true,
-                        interests: true,
-                        goals: true,
-                        skillLevel: true,
-                        learningMode: true,
-                    },
-                })
+                const otherUser = otherUsersById.get(otherUserId)
 
                 if (!otherUser) {
                     return null
@@ -90,6 +98,8 @@ export async function GET(req: NextRequest) {
                 return {
                     id: match.id,
                     status: match.status,
+                    // For pending matches: true when the current user sent the like
+                    likedByMe: isUser1,
                     sharedSubjects: match.sharedSubjects ? (() => {
                         try { return JSON.parse(match.sharedSubjects) } catch { return [] }
                     })() : [],

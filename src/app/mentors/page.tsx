@@ -574,3 +574,5 @@ export default function MentorsPage() {
         </div>
     )
 }
+
+export const runtime = 'edge'

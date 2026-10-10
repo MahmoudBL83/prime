@@ -15,6 +15,7 @@ import { AvatarPlaceholder } from '@/components/ui/avatar-placeholder'
 import { CredentialsDisplay, Credential } from '@/components/credentials/CredentialsSection'
 import { PostMenuDropdown } from '@/components/posts/PostMenuDropdown'
 import { useAuthModal } from '@/contexts/AuthModalContext'
+import { FeedPost } from '@/components/mentors/FeedPost'
 
 // Dynamic imports for heavy components
 const SubscribeModal = lazy(() => import('@/components/modals/SubscribeModal'))
@@ -895,8 +896,7 @@ export default function OnlyFansStyleMentorsPage() {
     // Memoize tip click handler
     const handleTipClick = useCallback((creator: Creator) => {
         if (!session) {
-            toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
-            router.push(`/${locale}/login`)
+            openAuthModal('signin')
             return
         }
         setSelectedCreator(creator)
@@ -906,8 +906,7 @@ export default function OnlyFansStyleMentorsPage() {
     // Memoize message click handler
     const handleMessageClick = useCallback((creator: Creator) => {
         if (!session) {
-            toast.error(isArabic ? 'يرجى تسجيل الدخول' : 'Please sign in')
-            router.push(`/${locale}/login`)
+            openAuthModal('signin')
             return
         }
         // Redirect to messaging page with the creator's ID
@@ -1244,6 +1243,7 @@ export default function OnlyFansStyleMentorsPage() {
                         src={creator.user.profileImage}
                         alt={creator.user.name}
                         fill
+sizes="(min-width: 1024px) 300px, 50vw"
                         className="object-cover"
                     />
                 ) : (
@@ -1323,11 +1323,11 @@ export default function OnlyFansStyleMentorsPage() {
     CreatorCard.displayName = 'CreatorCard'
 
     return (
-        <div className="min-h-screen bg-card text-foreground transition-colors">
+        <div className="min-h-screen bg-background text-foreground">
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
                 <div
-                    className="fixed inset-0 bg-background/50 z-40 lg:hidden"
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[55] lg:hidden"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}
@@ -1336,7 +1336,7 @@ export default function OnlyFansStyleMentorsPage() {
             <div className="max-w-[1225px] mx-auto w-full flex justify-center">
                 <div className="flex w-full">
                     {/* Left Sidebar - Navigation */}
-                    <div className={`fixed z-50 p-3 sm:p-4 bg-card lg:bg-transparent transform transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static w-[275px] lg:sticky lg:top-0 h-[100dvh] overflow-y-auto`}>
+                    <div className={`fixed inset-y-0 left-0 z-[60] p-3 sm:p-4 bg-card lg:bg-transparent transform transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:z-auto w-[275px] lg:sticky lg:top-0 h-[100dvh] overflow-y-auto`}>
                         <div className="lg:sticky lg:top-24">
                             {/* Mobile Close Button */}
                             <button
@@ -1488,7 +1488,7 @@ export default function OnlyFansStyleMentorsPage() {
                     {/* Main Feed - Twitter Style */}
                     <div className="flex-grow w-full max-w-[600px] border-l border-r border-border min-h-screen">
                         {/* Header */}
-                        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl px-3 sm:px-4 py-3 transition-colors" style={{ borderBottom: '0.5px solid hsla(0,0%,100%,.1)' }}>
+                        <div className="sticky top-[52px] z-40 bg-background/90 backdrop-blur-xl px-3 sm:px-4 py-3 border-b border-border">
                             <div className="flex items-center gap-2">
                                 {/* Mobile Menu Button */}
                                 <button
@@ -1531,290 +1531,48 @@ export default function OnlyFansStyleMentorsPage() {
                             )}
 
                             {/* Real Posts from Database - OnlyFans Style */}
-                            {activeView === 'feed' && !loadingPosts && posts.length > 0 && posts.map((post: any, i: number) => (
-                                <div
+                            {activeView === 'feed' && !loadingPosts && posts.length > 0 && posts
+                                .filter((post: any) => !hiddenUserIds.includes(post.channel?.creator?.userId))
+                                .map((post: any) => (
+                                <FeedPost
                                     key={post.id}
-                                    className="px-4 py-4 hover:bg-white/[0.02] transition-colors animate-fade-in"
-                                    style={{ animationDelay: `${i * 50}ms`, borderBottom: i < posts.length - 1 ? '0.5px solid hsla(0,0%,100%,.1)' : 'none' }}
+                                    post={post}
+                                    isArabic={isArabic}
+                                    liked={likedPostIds.includes(post.id)}
+                                    bookmarked={bookmarkedPostIds.includes(post.id)}
+                                    canBookmark={!!session}
+                                    commentsOpen={expandedCommentsPostId === post.id}
+                                    onLike={() => handleLike(post.id)}
+                                    onToggleComments={(e) => handlePostComment(post.id, e)}
+                                    onTip={() => handleTipClick(post.channel.creator)}
+                                    onBookmark={() => { handleBookmark(post.id) }}
+                                    onOpenCreator={() => handleCreatorClick(post.channel.creator.id)}
+                                    onOpenPost={() => router.push(`/${locale}/posts/${post.id}`)}
+                                    onSubscribe={() => handleCreatorClick(post.channel.creator.id)}
+                                    onToggleMenu={(e) => {
+                                        e.stopPropagation()
+                                        setOpenPostMenuId(openPostMenuId === post.id ? null : post.id)
+                                    }}
+                                    menu={
+                                        <PostMenuDropdown
+                                            postId={post.id}
+                                            creatorId={post.channel.creator.userId}
+                                            creatorName={post.channel.creator.user.name}
+                                            locale={locale}
+                                            isArabic={isArabic}
+                                            isOpen={openPostMenuId === post.id}
+                                            onClose={() => setOpenPostMenuId(null)}
+                                            isHidden={hiddenUserIds.includes(post.channel.creator.userId)}
+                                            onHideToggle={(hidden) => {
+                                                if (hidden) {
+                                                    setHiddenUserIds(prev => [...prev, post.channel.creator.userId])
+                                                } else {
+                                                    setHiddenUserIds(prev => prev.filter(id => id !== post.channel.creator.userId))
+                                                }
+                                            }}
+                                        />
+                                    }
                                 >
-                                    {/* Prime Header - Like OnlyFans */}
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center gap-2">
-                                            {/* Prime Logo/Icon */}
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                                <span className="text-foreground font-black text-sm">P</span>
-                                            </div>
-                                            <div>
-                                                <div className="flex items-center gap-1">
-                                                    <span className="font-bold text-foreground">Prime</span>
-                                                    <DynamicIcon name="CheckCircle" className="w-4 h-4 text-[#0a84ff] fill-[#0a84ff]" />
-                                                </div>
-                                                <span className="text-muted-foreground text-xs">@prime</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-muted-foreground text-sm">
-                                                {new Date(post.publishedAt).toLocaleDateString(isArabic ? 'ar-EG' : 'en-US', {
-                                                    month: 'short',
-                                                    day: 'numeric'
-                                                })}
-                                            </span>
-                                            <div className="relative">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        setOpenPostMenuId(openPostMenuId === post.id ? null : post.id)
-                                                    }}
-                                                    className="p-1 hover:bg-accent hover:text-accent-foreground rounded-full"
-                                                >
-                                                    <svg className="w-5 h-5 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24">
-                                                        <circle cx="12" cy="6" r="1.5" />
-                                                        <circle cx="12" cy="12" r="1.5" />
-                                                        <circle cx="12" cy="18" r="1.5" />
-                                                    </svg>
-                                                </button>
-
-                                                {/* Post Options Dropdown */}
-                                                <PostMenuDropdown
-                                                    postId={post.id}
-                                                    creatorId={post.channel.creator.userId}
-                                                    creatorName={post.channel.creator.user.name}
-                                                    locale={locale}
-                                                    isArabic={isArabic}
-                                                    isOpen={openPostMenuId === post.id}
-                                                    onClose={() => setOpenPostMenuId(null)}
-                                                    isHidden={hiddenUserIds.includes(post.channel.creator.userId)}
-                                                    onHideToggle={(hidden) => {
-                                                        if (hidden) {
-                                                            setHiddenUserIds(prev => [...prev, post.channel.creator.userId])
-                                                        } else {
-                                                            setHiddenUserIds(prev => prev.filter(id => id !== post.channel.creator.userId))
-                                                        }
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* @Mention Link to Creator */}
-                                    <div className="mb-2">
-                                        <span
-                                            className="text-[#0a84ff] hover:underline cursor-pointer font-medium"
-                                            onClick={() => handleCreatorClick(post.channel.creator.id)}
-                                        >
-                                            @{post.channel.creator.user.name.toLowerCase().replace(/\s+/g, '')}
-                                        </span>
-                                        <span className="text-foreground ml-1">
-                                            {isArabic && post.contentAr ? post.contentAr : post.content}
-                                        </span>
-                                    </div>
-
-                                    {/* Link to Creator Profile */}
-                                    <div className="mb-3">
-                                        <span
-                                            className="text-[#0a84ff] hover:underline cursor-pointer text-sm"
-                                            onClick={() => handleCreatorClick(post.channel.creator.id)}
-                                        >
-                                            prime.com/{post.channel.creator.user.name.toLowerCase().replace(/\s+/g, '')}
-                                        </span>
-                                    </div>
-
-                                    {/* Media Preview */}
-                                    {post.type === 'IMAGE' && (post.thumbnailUrl || post.mediaUrl) && (
-                                        <div
-                                            className="relative rounded-xl overflow-hidden mb-3 cursor-pointer"
-                                            onClick={() => router.push(`/${locale}/posts/${post.id}`)}
-                                        >
-                                            <img
-                                                src={post.thumbnailUrl || post.mediaUrl}
-                                                alt="Post media"
-                                                className="w-full object-cover max-h-[500px]"
-                                                onError={(e) => {
-                                                    e.currentTarget.style.display = 'none'
-                                                }}
-                                            />
-                                        </div>
-                                    )}
-
-                                    {/* VIDEO Post */}
-                                    {post.type === 'VIDEO' && (
-                                        <div
-                                            className="relative rounded-xl overflow-hidden mb-3 cursor-pointer"
-                                            onClick={() => router.push(`/${locale}/posts/${post.id}`)}
-                                        >
-                                            <div className="aspect-video relative bg-gradient-to-br from-purple-900/30 to-pink-900/30">
-                                                {post.thumbnailUrl && post.thumbnailUrl.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i) ? (
-                                                    <img
-                                                        src={post.thumbnailUrl}
-                                                        alt="Video thumbnail"
-                                                        className="absolute inset-0 w-full h-full object-cover"
-                                                        onError={(e) => {
-                                                            e.currentTarget.style.display = 'none'
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                                                        <DynamicIcon name="Video" className="w-20 h-20 text-purple-400" />
-                                                    </div>
-                                                )}
-                                                {/* Play button overlay */}
-                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                    <div className="w-16 h-16 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                                                        <DynamicIcon name="Play" className="w-8 h-8 text-foreground ml-1" fill="white" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Embedded Creator Card - OnlyFans Style */}
-                                    <div
-                                        className="bg-card border border-border rounded-xl overflow-hidden mb-4 cursor-pointer hover:border-white/20 transition-colors"
-                                        onClick={() => handleCreatorClick(post.channel.creator.id)}
-                                    >
-                                        {/* Creator Card Background */}
-                                        <div className="relative h-20 bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600">
-                                            {post.channel.creator.user.profileImage && (
-                                                <Image
-                                                    src={post.channel.creator.user.profileImage}
-                                                    alt=""
-                                                    fill
-                                                    className="object-cover opacity-50"
-                                                />
-                                            )}
-                                            {/* Free Badge */}
-                                            <div className="absolute top-2 left-2 bg-green-500 text-foreground text-xs font-bold px-2 py-0.5 rounded">
-                                                Free
-                                            </div>
-                                            {/* Menu Button */}
-                                            <button
-                                                className="absolute top-2 right-2 p-1 hover:bg-black/20 rounded-full"
-                                                onClick={(e) => e.stopPropagation()}
-                                            >
-                                                <svg className="w-5 h-5 text-foreground" fill="currentColor" viewBox="0 0 24 24">
-                                                    <circle cx="12" cy="6" r="1.5" />
-                                                    <circle cx="12" cy="12" r="1.5" />
-                                                    <circle cx="12" cy="18" r="1.5" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                        {/* Creator Info */}
-                                        <div className="relative px-4 pb-4">
-                                            {/* Profile Picture - Overlapping */}
-                                            <div className="absolute -top-8 left-4">
-                                                <div className="w-16 h-16 rounded-full border-4 border-card overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500">
-                                                    {post.channel.creator.user.profileImage ? (
-                                                        <Image
-                                                            src={post.channel.creator.user.profileImage}
-                                                            alt={post.channel.creator.user.name}
-                                                            width={64}
-                                                            height={64}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <AvatarPlaceholder
-                                                            name={post.channel.creator.user.name}
-                                                            size={64}
-                                                        />
-                                                    )}
-                                                </div>
-                                            </div>
-                                            {/* Name and Handle */}
-                                            <div className="pt-10">
-                                                <div className="flex items-center gap-1.5">
-                                                    <h4 className="font-bold text-foreground">
-                                                        {isArabic && post.channel.creator.user.arabicName
-                                                            ? post.channel.creator.user.arabicName
-                                                            : post.channel.creator.user.name}
-                                                    </h4>
-                                                    <DynamicIcon name="CheckCircle" className="w-4 h-4 text-[#0a84ff] fill-[#0a84ff]" />
-                                                </div>
-                                                <p className="text-muted-foreground text-sm">
-                                                    @{post.channel.creator.user.name.toLowerCase().replace(/\s+/g, '')}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Engagement Stats - OnlyFans Style */}
-                                    <div className="flex items-center gap-6 text-muted-foreground">
-                                        {/* Like Button */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleLike(post.id)
-                                            }}
-                                            className={`transition-colors flex items-center gap-1 ${likedPostIds.includes(post.id) ? 'text-pink-500' : 'hover:text-pink-400'}`}
-                                        >
-                                            <DynamicIcon
-                                                name="Heart"
-                                                className={`w-6 h-6 transition-all ${likedPostIds.includes(post.id) ? 'fill-pink-500' : ''}`}
-                                            />
-                                        </button>
-
-                                        {/* Comment Button */}
-                                        <button
-                                            onClick={(e) => handlePostComment(post.id, e)}
-                                            className={`hover:text-purple-400 transition-colors ${expandedCommentsPostId === post.id ? 'text-purple-400' : ''}`}
-                                        >
-                                            <DynamicIcon name="MessageCircle" className="w-6 h-6" />
-                                        </button>
-
-                                        {/* Send Tip Button */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                setSelectedCreator(post.channel.creator)
-                                                setTipModalOpen(true)
-                                            }}
-                                            className="flex items-center gap-1.5 text-muted-foreground hover:text-green-400 transition-colors"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v12M9 9h6M9 15h6" />
-                                            </svg>
-                                            <span className="text-sm font-medium">{isArabic ? 'إكرامية' : 'SEND TIP'}</span>
-                                        </button>
-
-                                        {/* Spacer */}
-                                        <div className="flex-1" />
-
-                                        {/* Bookmark Button */}
-                                        {session && (
-                                            <button
-                                                onClick={async (e) => {
-                                                    e.stopPropagation()
-                                                    await handleBookmark(post.id)
-                                                }}
-                                                className={`transition-colors ${bookmarkedPostIds.includes(post.id)
-                                                    ? 'text-blue-500'
-                                                    : 'hover:text-blue-400'
-                                                    }`}
-                                            >
-                                                <DynamicIcon
-                                                    name="Bookmark"
-                                                    className={`w-6 h-6 transition-all ${bookmarkedPostIds.includes(post.id)
-                                                        ? 'fill-blue-500'
-                                                        : ''
-                                                        }`}
-                                                />
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {/* Like & Comment Count */}
-                                    <div className="mt-2 flex items-center gap-4">
-                                        <span className="font-bold text-foreground text-sm">
-                                            {post._count?.likes || 0} {isArabic ? 'إعجاب' : 'likes'}
-                                        </span>
-                                        <button
-                                            onClick={(e) => handlePostComment(post.id, e)}
-                                            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
-                                        >
-                                            {post._count?.comments || 0} {isArabic ? 'تعليق' : 'comments'}
-                                        </button>
-                                    </div>
-
                                     {/* Inline Comment Section */}
                                     {expandedCommentsPostId === post.id && (
                                         <div className="mt-4 border-t border-border pt-4 animate-in slide-in-from-top-2 duration-200">
@@ -1896,7 +1654,7 @@ export default function OnlyFansStyleMentorsPage() {
                                             )}
                                         </div>
                                     )}
-                                </div>
+                                </FeedPost>
                             ))}
 
                             {/* Subscriptions Management View */}
@@ -2634,6 +2392,7 @@ export default function OnlyFansStyleMentorsPage() {
                                                             src={selectedCreator?.user?.profileImage || (session.user as any)?.image || ''}
                                                             alt="Profile"
                                                             fill
+sizes="128px"
                                                             className="object-cover"
                                                         />
                                                     </div>

@@ -29,3 +29,5 @@ export default function CoursesPage() {
         </div>
     )
 }
+
+export const runtime = 'edge'

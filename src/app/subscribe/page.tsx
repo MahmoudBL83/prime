@@ -435,3 +435,5 @@ export default function SubscribePage() {
         </div>
     )
 }
+
+export const runtime = 'edge'

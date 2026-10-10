@@ -262,3 +262,5 @@ export default function LoginPage() {
 
 // Prevent static generation for auth pages
 export const dynamic = 'force-dynamic'
+
+export const runtime = 'edge'

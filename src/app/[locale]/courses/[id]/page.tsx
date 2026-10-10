@@ -567,10 +567,9 @@ export default function CourseDetailPage() {
                     <Image
                         src={course.thumbnail || '/placeholder.jpg'}
                         alt={course.title}
-                        fill
+                        fillsizes="100vw"
                         className="object-cover"
                         priority
-                        unoptimized
                         key={course.id}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
@@ -593,12 +592,24 @@ export default function CourseDetailPage() {
                                 </svg>
                                 <span className="font-medium">{course.category}</span>
                             </div>
-                            <span>•</span>
-                            <span>Thriller</span>
-                            <span>•</span>
-                            <span>Drama</span>
-                            <span>•</span>
-                            <span className="px-1.5 py-0.5 border border-white/40 rounded text-xs">18+</span>
+                            {(course as any).year && (
+                                <>
+                                    <span>•</span>
+                                    <span>{(course as any).year}</span>
+                                </>
+                            )}
+                            {(course as any).duration && (
+                                <>
+                                    <span>•</span>
+                                    <span>{(course as any).duration}</span>
+                                </>
+                            )}
+                            {typeof (course as any).rating === 'number' && (
+                                <>
+                                    <span>•</span>
+                                    <span className="px-1.5 py-0.5 border border-white/40 rounded text-xs">★ {(course as any).rating.toFixed(1)}</span>
+                                </>
+                            )}
                         </div>
 
                         {/* Description */}
@@ -665,7 +676,7 @@ export default function CourseDetailPage() {
                                 <Image
                                     src={episode.thumbnail}
                                     alt={episode.title}
-                                    fill
+                                    fillsizes="(min-width: 1024px) 25vw, 50vw"
                                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
 
@@ -778,7 +789,7 @@ export default function CourseDetailPage() {
                                 <Image
                                     src={related.thumbnail}
                                     alt={related.title}
-                                    fill
+                                    fillsizes="(min-width: 1280px) 13vw, (min-width: 768px) 25vw, 50vw"
                                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
                             </div>

@@ -312,3 +312,5 @@ export default function DemoSubscribePage() {
         </div>
     )
 }
+
+export const runtime = 'edge'

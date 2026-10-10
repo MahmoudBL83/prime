@@ -1,847 +1,641 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { SwipeInterface } from '@/components/study-buddy/SwipeInterface'
-import { MatchesList } from '@/components/study-buddy/MatchesList'
-import { MatchingInsights } from '@/components/study-buddy/MatchingInsights'
-import ProfileCompletionGuide from '@/components/study-buddy/ProfileCompletionGuide'
+import { Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useLocale } from 'next-intl'
+import { useSession } from 'next-auth/react'
+import { toast } from 'react-hot-toast'
+import {
+    CalendarPlus,
+    ChevronRight,
+    Heart,
+    LayoutGrid,
+    MessageCircle,
+    RefreshCw,
+    SlidersHorizontal,
+    Users,
+    Video,
+    X,
+} from 'lucide-react'
 import { VideoCallInitiator } from '@/components/study-buddy/VideoCallInitiator'
 import { SessionSchedulerModal } from '@/components/study-buddy/SessionSchedulerModal'
-import { toast } from 'react-hot-toast'
-import { motion } from 'framer-motion'
-import { User, Settings, Bell, Heart, Users, Star, Edit3, Brain, TrendingUp, Zap, CheckCircle, Clock, MessageCircle, Calendar, Video, BookOpen, Target, CalendarPlus } from 'lucide-react'
-import { useLocale } from 'next-intl'
-import { useRouter } from 'next/navigation'
-import Image from 'next/image'
-import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { SwipeDeck } from '@/components/study-buddy/tinder/SwipeDeck'
+import { BuddyPhoto } from '@/components/study-buddy/tinder/BuddyPhoto'
+import { MatchCelebration } from '@/components/study-buddy/tinder/MatchCelebration'
+import {
+    TINDER_GRADIENT,
+    firstNameOf,
+    formatSkillLevel,
+    type BuddyCandidate,
+    type BuddyMatch,
+    type SwipeAction,
+} from '@/components/study-buddy/tinder/types'
 
-interface StudyBuddyProfile {
+interface ViewerProfile {
     id: string
     name: string
-    arabicName?: string | null
     profileImage?: string | null
-    bio?: string | null
-    interests: string[]
-    goals: string[]
-    skillLevel?: string | null
-    learningMode?: string | null
-    studyBuddyPreferences?: any
-    createdAt: string
 }
 
-interface StudyBuddy {
-    id: string
-    name: string
-    arabicName?: string | null
-    interests: string[]
-    goals: string[]
-    skillLevel: string | null
-    learningMode?: string | null
-    profileImage?: string | null
-    compatibilityScore: number
-    compatibilityBreakdown?: {
-        interestsScore: number
-        goalsScore: number
-        skillLevelScore: number
-        communicationScore: number
-        learningStyleScore: number
-        scheduleScore: number
-        subjectScore: number
-        preferencesScore: number
-    }
-    sharedInterests: string[]
-    sharedGoals: string[]
-    reasonsForMatch?: string[]
+type MobileView = 'discover' | 'matches'
+type SidebarTab = 'matches' | 'messages'
+
+// Passed profiles are remembered per viewer so they don't come straight back
+const PASS_MEMORY_DAYS = 14
+
+function passedStorageKey(viewerId: string) {
+    return `prime.studyBuddy.passed.${viewerId}`
 }
 
-interface StudyBuddyMatchWithDetails {
-    id: string
-    status: string
-    sharedSubjects: string[]
-    sharedGoals: string[]
-    chatRoomId?: string | null
-    createdAt: string
-    updatedAt: string
-    otherUser: {
-        id: string
-        name: string
-        arabicName?: string | null
-        profileImage?: string | null
-        interests: string[]
-        goals: string[]
-        skillLevel: string | null
-        learningMode?: string | null
+function readPassed(viewerId: string): Record<string, number> {
+    try {
+        const raw = localStorage.getItem(passedStorageKey(viewerId))
+        if (!raw) return {}
+        const parsed = JSON.parse(raw) as Record<string, number>
+        const cutoff = Date.now() - PASS_MEMORY_DAYS * 24 * 60 * 60 * 1000
+        return Object.fromEntries(Object.entries(parsed).filter(([, at]) => at > cutoff))
+    } catch {
+        return {}
     }
 }
 
-export default function StudyBuddyPage() {
+function writePassed(viewerId: string, passed: Record<string, number>) {
+    try {
+        localStorage.setItem(passedStorageKey(viewerId), JSON.stringify(passed))
+    } catch {
+        // storage unavailable (private mode) - passes are just not remembered
+    }
+}
+
+function StudyBuddyScreen() {
     const locale = useLocale()
     const router = useRouter()
-    const [activeTab, setActiveTab] = useState<'discover' | 'matches' | 'profile' | 'notifications'>('discover')
-    const [potentialMatches, setPotentialMatches] = useState<StudyBuddy[]>([])
-    const [existingMatches, setExistingMatches] = useState<StudyBuddyMatchWithDetails[]>([])
-    const [userProfile, setUserProfile] = useState<StudyBuddyProfile | null>(null)
-    const [loading, setLoading] = useState(false)
-    const [profileIncomplete, setProfileIncomplete] = useState<{
-        missing: string[]
-        message: string
-        nextSteps: string[]
-    } | null>(null)
-    const [profileStats, setProfileStats] = useState<any>(null)
-    const [showVideoCallModal, setShowVideoCallModal] = useState(false)
-    const [selectedVideoCallMatch, setSelectedVideoCallMatch] = useState<StudyBuddyMatchWithDetails | null>(null)
-    const [showSessionModal, setShowSessionModal] = useState(false)
-    const [selectedSessionMatch, setSelectedSessionMatch] = useState<StudyBuddyMatchWithDetails | null>(null)
+    const searchParams = useSearchParams()
+    const { data: session } = useSession()
+    const isGerman = locale === 'de'
+    const L = (en: string, de: string) => (isGerman ? de : en)
 
-    useEffect(() => {
-        loadUserProfile()
-        // Fetch real data from database API
-        if (activeTab === 'discover') {
-            fetchPotentialMatches()
-        } else if (activeTab === 'matches') {
-            fetchExistingMatches()
-        }
-    }, [activeTab])
+    const viewerId = session?.user?.id
+    const [viewer, setViewer] = useState<ViewerProfile | null>(null)
+    const [deck, setDeck] = useState<BuddyCandidate[]>([])
+    const [matches, setMatches] = useState<BuddyMatch[]>([])
+    const [loadingDeck, setLoadingDeck] = useState(true)
+    const [loadingMatches, setLoadingMatches] = useState(true)
+    const [deckError, setDeckError] = useState<string | null>(null)
+    const [profileIncomplete, setProfileIncomplete] = useState<string[] | null>(null)
+    const [passHistory, setPassHistory] = useState<BuddyCandidate[]>([])
+    const [celebrating, setCelebrating] = useState<BuddyCandidate | null>(null)
+    const [mobileView, setMobileView] = useState<MobileView>(searchParams.get('tab') === 'matches' ? 'matches' : 'discover')
+    const [sidebarTab, setSidebarTab] = useState<SidebarTab>('matches')
+    const [selectedMatch, setSelectedMatch] = useState<BuddyMatch | null>(null)
+    const [videoCallMatch, setVideoCallMatch] = useState<BuddyMatch | null>(null)
+    const [scheduleMatch, setScheduleMatch] = useState<BuddyMatch | null>(null)
 
-    const loadUserProfile = async () => {
-        try {
-            const response = await fetch('/api/study-buddy/profile')
-            if (response.ok) {
-                const data = await response.json()
-                setUserProfile(data.profile)
-                setProfileStats(data.stats)
-            }
-        } catch (error) {
-            console.error('Failed to load profile:', error)
-        }
-    }
+    const viewerName = viewer?.name || session?.user?.name || 'You'
+    const viewerImage = viewer?.profileImage ?? null
 
-    const updateProfile = async (profileData: Partial<StudyBuddyProfile>) => {
-        try {
-            const response = await fetch('/api/study-buddy/profile', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(profileData)
-            })
+    const acceptedMatches = useMemo(() => matches.filter((m) => m.status === 'accepted'), [matches])
+    const likesSent = useMemo(() => matches.filter((m) => m.status === 'pending' && m.likedByMe), [matches])
+    const likedYouCount = useMemo(() => deck.filter((c) => c.likedYou).length, [deck])
 
-            if (response.ok) {
-                const data = await response.json()
-                setUserProfile(data.profile)
-                toast.success('Profile updated successfully!')
-            } else {
-                const error = await response.json()
-                toast.error(error.error || 'Failed to update profile')
-            }
-        } catch (error) {
-            toast.error('Failed to update profile')
-        }
-    }
-
-    const fetchPotentialMatches = async () => {
-        setLoading(true)
-        try {
-            const response = await fetch('/api/study-buddy/match?limit=20')
-            const data = await response.json()
-
-            if (response.ok) {
-                setPotentialMatches(data.matches || [])
-
-                // Clear any previous profile incomplete state
-                setProfileIncomplete(null)
-
-                // Show helpful message if no matches found
-                if (!data.matches || data.matches.length === 0) {
-                    if (data.totalAvailable === 0) {
-                        toast('No other learners available yet. Invite friends to join!')
-                    } else {
-                        toast('No compatible matches found. Try updating your preferences.')
-                    }
-                }
-            } else {
-                // Handle specific error codes
-                if (data.code === 'NOT_AUTHENTICATED') {
-                    toast.error('Please log in to find study buddies')
-                    window.location.href = '/auth/login'
-                    return
-                } else if (data.code === 'PROFILE_INCOMPLETE') {
-                    // Show profile completion guide instead of error
-                    setProfileIncomplete({
-                        missing: data.missingFields || [],
-                        message: data.message || 'Please complete your profile',
-                        nextSteps: data.nextSteps || []
-                    })
-                    setPotentialMatches([])
-                } else if (data.code === 'USER_NOT_FOUND') {
-                    toast.error('Please complete your profile to find study buddies')
-                    setActiveTab('profile')
-                } else {
-                    toast.error(data.error || 'Failed to fetch potential matches')
-                }
-                setPotentialMatches([])
-            }
-        } catch (error) {
-            console.error('Error fetching potential matches:', error)
-            toast.error('Network error. Please check your connection.')
-            setPotentialMatches([])
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const fetchExistingMatches = async () => {
-        setLoading(true)
+    const loadMatches = useCallback(async () => {
+        setLoadingMatches(true)
         try {
             const response = await fetch('/api/study-buddy/matches')
             if (response.ok) {
                 const data = await response.json()
-                setExistingMatches(data.matches)
-            } else {
-                toast.error('Failed to fetch existing matches')
+                setMatches(data.matches || [])
             }
-        } catch (error) {
-            toast.error('Failed to fetch existing matches')
+        } catch {
+            // the sidebar simply stays empty; swiping still works
         } finally {
-            setLoading(false)
+            setLoadingMatches(false)
         }
-    }
+    }, [])
 
-    const handleSwipe = async (userId: string, action: 'like' | 'pass') => {
+    const loadDeck = useCallback(async () => {
+        setLoadingDeck(true)
+        setDeckError(null)
         try {
-            const response = await fetch('/api/study-buddy/swipe', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    targetUserId: userId,
-                    action: action,
-                }),
-            })
+            const response = await fetch('/api/study-buddy/match?limit=40')
+            const data = await response.json().catch(() => ({}))
 
-            if (response.ok) {
-                const result = await response.json()
-
-                if (result.isMutual) {
-                    toast.success('🎉 Mutual match! Check your matches tab.')
-                    // Refresh matches list if we're on that tab
-                    if (activeTab === 'matches') {
-                        fetchExistingMatches()
-                    }
-                } else if (action === 'like') {
-                    toast.success('Like sent! Waiting for response.')
-                }
-            } else {
-                const error = await response.json()
-                toast.error(error.error || 'Failed to process swipe')
+            if (response.status === 401) {
+                router.push(`/${locale}/auth/login?from=${encodeURIComponent(`/${locale}/study-buddy`)}`)
+                return
             }
-        } catch (error) {
-            toast.error('Failed to process swipe')
+            if (!response.ok) {
+                if (data.code === 'PROFILE_INCOMPLETE' || data.code === 'USER_NOT_FOUND') {
+                    setProfileIncomplete(data.missingFieldsDetail || data.missingFields || [])
+                } else {
+                    setDeckError(data.error || L('Could not load study buddies.', 'Lernpartner konnten nicht geladen werden.'))
+                }
+                setDeck([])
+                return
+            }
+
+            setProfileIncomplete(null)
+            const passed = viewerId ? readPassed(viewerId) : {}
+            const candidates: BuddyCandidate[] = (data.matches || []).filter((c: BuddyCandidate) => !passed[c.id])
+            setDeck(candidates)
+        } catch {
+            setDeckError(L('Network error. Check your connection.', 'Netzwerkfehler. Bitte Verbindung prüfen.'))
+        } finally {
+            setLoadingDeck(false)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [viewerId, locale, router])
+
+    // Initial load: profile, deck and matches in parallel
+    useEffect(() => {
+        if (!viewerId) return
+        fetch('/api/study-buddy/profile')
+            .then((r) => (r.ok ? r.json() : null))
+            .then((data) => data?.profile && setViewer(data.profile))
+            .catch(() => undefined)
+        loadDeck()
+        loadMatches()
+    }, [viewerId, loadDeck, loadMatches])
+
+    const handleSwipe = useCallback(
+        async (candidate: BuddyCandidate, action: SwipeAction) => {
+            // Optimistic: the card is already gone, the request happens in the background
+            setDeck((current) => current.filter((c) => c.id !== candidate.id))
+
+            if (action === 'pass') {
+                setPassHistory((history) => [...history.slice(-19), candidate])
+                if (viewerId) {
+                    const passed = readPassed(viewerId)
+                    passed[candidate.id] = Date.now()
+                    writePassed(viewerId, passed)
+                }
+                return
+            }
+
+            // Likes cannot be rewound (they reach the other learner right away)
+            setPassHistory([])
+
+            try {
+                const response = await fetch('/api/study-buddy/swipe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ targetUserId: candidate.id, action }),
+                })
+                const data = await response.json().catch(() => ({}))
+                if (!response.ok) {
+                    toast.error(data.error || L('Could not send your like. Try again.', 'Like konnte nicht gesendet werden.'))
+                    setDeck((current) => [candidate, ...current])
+                    return
+                }
+                if (data.isMutual) {
+                    setCelebrating(candidate)
+                    loadMatches()
+                } else {
+                    if (action === 'superlike') {
+                        toast.success(L(`Super Like sent to ${firstNameOf(candidate.name)} ⭐`, `Super Like an ${firstNameOf(candidate.name)} gesendet ⭐`))
+                    }
+                    loadMatches()
+                }
+            } catch {
+                toast.error(L('Network error. Your like was not sent.', 'Netzwerkfehler. Like wurde nicht gesendet.'))
+                setDeck((current) => [candidate, ...current])
+            }
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [viewerId, loadMatches]
+    )
+
+    const handleRewind = useCallback(() => {
+        const last = passHistory[passHistory.length - 1]
+        if (!last) return
+        setPassHistory((history) => history.slice(0, -1))
+        setDeck((current) => [last, ...current.filter((c) => c.id !== last.id)])
+        if (viewerId) {
+            const passed = readPassed(viewerId)
+            delete passed[last.id]
+            writePassed(viewerId, passed)
+        }
+    }, [passHistory, viewerId])
+
+    const showLikesFirst = () => {
+        setDeck((current) => [...current.filter((c) => c.likedYou), ...current.filter((c) => !c.likedYou)])
+        setMobileView('discover')
     }
 
-    const handleMatchAction = async (matchId: string, action: string) => {
-        // Refresh the matches list after any action
-        await fetchExistingMatches()
+    const resetPassed = () => {
+        if (viewerId) writePassed(viewerId, {})
+        setPassHistory([])
+        loadDeck()
     }
 
-    const handleChat = (matchId: string) => {
-        // Navigate to messaging system with the specific conversation
-        router.push(`/${locale}/messaging?matchId=${matchId}`)
+    const openChat = (userId: string) => router.push(`/${locale}/messaging?userId=${userId}`)
+
+    // -----------------------------------------------------------------------
+    // Pieces
+    // -----------------------------------------------------------------------
+
+    const radar = (title: string, subtitle: string, actions?: ReactNode) => (
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+            <div className="relative grid h-56 w-56 place-items-center">
+                {[0, 1, 2].map((i) => (
+                    <span
+                        key={i}
+                        className="animate-radar absolute inset-0 rounded-full bg-[#fd267d]/25"
+                        style={{ animationDelay: `${i * 0.8}s` }}
+                    />
+                ))}
+                <div className="relative h-24 w-24 overflow-hidden rounded-full shadow-2xl ring-4 ring-white dark:ring-white/90">
+                    <BuddyPhoto name={viewerName} src={viewerImage} initialsClassName="text-[34px]" />
+                </div>
+            </div>
+            <h3 className="mt-6 text-xl font-bold text-foreground">{title}</h3>
+            <p className="mt-2 max-w-xs text-[15px] text-muted-foreground">{subtitle}</p>
+            {actions && <div className="mt-6 flex flex-wrap items-center justify-center gap-3">{actions}</div>}
+        </div>
+    )
+
+    const gradientButton = (label: string, onClick: () => void, icon?: ReactNode) => (
+        <button
+            type="button"
+            onClick={onClick}
+            className="flex h-11 items-center gap-2 rounded-full px-6 text-sm font-bold uppercase tracking-wide text-white shadow-lg transition hover:brightness-110 active:scale-[0.98]"
+            style={{ background: TINDER_GRADIENT }}
+        >
+            {icon}
+            {label}
+        </button>
+    )
+
+    const outlineButton = (label: string, onClick: () => void, icon?: ReactNode) => (
+        <button
+            type="button"
+            onClick={onClick}
+            className="flex h-11 items-center gap-2 rounded-full border border-border bg-card px-6 text-sm font-bold uppercase tracking-wide text-foreground transition hover:bg-foreground/[0.05] active:scale-[0.98]"
+        >
+            {icon}
+            {label}
+        </button>
+    )
+
+    let emptyState: ReactNode
+    if (loadingDeck) {
+        emptyState = radar(L('Finding study buddies…', 'Suche Lernpartner…'), L('Looking for learners who match your goals.', 'Wir suchen Lernende mit passenden Zielen.'))
+    } else if (profileIncomplete) {
+        emptyState = radar(
+            L('Complete your profile to start swiping', 'Vervollständige dein Profil'),
+            profileIncomplete.length > 0
+                ? profileIncomplete.join(' · ')
+                : L('Add your interests, goals and skill level so we can find your matches.', 'Füge Interessen, Ziele und Level hinzu.'),
+            gradientButton(L('Edit profile', 'Profil bearbeiten'), () => router.push(`/${locale}/profile`), <SlidersHorizontal className="h-4 w-4" />)
+        )
+    } else if (deckError) {
+        emptyState = radar(L('Something went wrong', 'Etwas ist schiefgelaufen'), deckError, gradientButton(L('Try again', 'Erneut versuchen'), loadDeck, <RefreshCw className="h-4 w-4" />))
+    } else {
+        emptyState = radar(
+            L("There's no one new around you", 'Gerade keine neuen Lernpartner'),
+            L('Check back soon — new learners join every day. You can also review people you passed on.', 'Schau bald wieder vorbei. Du kannst auch übersprungene Profile erneut ansehen.'),
+            <>
+                {gradientButton(L('Refresh', 'Aktualisieren'), loadDeck, <RefreshCw className="h-4 w-4" />)}
+                {outlineButton(L('Show passed', 'Übersprungene zeigen'), resetPassed)}
+            </>
+        )
     }
 
-    const handleScheduleSession = (match: StudyBuddyMatchWithDetails) => {
-        setSelectedSessionMatch(match)
-        setShowSessionModal(true)
-    }
+    const matchTiles = (columns: string) => (
+        <div className={`grid gap-3 ${columns}`}>
+            {likedYouCount > 0 && (
+                <button
+                    type="button"
+                    onClick={showLikesFirst}
+                    className="relative flex aspect-[3/4] flex-col items-center justify-center overflow-hidden rounded-xl p-2 text-center text-black shadow-md transition hover:brightness-105"
+                    style={{ background: 'linear-gradient(160deg, #ffd56b, #f5b748 55%, #e79a1d)' }}
+                >
+                    <span className="grid h-12 w-12 place-items-center rounded-full bg-white/40 text-lg font-black">{likedYouCount}</span>
+                    <span className="mt-2 text-[13px] font-extrabold leading-tight">{likedYouCount === 1 ? L('Like', 'Like') : L('Likes', 'Likes')}</span>
+                    <Heart className="absolute bottom-2 right-2 h-4 w-4" fill="black" />
+                </button>
+            )}
+            {acceptedMatches.map((match) => (
+                <button
+                    key={match.id}
+                    type="button"
+                    onClick={() => setSelectedMatch(match)}
+                    className="group relative aspect-[3/4] overflow-hidden rounded-xl bg-muted shadow-md"
+                >
+                    <BuddyPhoto
+                        name={match.otherUser.name}
+                        src={match.otherUser.profileImage}
+                        initialsClassName="text-[34px]"
+                        className="transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-2 pt-8 text-left">
+                        <p className="truncate text-[13px] font-bold text-white">{firstNameOf(match.otherUser.name)}</p>
+                    </div>
+                </button>
+            ))}
+            {likesSent.map((match) => (
+                <div key={match.id} className="relative aspect-[3/4] overflow-hidden rounded-xl bg-muted opacity-60" title={L('Waiting for them to like you back', 'Wartet auf Antwort')}>
+                    <BuddyPhoto name={match.otherUser.name} src={match.otherUser.profileImage} initialsClassName="text-[34px]" className="grayscale" />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-2 pt-8 text-left">
+                        <p className="truncate text-[12px] font-semibold text-white/90">{firstNameOf(match.otherUser.name)} · {L('sent', 'gesendet')}</p>
+                    </div>
+                </div>
+            ))}
+        </div>
+    )
 
-    const handleVideoCall = (match: StudyBuddyMatchWithDetails) => {
-        setSelectedVideoCallMatch(match)
-        setShowVideoCallModal(true)
-    }
+    const matchesEmpty = !loadingMatches && acceptedMatches.length === 0 && likesSent.length === 0 && likedYouCount === 0
+
+    const matchesPanel = (columns: string) =>
+        loadingMatches && matches.length === 0 ? (
+            <div className={`grid gap-3 ${columns}`}>
+                {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-muted" />
+                ))}
+            </div>
+        ) : matchesEmpty ? (
+            <div className="flex flex-col items-center px-4 py-10 text-center">
+                <div className="grid h-16 w-16 place-items-center rounded-2xl text-white shadow-lg" style={{ background: TINDER_GRADIENT }}>
+                    <Heart className="h-8 w-8" fill="white" />
+                </div>
+                <h4 className="mt-4 text-[17px] font-bold text-foreground">{L('Start matching', 'Leg los')}</h4>
+                <p className="mt-1.5 text-sm text-muted-foreground">
+                    {L('Matches will appear here once you and another learner like each other.', 'Matches erscheinen hier, sobald ihr euch gegenseitig liked.')}
+                </p>
+            </div>
+        ) : (
+            matchTiles(columns)
+        )
+
+    const messagesPanel =
+        acceptedMatches.length === 0 ? (
+            <p className="px-2 py-10 text-center text-sm text-muted-foreground">
+                {L('No conversations yet. Match with someone to start chatting.', 'Noch keine Unterhaltungen.')}
+            </p>
+        ) : (
+            <ul className="-mx-2">
+                {acceptedMatches.map((match) => (
+                    <li key={match.id}>
+                        <button
+                            type="button"
+                            onClick={() => openChat(match.otherUser.id)}
+                            className="flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left transition hover:bg-foreground/[0.05]"
+                        >
+                            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full">
+                                <BuddyPhoto name={match.otherUser.name} src={match.otherUser.profileImage} initialsClassName="text-[20px]" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate font-bold text-foreground">{match.otherUser.name}</p>
+                                <p className="truncate text-sm text-muted-foreground">
+                                    {match.chatRoomId
+                                        ? L('Continue your conversation', 'Unterhaltung fortsetzen')
+                                        : L(`Say hi to ${firstNameOf(match.otherUser.name)} 👋`, `Sag Hallo zu ${firstNameOf(match.otherUser.name)} 👋`)}
+                                </p>
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        )
 
     return (
-        <div className="min-h-screen" style={{ backgroundColor: '#1f1f1f' }}>
-            {/* Header */}
-            <div className="bg-black/40 backdrop-blur-sm border-b border-white/10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <div>
-                            <h1 className="text-2xl font-bold text-white">Study Buddy</h1>
-                            <p className="text-sm text-gray-400">Find your perfect learning partner</p>
+        <div className="relative flex h-[calc(100dvh-52px)] overflow-hidden bg-background">
+            {/* Sidebar (desktop) */}
+            <aside className="hidden w-[340px] shrink-0 flex-col border-r border-border bg-card/40 lg:flex xl:w-[372px]">
+                <header className="flex h-[68px] items-center justify-between gap-3 px-4 text-white" style={{ background: TINDER_GRADIENT }}>
+                    <Link href={`/${locale}/profile`} className="flex min-w-0 items-center gap-3 rounded-full py-1 pr-3 transition hover:bg-black/10">
+                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full ring-2 ring-white/80">
+                            <BuddyPhoto name={viewerName} src={viewerImage} initialsClassName="text-[15px]" />
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Tabs */}
-                <div className="mb-8">
-                    <div className="border-b border-white/10">
-                        <nav className="-mb-px flex space-x-8">
-                            <button
-                                onClick={() => setActiveTab('discover')}
-                                className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'discover'
-                                    ? 'border-[#0a84ff] text-[#0a84ff]'
-                                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-white/20'
-                                    }`}
-                            >
-                                Discover Matches
-                                {potentialMatches.length > 0 && (
-                                    <span className="ml-2 bg-[#0a84ff]/20 text-[#0a84ff] py-0.5 px-2 rounded-full text-xs">
-                                        {potentialMatches.length}
-                                    </span>
-                                )}
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('matches')}
-                                className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'matches'
-                                    ? 'border-[#0a84ff] text-[#0a84ff]'
-                                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-white/20'
-                                    }`}
-                            >
-                                My Matches
-                                {existingMatches.length > 0 && (
-                                    <span className="ml-2 bg-[#0a84ff]/20 text-[#0a84ff] py-0.5 px-2 rounded-full text-xs">
-                                        {existingMatches.filter(m => m.status === 'accepted').length}
-                                    </span>
-                                )}
-                            </button>
-                        </nav>
-                    </div>
-                </div>
-
-                {/* Tab Content */}
-                {activeTab === 'discover' ? (
-                    <div className="space-y-6">
-                        {/* Profile Completion Guide - Top Banner */}
-                        {profileIncomplete && (
-                            <ProfileCompletionGuide
-                                missingFields={profileIncomplete.missing}
-                                nextSteps={profileIncomplete.nextSteps}
-                                completionPercentage={Math.max(0, 100 - (profileIncomplete.missing.length * 12))}
-                                onStartEditing={() => {
-                                    setActiveTab('profile')
-                                    setProfileIncomplete(null)
-                                }}
-                            />
-                        )}
-
-                        {/* Main Content Grid - Two Column Layout */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Left Column - Swipe Interface (2/3 width) */}
-                            <div className="lg:col-span-2">
-                                {/* Quick Stats Row */}
-                                <div className="grid grid-cols-3 gap-4 mb-6">
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.1 }}
-                                        className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-[#0a84ff]/20 rounded-xl">
-                                                <Users className="w-5 h-5 text-[#0a84ff]" />
-                                            </div>
-                                            <div>
-                                                <div className="text-2xl font-bold text-white">{potentialMatches.length}</div>
-                                                <div className="text-xs text-gray-400">Available</div>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.2 }}
-                                        className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-[#0a84ff]/20 rounded-xl">
-                                                <TrendingUp className="w-5 h-5 text-[#0a84ff]" />
-                                            </div>
-                                            <div>
-                                                <div className="text-2xl font-bold text-white">
-                                                    {Math.round(
-                                                        potentialMatches.length > 0
-                                                            ? potentialMatches.reduce((sum, match) => sum + match.compatibilityScore, 0) / potentialMatches.length
-                                                            : 0
-                                                    )}%
-                                                </div>
-                                                <div className="text-xs text-gray-400">Avg Match</div>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.3 }}
-                                        className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-[#0a84ff]/20 rounded-xl">
-                                                <Heart className="w-5 h-5 text-[#0a84ff]" />
-                                            </div>
-                                            <div>
-                                                <div className="text-2xl font-bold text-white">{existingMatches.filter(m => m.status === 'accepted').length}</div>
-                                                <div className="text-xs text-gray-400">Matched</div>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                </div>
-
-                                {/* Swipe Card - Center Focus */}
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: 0.4 }}
-                                >
-                                    <SwipeInterface
-                                        potentialMatches={potentialMatches}
-                                        onSwipe={handleSwipe}
-                                        isLoading={loading}
-                                        onMatch={(match) => {
-                                            toast.success('New match found!')
-                                            setActiveTab('matches')
-                                        }}
-                                    />
-                                </motion.div>
-
-                                {/* How It Works - Compact Version */}
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.5 }}
-                                    className="mt-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6"
-                                >
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <Brain className="w-5 h-5 text-[#0a84ff]" />
-                                        <h3 className="text-sm font-semibold text-white">How It Works</h3>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-3 text-xs">
-                                        <div className="flex items-start gap-2">
-                                            <div className="p-1.5 bg-[#0a84ff]/20 rounded-lg flex-shrink-0 mt-0.5">
-                                                <TrendingUp className="w-3.5 h-3.5 text-[#0a84ff]" />
-                                            </div>
-                                            <div>
-                                                <div className="font-medium text-white mb-1">Smart Discovery</div>
-                                                <div className="text-gray-400 leading-relaxed">AI analyzes your preferences</div>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                            <div className="p-1.5 bg-[#0a84ff]/20 rounded-lg flex-shrink-0 mt-0.5">
-                                                <Heart className="w-3.5 h-3.5 text-[#0a84ff]" />
-                                            </div>
-                                            <div>
-                                                <div className="font-medium text-white mb-1">Swipe to Connect</div>
-                                                <div className="text-gray-400 leading-relaxed">Right to like, left to pass</div>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                            <div className="p-1.5 bg-[#0a84ff]/20 rounded-lg flex-shrink-0 mt-0.5">
-                                                <Zap className="w-3.5 h-3.5 text-[#0a84ff]" />
-                                            </div>
-                                            <div>
-                                                <div className="font-medium text-white mb-1">Start Learning</div>
-                                                <div className="text-gray-400 leading-relaxed">Chat and schedule sessions</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            </div>
-
-                            {/* Right Column - Insights Sidebar (1/3 width) */}
-                            <motion.div
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.4 }}
-                                className="lg:col-span-1"
-                            >
-                                <MatchingInsights
-                                    totalMatches={potentialMatches.length}
-                                    averageCompatibility={Math.round(
-                                        potentialMatches.length > 0
-                                            ? potentialMatches.reduce((sum, match) => sum + match.compatibilityScore, 0) / potentialMatches.length
-                                            : 0
-                                    )}
-                                    topCategories={
-                                        [...new Set(
-                                            potentialMatches
-                                                .flatMap(match => [...match.sharedInterests, ...match.sharedGoals])
-                                                .filter(item => item && item.length > 0)
-                                        )].slice(0, 8)
-                                    }
-                                    matchingStats={{
-                                        interestsMatches: potentialMatches.filter(match => match.sharedInterests.length > 0).length,
-                                        goalsMatches: potentialMatches.filter(match => match.sharedGoals.length > 0).length,
-                                        scheduleMatches: potentialMatches.filter(match => match.compatibilityBreakdown?.scheduleScore && match.compatibilityBreakdown.scheduleScore > 60).length,
-                                        communicationMatches: potentialMatches.filter(match => match.compatibilityBreakdown?.communicationScore && match.compatibilityBreakdown.communicationScore > 70).length,
-                                    }}
-                                />
-                            </motion.div>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="space-y-6">
-                        {/* Matches Tab Stats Header */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+                        <span className="truncate text-[17px] font-bold">{L('My Profile', 'Mein Profil')}</span>
+                    </Link>
+                    <div className="flex items-center gap-1.5">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                loadDeck()
+                                loadMatches()
+                            }}
+                            className="grid h-10 w-10 place-items-center rounded-full bg-black/15 transition hover:bg-black/25"
+                            title={L('Refresh', 'Aktualisieren')}
+                            aria-label={L('Refresh', 'Aktualisieren')}
                         >
-                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-[#0a84ff]/20 rounded-xl">
-                                        <Users className="w-6 h-6 text-[#0a84ff]" />
-                                    </div>
-                                    <div>
-                                        <div className="text-2xl font-bold text-white">{existingMatches.length}</div>
-                                        <div className="text-xs text-gray-400">Total Matches</div>
-                                    </div>
-                                </div>
-                            </div>
+                            <RefreshCw className="h-[18px] w-[18px]" />
+                        </button>
+                        <Link
+                            href={`/${locale}/messaging`}
+                            className="grid h-10 w-10 place-items-center rounded-full bg-black/15 transition hover:bg-black/25"
+                            title={L('Messages', 'Nachrichten')}
+                            aria-label={L('Messages', 'Nachrichten')}
+                        >
+                            <MessageCircle className="h-[18px] w-[18px]" />
+                        </Link>
+                    </div>
+                </header>
 
-                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-[#0a84ff]/20 rounded-xl">
-                                        <CheckCircle className="w-6 h-6 text-[#0a84ff]" />
-                                    </div>
-                                    <div>
-                                        <div className="text-2xl font-bold text-white">
-                                            {existingMatches.filter(m => m.status === 'accepted' || m.status === 'ACTIVE').length}
-                                        </div>
-                                        <div className="text-xs text-gray-400">Active</div>
-                                    </div>
-                                </div>
-                            </div>
+                <nav className="flex gap-6 border-b border-border px-5">
+                    {(['matches', 'messages'] as SidebarTab[]).map((tab) => (
+                        <button
+                            key={tab}
+                            type="button"
+                            onClick={() => setSidebarTab(tab)}
+                            className={`relative py-3.5 text-[15px] font-bold transition-colors ${sidebarTab === tab ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            {tab === 'matches' ? L('Matches', 'Matches') : L('Messages', 'Nachrichten')}
+                            {tab === 'matches' && acceptedMatches.length > 0 && (
+                                <span className="ml-1.5 rounded-full bg-[#fd267d] px-1.5 py-0.5 text-[11px] text-white">{acceptedMatches.length}</span>
+                            )}
+                            {sidebarTab === tab && <span className="absolute inset-x-0 -bottom-px h-[3px] rounded-full" style={{ background: TINDER_GRADIENT }} />}
+                        </button>
+                    ))}
+                </nav>
 
-                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-white/20 rounded-xl">
-                                        <Clock className="w-6 h-6 text-white" />
-                                    </div>
-                                    <div>
-                                        <div className="text-2xl font-bold text-white">
-                                            {existingMatches.filter(m => m.status === 'pending').length}
-                                        </div>
-                                        <div className="text-xs text-gray-400">Pending</div>
-                                    </div>
-                                </div>
-                            </div>
+                <div className="flex-1 overflow-y-auto p-4">
+                    {sidebarTab === 'matches' ? matchesPanel('grid-cols-3') : messagesPanel}
+                </div>
+            </aside>
 
-                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-[#0a84ff]/20 rounded-xl">
-                                        <MessageCircle className="w-6 h-6 text-[#0a84ff]" />
-                                    </div>
-                                    <div>
-                                        <div className="text-2xl font-bold text-white">
-                                            {existingMatches.filter(m => m.chatRoomId).length}
-                                        </div>
-                                        <div className="text-xs text-gray-400">Chatting</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
+            {/* Main */}
+            <main className="relative flex min-w-0 flex-1 flex-col">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(253,38,125,0.10),transparent_60%)]" />
 
-                        {/* Enhanced Matches Grid */}
-                        {existingMatches.length === 0 ? (
-                            <Card className="bg-white/5 backdrop-blur-md border-white/10 p-12 text-center">
-                                <div className="w-24 h-24 rounded-full bg-[#0a84ff] flex items-center justify-center mx-auto mb-6">
-                                    <Users className="w-12 h-12 text-white" />
-                                </div>
-                                <h2 className="text-2xl font-bold text-white mb-4">
-                                    No Matches Yet
-                                </h2>
-                                <p className="text-gray-300 mb-6">
-                                    Start swiping on the Discover tab to find your perfect study buddy!
-                                </p>
-                                <Button
-                                    onClick={() => setActiveTab('discover')}
-                                    className="bg-[#0a84ff] hover:bg-[#0a84ff]/90"
-                                >
-                                    Start Discovering
-                                </Button>
-                            </Card>
-                        ) : (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                {existingMatches.map((match, index) => {
-                                    const matchedUser = match.otherUser
-                                    const isActive = match.status === 'accepted' || match.status === 'ACTIVE'
+                {/* Mobile switcher */}
+                <div className="relative z-10 flex items-center justify-between gap-3 px-4 pt-3 lg:hidden">
+                    <div className="flex rounded-full bg-muted p-1">
+                        {(['discover', 'matches'] as MobileView[]).map((view) => (
+                            <button
+                                key={view}
+                                type="button"
+                                onClick={() => setMobileView(view)}
+                                className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-bold transition ${mobileView === view ? 'bg-background text-foreground shadow' : 'text-muted-foreground'}`}
+                            >
+                                {view === 'discover' ? <LayoutGrid className="h-4 w-4" /> : <Users className="h-4 w-4" />}
+                                {view === 'discover' ? L('Discover', 'Entdecken') : L('Matches', 'Matches')}
+                                {view === 'matches' && acceptedMatches.length > 0 && (
+                                    <span className="rounded-full bg-[#fd267d] px-1.5 text-[11px] text-white">{acceptedMatches.length}</span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                    <Link href={`/${locale}/messaging`} className="grid h-10 w-10 place-items-center rounded-full bg-muted text-foreground" aria-label={L('Messages', 'Nachrichten')}>
+                        <MessageCircle className="h-5 w-5" />
+                    </Link>
+                </div>
 
-                                    return (
-                                        <motion.div
-                                            key={match.id}
-                                            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            transition={{ delay: index * 0.1 }}
-                                            whileHover={{ y: -8, scale: 1.02 }}
-                                            className="group relative"
-                                        >
-                                            {/* Glow Effect */}
-                                            <div className="absolute -inset-1 bg-[#0a84ff] rounded-3xl opacity-0 group-hover:opacity-20 blur-xl transition-all duration-500"></div>
-
-                                            <Card className="relative bg-black/40 backdrop-blur-xl border-2 border-white/10 group-hover:border-[#0a84ff]/50 rounded-3xl p-6 overflow-hidden transition-all duration-300 shadow-2xl group-hover:shadow-[#0a84ff]/20">
-                                                {/* Animated Background Gradient */}
-                                                <div className="absolute inset-0 bg-gradient-to-br from-[#0a84ff]/0 via-[#0a84ff]/5 to-[#0a84ff]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                                                {/* Decorative Orbs */}
-                                                <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0a84ff]/10 rounded-full blur-3xl group-hover:bg-[#0a84ff]/20 transition-all duration-500"></div>
-                                                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[#0a84ff]/10 rounded-full blur-3xl group-hover:bg-[#0a84ff]/20 transition-all duration-500"></div>
-
-                                                <div className="relative z-10">
-                                                    {/* Header Section */}
-                                                    <div className="flex items-start gap-5 mb-6">
-                                                        {/* Enhanced Profile Image with Ring */}
-                                                        <div className="relative flex-shrink-0">
-                                                            <div className="absolute -inset-1 bg-[#0a84ff] rounded-2xl opacity-75 group-hover:opacity-100 blur group-hover:blur-md transition-all duration-300"></div>
-                                                            <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-3 border-black shadow-2xl ring-4 ring-[#0a84ff]/30 group-hover:ring-[#0a84ff]/50 transition-all duration-300">
-                                                                {matchedUser.profileImage ? (
-                                                                    <Image
-                                                                        src={matchedUser.profileImage}
-                                                                        alt={matchedUser.name}
-                                                                        width={80}
-                                                                        height={80}
-                                                                        className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
-                                                                    />
-                                                                ) : (
-                                                                    <div className="w-full h-full bg-[#0a84ff] flex items-center justify-center">
-                                                                        <Users className="w-10 h-10 text-white" />
-                                                                    </div>
-                                                                )}
-                                                            </div>
-
-                                                            {/* Online Status Indicator */}
-                                                            {isActive && (
-                                                                <div className="absolute -bottom-1 -right-1">
-                                                                    <div className="relative">
-                                                                        <div className="w-6 h-6 bg-green-500 rounded-full border-3 border-gray-900"></div>
-                                                                        <div className="absolute inset-0 w-6 h-6 bg-green-400 rounded-full animate-ping opacity-75"></div>
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-
-                                                        {/* User Info */}
-                                                        <div className="flex-1 min-w-0">
-                                                            <h3 className="text-xl font-bold text-white mb-1 group-hover:text-[#0a84ff] transition-all duration-300 truncate">
-                                                                {matchedUser.name}
-                                                            </h3>
-                                                            <div className="flex items-center gap-2 mb-3">
-                                                                <Clock className="w-3.5 h-3.5 text-gray-500" />
-                                                                <span className="text-sm text-gray-400">
-                                                                    {new Date(match.createdAt).toLocaleDateString('en', {
-                                                                        month: 'short',
-                                                                        day: 'numeric',
-                                                                        year: 'numeric'
-                                                                    })}
-                                                                </span>
-                                                            </div>
-
-                                                            {/* Status and Tags Row */}
-                                                            <div className="flex flex-wrap gap-2">
-                                                                <Badge
-                                                                    className={`${isActive
-                                                                        ? 'bg-green-500/20 text-green-300 border-green-400/40'
-                                                                        : 'bg-gray-500/20 text-gray-300 border-gray-400/40'
-                                                                        } backdrop-blur-sm font-semibold`}
-                                                                >
-                                                                    {isActive ? (
-                                                                        <>
-                                                                            <CheckCircle className="w-3 h-3 mr-1" />
-                                                                            Active
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            <Clock className="w-3 h-3 mr-1" />
-                                                                            {match.status}
-                                                                        </>
-                                                                    )}
-                                                                </Badge>
-
-                                                                {match.chatRoomId && (
-                                                                    <Badge className="bg-blue-500/20 text-blue-300 border-blue-400/40 backdrop-blur-sm">
-                                                                        <MessageCircle className="w-3 h-3 mr-1" />
-                                                                        Chat Active
-                                                                    </Badge>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Shared Interests & Goals in Grid */}
-                                                    {(match.sharedSubjects?.length > 0 || match.sharedGoals?.length > 0) && (
-                                                        <div className="space-y-3 mb-5">
-                                                            {match.sharedSubjects && match.sharedSubjects.length > 0 && (
-                                                                <div className="bg-blue-500/10 backdrop-blur-sm border border-blue-400/20 rounded-2xl p-4 group-hover:bg-blue-500/15 transition-colors duration-300">
-                                                                    <div className="flex items-center gap-2 mb-3">
-                                                                        <div className="p-1.5 bg-blue-500/30 rounded-lg">
-                                                                            <BookOpen className="w-3.5 h-3.5 text-blue-300" />
-                                                                        </div>
-                                                                        <span className="text-sm font-bold text-blue-200">
-                                                                            Shared Subjects
-                                                                        </span>
-                                                                        <span className="ml-auto text-xs text-blue-400 font-semibold">
-                                                                            {match.sharedSubjects.length}
-                                                                        </span>
-                                                                    </div>
-                                                                    <div className="flex flex-wrap gap-2">
-                                                                        {match.sharedSubjects.slice(0, 3).map((subject, idx) => (
-                                                                            <span
-                                                                                key={idx}
-                                                                                className="px-3 py-1.5 bg-blue-500/30 text-blue-200 text-xs rounded-lg font-medium backdrop-blur-sm border border-blue-400/20 hover:bg-blue-500/40 transition-colors"
-                                                                            >
-                                                                                {subject}
-                                                                            </span>
-                                                                        ))}
-                                                                        {match.sharedSubjects.length > 3 && (
-                                                                            <span className="px-3 py-1.5 text-xs text-blue-400 font-medium">
-                                                                                +{match.sharedSubjects.length - 3} more
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-
-                                                            {match.sharedGoals && match.sharedGoals.length > 0 && (
-                                                                <div className="bg-purple-500/10 backdrop-blur-sm border border-purple-400/20 rounded-2xl p-4 group-hover:bg-purple-500/15 transition-colors duration-300">
-                                                                    <div className="flex items-center gap-2 mb-3">
-                                                                        <div className="p-1.5 bg-purple-500/30 rounded-lg">
-                                                                            <Target className="w-3.5 h-3.5 text-purple-300" />
-                                                                        </div>
-                                                                        <span className="text-sm font-bold text-purple-200">
-                                                                            Shared Goals
-                                                                        </span>
-                                                                        <span className="ml-auto text-xs text-purple-400 font-semibold">
-                                                                            {match.sharedGoals.length}
-                                                                        </span>
-                                                                    </div>
-                                                                    <div className="flex flex-wrap gap-2">
-                                                                        {match.sharedGoals.slice(0, 3).map((goal, idx) => (
-                                                                            <span
-                                                                                key={idx}
-                                                                                className="px-3 py-1.5 bg-purple-500/30 text-purple-200 text-xs rounded-lg font-medium backdrop-blur-sm border border-purple-400/20 hover:bg-purple-500/40 transition-colors"
-                                                                            >
-                                                                                {goal}
-                                                                            </span>
-                                                                        ))}
-                                                                        {match.sharedGoals.length > 3 && (
-                                                                            <span className="px-3 py-1.5 text-xs text-purple-400 font-medium">
-                                                                                +{match.sharedGoals.length - 3} more
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
-
-                                                    {/* Action Buttons */}
-                                                    {isActive && (
-                                                        <div className="space-y-3">
-                                                            <motion.button
-                                                                whileHover={{ scale: 1.05, y: -2 }}
-                                                                whileTap={{ scale: 0.95 }}
-                                                                onClick={() => router.push(`/${locale}/study-buddy/workspace?matchId=${match.id}`)}
-                                                                className="w-full flex items-center justify-center gap-2 px-5 py-3.5 bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-xl transition-all font-bold shadow-lg shadow-[#0a84ff]/30 hover:shadow-[#0a84ff]/50 hover:shadow-xl"
-                                                            >
-                                                                <Users className="w-5 h-5" />
-                                                                <span>Open Workspace</span>
-                                                                <Star className="w-4 h-4 ml-auto animate-pulse" />
-                                                            </motion.button>
-
-                                                            <div className="grid grid-cols-3 gap-2">
-                                                                <motion.button
-                                                                    whileHover={{ scale: 1.05, y: -2 }}
-                                                                    whileTap={{ scale: 0.95 }}
-                                                                    onClick={() => router.push(`/${locale}/messaging?userId=${matchedUser.id}`)}
-                                                                    className="flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 hover:text-blue-200 border border-blue-400/30 hover:border-blue-400/50 rounded-xl transition-all font-semibold backdrop-blur-sm shadow-lg hover:shadow-blue-500/20"
-                                                                >
-                                                                    <MessageCircle className="w-4 h-4" />
-                                                                    <span className="text-sm">Chat</span>
-                                                                </motion.button>
-
-                                                                <motion.button
-                                                                    whileHover={{ scale: 1.05, y: -2 }}
-                                                                    whileTap={{ scale: 0.95 }}
-                                                                    onClick={() => handleVideoCall(match)}
-                                                                    className="flex items-center justify-center gap-2 px-3 py-2.5 bg-green-500/20 hover:bg-green-500/30 text-green-300 hover:text-green-200 border border-green-400/30 hover:border-green-400/50 rounded-xl transition-all font-semibold backdrop-blur-sm shadow-lg hover:shadow-green-500/20"
-                                                                >
-                                                                    <Video className="w-4 h-4" />
-                                                                    <span className="text-sm">Video</span>
-                                                                </motion.button>
-
-                                                                <motion.button
-                                                                    whileHover={{ scale: 1.05, y: -2 }}
-                                                                    whileTap={{ scale: 0.95 }}
-                                                                    onClick={() => handleScheduleSession(match)}
-                                                                    className="flex items-center justify-center gap-2 px-3 py-2.5 bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 hover:text-orange-200 border border-orange-400/30 hover:border-orange-400/50 rounded-xl transition-all font-semibold backdrop-blur-sm shadow-lg hover:shadow-orange-500/20"
-                                                                >
-                                                                    <CalendarPlus className="w-4 h-4" />
-                                                                    <span className="text-sm">Schedule</span>
-                                                                </motion.button>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {/* Pending State */}
-                                                    {!isActive && match.status === 'pending' && (
-                                                        <div className="bg-yellow-500/10 backdrop-blur-sm border border-yellow-400/30 rounded-xl p-4 text-center">
-                                                            <Clock className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-                                                            <p className="text-sm text-yellow-300 font-medium">
-                                                                Waiting for response...
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </Card>
-                                        </motion.div>
-                                    )
-                                })}
-                            </div>
+                {mobileView === 'matches' ? (
+                    <div className="relative z-10 flex-1 overflow-y-auto p-4 lg:hidden">
+                        <h2 className="mb-3 text-lg font-extrabold text-foreground">{L('Your matches', 'Deine Matches')}</h2>
+                        {matchesPanel('grid-cols-3 sm:grid-cols-4')}
+                        {acceptedMatches.length > 0 && (
+                            <>
+                                <h2 className="mb-2 mt-6 text-lg font-extrabold text-foreground">{L('Messages', 'Nachrichten')}</h2>
+                                {messagesPanel}
+                            </>
                         )}
                     </div>
-                )}
-            </div>
+                ) : null}
 
-            {/* Video Call Modal */}
-            {showVideoCallModal && selectedVideoCallMatch && userProfile?.id && (
+                <div className={`relative z-10 min-h-0 flex-1 flex-col items-center px-4 pb-5 pt-4 lg:flex lg:pt-8 ${mobileView === 'matches' ? 'hidden' : 'flex'}`}>
+                    <div className="flex h-full w-full max-w-[400px] flex-col" style={{ maxHeight: 760 }}>
+                        <SwipeDeck
+                            candidates={loadingDeck ? [] : deck}
+                            onSwipe={handleSwipe}
+                            onRewind={handleRewind}
+                            canRewind={passHistory.length > 0}
+                            emptyState={emptyState}
+                        />
+                    </div>
+                </div>
+            </main>
+
+            {/* Match details sheet */}
+            {selectedMatch && (
+                <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6" role="dialog" aria-modal="true">
+                    <div className="animate-in-fade absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedMatch(null)} />
+                    <div className="animate-in-slide-down relative w-full max-w-sm overflow-hidden rounded-t-3xl bg-card shadow-2xl sm:rounded-3xl">
+                        <div className="relative h-72">
+                            <BuddyPhoto name={selectedMatch.otherUser.name} src={selectedMatch.otherUser.profileImage} initialsClassName="text-[96px]" />
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5 pt-20">
+                                <h3 className="text-[28px] font-extrabold leading-tight text-white">
+                                    {firstNameOf(selectedMatch.otherUser.name)}
+                                    {selectedMatch.otherUser.skillLevel && (
+                                        <span className="ml-2 text-[20px] font-light">{formatSkillLevel(selectedMatch.otherUser.skillLevel)}</span>
+                                    )}
+                                </h3>
+                                <p className="text-sm text-white/80">
+                                    {L('Matched', 'Gematcht')} {new Date(selectedMatch.createdAt).toLocaleDateString(isGerman ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric' })}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedMatch(null)}
+                                className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/40 text-white backdrop-blur"
+                                aria-label={L('Close', 'Schließen')}
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+                        <div className="space-y-2.5 p-5">
+                            {selectedMatch.otherUser.interests.length > 0 && (
+                                <div className="mb-3 flex flex-wrap gap-1.5">
+                                    {selectedMatch.otherUser.interests.slice(0, 6).map((interest) => (
+                                        <span key={interest} className="rounded-full border border-border px-3 py-1 text-[13px] font-semibold text-foreground">
+                                            {interest}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => openChat(selectedMatch.otherUser.id)}
+                                className="flex h-12 w-full items-center justify-center gap-2 rounded-full font-bold text-white shadow-lg transition hover:brightness-110"
+                                style={{ background: TINDER_GRADIENT }}
+                            >
+                                <MessageCircle className="h-5 w-5" /> {L('Send a message', 'Nachricht senden')}
+                            </button>
+                            <div className="grid grid-cols-3 gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setVideoCallMatch(selectedMatch)
+                                        setSelectedMatch(null)
+                                    }}
+                                    className="flex flex-col items-center gap-1 rounded-2xl border border-border py-3 text-xs font-semibold text-foreground transition hover:bg-foreground/[0.05]"
+                                >
+                                    <Video className="h-5 w-5 text-[#1be4a1]" /> {L('Video call', 'Videoanruf')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setScheduleMatch(selectedMatch)
+                                        setSelectedMatch(null)
+                                    }}
+                                    className="flex flex-col items-center gap-1 rounded-2xl border border-border py-3 text-xs font-semibold text-foreground transition hover:bg-foreground/[0.05]"
+                                >
+                                    <CalendarPlus className="h-5 w-5 text-[#f5b748]" /> {L('Schedule', 'Planen')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => router.push(`/${locale}/study-buddy/workspace?matchId=${selectedMatch.id}`)}
+                                    className="flex flex-col items-center gap-1 rounded-2xl border border-border py-3 text-xs font-semibold text-foreground transition hover:bg-foreground/[0.05]"
+                                >
+                                    <Users className="h-5 w-5 text-[#1786ff]" /> {L('Workspace', 'Workspace')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <MatchCelebration
+                candidate={celebrating}
+                viewerName={viewerName}
+                viewerImage={viewerImage}
+                onMessage={() => {
+                    const target = celebrating
+                    setCelebrating(null)
+                    if (target) openChat(target.id)
+                }}
+                onClose={() => setCelebrating(null)}
+            />
+
+            {videoCallMatch && viewer?.id && (
                 <VideoCallInitiator
                     studyBuddy={{
-                        id: selectedVideoCallMatch.otherUser.id,
-                        name: selectedVideoCallMatch.otherUser.name,
-                        arabicName: selectedVideoCallMatch.otherUser.arabicName || undefined,
-                        profileImage: selectedVideoCallMatch.otherUser.profileImage || undefined,
-                        isOnline: true
+                        id: videoCallMatch.otherUser.id,
+                        name: videoCallMatch.otherUser.name,
+                        arabicName: videoCallMatch.otherUser.arabicName || undefined,
+                        profileImage: videoCallMatch.otherUser.profileImage || undefined,
+                        isOnline: true,
                     }}
-                    currentUserId={userProfile.id}
-                    onClose={() => {
-                        setShowVideoCallModal(false)
-                        setSelectedVideoCallMatch(null)
-                    }}
+                    currentUserId={viewer.id}
+                    onClose={() => setVideoCallMatch(null)}
                 />
             )}
 
-            {/* Session Scheduler Modal */}
-            {showSessionModal && selectedSessionMatch && (
+            {scheduleMatch && (
                 <SessionSchedulerModal
-                    isOpen={showSessionModal}
-                    onClose={() => {
-                        setShowSessionModal(false)
-                        setSelectedSessionMatch(null)
-                    }}
+                    isOpen={!!scheduleMatch}
+                    onClose={() => setScheduleMatch(null)}
                     studyBuddy={{
-                        id: selectedSessionMatch.otherUser.id,
-                        name: selectedSessionMatch.otherUser.name,
-                        arabicName: selectedSessionMatch.otherUser.arabicName || undefined,
-                        profileImage: selectedSessionMatch.otherUser.profileImage || undefined,
+                        id: scheduleMatch.otherUser.id,
+                        name: scheduleMatch.otherUser.name,
+                        arabicName: scheduleMatch.otherUser.arabicName || undefined,
+                        profileImage: scheduleMatch.otherUser.profileImage || undefined,
                     }}
-                    matchId={selectedSessionMatch.id}
+                    matchId={scheduleMatch.id}
                 />
             )}
         </div>
+    )
+}
+
+export default function StudyBuddyPage() {
+    return (
+        <Suspense fallback={<div className="h-[calc(100dvh-52px)] bg-background" />}>
+            <StudyBuddyScreen />
+        </Suspense>
     )
 }

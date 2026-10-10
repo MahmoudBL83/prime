@@ -3,22 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { unstable_cache } from 'next/cache'
-
-const TIER_RANK: Record<string, number> = {
-    BRONZE: 0,
-    SILVER: 1,
-    GOLD: 2,
-    VIP: 3,
-}
-
-function subscriptionTier(subscription: { type: string; metadata: string | null }): string {
-    if (subscription.type !== 'CATEGORY_C' || !subscription.metadata) return 'BRONZE'
-    try {
-        return JSON.parse(subscription.metadata).tier || 'BRONZE'
-    } catch {
-        return 'BRONZE'
-    }
-}
+import { canViewPost, getViewerAccess, requiredRankForPost } from '@/lib/content-access'
 
 /**
  * The post list itself is the same for every viewer (access is resolved per
@@ -83,7 +68,6 @@ const getRecentPosts = unstable_cache(
 
 export async function GET(request: NextRequest) {
     try {
-        const now = new Date()
         const limit = Math.min(100, Math.max(1, parseInt(request.nextUrl.searchParams.get('limit') || '50') || 50))
 
         const [session, posts] = await Promise.all([
@@ -91,29 +75,18 @@ export async function GET(request: NextRequest) {
             getRecentPosts(limit),
         ])
 
-        // One query for all of the viewer's active subscriptions instead of one per post
-        const tierByChannel = new Map<string, number>()
-        const lockedChannelIds = [...new Set(posts.filter((p) => p.tier !== 'BRONZE').map((p) => p.channelId))]
-        if (session?.user?.id && lockedChannelIds.length > 0) {
-            const subscriptions = await prisma.subscription.findMany({
-                where: {
-                    userId: session.user.id,
-                    channelId: { in: lockedChannelIds },
-                    status: 'active',
-                    OR: [{ endDate: null }, { endDate: { gte: now } }],
-                },
-                select: { channelId: true, type: true, metadata: true },
-            })
-            for (const subscription of subscriptions) {
-                if (!subscription.channelId) continue
-                const rank = TIER_RANK[subscriptionTier(subscription)] ?? 0
-                tierByChannel.set(subscription.channelId, Math.max(rank, tierByChannel.get(subscription.channelId) ?? -1))
-            }
-        }
+        // One query for all of the viewer's subscriptions, only if anything is locked
+        const viewerId = session?.user?.id
+        const needsAccessCheck = posts.some((post) => requiredRankForPost(post.tier) > 0)
+        const access = needsAccessCheck ? await getViewerAccess(viewerId) : null
 
         const postsWithAccess = posts.map((post) => {
-            const requiredRank = TIER_RANK[post.tier] ?? 0
-            const hasAccess = requiredRank === 0 || (tierByChannel.get(post.channelId) ?? -1) >= requiredRank
+            const creator = post.channel.creator
+            const hasAccess = canViewPost(
+                post.tier,
+                access ? access.rankFor(creator.id, post.channelId) : -1,
+                !!viewerId && creator.userId === viewerId
+            )
 
             if (hasAccess) return { ...post, hasAccess }
 
@@ -122,6 +95,8 @@ export async function GET(request: NextRequest) {
                 ...post,
                 hasAccess,
                 mediaUrl: null,
+                // A blurred image is still the image - only video teaser thumbnails are safe to send
+                thumbnailUrl: post.type === 'VIDEO' ? post.thumbnailUrl : null,
                 content: post.content.length > 140 ? `${post.content.slice(0, 140)}…` : post.content,
                 contentAr: post.contentAr && post.contentAr.length > 140 ? `${post.contentAr.slice(0, 140)}…` : post.contentAr,
             }

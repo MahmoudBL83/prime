@@ -49,6 +49,8 @@ interface CompatibilityScore {
   sharedInterests: string[]
   sharedGoals: string[]
   reasonsForMatch: string[]
+  /** The candidate already liked the current user (liking back creates a match) */
+  likedYou?: boolean
 }
 
 export class EnhancedMatchingService {
@@ -57,85 +59,67 @@ export class EnhancedMatchingService {
     try {
       console.log('🔍 Enhanced Matching Service - Finding matches for user ID:', userId)
       
-      // Get current user with preferences
-      const currentUser = await prisma.user.findUnique({
-        where: { id: userId },
-        include: {
-          studyPreferences: true,
-        },
-      })
+      // The three lookups are independent - run them in one round trip
+      const [currentUser, potentialMatches, existingMatches] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: userId },
+          include: {
+            studyPreferences: true,
+          },
+        }),
+        // All potential matches (other learners who finished onboarding)
+        prisma.user.findMany({
+          where: {
+            id: { not: userId },
+            role: 'LEARNER',
+            onboardingCompleted: true,
+          },
+          include: {
+            studyPreferences: true,
+          },
+        }),
+        prisma.studyBuddyMatch.findMany({
+          where: {
+            OR: [
+              { user1Id: userId },
+              { user2Id: userId },
+            ],
+          },
+          select: {
+            user1Id: true,
+            user2Id: true,
+            status: true,
+          },
+        }),
+      ])
 
       if (!currentUser) {
-        console.error('❌ Enhanced Matching Service - User not found for ID:', userId)
-        
-        // Let's also check if this user exists with a different ID format
-        const userByEmail = await prisma.user.findFirst({
-          where: { 
-            OR: [
-              { email: { contains: userId } },
-              { id: { contains: userId } }
-            ]
-          },
-          select: { id: true, email: true, name: true }
-        })
-        
-        if (userByEmail) {
-          console.error('❌ Found similar user:', userByEmail)
-        }
-        
+        console.error('Enhanced Matching Service - user not found:', userId)
         throw new Error('User not found')
       }
 
-      console.log('✅ Enhanced Matching Service - Found user:', {
-        id: currentUser.id,
-        email: currentUser.email,
-        name: currentUser.name,
-        role: currentUser.role,
-        onboardingCompleted: currentUser.onboardingCompleted,
-        hasPreferences: !!currentUser.studyPreferences
-      })
+      // Hide people the user already swiped right on and settled matches.
+      // Keep people who liked the user and are waiting for an answer (like Tinder).
+      const excludedUserIds = new Set<string>()
+      const likedYouIds = new Set<string>()
+      for (const match of existingMatches) {
+        const otherId = match.user1Id === userId ? match.user2Id : match.user1Id
+        if (match.user2Id === userId && match.status === 'pending') {
+          likedYouIds.add(otherId)
+        } else {
+          excludedUserIds.add(otherId)
+        }
+      }
 
-      // Get all potential matches (other learners, excluding current user)
-      const potentialMatches = await prisma.user.findMany({
-        where: {
-          id: { not: userId },
-          role: 'LEARNER',
-          onboardingCompleted: true,
-        },
-        include: {
-          studyPreferences: true,
-        },
-      })
-
-      // Get existing matches to exclude them
-      const existingMatches = await prisma.studyBuddyMatch.findMany({
-        where: {
-          OR: [
-            { user1Id: userId },
-            { user2Id: userId },
-          ],
-        },
-        select: {
-          user1Id: true,
-          user2Id: true,
-        },
-      })
-
-      const excludedUserIds = new Set(
-        existingMatches.map(match =>
-          match.user1Id === userId ? match.user2Id : match.user1Id
-        )
-      )
-
-      // Filter out users with existing matches
       const availableMatches = potentialMatches.filter(
         user => !excludedUserIds.has(user.id)
       )
 
       // Calculate compatibility scores
-      const compatibilityScores = availableMatches.map(user =>
-        this.calculateCompatibility(currentUser as any, user as any)
-      )
+      const compatibilityScores = availableMatches.map(user => ({
+        ...this.calculateCompatibility(currentUser as any, user as any),
+        likedYou: likedYouIds.has(user.id),
+      }))
 
       // Sort by total score and return top matches
       return compatibilityScores

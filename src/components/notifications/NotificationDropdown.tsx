@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Bell, Check, CheckCheck, Clock, Users, MessageCircle, Calendar, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 
 interface Notification {
@@ -22,6 +22,8 @@ export function NotificationDropdown() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const params = useParams()
+  const locale = (params?.locale as string) || 'en'
 
   useEffect(() => {
     fetchNotifications()
@@ -67,7 +69,10 @@ export function NotificationDropdown() {
 
     // Navigate to the relevant page
     if (notification.data?.actionUrl) {
-      router.push(notification.data.actionUrl)
+      // Stored links have no locale prefix; keep the user's language
+      const url: string = notification.data.actionUrl
+      const localized = url.startsWith('/') && !/^\/(en|de)(\/|\?|$)/.test(url) ? `/${locale}${url}` : url
+      router.push(localized)
       setIsOpen(false)
     }
   }

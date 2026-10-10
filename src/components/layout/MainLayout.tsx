@@ -22,7 +22,18 @@ export function MainLayout({ children }: MainLayoutProps) {
     if (isAdminRoute || isSignatureCoursesPage || isVideoPlayerPage || isMessagingPage || isCreatorRoute) {
         return <>{children}</>;
     }
-    
+
+    // Full-height app screens (Tinder-style swipe deck) keep the top bar but no footer
+    const isAppScreen = /^\/[a-z]{2}\/study-buddy\/?$/.test(pathname || '');
+    if (isAppScreen) {
+        return (
+            <div className="min-h-[100dvh] bg-background">
+                <Navigation />
+                <main className="pt-[52px]">{children}</main>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen flex flex-col bg-background">
             <Navigation />

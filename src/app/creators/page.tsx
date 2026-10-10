@@ -362,3 +362,5 @@ export default function CreatorsPage() {
 
 // Prevent static generation for pages that use session data
 export const dynamic = 'force-dynamic'
+
+export const runtime = 'edge'

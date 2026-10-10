@@ -53,6 +53,13 @@ npm run db:seed
 npm run dev
 ```
 
+## ⚡ Performance & deployment notes
+- **Keep the app and the database in the same region.** The Neon database is in `us-east-1`; deploy the Vercel project to `iad1` (Washington, D.C.). Every query is a network round trip, so cross-region deployments are many times slower.
+- **Neon auto-suspend:** after ~5 minutes idle the first request wakes the database (a few seconds). Disable auto-suspend on paid plans if that matters. `src/lib/prisma.ts` adds connect/socket timeouts and retries dropped connections automatically.
+- **Caching:** the public mentors list (`/api/creators`) and feed (`/api/channel-posts/feed`) are cached for 60s / 20s and invalidated automatically whenever posts, creators or likes change.
+- **Sensitive columns** (`User.passwordHash`, creator KYC/bank fields) are omitted from every Prisma query by default. Opt in explicitly with `select` or `omit: INCLUDE_SENSITIVE_CREATOR_FIELDS` (admin only).
+- **Post visibility** rules live in `src/lib/content-access.ts` (`BRONZE`/`PUBLIC` posts are free; everything else needs a subscription).
+
 ## 📱 Demo Features
 - Responsive design for all devices
 - Real-time notifications

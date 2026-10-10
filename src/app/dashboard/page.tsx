@@ -28,3 +28,5 @@ export default function DashboardPage() {
         </div>
     )
 }
+
+export const runtime = 'edge'

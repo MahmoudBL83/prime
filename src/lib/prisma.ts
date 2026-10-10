@@ -127,14 +127,24 @@ const FEED_MODELS = new Set(['ChannelPost', 'PostLike', 'PostComment', 'CreatorC
 const CREATOR_MODELS = new Set(['Creator', 'CreatorChannel', 'CreatorAnalytics', 'Course', 'ChannelPost'])
 const PUBLIC_PROFILE_FIELDS = ['name', 'arabicName', 'profileImage', 'bio']
 
+// Updates that only bump counters (e.g. a post being viewed) don't change what lists show
+const COUNTER_ONLY_FIELDS = new Set(['viewCount', 'totalViews', 'updatedAt'])
+
 function invalidateCachedLists(model: string, args: unknown) {
+    const data = (args as { data?: unknown } | undefined)?.data
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+        const keys = Object.keys(data)
+        if (keys.length > 0 && keys.every((key) => COUNTER_ONLY_FIELDS.has(key))) return
+    }
+
     const tags: string[] = []
     if (FEED_MODELS.has(model)) tags.push('feed')
     if (CREATOR_MODELS.has(model)) tags.push('creators')
     if (model === 'User') {
         // Only profile fields shown on cards matter (not e.g. last-seen timestamps)
-        const data = (args as { data?: Record<string, unknown> } | undefined)?.data
-        if (data && PUBLIC_PROFILE_FIELDS.some((field) => field in data)) tags.push('feed', 'creators')
+        if (data && typeof data === 'object' && PUBLIC_PROFILE_FIELDS.some((field) => field in data)) {
+            tags.push('feed', 'creators')
+        }
     }
     if (tags.length === 0) return
     try {
