@@ -57,26 +57,35 @@ export class EnhancedMatchingService {
   
   static async findMatches(userId: string, limit: number = 20): Promise<CompatibilityScore[]> {
     try {
-      console.log('🔍 Enhanced Matching Service - Finding matches for user ID:', userId)
-      
-      // The three lookups are independent - run them in one round trip
-      const [currentUser, potentialMatches, existingMatches] = await Promise.all([
+      // Keep the scoring pool bounded so discovery stays responsive as the
+      // learner population grows. Newer profiles are shown first.
+      const candidateLimit = Math.min(500, Math.max(limit * 10, 100))
+      const matchingFields = {
+        id: true,
+        interests: true,
+        goals: true,
+        skillLevel: true,
+        studyPreferences: {
+          select: {
+            communicationStyle: true,
+            responseTime: true,
+            languagePreference: true,
+            learningStyle: true,
+            studyEnvironment: true,
+            sessionStructure: true,
+            weeklyAvailability: true,
+            subjectExpertise: true,
+            subjectsToLearn: true,
+            groupSizePreference: true,
+            sessionFrequency: true,
+          },
+        },
+      } as const
+
+      const [currentUser, existingMatches, userBlocks, messageBlocks] = await Promise.all([
         prisma.user.findUnique({
           where: { id: userId },
-          include: {
-            studyPreferences: true,
-          },
-        }),
-        // All potential matches (other learners who finished onboarding)
-        prisma.user.findMany({
-          where: {
-            id: { not: userId },
-            role: 'LEARNER',
-            onboardingCompleted: true,
-          },
-          include: {
-            studyPreferences: true,
-          },
+          select: matchingFields,
         }),
         prisma.studyBuddyMatch.findMany({
           where: {
@@ -91,6 +100,14 @@ export class EnhancedMatchingService {
             status: true,
           },
         }),
+        prisma.userBlock.findMany({
+          where: { OR: [{ blockerId: userId }, { blockedId: userId }] },
+          select: { blockerId: true, blockedId: true },
+        }),
+        prisma.blockedUser.findMany({
+          where: { OR: [{ userId }, { blockedUserId: userId }] },
+          select: { userId: true, blockedUserId: true },
+        }),
       ])
 
       if (!currentUser) {
@@ -101,6 +118,8 @@ export class EnhancedMatchingService {
       // Hide people the user already swiped right on and settled matches.
       // Keep people who liked the user and are waiting for an answer (like Tinder).
       const excludedUserIds = new Set<string>()
+      for (const block of userBlocks) excludedUserIds.add(block.blockerId === userId ? block.blockedId : block.blockerId)
+      for (const block of messageBlocks) excludedUserIds.add(block.userId === userId ? block.blockedUserId : block.userId)
       const likedYouIds = new Set<string>()
       for (const match of existingMatches) {
         const otherId = match.user1Id === userId ? match.user2Id : match.user1Id
@@ -111,9 +130,29 @@ export class EnhancedMatchingService {
         }
       }
 
-      const availableMatches = potentialMatches.filter(
-        user => !excludedUserIds.has(user.id)
-      )
+      const incomingIds = [...likedYouIds].filter(id => !excludedUserIds.has(id))
+      const incomingMatches = incomingIds.length ? await prisma.user.findMany({
+        where: {
+          id: { in: incomingIds },
+          role: 'LEARNER',
+          onboardingCompleted: true,
+          loginDisabled: false,
+        },
+        select: matchingFields,
+        take: Math.min(incomingIds.length, candidateLimit),
+      }) : []
+      const otherMatches = await prisma.user.findMany({
+        where: {
+          id: { notIn: [userId, ...excludedUserIds, ...incomingIds] },
+          role: 'LEARNER',
+          onboardingCompleted: true,
+          loginDisabled: false,
+        },
+        select: matchingFields,
+        orderBy: { createdAt: 'desc' },
+        take: Math.max(0, candidateLimit - incomingMatches.length),
+      })
+      const availableMatches = [...incomingMatches, ...otherMatches]
 
       // Calculate compatibility scores
       const compatibilityScores = availableMatches.map(user => ({

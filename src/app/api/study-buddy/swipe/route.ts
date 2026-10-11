@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { NotificationService } from '@/services/NotificationService'
 
 const swipeActionSchema = z.object({
-    targetUserId: z.string(),
+    targetUserId: z.string().min(1),
     // superlike = like + the other learner is told right away (like Tinder)
     action: z.enum(['like', 'superlike', 'pass']),
 })
@@ -35,9 +35,9 @@ export async function POST(req: NextRequest) {
         }
 
         // Target must be a learner; also load any existing match between the two users
-        const [targetUser, existingMatch] = await Promise.all([
-            prisma.user.findUnique({
-                where: { id: targetUserId, role: 'LEARNER' },
+        const [targetUser, existingMatch, userBlock, messageBlock] = await Promise.all([
+            prisma.user.findFirst({
+                where: { id: targetUserId, role: 'LEARNER', onboardingCompleted: true, loginDisabled: false },
                 select: { id: true, name: true },
             }),
             prisma.studyBuddyMatch.findFirst({
@@ -48,10 +48,27 @@ export async function POST(req: NextRequest) {
                     ],
                 },
             }),
+            prisma.userBlock.findFirst({
+                where: { OR: [
+                    { blockerId: session.user.id, blockedId: targetUserId },
+                    { blockerId: targetUserId, blockedId: session.user.id },
+                ] },
+                select: { id: true },
+            }),
+            prisma.blockedUser.findFirst({
+                where: { OR: [
+                    { userId: session.user.id, blockedUserId: targetUserId },
+                    { userId: targetUserId, blockedUserId: session.user.id },
+                ] },
+                select: { id: true },
+            }),
         ])
 
         if (!targetUser) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 })
+        }
+        if (userBlock || messageBlock || existingMatch?.status === 'blocked') {
+            return NextResponse.json({ error: 'This profile is unavailable' }, { status: 403 })
         }
 
         if (action === 'pass') {
@@ -123,7 +140,6 @@ export async function POST(req: NextRequest) {
             isMutual: false,
         })
 
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     } catch (error) {
         console.error('Study buddy swipe error:', error)
         return NextResponse.json(
