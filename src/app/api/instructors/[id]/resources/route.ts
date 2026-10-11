@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { canViewPost, getViewerAccess } from '@/lib/content-access'
 
 export async function GET(
     req: NextRequest,
@@ -14,6 +15,12 @@ export async function GET(
         }
 
         const { id: creatorId } = await params;
+        const creator = await prisma.creator.findUnique({
+            where: { id: creatorId },
+            select: { userId: true },
+        })
+        if (!creator) return NextResponse.json({ error: 'Instructor not found' }, { status: 404 })
+        const isOwner = creator.userId === session.user.id
 
         // Get educational resources for this instructor
         const [digitalResources, courseMaterials] = await Promise.all([
@@ -21,6 +28,7 @@ export async function GET(
             prisma.channelPost.findMany({
                 where: {
                     channel: { creatorId },
+                    publishedAt: { lte: new Date() },
                     OR: [
                         { mediaUrl: { not: null } },
                         { type: { in: ['VIDEO', 'IMAGE', 'DOCUMENT'] } }
@@ -28,6 +36,7 @@ export async function GET(
                 },
                 select: {
                     id: true,
+                    channelId: true,
                     title: true,
                     content: true,
                     mediaUrl: true,
@@ -55,10 +64,7 @@ export async function GET(
                     duration: true,
                     lessons: {
                         select: {
-                            id: true,
-                            title: true,
-                            videoUrl: true,
-                            resources: true
+                            id: true
                         }
                     }
                 },
@@ -66,18 +72,27 @@ export async function GET(
             })
         ])
 
+        const access = isOwner ? null : await getViewerAccess(session.user.id)
+
         // Process resources
         const resources = {
-            digitalResources: digitalResources.map((post: any) => ({
-                id: post.id,
-                title: post.title,
-                description: post.content?.substring(0, 200) + '...',
-                type: 'post',
-                mediaUrl: post.mediaUrl,
-                postType: post.type,
-                createdAt: post.createdAt,
-                tier: post.tier
-            })),
+            digitalResources: digitalResources.map((post) => {
+                const allowed = canViewPost(
+                    post.tier,
+                    access?.rankFor(creatorId, post.channelId) ?? -1,
+                    isOwner
+                )
+                return {
+                    id: post.id,
+                    title: post.title,
+                    description: allowed ? post.content?.substring(0, 200) + '...' : '',
+                    type: 'post',
+                    mediaUrl: allowed ? post.mediaUrl : null,
+                    postType: post.type,
+                    createdAt: post.createdAt,
+                    tier: post.tier,
+                }
+            }),
             courseMaterials: courseMaterials.map((course: any) => ({
                 id: course.id,
                 title: course.title,

@@ -102,7 +102,9 @@ export async function GET(request: NextRequest) {
             }
         })
 
-        return NextResponse.json({ posts: postsWithAccess })
+        return NextResponse.json({ posts: postsWithAccess }, {
+            headers: { 'Cache-Control': 'private, no-store' },
+        })
     } catch (error) {
         console.error('Error fetching posts:', error)
         return NextResponse.json(

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { requiredRankForPost } from '@/lib/content-access'
 
 /**
  * Global Search API
@@ -172,14 +173,27 @@ export async function GET(request: NextRequest) {
                     OR: [
                         { title: { contains: searchQuery } },
                         { titleAr: { contains: searchQuery } },
-                        { content: { contains: searchQuery } },
+                        {
+                            content: { contains: searchQuery },
+                            tier: { in: ['BRONZE', 'FREE', 'PUBLIC'] },
+                        },
                     ]
                 },
-                include: {
+                select: {
+                    id: true,
+                    title: true,
+                    titleAr: true,
+                    content: true,
+                    type: true,
+                    mediaUrl: true,
+                    thumbnailUrl: true,
+                    tier: true,
+                    publishedAt: true,
                     channel: {
-                        include: {
+                        select: {
+                            name: true,
                             creator: {
-                                include: {
+                                select: {
                                     user: { select: { name: true, arabicName: true, profileImage: true } }
                                 }
                             }
@@ -195,10 +209,13 @@ export async function GET(request: NextRequest) {
                 type: 'resource',
                 title: post.title,
                 titleAr: post.titleAr,
-                content: post.content?.substring(0, 150) + '...',
+                content: requiredRankForPost(post.tier) === 0
+                    ? post.content?.substring(0, 150) + '...'
+                    : '',
                 postType: post.type,
-                mediaUrl: post.mediaUrl,
-                thumbnailUrl: post.thumbnailUrl,
+                mediaUrl: requiredRankForPost(post.tier) === 0 ? post.mediaUrl : null,
+                thumbnailUrl: requiredRankForPost(post.tier) === 0 || post.type === 'VIDEO'
+                    ? post.thumbnailUrl : null,
                 tier: post.tier,
                 publishedAt: post.publishedAt,
                 creator: {

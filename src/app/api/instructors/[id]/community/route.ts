@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { canViewPost, getViewerAccess } from '@/lib/content-access'
 
 export async function GET(
     req: NextRequest,
@@ -14,16 +15,22 @@ export async function GET(
         }
 
         const { id: creatorId } = await params;
+        const creator = await prisma.creator.findUnique({ where: { id: creatorId }, select: { userId: true } })
+        if (!creator) return NextResponse.json({ error: 'Instructor not found' }, { status: 404 })
+        const isOwner = creator.userId === session.user.id
+        const visibleWhere = {
+            channel: { creatorId },
+            ...(isOwner ? {} : { publishedAt: { lte: new Date() } }),
+        }
 
         // Get community data for this instructor - posts from their channel
         const [communityPosts, communityStats] = await Promise.all([
             // Recent community posts
             prisma.channelPost.findMany({
-                where: {
-                    channel: { creatorId }
-                },
+                where: visibleWhere,
                 select: {
                     id: true,
+                    channelId: true,
                     title: true,
                     content: true,
                     createdAt: true,
@@ -60,9 +67,7 @@ export async function GET(
             
             // Community engagement stats
             prisma.channelPost.aggregate({
-                where: {
-                    channel: { creatorId }
-                },
+                where: visibleWhere,
                 _count: { id: true },
                 _sum: { viewCount: true }
             })
@@ -74,8 +79,14 @@ export async function GET(
         const totalLikes = communityPosts.reduce((sum: number, post: any) => sum + (post.likes?.length || 0), 0)
         const totalComments = communityPosts.reduce((sum: number, post: any) => sum + (post.comments?.length || 0), 0)
 
+        const access = isOwner ? null : await getViewerAccess(session.user.id)
+        const visiblePosts = communityPosts.map((post) => {
+            const allowed = canViewPost(post.tier, access?.rankFor(creatorId, post.channelId) ?? -1, isOwner)
+            return allowed ? post : { ...post, content: '', comments: [] }
+        })
+
         const communityData = {
-            posts: communityPosts,
+            posts: visiblePosts,
             stats: {
                 totalPosts,
                 totalViews,
@@ -85,7 +96,7 @@ export async function GET(
             }
         }
 
-        return NextResponse.json(communityData)
+        return NextResponse.json(communityData, { headers: { 'Cache-Control': 'private, no-store' } })
     } catch (error) {
         console.error('Get community data error:', error)
         return NextResponse.json(

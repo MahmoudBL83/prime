@@ -2,7 +2,7 @@
 
 import { Bell as LucideBell, Bookmark as LucideBookmark, Calendar as LucideCalendar, CalendarCheck as LucideCalendarCheck, CheckCircle as LucideCheckCircle, Crown as LucideCrown, Edit as LucideEdit, Eye as LucideEye, Film as LucideFilm, Grid as LucideGrid, Heart as LucideHeart, Home as LucideHome, ImageIcon as LucideImageIcon, List as LucideList, MessageCircle as LucideMessageCircle, MessageSquare as LucideMessageSquare, Play as LucidePlay, Search as LucideSearch, Sparkles as LucideSparkles, Star as LucideStar, TrendingUp as LucideTrendingUp, Upload as LucideUpload, Users as LucideUsers, Video as LucideVideo, X as LucideX, BarChart3 as LucideBarChart3, Trash2 as LucideTrash2, Loader2 as LucideLoader2 } from 'lucide-react'
 
-import { useState, useEffect, useMemo, useCallback, memo, lazy, Suspense } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef, memo, lazy, Suspense } from 'react'
 import { useRouter, useParams, usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useTheme } from 'next-themes'
@@ -332,6 +332,8 @@ export default function OnlyFansStyleMentorsPage() {
     const [filteredCreators, setFilteredCreators] = useState<Creator[]>([])
     const [loading, setLoading] = useState(true) // Start with loading true
     const [loadingPosts, setLoadingPosts] = useState(true) // Separate loading state for posts
+    const [feedViewerId, setFeedViewerId] = useState<string | undefined>(undefined)
+    const feedRequestId = useRef(0)
     const [searchQuery, setSearchQuery] = useState('')
     const [filterType, setFilterType] = useState<'all' | 'trending' | 'new' | 'top'>('all')
     const [activeView, setActiveView] = useState<'feed' | 'subscriptions' | 'bookmarks' | 'creators' | 'profile'>('feed')
@@ -370,6 +372,18 @@ export default function OnlyFansStyleMentorsPage() {
     const [openPostMenuId, setOpenPostMenuId] = useState<string | null>(null) // Which post's three-dot menu is open
     const [hiddenUserIds, setHiddenUserIds] = useState<string[]>([]) // Users whose posts are hidden
     const [userLists, setUserLists] = useState<any[]>([]) // User's custom lists
+
+    useEffect(() => {
+        // Remove paid post bodies saved by older versions of this page.
+        try {
+            for (let index = localStorage.length - 1; index >= 0; index--) {
+                const key = localStorage.key(index)
+                if (key?.startsWith(CACHE_KEYS.POSTS)) localStorage.removeItem(key)
+            }
+        } catch {
+            // Storage may be disabled in private browsing.
+        }
+    }, [])
 
     useEffect(() => {
         fetchCreators()
@@ -758,31 +772,27 @@ export default function OnlyFansStyleMentorsPage() {
     }, [filterType, isArabic, viewerId])
 
     const fetchPosts = useCallback(async () => {
-        // Show the cached feed instantly, then refresh it in the background
-        const cacheKey = `${CACHE_KEYS.POSTS}_${viewerId || 'guest'}`
-        const cachedData = getCachedData(cacheKey)
-        if (cachedData) {
-            setPosts(cachedData)
-            setLoadingPosts(false)
-        } else {
-            setLoadingPosts(true)
-        }
+        const requestId = ++feedRequestId.current
+        // Paid post bodies must not be persisted in localStorage or shown after a
+        // viewer changes account. The server caches only the shared post list.
+        setLoadingPosts(true)
 
         try {
-            const response = await fetch('/api/channel-posts/feed')
+            const response = await fetch('/api/channel-posts/feed', { cache: 'no-store' })
             if (response.ok) {
                 const data = await response.json()
                 const postsData = data.posts || []
-                setPosts(postsData)
-                // Cache the response
-                setCachedData(cacheKey, postsData)
+                if (requestId === feedRequestId.current) {
+                    setPosts(postsData)
+                    setFeedViewerId(viewerId)
+                }
             }
         } catch (error) {
             console.error('Failed to fetch posts:', error)
         } finally {
-            setLoadingPosts(false)
+            if (requestId === feedRequestId.current) setLoadingPosts(false)
         }
-    }, [])
+    }, [viewerId])
 
     const fetchUserSubscriptions = useCallback(async () => {
         if (!session?.user?.id) return
@@ -1511,7 +1521,7 @@ sizes="(min-width: 1024px) 300px, 50vw"
                         {/* Feed Posts */}
                         <div>
                             {/* Show skeleton loading while posts are being fetched */}
-                            {activeView === 'feed' && loadingPosts && (
+                            {activeView === 'feed' && (loadingPosts || feedViewerId !== viewerId) && (
                                 <>
                                     {Array.from({ length: 5 }).map((_, i) => (
                                         <PostSkeleton key={i} />
@@ -1520,7 +1530,7 @@ sizes="(min-width: 1024px) 300px, 50vw"
                             )}
 
                             {/* Show empty state only when not loading and no posts */}
-                            {activeView === 'feed' && !loadingPosts && posts.length === 0 && (
+                            {activeView === 'feed' && !loadingPosts && feedViewerId === viewerId && posts.length === 0 && (
                                 <div className="text-center py-12">
                                     <div className="text-6xl mb-4">📱</div>
                                     <h3 className="text-xl font-bold mb-2">{isArabic ? 'لا توجد منشورات بعد' : 'No posts yet'}</h3>
@@ -1531,7 +1541,7 @@ sizes="(min-width: 1024px) 300px, 50vw"
                             )}
 
                             {/* Real Posts from Database - OnlyFans Style */}
-                            {activeView === 'feed' && !loadingPosts && posts.length > 0 && posts
+                            {activeView === 'feed' && !loadingPosts && feedViewerId === viewerId && posts.length > 0 && posts
                                 .filter((post: any) => !hiddenUserIds.includes(post.channel?.creator?.userId))
                                 .map((post: any) => (
                                 <FeedPost

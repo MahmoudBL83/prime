@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { canViewPost, getViewerAccess } from '@/lib/content-access'
 
 // GET /api/scheduled-posts - Get creator's scheduled posts
 export async function GET(req: NextRequest) {
@@ -42,6 +43,8 @@ export async function GET(req: NextRequest) {
             )
         }
 
+        const isOwner = creator.userId === session.user.id
+
         // Build where clause - filter by channel.creatorId instead of direct creatorId
         const where: any = {
             channel: {
@@ -49,7 +52,10 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        if (status) {
+        // Another creator's drafts and future posts are never public.
+        if (!isOwner) where.publishedAt = { lte: new Date() }
+
+        if (status && isOwner) {
             if (status === 'scheduled') {
                 where.scheduledAt = { not: null }
                 where.publishedAt = null
@@ -129,9 +135,20 @@ export async function GET(req: NextRequest) {
                     : 'draft'
         }))
 
-        return NextResponse.json({
-            posts: formattedPosts
+        const access = isOwner ? null : await getViewerAccess(session.user.id)
+        const visiblePosts = formattedPosts.map(post => {
+            if (isOwner || canViewPost(post.tier, access!.rankFor(creator.id, post.channelId))) return post
+            return {
+                ...post,
+                content: post.content.slice(0, 140),
+                mediaUrl: null,
+                thumbnailUrl: post.type === 'VIDEO' ? post.thumbnailUrl : null,
+            }
         })
+
+        return NextResponse.json({
+            posts: visiblePosts
+        }, { headers: { 'Cache-Control': 'private, no-store' } })
 
     } catch (error: any) {
         console.error('Failed to fetch scheduled posts:', error)
@@ -196,6 +213,20 @@ export async function POST(req: NextRequest) {
                     { error: 'Channel not found or unauthorized' },
                     { status: 403 }
                 )
+            }
+        }
+
+        // A post ID alone never grants permission to edit or publish it.
+        if (action !== 'create') {
+            if (typeof postId !== 'string' || !postId) {
+                return NextResponse.json({ error: 'Post ID required' }, { status: 400 })
+            }
+            const ownedPost = await prisma.channelPost.findFirst({
+                where: { id: postId, channel: { creatorId: creator.id } },
+                select: { id: true },
+            })
+            if (!ownedPost) {
+                return NextResponse.json({ error: 'Post not found or unauthorized' }, { status: 403 })
             }
         }
 

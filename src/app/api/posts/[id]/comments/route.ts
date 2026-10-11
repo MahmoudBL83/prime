@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { canViewPost, getViewerAccess, requiredRankForPost } from '@/lib/content-access'
+
+async function getCommentAccess(postId: string, viewerId?: string) {
+    const post = await prisma.channelPost.findUnique({
+        where: { id: postId },
+        select: { tier: true, channelId: true, publishedAt: true, channel: { select: { creator: { select: { id: true, userId: true } } } } },
+    })
+    if (!post) return { exists: false, allowed: false }
+    const isOwner = post.channel.creator.userId === viewerId
+    if (!isOwner && (!post.publishedAt || post.publishedAt > new Date())) return { exists: false, allowed: false }
+    const access = !isOwner && requiredRankForPost(post.tier) > 0 ? await getViewerAccess(viewerId) : null
+    return {
+        exists: true,
+        allowed: canViewPost(post.tier, access?.rankFor(post.channel.creator.id, post.channelId) ?? -1, isOwner),
+    }
+}
 
 
 // Get comments for a post
@@ -10,7 +26,10 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id: postId } = await params
+        const [session, { id: postId }] = await Promise.all([getServerSession(authOptions), params])
+        const visibility = await getCommentAccess(postId, session?.user?.id)
+        if (!visibility.exists) return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+        if (!visibility.allowed) return NextResponse.json({ error: 'Subscription required' }, { status: 403 })
 
         const comments = await prisma.postComment.findMany({
             where: { postId },
@@ -29,7 +48,7 @@ export async function GET(
             }
         })
 
-        return NextResponse.json({ comments })
+        return NextResponse.json({ comments }, { headers: { 'Cache-Control': 'private, no-store' } })
     } catch (error) {
         console.error('Error fetching comments:', error)
         return NextResponse.json(
@@ -56,43 +75,22 @@ export async function POST(
         const { id: postId } = await params
         const { content, imageUrl } = await request.json()
 
-        if (!content?.trim() && !imageUrl) {
+        if ((typeof content !== 'string' && content != null) || (typeof imageUrl !== 'string' && imageUrl != null) || (typeof content === 'string' && content.length > 5000) || (!content?.trim() && !imageUrl)) {
             return NextResponse.json(
                 { error: 'Comment content or image is required' },
                 { status: 400 }
             )
         }
 
-        // Check if post exists
-        const post = await prisma.channelPost.findUnique({
-            where: { id: postId },
-            include: {
-                channel: true
-            }
-        })
-
-        if (!post) {
+        const visibility = await getCommentAccess(postId, session.user.id)
+        if (!visibility.exists) {
             return NextResponse.json(
                 { error: 'Post not found' },
                 { status: 404 }
             )
         }
 
-        // Check if user has access to comment - single subscription model
-        // All subscribers can comment on all posts
-        const subscription = await prisma.subscription.findFirst({
-            where: {
-                userId: session.user.id,
-                channelId: post.channelId,
-                status: 'active',
-                OR: [
-                    { endDate: null },
-                    { endDate: { gte: new Date() } }
-                ]
-            }
-        })
-
-        if (!subscription) {
+        if (!visibility.allowed) {
             return NextResponse.json(
                 { error: 'Subscription required to comment' },
                 { status: 403 }
