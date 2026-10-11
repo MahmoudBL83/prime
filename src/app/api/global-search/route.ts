@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { requiredRankForPost } from '@/lib/content-access'
 
@@ -12,9 +10,16 @@ import { requiredRankForPost } from '@/lib/content-access'
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url)
-        const query = searchParams.get('q') || ''
+        const query = (searchParams.get('q') || '').trim().slice(0, 120)
         const type = searchParams.get('type') || 'all'
-        const limit = parseInt(searchParams.get('limit') || '20')
+        const requestedLimit = Number(searchParams.get('limit'))
+        const limit = Number.isFinite(requestedLimit) && requestedLimit > 0
+            ? Math.min(30, Math.floor(requestedLimit))
+            : 20
+
+        if (!['all', 'courses', 'creators', 'live', 'resources'].includes(type)) {
+            return NextResponse.json({ error: 'Invalid search type' }, { status: 400 })
+        }
 
         if (query.length < 2) {
             return NextResponse.json({
@@ -23,7 +28,7 @@ export async function GET(request: NextRequest) {
             })
         }
 
-        const searchQuery = query.toLowerCase()
+        const searchQuery = query
         const results: any = {
             courses: [],
             creators: [],
@@ -38,15 +43,15 @@ export async function GET(request: NextRequest) {
                 where: {
                     status: 'PUBLISHED',
                     OR: [
-                        { title: { contains: searchQuery } },
-                        { titleAr: { contains: searchQuery } },
-                        { description: { contains: searchQuery } },
-                        { category: { contains: searchQuery } },
+                        { title: { contains: searchQuery, mode: 'insensitive' } },
+                        { titleAr: { contains: searchQuery, mode: 'insensitive' } },
+                        { description: { contains: searchQuery, mode: 'insensitive' } },
+                        { category: { contains: searchQuery, mode: 'insensitive' } },
                     ]
                 },
                 include: {
                     creator: {
-                        include: {
+                        select: {
                             user: {
                                 select: { name: true, arabicName: true, profileImage: true }
                             }
@@ -85,16 +90,16 @@ export async function GET(request: NextRequest) {
                 where: {
                     kycStatus: 'VERIFIED',
                     OR: [
-                        { user: { name: { contains: searchQuery } } },
-                        { user: { arabicName: { contains: searchQuery } } },
-                        { expertise: { contains: searchQuery } },
+                        { user: { name: { contains: searchQuery, mode: 'insensitive' } } },
+                        { user: { arabicName: { contains: searchQuery, mode: 'insensitive' } } },
+                        { expertise: { contains: searchQuery, mode: 'insensitive' } },
                     ]
                 },
                 include: {
                     user: {
                         select: { id: true, name: true, arabicName: true, profileImage: true, bio: true }
                     },
-                    channels: { select: { id: true, name: true } },
+                    channels: { select: { id: true }, take: 1 },
                     _count: { select: { courses: true } }
                 },
                 take: limit,
@@ -123,16 +128,17 @@ export async function GET(request: NextRequest) {
                 where: {
                     status: { in: ['SCHEDULED', 'LIVE'] },
                     OR: [
-                        { title: { contains: searchQuery } },
-                        { titleAr: { contains: searchQuery } },
-                        { description: { contains: searchQuery } },
+                        { title: { contains: searchQuery, mode: 'insensitive' } },
+                        { titleAr: { contains: searchQuery, mode: 'insensitive' } },
+                        { description: { contains: searchQuery, mode: 'insensitive' } },
                     ]
                 },
                 include: {
                     channel: {
-                        include: {
+                        select: {
+                            name: true,
                             creator: {
-                                include: {
+                                select: {
                                     user: { select: { name: true, arabicName: true, profileImage: true } }
                                 }
                             }
@@ -171,10 +177,10 @@ export async function GET(request: NextRequest) {
                 where: {
                     publishedAt: { lte: new Date() },
                     OR: [
-                        { title: { contains: searchQuery } },
-                        { titleAr: { contains: searchQuery } },
+                        { title: { contains: searchQuery, mode: 'insensitive' } },
+                        { titleAr: { contains: searchQuery, mode: 'insensitive' } },
                         {
-                            content: { contains: searchQuery },
+                            content: { contains: searchQuery, mode: 'insensitive' },
                             tier: { in: ['BRONZE', 'FREE', 'PUBLIC'] },
                         },
                     ]
