@@ -93,157 +93,9 @@ export default function CoursePlayerPage() {
                 const response = await fetch(`/api/courses/${params.id}`)
                 if (response.ok) {
                     const data = await response.json()
-                    
-                    // If course has no lessons or it's a mock course, add mock episodes
-                    if (!data.lessons || data.lessons.length === 0 || String(params.id).startsWith('mock-')) {
-                        const mockLessons: Lesson[] = [
-                            {
-                                id: 'lesson-1',
-                                title: 'Introduction and Getting Started',
-                                titleAr: 'المقدمة والبدء',
-                                description: 'Welcome to the course! In this first lesson, we\'ll cover the fundamentals and set up everything you need to succeed.',
-                                descriptionAr: 'مرحباً بك في الدورة! في هذا الدرس الأول، سنغطي الأساسيات ونقوم بإعداد كل ما تحتاجه للنجاح.',
-                                order: 1,
-                                duration: 45,
-                                videoUrl: '/videos/demo/course-promo.mp4',
-                                seasonNumber: 1,
-                                episodeNumber: 1
-                            },
-                            {
-                                id: 'lesson-2',
-                                title: 'Core Concepts and Fundamentals',
-                                titleAr: 'المفاهيم الأساسية والجوهرية',
-                                description: 'Deep dive into the core concepts that form the foundation of everything we\'ll learn in this course.',
-                                descriptionAr: 'الغوص العميق في المفاهيم الأساسية التي تشكل أساس كل ما سنتعلمه في هذه الدورة.',
-                                order: 2,
-                                duration: 52,
-                                videoUrl: '/videos/demo/course-promo.mp4',
-                                seasonNumber: 1,
-                                episodeNumber: 2
-                            },
-                            {
-                                id: 'lesson-3',
-                                title: 'Practical Application and Examples',
-                                titleAr: 'التطبيق العملي والأمثلة',
-                                description: 'Let\'s apply what we\'ve learned with real-world examples and hands-on exercises.',
-                                descriptionAr: 'لنطبق ما تعلمناه مع أمثلة من العالم الحقيقي وتمارين عملية.',
-                                order: 3,
-                                duration: 48,
-                                videoUrl: '/videos/demo/course-promo.mp4',
-                                seasonNumber: 1,
-                                episodeNumber: 3
-                            },
-                            {
-                                id: 'lesson-4',
-                                title: 'Advanced Techniques and Best Practices',
-                                titleAr: 'التقنيات المتقدمة وأفضل الممارسات',
-                                description: 'Master advanced techniques and learn industry best practices that professionals use every day.',
-                                descriptionAr: 'إتقان التقنيات المتقدمة وتعلم أفضل الممارسات الصناعية التي يستخدمها المحترفون كل يوم.',
-                                order: 4,
-                                duration: 55,
-                                videoUrl: '/videos/demo/course-promo.mp4',
-                                seasonNumber: 1,
-                                episodeNumber: 4
-                            },
-                            {
-                                id: 'lesson-5',
-                                title: 'Building Your First Project',
-                                titleAr: 'بناء مشروعك الأول',
-                                description: 'Time to build! Create your first complete project from scratch using everything you\'ve learned.',
-                                descriptionAr: 'حان وقت البناء! أنشئ مشروعك الكامل الأول من الصفر باستخدام كل ما تعلمته.',
-                                order: 5,
-                                duration: 62,
-                                videoUrl: '/videos/demo/course-promo.mp4',
-                                seasonNumber: 1,
-                                episodeNumber: 5
-                            },
-                            {
-                                id: 'lesson-6',
-                                title: 'Troubleshooting and Common Mistakes',
-                                titleAr: 'استكشاف الأخطاء والأخطاء الشائعة',
-                                description: 'Learn how to debug effectively and avoid the most common mistakes beginners make.',
-                                descriptionAr: 'تعلم كيفية إصلاح الأخطاء بفعالية وتجنب الأخطاء الأكثر شيوعاً التي يرتكبها المبتدئون.',
-                                order: 6,
-                                duration: 43,
-                                videoUrl: '/videos/demo/course-promo.mp4',
-                                seasonNumber: 1,
-                                episodeNumber: 6
-                            },
-                            {
-                                id: 'lesson-7',
-                                title: 'Module 2: Intermediate Level Concepts',
-                                titleAr: 'الوحدة 2: مفاهيم المستوى المتوسط',
-                                description: 'Welcome to Module 2! Now we\'ll take your skills to the next level with intermediate techniques.',
-                                descriptionAr: 'مرحباً بك في الوحدة 2! الآن سنأخذ مهاراتك إلى المستوى التالي بتقنيات متوسطة.',
-                                order: 7,
-                                duration: 50,
-                                videoUrl: '/videos/demo/course-promo.mp4',
-                                seasonNumber: 2,
-                                episodeNumber: 1
-                            },
-                            {
-                                id: 'lesson-8',
-                                title: 'Working with Real Data',
-                                titleAr: 'العمل مع البيانات الحقيقية',
-                                description: 'Learn how to work with real-world data sources and integrate external APIs.',
-                                descriptionAr: 'تعلم كيفية العمل مع مصادر البيانات الواقعية ودمج واجهات برمجة التطبيقات الخارجية.',
-                                order: 8,
-                                duration: 58,
-                                videoUrl: '/videos/demo/course-promo.mp4',
-                                seasonNumber: 2,
-                                episodeNumber: 2
-                            },
-                            {
-                                id: 'lesson-9',
-                                title: 'Performance Optimization',
-                                titleAr: 'تحسين الأداء',
-                                description: 'Discover techniques to make your projects faster, more efficient, and production-ready.',
-                                descriptionAr: 'اكتشف تقنيات لجعل مشاريعك أسرع وأكثر كفاءة وجاهزة للإنتاج.',
-                                order: 9,
-                                duration: 47,
-                                videoUrl: '/videos/demo/course-promo.mp4',
-                                seasonNumber: 2,
-                                episodeNumber: 3
-                            },
-                            {
-                                id: 'lesson-10',
-                                title: 'Security Best Practices',
-                                titleAr: 'أفضل ممارسات الأمان',
-                                description: 'Learn essential security practices to protect your applications and user data.',
-                                descriptionAr: 'تعلم ممارسات الأمان الأساسية لحماية تطبيقاتك وبيانات المستخدمين.',
-                                order: 10,
-                                duration: 54,
-                                videoUrl: '/videos/demo/course-promo.mp4',
-                                seasonNumber: 2,
-                                episodeNumber: 4
-                            },
-                            {
-                                id: 'lesson-11',
-                                title: 'Testing and Quality Assurance',
-                                titleAr: 'الاختبار وضمان الجودة',
-                                description: 'Master testing strategies to ensure your code is reliable and bug-free.',
-                                descriptionAr: 'إتقان استراتيجيات الاختبار لضمان أن يكون كودك موثوقاً وخالياً من الأخطاء.',
-                                order: 11,
-                                duration: 51,
-                                videoUrl: '/videos/demo/course-promo.mp4',
-                                seasonNumber: 2,
-                                episodeNumber: 5
-                            },
-                            {
-                                id: 'lesson-12',
-                                title: 'Final Project and Portfolio Building',
-                                titleAr: 'المشروع النهائي وبناء المحفظة',
-                                description: 'Create an impressive final project that showcases your skills and belongs in your portfolio.',
-                                descriptionAr: 'أنشئ مشروعاً نهائياً مثيراً للإعجاب يعرض مهاراتك وينتمي إلى محفظتك.',
-                                order: 12,
-                                duration: 68,
-                                videoUrl: '/videos/demo/course-promo.mp4',
-                                seasonNumber: 2,
-                                episodeNumber: 6
-                            }
-                        ]
-                        
-                        data.lessons = mockLessons
+                    if (!data.canPlay) {
+                        router.replace(`/${locale}/courses/${params.id}`)
+                        return
                     }
                     
                     setCourse(data)
@@ -408,7 +260,7 @@ export default function CoursePlayerPage() {
     if (!course || !currentLesson) {
         return (
             <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-black' : 'bg-gray-50'}`}>
-                <div className={`text-2xl ${isDark ? 'text-white' : 'text-gray-900'}`}>Episode not found</div>
+                <div className={`text-2xl ${isDark ? 'text-white' : 'text-gray-900'}`}>No lessons are available for this course yet.</div>
             </div>
         )
     }
@@ -429,7 +281,7 @@ export default function CoursePlayerPage() {
                 poster={course.thumbnail}
                 onClick={(e) => e.stopPropagation()}
             >
-                <source src="/videos/demo/course-promo.mp4" type="video/mp4" />
+                {currentLesson.videoUrl && <source src={currentLesson.videoUrl} type="video/mp4" />}
             </video>
 
             {/* Controls Overlay */}

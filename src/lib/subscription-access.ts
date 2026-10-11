@@ -37,9 +37,8 @@ export async function checkCourseAccess(
                 status: {
                     in: ['ACTIVE', 'CANCELLED'] // Cancelled but still valid until end date
                 },
-                endDate: {
-                    gte: new Date()
-                }
+                startDate: { lte: new Date() },
+                OR: [{ endDate: null }, { endDate: { gte: new Date() } }],
             },
             include: {
                 channel: {
@@ -118,9 +117,8 @@ export async function getUserAccessibleCourses(userId: string) {
                 status: {
                     in: ['ACTIVE', 'CANCELLED']
                 },
-                endDate: {
-                    gte: new Date()
-                }
+                startDate: { lte: new Date() },
+                OR: [{ endDate: null }, { endDate: { gte: new Date() } }]
             },
             include: {
                 channel: {
@@ -173,7 +171,8 @@ export async function getUserAccessibleCourses(userId: string) {
             // Get all published courses
             return await prisma.course.findMany({
                 where: {
-                    status: 'PUBLISHED'
+                    status: 'PUBLISHED',
+                    isHidden: false
                 },
                 include: {
                     creator: {
@@ -208,6 +207,7 @@ export async function getUserAccessibleCourses(userId: string) {
         return await prisma.course.findMany({
             where: {
                 status: 'PUBLISHED',
+                isHidden: false,
                 OR: categoryConditions
             },
             include: {
@@ -285,7 +285,7 @@ export async function autoEnrollInCourse(userId: string, courseId: string) {
 function getCategoryAccessMessage(category: string): string {
     switch (category) {
         case 'CATEGORY_A':
-            return 'Subscribe to All-Access Library to unlock this course and 500+ more!'
+            return 'Subscribe to All-Access Library to unlock this course.'
         case 'CATEGORY_B':
             return 'Subscribe to Signature Courses to access this premium curated content!'
         case 'CATEGORY_C':

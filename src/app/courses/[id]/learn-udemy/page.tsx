@@ -220,7 +220,7 @@ export default function UdemyStyleCoursePage() {
     const fetchCourse = async () => {
         try {
             // Add demo parameter to allow access without enrollment
-            const response = await fetch(`/api/courses/${params.id}/learn?demo=true`)
+            const response = await fetch(`/api/courses/${params.id}/learn`)
             if (response.ok) {
                 const data = await response.json()
                 setCourse(data.course)

@@ -1,51 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { presentCourse } from '@/lib/course-presentation'
+import { unstable_cache } from 'next/cache'
+import { CourseType, Prisma } from '@prisma/client'
+
+const getPublishedCourses = unstable_cache(
+    async (where: Prisma.CourseWhereInput, skip: number, limit: number) => Promise.all([
+        prisma.course.findMany({
+            where,
+            select: {
+                id: true, title: true, titleAr: true, titleDe: true,
+                description: true, descriptionAr: true, descriptionDe: true,
+                thumbnail: true, category: true, skillLevel: true, duration: true,
+                rating: true, totalEnrollments: true, contentCategory: true,
+                creator: { select: { id: true, user: { select: { id: true, name: true, arabicName: true, profileImage: true } } } },
+            },
+            orderBy: [{ totalEnrollments: 'desc' }, { rating: 'desc' }, { createdAt: 'desc' }],
+            skip,
+            take: limit,
+        }),
+        prisma.course.count({ where }),
+    ]),
+    ['published-course-catalog-v1'],
+    { revalidate: 60, tags: ['courses'] }
+)
 
 export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url)
-        const page = parseInt(searchParams.get('page') || '1')
-        const limit = parseInt(searchParams.get('limit') || '12')
+        const requestedPage = Number(searchParams.get('page'))
+        const requestedLimit = Number(searchParams.get('limit'))
+        const page = Number.isFinite(requestedPage) && requestedPage > 0 ? Math.min(10000, Math.floor(requestedPage)) : 1
+        const limit = Number.isFinite(requestedLimit) && requestedLimit > 0 ? Math.min(48, Math.floor(requestedLimit)) : 12
         const category = searchParams.get('category')
         const skillLevel = searchParams.get('skillLevel')
         const search = searchParams.get('search')
-    const featured = searchParams.get('featured') === 'true'
-    const typeParam = searchParams.get('type')
+        const typeParam = searchParams.get('type')
 
         const skip = (page - 1) * limit
 
         // Build where clause for filtering
-        const where: any = {
+        const where: Prisma.CourseWhereInput = {
             status: 'PUBLISHED',
+            isHidden: false,
         }
 
         if (category) {
-            // Map frontend categories to database categories
-            const categoryMap: { [key: string]: string } = {
-                'PROGRAMMING': 'CATEGORY_A',
-                'DESIGN': 'CATEGORY_A',
-                'BUSINESS': 'CATEGORY_A',
-                'MARKETING': 'CATEGORY_A',
-                'LANGUAGE': 'CATEGORY_A',
-                'CATEGORY_A': 'CATEGORY_A'
-            };
-            where.category = categoryMap[category] || category
+            where.category = category
         }
 
         if (skillLevel) {
             where.skillLevel = skillLevel
         }
 
-        // Note: isFeatured field doesn't exist in the schema, so we ignore this filter
-        // If you want to implement featured courses, consider using a different approach
-        // such as a separate table or a boolean field in the Course model
-
         if (search) {
             where.OR = [
-                { title: { contains: search } },
-                { titleAr: { contains: search } },
-                { description: { contains: search } },
-                { descriptionAr: { contains: search } },
+                { title: { contains: search, mode: 'insensitive' } },
+                { titleAr: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } },
+                { descriptionAr: { contains: search, mode: 'insensitive' } },
             ]
         }
 
@@ -53,50 +66,22 @@ export async function GET(req: NextRequest) {
         if (typeParam) {
             // Accept human-friendly types sent from client (case-insensitive)
             const normalized = typeParam.toUpperCase()
-            const allowed = ['KIDS','AMUSEMENT','LEARNING','PODCASTS','MUSIC','BUSINESS','OTHER']
-            if (allowed.includes(normalized)) {
-                where.type = normalized
+            if (Object.values(CourseType).includes(normalized as CourseType)) {
+                where.type = normalized as CourseType
             }
         }
 
-        // Fetch courses with creator information
-        const [courses, total] = await Promise.all([
-            prisma.course.findMany({
-                where,
-                include: {
-                    creator: {
-                        include: {
-                            user: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                    arabicName: true,
-                                    profileImage: true,
-                                },
-                            },
-                        },
-                    },
-                },
-                orderBy: [
-                    { totalEnrollments: 'desc' },
-                    { rating: 'desc' },
-                    { createdAt: 'desc' },
-                ],
-                skip,
-                take: limit,
-            }),
-            prisma.course.count({ where }),
-        ])
+        const [courses, total] = await getPublishedCourses(where, skip, limit)
 
         return NextResponse.json({
-            courses,
+            courses: courses.map(presentCourse),
             pagination: {
                 page,
                 limit,
                 total,
                 pages: Math.ceil(total / limit),
             },
-        })
+        }, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } })
     } catch (error) {
         console.error('Courses fetch error:', error)
         return NextResponse.json(

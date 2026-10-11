@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { checkCourseAccess } from '@/lib/subscription-access';
 import { z } from 'zod';
 
 const lessonParamsSchema = z.object({
@@ -38,15 +39,24 @@ export async function GET(
             );
         }
 
-        // Verify user has access to this course
-        const enrollment = await prisma.enrollment.findFirst({
-            where: {
-                userId: session.user.id,
-                courseId: courseId,
-            },
+        const course = await prisma.course.findUnique({
+            where: { id: courseId },
+            select: { status: true, isHidden: true, creator: { select: { userId: true } } },
         });
+        if (!course || course.status !== 'PUBLISHED' || course.isHidden) {
+            return NextResponse.json({ error: 'الكورس غير موجود' }, { status: 404 });
+        }
 
-        if (!enrollment) {
+        const isCreator = course.creator.userId === session.user.id;
+        const [enrollment, access] = await Promise.all([
+            prisma.enrollment.findUnique({
+                where: { userId_courseId: { userId: session.user.id, courseId } },
+                select: { id: true },
+            }),
+            isCreator ? Promise.resolve({ hasAccess: true }) : checkCourseAccess(session.user.id, courseId),
+        ]);
+
+        if (!isCreator && (!enrollment || !access.hasAccess)) {
             return NextResponse.json(
                 { error: 'غير مشترك في هذا الكورس' },
                 { status: 403 }
@@ -123,7 +133,7 @@ export async function GET(
             moduleTitleAr: 'الوحدة الأساسية',
             nextLessonId: nextLesson?.id || null,
             prevLessonId: prevLesson?.id || null,
-            resources: lesson.resources ? JSON.parse(lesson.resources as string) : [], // Parse JSON resources
+            resources: parseResources(lesson.resources),
             transcript: lesson.transcript,
         };
 
@@ -135,5 +145,14 @@ export async function GET(
             { error: 'فشل في تحميل بيانات الدرس' },
             { status: 500 }
         );
+    }
+}
+
+function parseResources(value: unknown): unknown[] {
+    try {
+        const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
     }
 }

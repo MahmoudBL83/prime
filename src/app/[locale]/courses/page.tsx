@@ -1,989 +1,172 @@
-'use client';
+'use client'
 
-import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { useLocaleSafe } from '@/hooks/useTranslationsSafe';
-import { Search, Play } from 'lucide-react';
-import Image from 'next/image';
-import { PaymentModal } from '@/components/PaymentModal';
-import { useAuthModal } from '@/contexts/AuthModalContext';
-import { courses as courseList } from '@/data/courses';
-import type { CourseData } from '@/data/courses';
+import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { ArrowRight, Search, Sparkles } from 'lucide-react'
+import { useLocaleSafe } from '@/hooks/useTranslationsSafe'
 
-type Course = CourseData;
+type Course = {
+    id: string
+    title: string
+    titleAr?: string | null
+    titleDe?: string | null
+    description: string
+    descriptionAr?: string | null
+    descriptionDe?: string | null
+    thumbnail?: string | null
+    category: string
+    skillLevel?: string | null
+    duration?: number | null
+    rating?: number | null
+    creator?: { user?: { name?: string | null; arabicName?: string | null } }
+}
 
-const categoryLabels: Record<string, { en: string; ar?: string; de?: string }> = {
-    'German Language': {
-        en: 'German Language',
-        ar: 'اللغة الألمانية',
-        de: 'Deutsch lernen'
-    },
-    'Freelance & Side Hustle': {
-        en: 'Freelance & Side Hustle',
-        ar: 'العمل الحر والمشاريع الجانبية',
-        de: 'Freelance & Nebenjobs'
-    },
-    'Entrepreneurship': {
-        en: 'Entrepreneurship',
-        ar: 'ريادة الأعمال',
-        de: 'Unternehmertum'
-    },
-    'Trading': {
-        en: 'Trading',
-        ar: 'التداول',
-        de: 'Trading'
-    },
-    'Coding & AI': {
-        en: 'Coding & AI',
-        ar: 'البرمجة والذكاء الاصطناعي',
-        de: 'Programmierung & KI'
-    },
-    'German Integration': {
-        en: 'German Integration',
-        ar: 'الاندماج في ألمانيا',
-        de: 'Integration in Deutschland'
-    }
-};
+const accents = [
+    'from-blue-950 via-slate-900 to-black',
+    'from-violet-950 via-slate-900 to-black',
+    'from-emerald-950 via-slate-900 to-black',
+    'from-amber-950 via-slate-900 to-black',
+    'from-rose-950 via-slate-900 to-black',
+]
 
 export default function CoursesPage() {
-    const [courses, setCourses] = useState<Course[]>(courseList);
-    const [heroIndex, setHeroIndex] = useState(0);
-    const [heroPaused, setHeroPaused] = useState(false);
-    const [isScrolled, setIsScrolled] = useState(false);
-    const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-    const [showMenu, setShowMenu] = useState<string | null>(null);
-    const [showPaymentModal, setShowPaymentModal] = useState(false);
-    const [showLaunchingModal, setShowLaunchingModal] = useState(false);
-    const [touchStart, setTouchStart] = useState<number | null>(null);
-    const [touchEnd, setTouchEnd] = useState<number | null>(null);
-    const [mouseStart, setMouseStart] = useState<number | null>(null);
-    const [mouseEnd, setMouseEnd] = useState<number | null>(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const [scrollPositions, setScrollPositions] = useState<{ [key: string]: number }>({});
-    const [showLeftArrow, setShowLeftArrow] = useState<{ [key: string]: boolean }>({});
-    const [showRightArrow, setShowRightArrow] = useState<{ [key: string]: boolean }>({});
-    const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
-    const router = useRouter();
-    const { data: session } = useSession();
-    const locale = useLocaleSafe();
-    const isArabic = locale === 'ar';
-    const isGerman = locale === 'de';
-    const getLocalizedText = (en: string, ar?: string, de?: string) => {
-        if (isArabic && ar) return ar;
-        if (isGerman && de) return de;
-        return en;
-    };
-    const getCourseTitle = (course: Course) => {
-        if (isArabic && course.titleAr) return course.titleAr;
-        if (isGerman && course.titleDe) return course.titleDe;
-        return course.title;
-    };
-    const getCourseDescription = (course: Course) => {
-        if (isArabic && course.descriptionAr) return course.descriptionAr;
-        if (isGerman && course.descriptionDe) return course.descriptionDe;
-        return course.description;
-    };
-    const getCategoryLabel = (categoryKey: string) => {
-        const labels = categoryLabels[categoryKey] || { en: categoryKey };
-        return getLocalizedText(labels.en, labels.ar, labels.de);
-    };
-    const direction: 'ltr' | 'rtl' = isArabic ? 'rtl' : 'ltr';
-    const dropdownTextAlign = isArabic ? 'text-right' : 'text-left';
-    const cardMenuPositionClass = isArabic ? 'left-2 right-auto' : 'right-2';
-    const rankBadgePositionClass = isArabic ? 'right-3 left-auto' : 'left-3';
-
-    // Minimum swipe distance (in px)
-    const minSwipeDistance = 50;
-
-    // Featured hero carousel: first slides rotate automatically like Apple TV
-    const heroSlideCount = Math.max(1, Math.min(5, courses.length));
-    useEffect(() => {
-        if (heroPaused || heroSlideCount < 2) return;
-        const timer = setTimeout(() => {
-            if (document.visibilityState === 'visible') {
-                setHeroIndex((index) => (index + 1) % heroSlideCount);
-            }
-        }, 7000);
-        return () => clearTimeout(timer);
-    }, [heroIndex, heroPaused, heroSlideCount]);
-
-    // Categories for course sections
-    const categories = [
-        'German Language',
-        'Freelance & Side Hustle',
-        'Entrepreneurship',
-        'Trading',
-        'Coding & AI',
-        'German Integration'
-    ];
-
-    const [showBottomCTA, setShowBottomCTA] = useState(false);
+    const locale = useLocaleSafe()
+    const isArabic = locale === 'ar'
+    const isGerman = locale === 'de'
+    const [courses, setCourses] = useState<Course[]>([])
+    const [page, setPage] = useState(1)
+    const [hasMore, setHasMore] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const [loadingMore, setLoadingMore] = useState(false)
+    const [error, setError] = useState(false)
+    const [query, setQuery] = useState('')
+    const [category, setCategory] = useState('All')
+    const [heroIndex, setHeroIndex] = useState(0)
 
     useEffect(() => {
-        const handleScroll = () => {
-            const currentScroll = window.scrollY;
-            setIsScrolled(currentScroll > 50);
-            setShowBottomCTA(currentScroll > 1);
-        };
-        window.addEventListener('scroll', handleScroll);
-        handleScroll();
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+        const controller = new AbortController()
+        fetch('/api/courses?limit=36&page=1', { signal: controller.signal })
+            .then(response => {
+                if (!response.ok) throw new Error('Catalog unavailable')
+                return response.json()
+            })
+            .then(data => {
+                setCourses(data.courses || [])
+                setHasMore(data.pagination?.pages > 1)
+                setError(false)
+            })
+            .catch(() => { if (!controller.signal.aborted) setError(true) })
+            .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+        return () => controller.abort()
+    }, [])
 
-    const onTouchStart = (e: React.TouchEvent) => {
-        setTouchEnd(null);
-        setTouchStart(e.targetTouches[0].clientX);
-    };
-
-    const onTouchMove = (e: React.TouchEvent) => {
-        setTouchEnd(e.targetTouches[0].clientX);
-    };
-
-    const onTouchEnd = () => {
-        if (!touchStart || !touchEnd) return;
-
-        const distance = touchStart - touchEnd;
-        const isLeftSwipe = distance > minSwipeDistance;
-        const isRightSwipe = distance < -minSwipeDistance;
-
-        if (isLeftSwipe) {
-            setHeroIndex((heroIndex + 1) % heroSlideCount);
+    const loadMore = async () => {
+        if (loadingMore || !hasMore) return
+        setLoadingMore(true)
+        try {
+            const nextPage = page + 1
+            const response = await fetch(`/api/courses?limit=36&page=${nextPage}`)
+            if (!response.ok) throw new Error('Catalog unavailable')
+            const data = await response.json()
+            setCourses(current => [...current, ...(data.courses || [])])
+            setPage(nextPage)
+            setHasMore(nextPage < (data.pagination?.pages || 1))
+        } catch {
+            setError(true)
+        } finally {
+            setLoadingMore(false)
         }
-        if (isRightSwipe) {
-            setHeroIndex((heroIndex - 1 + heroSlideCount) % heroSlideCount);
-        }
-    };
+    }
 
-    const onMouseDown = (e: React.MouseEvent) => {
-        setMouseEnd(null);
-        setMouseStart(e.clientX);
-        setIsDragging(true);
-    };
+    const titleOf = (course: Course) => isArabic
+        ? course.titleAr || course.title
+        : isGerman ? course.titleDe || course.title : course.title
+    const descriptionOf = (course: Course) => isArabic
+        ? course.descriptionAr || course.description
+        : isGerman ? course.descriptionDe || course.description : course.description
+    const labels = {
+        explore: isArabic ? 'استكشف الدورة' : isGerman ? 'Kurs entdecken' : 'Explore course',
+        search: isArabic ? 'ابحث عن دورة' : isGerman ? 'Kurse suchen' : 'Search courses',
+        all: isArabic ? 'الكل' : isGerman ? 'Alle' : 'All',
+        featured: isArabic ? 'ابدأ التعلم' : isGerman ? 'Lernen beginnt hier' : 'Learning starts here',
+        browse: isArabic ? 'تصفح الدورات' : isGerman ? 'Kurse entdecken' : 'Browse courses',
+    }
 
-    const onMouseMove = (e: React.MouseEvent) => {
-        if (!isDragging) return;
-        setMouseEnd(e.clientX);
-    };
-
-    const onMouseUp = () => {
-        if (!isDragging) return;
-        setIsDragging(false);
-
-        if (!mouseStart || !mouseEnd) return;
-
-        const distance = mouseStart - mouseEnd;
-        const isLeftSwipe = distance > minSwipeDistance;
-        const isRightSwipe = distance < -minSwipeDistance;
-
-        if (isLeftSwipe) {
-            setHeroIndex((heroIndex + 1) % heroSlideCount);
-        }
-        if (isRightSwipe) {
-            setHeroIndex((heroIndex - 1 + heroSlideCount) % heroSlideCount);
-        }
-    };
-
-    const onMouseLeave = () => {
-        if (isDragging) {
-            setIsDragging(false);
-        }
-    };
-
-    const topCourses = useMemo(() => {
-        if (!courses.length) return [] as Course[];
-
-        // Pick one from each category first
-        const picked: Course[] = [];
-        for (const category of categories) {
-            const course = courses.find((c) => c.category === category);
-            if (course) picked.push(course);
-        }
-
-        const used = new Set(picked.map((c) => c.id));
-        const remaining = courses
-            .filter((c) => !used.has(c.id))
-            .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-
-        for (const course of remaining) {
-            if (picked.length >= 10) break;
-            picked.push(course);
-        }
-
-        return picked.slice(0, 10);
-    }, [courses, categories]);
-
-    const heroCourse = courses[heroIndex] || courseList[0];
-
-    const handleCourseClick = (courseId: string) => {
-        router.push(`/${locale}/courses/${courseId}`);
-    };
-
-    const { openAuthModal } = useAuthModal();
-
-    const handleLaunchingModalRegister = () => {
-        setShowLaunchingModal(false);
-        openAuthModal('signup');
-    };
-
-    const handleAcceptOffer = () => {
-        if (session) {
-            setShowPaymentModal(true);
-            return;
-        }
-
-        openAuthModal('signin', {
-            onSuccess: () => setShowPaymentModal(true),
-        });
-    };
-
-    const scroll = (direction: 'left' | 'right', containerId: string) => {
-        const container = document.getElementById(containerId);
-        if (container) {
-            // Adjusted to match w-[280px] on mobile and w-[240px] on desktop with gap-4 (16px)
-            const isMobile = window.innerWidth < 768;
-            const cardWidth = isMobile ? (280 + 16) : (240 + 16);
-            const scrollAmount = cardWidth;
-            const newPosition = direction === 'left'
-                ? container.scrollLeft - scrollAmount
-                : container.scrollLeft + scrollAmount;
-
-            container.scrollTo({
-                left: newPosition,
-                behavior: 'smooth'
-            });
-        }
-    };
-
-    const handleScroll = (containerId: string) => {
-        const container = document.getElementById(containerId);
-        if (container) {
-            const { scrollLeft, scrollWidth, clientWidth } = container;
-            const hasOverflow = scrollWidth > clientWidth;
-
-            setShowLeftArrow(prev => ({
-                ...prev,
-                [containerId]: hasOverflow && scrollLeft > 10
-            }));
-
-            setShowRightArrow(prev => ({
-                ...prev,
-                [containerId]: hasOverflow && scrollLeft < scrollWidth - clientWidth - 10
-            }));
-        }
-    };
-
-    useEffect(() => {
-        // Check scroll state on mount and window resize
-        const checkAllScrollStates = () => {
-            handleScroll('top-10-scroll');
-            categories.forEach(category => {
-                handleScroll(`category-${category.replace(/\s+/g, '-').toLowerCase()}`);
-            });
-        };
-
-        checkAllScrollStates();
-        window.addEventListener('resize', checkAllScrollStates);
-        return () => window.removeEventListener('resize', checkAllScrollStates);
-    }, [courses]);
+    const categories = useMemo(() => ['All', ...new Set(courses.map(course => course.category).filter(Boolean))], [courses])
+    const filtered = useMemo(() => courses.filter(course => {
+        if (category !== 'All' && course.category !== category) return false
+        const text = `${course.title} ${course.description} ${course.category} ${course.titleAr || ''} ${course.titleDe || ''}`.toLocaleLowerCase()
+        return text.includes(query.trim().toLocaleLowerCase())
+    }), [courses, category, query])
+    const featured = courses.slice(0, 5)
+    const hero = featured[heroIndex % Math.max(1, featured.length)]
+    const rows = category === 'All' && !query
+        ? categories.slice(1).map(name => ({ name, items: filtered.filter(course => course.category === name) }))
+        : [{ name: category === 'All' ? labels.browse : category, items: filtered }]
 
     return (
-        <div dir={direction} className="min-h-screen bg-background dark:bg-[#1d1d1f]">
-            {/* Sticky Bottom Banner */}
-            {showBottomCTA && (
-                <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0071E3] text-white py-4 px-4">
-                    <div className="max-w-screen-2xl mx-auto flex items-center justify-between">
-                        <div className="flex-1">
-                            <p className="text-sm font-semibold">€28.99/Mo For 12 Months</p>
-                            <p className="text-xs opacity-90">Hundreds of exclusive Prime Originals. Now 50% off.</p>
-                        </div>
-                        <div className="flex flex-col items-end gap-2">
-                            <button
-                                onClick={handleAcceptOffer}
-                                className="bg-white text-black font-semibold text-sm hover:bg-white/90 transition-all whitespace-nowrap text-center"
-                                style={{
-                                    border: 'none',
-                                    borderRadius: '32px',
-                                    boxShadow: '0 0 20px rgba(0, 0, 0, .06)',
-                                    height: '32px',
-                                    width: '245px',
-                                    padding: '0 12px',
-                                    verticalAlign: 'middle'
-                                }}
-                            >
-                                Accept Offer
-                            </button>
-                            <p className="text-[10px] opacity-75 leading-tight w-[245px] text-center">
-                                €28.99/Mo For 12 Months<br />
-                                Terms apply.
-                            </p>
+        <main dir={isArabic ? 'rtl' : 'ltr'} className="min-h-screen bg-[#080a10] pb-24 text-white">
+            {hero && !query && category === 'All' && (
+                <section className={`relative isolate flex min-h-[540px] items-end overflow-hidden bg-gradient-to-br ${accents[heroIndex % accents.length]} px-5 pb-20 pt-32 md:min-h-[680px] md:px-12`}>
+                    {hero.thumbnail && <Image src={hero.thumbnail} alt="" fill priority sizes="100vw" className="-z-20 object-cover opacity-50" />}
+                    <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#080a10] via-[#080a10]/65 to-black/20" />
+                    <div className="mx-auto w-full max-w-7xl">
+                        <p className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-sky-300"><Sparkles size={15} /> {labels.featured}</p>
+                        <p className="mb-3 text-sm text-white/70">{hero.category} {hero.skillLevel ? `· ${hero.skillLevel}` : ''}</p>
+                        <h1 className="max-w-3xl text-4xl font-bold tracking-tight md:text-6xl">{titleOf(hero)}</h1>
+                        <p className="mt-5 max-w-xl text-base leading-7 text-white/80 md:text-lg">{descriptionOf(hero)}</p>
+                        <div className="mt-7 flex flex-wrap items-center gap-4">
+                            <Link href={`/${locale}/courses/${hero.id}`} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-6 font-semibold text-black transition hover:bg-sky-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400">
+                                {labels.explore} <ArrowRight size={17} className={isArabic ? 'rotate-180' : ''} />
+                            </Link>
+                            <span className="text-sm text-white/70">{hero.creator?.user?.name || ''}</span>
                         </div>
                     </div>
-                </div>
+                    {featured.length > 1 && <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-2" aria-label="Featured courses">
+                        {featured.map((item, index) => <button key={item.id} onClick={() => setHeroIndex(index)} aria-label={`Show ${titleOf(item)}`} aria-current={index === heroIndex} className={`h-2 rounded-full transition-all ${index === heroIndex ? 'w-8 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'}`} />)}
+                    </div>}
+                </section>
             )}
 
-            {/* Hero Section - Featured Course */}
-            <div
-                className="relative h-screen w-full overflow-hidden mb-12 cursor-grab active:cursor-grabbing"
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-                onMouseDown={onMouseDown}
-                onMouseMove={onMouseMove}
-                onMouseUp={onMouseUp}
-                onMouseEnter={() => setHeroPaused(true)}
-                onMouseLeave={() => {
-                    onMouseLeave();
-                    setHeroPaused(false);
-                }}
-            >
-                {/* Background Image */}
-                <div className="absolute inset-0">
-                    <Image
-                        src={heroCourse.thumbnail || '/placeholder.jpg'}
-                        alt={heroCourse.title}
-                        fill
-                        sizes="100vw"
-                        className="object-cover animate-hero-fade"
-                        priority={heroIndex === 0}
-                        key={heroCourse.id}
-                    />
-                    {/* Gradient overlays */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent md:hidden" />
-                    <div className={`absolute inset-0 ${isArabic ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-black/60 via-transparent to-transparent hidden md:block`} />
-                </div>
-
-                {/* Hero Content - Mobile First (Apple TV+ Style) */}
-                <div className={`relative h-full max-w-screen-2xl mx-auto px-5 md:px-8 flex flex-col justify-end pb-24 md:pb-16 ${isArabic ? 'items-end' : 'items-center md:items-start'}`}>
-                    <div className={`w-full max-w-xl space-y-3 ${isArabic ? 'text-right' : 'text-center md:text-left'}`}>
-                        {/* Title - Large and prominent */}
-                        <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight">
-                            {getCourseTitle(heroCourse)}
-                        </h1>
-
-                        {/* Metadata - Category • Thriller • Drama • 18+ */}
-                        <div className={`flex items-center text-sm text-white/90 gap-2 flex-wrap ${isArabic ? 'flex-row-reverse justify-end' : 'justify-center md:justify-start'}`}>
-                            <div className={`flex items-center gap-1.5 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                <svg className="w-4 h-4 opacity-80" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-                                </svg>
-                                <span className="font-medium">{getCategoryLabel(heroCourse.category)}</span>
-                            </div>
-                            {heroCourse.year && (
-                                <>
-                                    <span className="text-white/60">·</span>
-                                    <span>{heroCourse.year}</span>
-                                </>
-                            )}
-                            {heroCourse.duration && (
-                                <>
-                                    <span className="text-white/60">·</span>
-                                    <span>{heroCourse.duration}</span>
-                                </>
-                            )}
-                            {heroCourse.rating && (
-                                <span className="px-1.5 py-0.5 border border-white/40 rounded text-xs ml-1">★ {heroCourse.rating.toFixed(1)}</span>
-                            )}
-                        </div>
-
-                        {/* Description */}
-                        <p className="text-sm md:text-base text-white/80 leading-relaxed max-w-md mx-auto md:mx-0">
-                            {getCourseDescription(heroCourse)}
-                        </p>
-
-                        {/* Buttons - Mobile: centered, full width pill */}
-                        <div className={`flex items-center gap-3 pt-3 ${isArabic ? 'flex-row-reverse justify-end' : 'justify-center md:justify-start'}`}>
-                            <button
-                                onClick={handleAcceptOffer}
-                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-3.5 font-semibold text-base text-black bg-white rounded-full min-w-[180px] max-w-[280px] md:max-w-[340px] transition-transform duration-100 ease-in hover:scale-[1.02] active:scale-[0.98]"
-                            >
-                                Accept Free Trial
-                            </button>
-                            <button
-                                onClick={handleAcceptOffer}
-                                className="w-12 h-12 md:w-10 md:h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all backdrop-blur-sm flex-shrink-0"
-                            >
-                                <span className="text-white text-2xl md:text-xl font-light leading-none">+</span>
-                            </button>
-                        </div>
-
-                        {/* Offer Text */}
-                        <p className={`text-xs text-white/60 pt-1 leading-relaxed ${isArabic ? 'text-right' : 'text-center md:text-left'}`}>
-                            7 days free, then €28.99/month
-                        </p>
+            <div className="mx-auto max-w-7xl px-5 pt-10 md:px-12">
+                <div className="mb-7 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-300">PRIME</p>
+                        <h2 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">{labels.browse}</h2>
+                        <p className="mt-2 text-sm text-white/55">{isArabic ? 'اختر ما تريد تعلمه بعد ذلك' : isGerman ? 'Wähle aus, was du als Nächstes lernen möchtest' : 'Find the next skill you want to build'}</p>
                     </div>
+                    <label className="flex min-h-12 w-full items-center gap-3 rounded-2xl border border-white/15 bg-white/[0.06] px-4 text-white/65 focus-within:border-sky-400 md:w-80">
+                        <Search size={18} />
+                        <input value={query} onChange={event => setQuery(event.target.value)} placeholder={labels.search} aria-label={labels.search} className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/45" />
+                    </label>
                 </div>
 
-                {/* Pagination Dots - Centered at bottom */}
-                <div className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                    {courses.slice(0, heroSlideCount).map((course, index) => (
-                        <button
-                            key={course.id}
-                            aria-label={`Show ${getCourseTitle(course)}`}
-                            aria-current={index === heroIndex}
-                            onClick={() => setHeroIndex(index)}
-                            className={`w-2 h-2 rounded-full transition-all ${index === heroIndex ? 'bg-white w-6' : 'bg-white/40'
-                                }`}
-                        />
-                    ))}
+                <div className="mb-10 flex gap-2 overflow-x-auto pb-2" aria-label="Course categories">
+                    {categories.map(name => <button key={name} onClick={() => setCategory(name)} aria-pressed={category === name} className={`min-h-10 shrink-0 rounded-full border px-4 text-sm font-medium transition ${category === name ? 'border-white bg-white text-black' : 'border-white/15 bg-white/[0.05] text-white/75 hover:border-white/40 hover:text-white'}`}>{name === 'All' ? labels.all : name}</button>)}
                 </div>
+
+                {loading && <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6" aria-label="Loading courses">{Array.from({ length: 12 }, (_, index) => <div key={index} className="aspect-[3/4] animate-pulse rounded-2xl bg-white/10" />)}</div>}
+                {!loading && error && courses.length === 0 && <div className="rounded-2xl border border-white/15 bg-white/5 p-10 text-center"><p>Could not load courses right now.</p><button onClick={() => window.location.reload()} className="mt-4 rounded-full bg-white px-5 py-2 text-sm font-semibold text-black">Try again</button></div>}
+                {!loading && !error && filtered.length === 0 && <p className="rounded-2xl border border-white/15 bg-white/5 p-10 text-center text-white/70">{courses.length ? 'No courses match your search.' : 'No published courses yet.'}</p>}
+
+                {rows.filter(row => row.items.length > 0).map(row => <section key={row.name} className="mb-12" aria-label={row.name}>
+                    <div className="mb-5 flex items-center justify-between"><h3 className="text-xl font-semibold md:text-2xl">{row.name}</h3><span className="text-sm text-white/45">{row.items.length}</span></div>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
+                        {row.items.map((course, index) => <Link key={course.id} href={`/${locale}/courses/${course.id}`} className="group block rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400">
+                            <div className={`relative aspect-[3/4] overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br ${accents[index % accents.length]} transition duration-300 group-hover:-translate-y-1 group-hover:border-white/40 group-hover:shadow-[0_20px_60px_rgba(0,0,0,.45)]`}>
+                                {course.thumbnail && <Image src={course.thumbnail} alt="" fill sizes="(min-width: 1280px) 16vw, (min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw" className="object-cover opacity-80 transition duration-500 group-hover:scale-105" />}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent" />
+                                <div className="absolute bottom-0 p-4"><p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-sky-200">{course.category}</p><p className="line-clamp-3 text-base font-semibold leading-snug">{titleOf(course)}</p></div>
+                            </div>
+                            <p className="mt-2 line-clamp-1 text-xs text-white/55">{course.creator?.user?.name || course.skillLevel || course.category}</p>
+                        </Link>)}
+                    </div>
+                </section>)}
+
+                {hasMore && <div className="text-center"><button onClick={loadMore} disabled={loadingMore} className="min-h-12 rounded-full border border-white/25 px-7 text-sm font-semibold transition hover:bg-white/10 disabled:opacity-50">{loadingMore ? 'Loading…' : 'Load more courses'}</button></div>}
+                {error && courses.length > 0 && <p className="mt-5 text-center text-sm text-amber-300">More courses could not be loaded. Please try again.</p>}
             </div>
-
-            {/* Top 10 TV Shows Section */}
-            <div className="relative z-10 pb-8">
-                <div className="max-w-screen-2xl mx-auto px-8">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse text-right' : ''}`}>
-                            <h2 className="text-xl font-semibold text-foreground">
-                                {isGerman ? 'Top 10 Kurse' : 'Top 10 Courses'}
-                            </h2>
-                            <svg className="w-4 h-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </div>
-                    </div>
-
-                    <div className="relative -mx-8 px-8">
-                        {/* Navigation Arrows */}
-                        {showLeftArrow['top-10-scroll'] && (
-                            <button
-                                onClick={() => scroll('left', 'top-10-scroll')}
-                                className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-16 hover:bg-black/20 dark:hover:bg-white/10 flex items-center justify-center transition-all rounded-lg"
-                            >
-                                <svg className="w-3 h-8 text-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 31" fill="currentColor">
-                                    <path d="M5.275 29.46a1.61 1.61 0 0 0 1.456 1.077c1.018 0 1.772-.737 1.772-1.737 0-.526-.277-1.186-.449-1.62l-4.68-11.912L8.05 3.363c.172-.442.45-1.116.45-1.625A1.7 1.7 0 0 0 6.728.002a1.6 1.6 0 0 0-1.456 1.09L.675 12.774c-.301.775-.677 1.744-.677 2.495 0 .754.376 1.705.677 2.498L5.272 29.46Z" />
-                                </svg>
-                            </button>
-                        )}
-                        {showRightArrow['top-10-scroll'] && (
-                            <button
-                                onClick={() => scroll('right', 'top-10-scroll')}
-                                className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-16 hover:bg-black/20 dark:hover:bg-white/10 flex items-center justify-center transition-all rounded-lg"
-                            >
-                                <svg className="w-3 h-8 text-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 31" fill="currentColor" style={{ transform: 'scaleX(-1)' }}>
-                                    <path d="M5.275 29.46a1.61 1.61 0 0 0 1.456 1.077c1.018 0 1.772-.737 1.772-1.737 0-.526-.277-1.186-.449-1.62l-4.68-11.912L8.05 3.363c.172-.442.45-1.116.45-1.625A1.7 1.7 0 0 0 6.728.002a1.6 1.6 0 0 0-1.456 1.09L.675 12.774c-.301.775-.677 1.744-.677 2.495 0 .754.376 1.705.677 2.498L5.272 29.46Z" />
-                                </svg>
-                            </button>
-                        )}
-
-                        <div
-                            id="top-10-scroll"
-                            className="overflow-x-auto scrollbar-hide"
-                            onScroll={() => handleScroll('top-10-scroll')}
-                        >
-                            <div className="flex gap-4 pb-4">
-                                {topCourses.slice(0, 10).map((course, index) => (
-                                    <div
-                                        key={course.id}
-                                        className="relative group cursor-pointer w-[calc(50%-8px)] md:w-[calc(25%-12px)] lg:w-[calc(16.666%-13.33px)] xl:w-[calc(12.5%-14px)] flex-shrink-0"
-                                        onMouseEnter={() => setHoveredCard(course.id)}
-                                        onMouseLeave={() => {
-                                            setHoveredCard(null);
-                                            setShowMenu(null);
-                                        }}
-                                    >
-                                        {/* Course Thumbnail - Portrait (Apple TV Poster Style) */}
-                                        <div className="relative aspect-[2/3] overflow-hidden mb-3" onClick={() => handleCourseClick(course.id)} style={{ borderRadius: '12px', border: '1px solid hsla(0,0%,100%,.12)' }}>
-                                            <Image
-                                                src={course.thumbnail || '/placeholder.jpg'}
-                                                alt={course.title}
-                                                fill
-                                                sizes="(min-width: 1280px) 13vw, (min-width: 1024px) 17vw, (min-width: 768px) 25vw, 50vw"
-                                                className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
-                                                key={course.id}
-                                            />
-                                            
-                                            {/* Rank Number on Card (Apple TV Style) */}
-                                            <div className={`absolute top-0 bottom-0 left-0 right-0 z-10 pointer-events-none flex flex-col ${isArabic ? 'items-end' : 'items-start'}`}>
-                                                <span 
-                                                    style={{ 
-                                                        alignSelf: 'start',
-                                                        color: '#fff',
-                                                        fontSize: '40px',
-                                                        fontWeight: 700,
-                                                        justifySelf: 'start',
-                                                        marginTop: '4px',
-                                                        marginInlineStart: '12px',
-                                                        fontFamily: 'SF Pro Display, system-ui',
-                                                        WebkitMask: 'linear-gradient(180deg, #fff 0, #fff 50%, hsla(0, 0%, 100%, .12))',
-                                                        mask: 'linear-gradient(180deg, #fff 0, #fff 50%, hsla(0, 0%, 100%, .12))'
-                                                    }}
-                                                >
-                                                    {index + 1}
-                                                </span>
-                                            </div>
-
-                                            {/* Three Dots Button */}
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setShowMenu(showMenu === course.id ? null : course.id);
-                                                }}
-                                                className={`absolute bottom-2 ${cardMenuPositionClass} w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center transition-all z-10`}
-                                            >
-                                                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 16 16">
-                                                    <circle cx="3" cy="8" r="1.5" />
-                                                    <circle cx="8" cy="8" r="1.5" />
-                                                    <circle cx="13" cy="8" r="1.5" />
-                                                </svg>
-                                            </button>
-                                        </div>
-
-                                        {/* Info Below Card - Genre Only */}
-                                        <div className="text-center px-1 mt-1">
-                                            <p className="text-[13px] text-muted-foreground font-medium truncate tracking-wide">
-                                                {getCategoryLabel(course.category)}
-                                            </p>
-                                        </div>
-
-                                        {/* Dropdown Menu */}
-                                        {showMenu === course.id && (
-                                            <div className={`absolute bottom-20 ${cardMenuPositionClass} bg-neutral-900/95 backdrop-blur-xl overflow-hidden shadow-2xl z-20 w-[160px] border border-white/10 rounded-xl`}>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setShowMenu(null);
-                                                    }}
-                                                    className={`w-full px-4 py-3 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/5 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
-                                                >
-                                                    <span>Share</span>
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
-                                                </button>
-                                                <div className="h-[1px] bg-white/5 mx-2"></div>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        navigator.clipboard.writeText(`${window.location.origin}/${locale}/courses/${course.id}`);
-                                                        setShowMenu(null);
-                                                    }}
-                                                    className={`w-full px-4 py-3 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/5 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
-                                                >
-                                                    <span>Copy Link</span>
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Separator Line */}
-                <div className="max-w-screen-2xl mx-auto px-8 mt-8">
-                    <div className="h-[1px] bg-border"></div>
-                </div>
-            </div>
-
-            {/* Category Sections */}
-            {categories.map((category) => {
-                const categoryCourses = courses.filter(c => c.category === category);
-                if (categoryCourses.length === 0) return null;
-
-                return (
-                    <div key={category} className="relative z-10 pb-8">
-                        <div className="max-w-screen-2xl mx-auto px-8">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse text-right' : ''}`}>
-                                    <h2 className="text-xl font-semibold text-foreground">
-                                        {getCategoryLabel(category)}
-                                    </h2>
-                                    <svg className="w-4 h-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </div>
-                            </div>
-
-                            <div className="relative -mx-8 px-8">
-                                {/* Navigation Arrows */}
-                                {showLeftArrow[`category-${category.replace(/\s+/g, '-').toLowerCase()}`] && (
-                                    <button
-                                        onClick={() => scroll('left', `category-${category.replace(/\s+/g, '-').toLowerCase()}`)}
-                                        className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-16 hover:bg-black/20 dark:hover:bg-white/10 flex items-center justify-center transition-all rounded-lg"
-                                    >
-                                        <svg className="w-3 h-8 text-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 31" fill="currentColor">
-                                            <path d="M5.275 29.46a1.61 1.61 0 0 0 1.456 1.077c1.018 0 1.772-.737 1.772-1.737 0-.526-.277-1.186-.449-1.62l-4.68-11.912L8.05 3.363c.172-.442.45-1.116.45-1.625A1.7 1.7 0 0 0 6.728.002a1.6 1.6 0 0 0-1.456 1.09L.675 12.774c-.301.775-.677 1.744-.677 2.495 0 .754.376 1.705.677 2.498L5.272 29.46Z" />
-                                        </svg>
-                                    </button>
-                                )}
-                                {showRightArrow[`category-${category.replace(/\s+/g, '-').toLowerCase()}`] && (
-                                    <button
-                                        onClick={() => scroll('right', `category-${category.replace(/\s+/g, '-').toLowerCase()}`)}
-                                        className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-16 hover:bg-black/20 dark:hover:bg-white/10 flex items-center justify-center transition-all rounded-lg"
-                                    >
-                                        <svg className="w-3 h-8 text-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 31" fill="currentColor" style={{ transform: 'scaleX(-1)' }}>
-                                            <path d="M5.275 29.46a1.61 1.61 0 0 0 1.456 1.077c1.018 0 1.772-.737 1.772-1.737 0-.526-.277-1.186-.449-1.62l-4.68-11.912L8.05 3.363c.172-.442.45-1.116.45-1.625A1.7 1.7 0 0 0 6.728.002a1.6 1.6 0 0 0-1.456 1.09L.675 12.774c-.301.775-.677 1.744-.677 2.495 0 .754.376 1.705.677 2.498L5.272 29.46Z" />
-                                        </svg>
-                                    </button>
-                                )}
-
-                                <div
-                                    id={`category-${category.replace(/\s+/g, '-').toLowerCase()}`}
-                                    className="overflow-x-auto scrollbar-hide"
-                                    onScroll={() => handleScroll(`category-${category.replace(/\s+/g, '-').toLowerCase()}`)}
-                                >
-                                    <div className="flex gap-4 pb-4">
-                                        {categoryCourses.map((course) => (
-                                            <div
-                                                key={course.id}
-                                                className="relative group cursor-pointer w-[calc(50%-8px)] md:w-[calc(25%-12px)] lg:w-[calc(16.666%-13.33px)] xl:w-[calc(12.5%-14px)] flex-shrink-0"
-                                                onMouseEnter={() => setHoveredCard(course.id)}
-                                                onMouseLeave={() => {
-                                                    setHoveredCard(null);
-                                                    setShowMenu(null);
-                                                }}
-                                            >
-                                                {/* Course Thumbnail - Portrait (Apple TV Poster Style) */}
-                                                <div className="relative aspect-[2/3] overflow-hidden mb-2" onClick={() => handleCourseClick(course.id)} style={{ borderRadius: '12px', border: '1px solid hsla(0,0%,100%,.12)' }}>
-                                                    <Image
-                                                        src={course.thumbnail || '/placeholder.jpg'}
-                                                        alt={course.title}
-                                                        fill
-                                                        sizes="(min-width: 1280px) 13vw, (min-width: 1024px) 17vw, (min-width: 768px) 25vw, 50vw"
-                                                        className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
-                                                        key={course.id}
-                                                    />
-                                                    {/* Three Dots Button */}
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setShowMenu(showMenu === course.id ? null : course.id);
-                                                        }}
-                                                        className={`absolute bottom-2 ${cardMenuPositionClass} w-7 h-7 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center transition-all z-10`}
-                                                    >
-                                                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 16 16">
-                                                            <circle cx="3" cy="8" r="1.5" />
-                                                            <circle cx="8" cy="8" r="1.5" />
-                                                            <circle cx="13" cy="8" r="1.5" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-
-                                                {/* Dropdown Menu */}
-                                                {showMenu === course.id && (
-                                                    <div className={`absolute bottom-16 ${cardMenuPositionClass} bg-neutral-900/95 backdrop-blur-xl overflow-hidden shadow-2xl z-20 w-[160px] border border-white/10 rounded-xl`}>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setShowMenu(null);
-                                                            }}
-                                                            className={`w-full px-4 py-3 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/5 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
-                                                        >
-                                                            <span>Share</span>
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
-                                                        </button>
-                                                        <div className="h-[1px] bg-white/5 mx-2"></div>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                navigator.clipboard.writeText(`${window.location.origin}/${locale}/courses/${course.id}`);
-                                                                setShowMenu(null);
-                                                            }}
-                                                            className={`w-full px-4 py-3 ${dropdownTextAlign} text-[13px] text-white/90 hover:bg-white/5 transition-colors flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
-                                                        >
-                                                            <span>Copy Link</span>
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Separator Line */}
-                        <div className="max-w-screen-2xl mx-auto px-8 mt-8">
-                            <div className="h-[1px] bg-border"></div>
-                        </div>
-                    </div>
-                );
-            })}
-
-            {/* Hero Banner Component */}
-            <div className="relative z-10 pb-8">
-                <div className="max-w-screen-2xl mx-auto px-8">
-                    <div className="relative overflow-hidden" style={{ height: '400px', borderRadius: '14px', border: '1px solid hsla(0,0%,100%,.16)' }}>
-                        {/* Background Image */}
-                        <div className="absolute inset-0">
-                            <Image
-                                src="/images/courses/courses-hero.jpg"
-                                alt="Courses Hero"
-                                fill
-                                sizes="(min-width: 1536px) 1536px, 100vw"
-                                className="object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-                            <div className={`absolute inset-0 ${isArabic ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-black/80 via-transparent to-transparent`} />
-                        </div>
-
-                        {/* Hero Content */}
-                        <div className={`relative h-full px-8 flex flex-col justify-center ${isArabic ? 'items-end' : 'items-start'}`}>
-                            <div className={`max-w-2xl space-y-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                                {/* Prime Logo */}
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Image
-                                        src="/images/logo.jpg"
-                                        alt="Prime"
-                                        width={32}
-                                        height={32}
-                                        className="rounded-lg"
-                                    />
-                                    <span className="text-white text-2xl font-semibold">Prime</span>
-                                </div>
-
-                                {/* Title */}
-                                <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight" style={{ fontSize: '22px' }}>
-                                    {isArabic ? 'عرض لفترة محدودة. €28.99/Mo For 12 Months' : 'Limited-time offer. €28.99/Mo For 12 Months'}
-                                </h1>
-
-                                {/* CTA Button */}
-                                <div className={`flex items-center gap-3 pt-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                    <button
-                                        onClick={handleAcceptOffer}
-                                        className="bg-white hover:bg-white/90 text-black font-semibold px-8 py-3 rounded-full transition-all"
-                                    >
-                                        {isArabic ? 'قبول العرض' : 'Accept Offer'}
-                                    </button>
-                                </div>
-
-                                {/* Offer Details */}
-                                <p className="text-xs text-white/70 leading-relaxed">
-                                    {isArabic
-                                        ? '€28.99/Mo For 12 Months'
-                                        : '€28.99/Mo For 12 Months'}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Separator Line */}
-                <div className="max-w-screen-2xl mx-auto px-8 mt-8">
-                    <div className="h-[1px] bg-border"></div>
-                </div>
-
-
-            </div>
-
-            {/* Watch on the go Section */}
-            <div className="relative z-10 pb-12 bg-white">
-                <div className="max-w-screen-2xl mx-auto px-8">
-                    <div className="text-center py-12">
-                        <h2 className="text-4xl font-bold text-black mb-6">Watch on the go.</h2>
-                        <a href="#" className="text-[#0071E3] hover:underline text-sm font-semibold inline-flex items-center gap-1">
-                            See all the ways to watch Prime
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </a>
-
-                        {/* Device Icons */}
-                        <div className="flex items-center justify-center gap-12 mt-12 flex-wrap">
-                            <div className="flex flex-col items-center gap-2">
-                                <div className="w-12 h-12 flex items-center justify-center">
-                                    <svg className="w-10 h-12" viewBox="0 0 40 48" fill="none" stroke="black" strokeWidth="1.5">
-                                        <rect x="6" y="2" width="28" height="44" rx="4" />
-                                        <line x1="6" y1="38" x2="34" y2="38" />
-                                    </svg>
-                                </div>
-                                <span className="text-sm text-black">iPhone</span>
-                            </div>
-
-                            <div className="flex flex-col items-center gap-2">
-                                <div className="w-12 h-12 flex items-center justify-center">
-                                    <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" stroke="black" strokeWidth="1.5">
-                                        <rect x="4" y="6" width="40" height="36" rx="4" />
-                                        <line x1="4" y1="36" x2="44" y2="36" />
-                                    </svg>
-                                </div>
-                                <span className="text-sm text-black">iPad</span>
-                            </div>
-
-                            <div className="flex flex-col items-center gap-2">
-                                <div className="w-12 h-12 flex items-center justify-center">
-                                    <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" stroke="black" strokeWidth="1.5">
-                                        <rect x="2" y="8" width="44" height="28" rx="2" />
-                                        <path d="M16 36 L20 36 L22 44 L26 44 L28 36 L32 36" />
-                                    </svg>
-                                </div>
-                                <span className="text-sm text-black">Mac & Windows</span>
-                            </div>
-
-
-                            <div className="flex flex-col items-center gap-2">
-                                <div className="w-12 h-12 flex items-center justify-center">
-                                    <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" stroke="black" strokeWidth="1.5">
-                                        <rect x="8" y="12" width="32" height="24" rx="2" />
-                                        <path d="M24 36 L24 42" />
-                                        <line x1="16" y1="42" x2="32" y2="42" />
-                                    </svg>
-                                </div>
-                                <span className="text-sm text-black">AirPlay</span>
-                            </div>
-
-                            <div className="flex flex-col items-center gap-2">
-                                <div className="w-12 h-12 flex items-center justify-center">
-                                    <svg className="w-10 h-12" viewBox="0 0 40 48" fill="none" stroke="black" strokeWidth="1.5">
-                                        <rect x="6" y="2" width="28" height="44" rx="4" />
-                                        <line x1="6" y1="38" x2="34" y2="38" />
-                                    </svg>
-                                </div>
-                                <span className="text-sm text-black">Android</span>
-                            </div>
-
-                            <div className="flex flex-col items-center gap-2">
-                                <div className="w-12 h-12 flex items-center justify-center">
-                                    <svg className="w-10 h-10" viewBox="0 0 40 40" fill="none" stroke="black" strokeWidth="1.5">
-                                        <circle cx="20" cy="20" r="18" />
-                                        <path d="M12 20 L18 26 L28 14" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                                    </svg>
-                                </div>
-                                <span className="text-sm text-black">Web</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Separator Line */}
-                <div className="max-w-screen-2xl mx-auto px-8 mt-8">
-                    <div className="h-[1px] bg-black/10"></div>
-                </div>
-            </div>
-
-            {/* Questions? Answers. Section */}
-            <div className="relative z-10 pb-12 bg-white">
-                <div className="max-w-4xl mx-auto px-8">
-                    <h2 className="text-4xl font-bold text-black text-center mb-12">Questions? Answers.</h2>
-
-                    <div className="space-y-0">
-                        {/* FAQ Item 1 */}
-                        <div className="border-b border-black/10">
-                            <button
-                                onClick={() => setExpandedFAQ(expandedFAQ === 0 ? null : 0)}
-                                className="w-full py-6 flex items-center justify-between text-left hover:opacity-70 transition-opacity"
-                            >
-                                <span className="text-xl font-semibold text-black">What is Prime ?</span>
-                                <svg className="w-4 h-2 text-black" viewBox="0 0 17 8.85">
-                                    <polyline
-                                        stroke="currentColor"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        fill="none"
-                                        fillRule="evenodd"
-                                        points={expandedFAQ === 0 ? "15 7.72 8.5 1.13 2 7.72" : "15 1.13 8.5 7.72 2 1.13"}
-                                        className="transition-all duration-300"
-                                    />
-                                </svg>
-                            </button>
-                            <div className={`overflow-hidden transition-all duration-300 ${expandedFAQ === 0 ? 'max-h-96 pb-6' : 'max-h-0'}`}>
-                                <p className="text-black/80 leading-relaxed">
-                                    Prime is your gateway to exceptional learning experiences, featuring hundreds of exclusive courses and programs — from intensive language courses and professional development to entrepreneurial training and technical skills — with new content added weekly. Subscribe and access all courses on the Prime platform. Prime subscription includes unlimited access to all courses, live sessions, interactive tools, and community features.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* FAQ Item 2 */}
-                        <div className="border-b border-black/10">
-                            <button
-                                onClick={() => setExpandedFAQ(expandedFAQ === 1 ? null : 1)}
-                                className="w-full py-6 flex items-center justify-between text-left hover:opacity-70 transition-opacity"
-                            >
-                                <span className="text-xl font-semibold text-black">How much does a Prime subscription cost?</span>
-                                <svg className="w-4 h-2 text-black" viewBox="0 0 17 8.85">
-                                    <polyline
-                                        stroke="currentColor"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        fill="none"
-                                        fillRule="evenodd"
-                                        points={expandedFAQ === 1 ? "15 7.72 8.5 1.13 2 7.72" : "15 1.13 8.5 7.72 2 1.13"}
-                                        className="transition-all duration-300"
-                                    />
-                                </svg>
-                            </button>
-                            <div className={`overflow-hidden transition-all duration-300 ${expandedFAQ === 1 ? 'max-h-96 pb-6' : 'max-h-0'}`}>
-                                <p className="text-black/80 leading-relaxed">
-                                    A Prime subscription costs €28.99/Mo for 12 months. You can cancel anytime and get access to all courses, live sessions, certificates, and premium features.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* FAQ Item 3 */}
-                        <div className="border-b border-black/10">
-                            <button
-                                onClick={() => setExpandedFAQ(expandedFAQ === 2 ? null : 2)}
-                                className="w-full py-6 flex items-center justify-between text-left hover:opacity-70 transition-opacity"
-                            >
-                                <span className="text-xl font-semibold text-black">Can I get a Prime subscription for free?</span>
-                                <svg className="w-4 h-2 text-black" viewBox="0 0 17 8.85">
-                                    <polyline
-                                        stroke="currentColor"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        fill="none"
-                                        fillRule="evenodd"
-                                        points={expandedFAQ === 2 ? "15 7.72 8.5 1.13 2 7.72" : "15 1.13 8.5 7.72 2 1.13"}
-                                        className="transition-all duration-300"
-                                    />
-                                </svg>
-                            </button>
-                            <div className={`overflow-hidden transition-all duration-300 ${expandedFAQ === 2 ? 'max-h-96 pb-6' : 'max-h-0'}`}>
-                                <p className="text-black/80 leading-relaxed">
-                                    Yes! New subscribers can try Prime free for 7 days. After that, it's €28.99/Mo for 12 months with full access to all courses and features.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <style jsx global>{`
-                .line-clamp-1 {
-                    display: -webkit-box;
-                    -webkit-line-clamp: 1;
-                    -webkit-box-orient: vertical;
-                    overflow: hidden;
-                }
-                
-                .scrollbar-hide {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
-                    scroll-snap-type: x mandatory;
-                    scroll-padding: 2rem;
-                }
-                
-                .scrollbar-hide::-webkit-scrollbar {
-                    display: none;
-                }
-                
-                .scrollbar-hide > div > div {
-                    scroll-snap-align: start;
-                }
-                
-                @media (max-width: 768px) {
-                    .overflow-x-auto {
-                        scroll-snap-type: x mandatory;
-                        scroll-padding: 2rem;
-                    }
-                    
-                    .overflow-x-auto > div > div {
-                        scroll-snap-align: start;
-                    }
-                }
-            `}</style>
-
-            {/* Payment Modal */}
-            <PaymentModal
-                isOpen={showPaymentModal}
-                onClose={() => setShowPaymentModal(false)}
-                courseTitle={heroCourse.title}
-                price="€28.99/Mo For 12 Months"
-            />
-
-        </div>
-    );
+        </main>
+    )
 }
