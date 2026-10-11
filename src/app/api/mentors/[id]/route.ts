@@ -4,7 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { NO_SUBSCRIPTION, canViewPost, getViewerAccess } from '@/lib/content-access'
 
-const YEAR_MS = 1000 * 60 * 60 * 24 * 365
+const visiblePostContent = (content: string | null, hasAccess: boolean, fallback: string) =>
+    hasAccess ? content : fallback
 
 export async function GET(
     request: NextRequest,
@@ -30,6 +31,8 @@ export async function GET(
                     }
                 },
                 channels: {
+                    orderBy: { createdAt: 'asc' },
+                    take: 1,
                     include: {
                         posts: {
                             where: {
@@ -49,6 +52,7 @@ export async function GET(
                     }
                 },
                 courses: {
+                    where: { status: 'PUBLISHED', isHidden: false },
                     select: {
                         id: true,
                         title: true,
@@ -71,7 +75,7 @@ export async function GET(
         const postIds = channel?.posts.map(post => post.id) ?? []
 
         // Everything below is independent - one round trip instead of many
-        const [completedMeetings, ratingAggregate, totalFollowers, access, viewerLikes] = await Promise.all([
+        const [completedMeetings, ratingAggregate, totalFollowers, access, viewerLikes, publishedPostCount, application] = await Promise.all([
             prisma.meeting.count({
                 where: {
                     creatorId: mentor.id,
@@ -90,13 +94,18 @@ export async function GET(
             viewerId && postIds.length > 0
                 ? prisma.postLike.findMany({ where: { userId: viewerId, postId: { in: postIds } }, select: { postId: true } })
                 : Promise.resolve([] as Array<{ postId: string }>),
+            channel && channel.posts.length === 50
+                ? prisma.channelPost.count({ where: { channelId: channel.id, publishedAt: { not: null } } })
+                : Promise.resolve(channel?.posts.length ?? 0),
+            prisma.creatorApplication.findUnique({
+                where: { userId: mentor.userId },
+                select: { experienceYears: true },
+            }),
         ])
 
         const averageRating = ratingAggregate._avg.rating ?? 0 // No fake rating - 0 if no reviews
         const totalStudents = mentor.courses.reduce((sum, course) => sum + course._count.enrollments, 0)
-        const yearsOfExperience = Math.max(1,
-            Math.floor((Date.now() - new Date(mentor.createdAt || new Date()).getTime()) / YEAR_MS)
-        )
+        const yearsOfExperience = application?.experienceYears ?? null
 
         const isOwner = !!viewerId && mentor.userId === viewerId
         const viewerRank = access.rankFor(mentor.id, channel?.id)
@@ -110,12 +119,11 @@ export async function GET(
                 id: post.id,
                 title: post.title,
                 titleAr: post.titleAr,
-                // Locked posts only get a teaser - paid media is never sent before subscribing
-                content: hasAccess || post.content.length <= 140 ? post.content : `${post.content.slice(0, 140)}…`,
-                contentAr: post.contentAr,
+                content: visiblePostContent(post.content, hasAccess, 'Subscribe to view this post.'),
+                contentAr: visiblePostContent(post.contentAr, hasAccess, 'اشترك لعرض هذا المنشور.'),
                 type: post.type,
                 tier: post.tier,
-                mediaUrl: hasAccess ? post.mediaUrl : null,
+                mediaUrl: hasAccess && post.mediaUrl !== '/images/demo-post-image.jpg' ? post.mediaUrl : null,
                 thumbnailUrl: hasAccess || post.type === 'VIDEO' ? post.thumbnailUrl : null,
                 mediaType: post.type,
                 duration: post.duration,
@@ -141,7 +149,7 @@ export async function GET(
             expertise: mentor.expertise || '',
             languages: mentor.languages || '',
             timezone: mentor.timezone || '',
-            monthlyPrice: mentor.monthlyPrice || mentor.basicMonthlyPrice || 0, // No fake price - 0 if not set
+            monthlyPrice: mentor.monthlyPrice ?? mentor.basicMonthlyPrice ?? 0,
             currency: 'EUR',
             hourlyRate: mentor.hourlyRate || null,
             availableForMeetings: mentor.availableForMeetings ?? true,
@@ -149,7 +157,7 @@ export async function GET(
             totalSubscribers: mentor.totalSubscribers || 0,
             stats: {
                 averageRating: parseFloat(averageRating.toFixed(1)),
-                totalPosts: channel?.posts.length || 0,
+                totalPosts: publishedPostCount,
                 yearsOfExperience,
                 totalStudents,
                 completedMeetings,

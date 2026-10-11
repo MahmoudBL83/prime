@@ -99,7 +99,7 @@ interface MentorData {
         totalFollowers: number
         totalCourses: number
         averageRating: number
-        yearsOfExperience: number
+        yearsOfExperience: number | null
         totalPosts: number
         totalStudents?: number
         completedMeetings?: number
@@ -390,8 +390,10 @@ export default function OnlyFansMentorProfilePage() {
                 const tierMap: Record<string, 'FREE' | 'BASIC' | 'PREMIUM' | 'VIP'> = {
                     'FREE': 'FREE',
                     'PUBLIC': 'FREE',
-                    'BRONZE': 'BASIC',
+                    'BRONZE': 'FREE',
                     'BASIC': 'BASIC',
+                    'ALL': 'BASIC',
+                    'SUBSCRIBER': 'BASIC',
                     'SILVER': 'PREMIUM',
                     'PREMIUM': 'PREMIUM',
                     'GOLD': 'VIP',
@@ -404,12 +406,12 @@ export default function OnlyFansMentorProfilePage() {
                             apiPost.type?.toLowerCase() || 'text',
                     content: showArabic && apiPost.contentAr ? apiPost.contentAr : (apiPost.content || apiPost.title || ''),
                     media: apiPost.mediaUrl || undefined,
-                    tier: tierMap[apiPost.tier] || 'FREE',
+                    tier: tierMap[apiPost.tier] || 'BASIC',
                     likes: apiPost.likesCount || 0,
                     comments: apiPost.commentsCount || 0,
                     views: apiPost.viewCount || 0,
                     timestamp: apiPost.publishedAt || apiPost.createdAt || new Date().toISOString(),
-                    isLocked: !apiPost.hasAccess && apiPost.tier !== 'FREE' && apiPost.tier !== 'PUBLIC',
+                    isLocked: !apiPost.hasAccess,
                     isPinned: apiPost.isPinned || false,
                     scheduledFor: apiPost.scheduledFor || undefined
                 }))
@@ -2684,7 +2686,6 @@ export default function OnlyFansMentorProfilePage() {
                                 ) : (
                                     <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-black to-pink-900" />
                                 )}
-                                <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-5" />
                             </div>
 
                             {/* Profile Info */}
@@ -2910,11 +2911,13 @@ export default function OnlyFansMentorProfilePage() {
                                             </span>
                                             <span className="text-muted-foreground text-sm ml-1">{showArabic ? 'متابعين' : 'followers'}</span>
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                                            <span className="font-bold text-foreground text-lg">{mentor.stats.averageRating.toFixed(1)}</span>
-                                            <span className="text-muted-foreground text-sm">{showArabic ? 'تقييم' : 'rating'}</span>
-                                        </div>
+                                        {mentor.stats.averageRating > 0 && (
+                                            <div className="flex items-center gap-1">
+                                                <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                                                <span className="font-bold text-foreground text-lg">{mentor.stats.averageRating.toFixed(1)}</span>
+                                                <span className="text-muted-foreground text-sm">{showArabic ? 'تقييم' : 'rating'}</span>
+                                            </div>
+                                        )}
 
                                         {/* Leave Review Button - Only for subscribers (not for own profile) */}
                                         {!isCreatorView && currentSubscription && (
@@ -3184,7 +3187,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                         />
                                                                         {/* Download Button - VIP Only */}
                                                                         <div className="absolute top-4 right-4 flex gap-2">
-                                                                            {currentSubscription === 'VIP' ? (
+                                                                            {!post.isLocked ? (
                                                                                 <Button
                                                                                     size="sm"
                                                                                     onClick={(e) => {
@@ -3217,7 +3220,7 @@ export default function OnlyFansMentorProfilePage() {
                                                                         />
                                                                         {/* Download Button - VIP Only */}
                                                                         <div className="absolute top-4 right-4 flex gap-2">
-                                                                            {currentSubscription === 'VIP' ? (
+                                                                            {!post.isLocked ? (
                                                                                 <Button
                                                                                     size="sm"
                                                                                     onClick={(e) => {
@@ -5829,10 +5832,12 @@ sizes="400px"
                                                         <span className="text-foreground font-semibold">{mentor.expertise}</span>
                                                     </div>
                                                 )}
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-muted-foreground">{showArabic ? 'الخبرة' : 'Experience'}</span>
-                                                    <span className="text-foreground font-semibold">{mentor.stats.yearsOfExperience}+ {showArabic ? 'سنوات' : 'years'}</span>
-                                                </div>
+                                                {mentor.stats.yearsOfExperience != null && (
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-muted-foreground">{showArabic ? 'الخبرة' : 'Experience'}</span>
+                                                        <span className="text-foreground font-semibold">{mentor.stats.yearsOfExperience}+ {showArabic ? 'سنوات' : 'years'}</span>
+                                                    </div>
+                                                )}
                                                 {mentor.languages && (
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-muted-foreground">{showArabic ? 'اللغات' : 'Languages'}</span>

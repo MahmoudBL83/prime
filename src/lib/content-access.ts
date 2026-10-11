@@ -70,6 +70,7 @@ export async function getViewerAccess(userId: string | undefined | null): Promis
         where: {
             userId,
             status: { in: ['ACTIVE', 'active'] },
+            startDate: { lte: now },
             OR: [{ endDate: null }, { endDate: { gte: now } }],
         },
         select: { channelId: true, metadata: true },
