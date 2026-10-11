@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
         // Generate a secure token
         const token = sign(
             { userId: user.id, email: user.email },
-            process.env.NEXTAUTH_SECRET || 'fallback_secret',
+            process.env.NEXTAUTH_SECRET!,
             { expiresIn: '1h' }
         )
 

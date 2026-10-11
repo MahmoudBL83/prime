@@ -4,9 +4,11 @@ const globalForPrisma = globalThis as unknown as {
     prisma: ExtendedPrismaClient | undefined
 }
 
-// Use a dummy DATABASE_URL during build time if not provided
-// This prevents build-time errors on Vercel
-const rawDatabaseUrl = process.env.DATABASE_URL || 'file:./dummy.db'
+const rawDatabaseUrl = process.env.DATABASE_URL
+
+if (!rawDatabaseUrl) {
+    throw new Error('DATABASE_URL is required')
+}
 
 /**
  * Neon (serverless Postgres) suspends idle computes and drops idle pooled
@@ -73,7 +75,6 @@ export const INCLUDE_SENSITIVE_CREATOR_FIELDS = {
     bankName: false,
     stripeConnectAccountId: false,
 } as const
-
 const createPrismaClient = () => {
     const client = new PrismaClient({
         log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],

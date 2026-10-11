@@ -1,19 +1,15 @@
 {
-  "name": "egyptian-edtech-platform",
+  "name": "prime-learning-platform",
   "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma migrate deploy && next build",
-    "vercel-build": "npx prisma generate && npx prisma db push --accept-data-loss && next build",
+    "build": "prisma generate && next build",
+    "vercel-build": "npm run build",
     "start": "next start",
     "postinstall": "prisma generate",
-    "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "prisma migrate reset --force",
-    "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio",
-    "db:create-test-creator": "tsx scripts/recreate-test-creator.ts",
-    "db:list-users": "tsx scripts/list-users.ts"
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
